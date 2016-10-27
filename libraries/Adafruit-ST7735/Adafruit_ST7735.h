@@ -142,6 +142,7 @@ class Adafruit_ST7735 : public Adafruit_GFX {
 	       drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w),
 		   drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h),
 	       sendBuffer(uint16_t *buffer, uint16_t n),
+	       drawImage(int16_t x, int16_t y, Image img),
 	       drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2),
 		   fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
              uint16_t color),

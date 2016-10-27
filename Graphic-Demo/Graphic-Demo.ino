@@ -29,7 +29,7 @@ void setup(void) {
 }
 
 void loop() {
-	uint16_t numImages = 32;
+	uint16_t numImages = 64;
 
 	Adafruit_GFX::blendMode = BlendMode::BLEND;
 	Adafruit_GFX::alpha = 255;
@@ -56,7 +56,10 @@ void drawRandomImages(Image img, uint16_t num) {
 	buffer.setCursor(0, 0);
 	switch (Adafruit_GFX::blendMode) {
 	case BlendMode::BLEND:
-		if (Adafruit_GFX::alpha == 255) break;
+		if (Adafruit_GFX::alpha == 255) {
+			buffer.print("TINT");
+			break;
+		}
 		buffer.print("BLEND");
 		break;
 	case BlendMode::ADD:

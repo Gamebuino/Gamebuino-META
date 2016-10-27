@@ -465,6 +465,14 @@ void Adafruit_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, u
 
 	PORT->Group[0].OUTSET.reg = (1 << 17);  // set PORTA.17 high  "digitalWrite(13, HIGH)"
 
+	//create a local buffer line not to mess up the source
+	uint16_t bufferedLine[w];
+	for (uint16_t i = 0; i < w; i++) {
+		uint16_t color = buffer[i];
+		color = (color << 8) | (color >> 8); //change endianness
+		bufferedLine[i] = color;
+	}
+
 	setAddrWindow(x, y, x + w - 1, y + 1);
 
 	//configure DMA
@@ -476,7 +484,7 @@ void Adafruit_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, u
 	//printStatus(stat);
 
 	//set up transfer 
-	myDMA.setup_transfer_descriptor(buffer,// move data from here
+	myDMA.setup_transfer_descriptor(bufferedLine,// move data from here
 		(void *)(&SERCOM4->SPI.DATA.reg),		// to here
 		w * 2,								// this many...
 		DMA_BEAT_SIZE_BYTE,						// 8 bits bytes
@@ -517,10 +525,8 @@ void Adafruit_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, u
 void Adafruit_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h) {
 
 	PORT->Group[0].OUTSET.reg = (1 << 17);  // set PORTA.17 high  "digitalWrite(13, HIGH)"
-											//configure DMA
 
 	setAddrWindow(x, y, x + w - 1, y + h - 1);
-
 
 	myDMA.configure_peripheraltrigger(SERCOM4_DMAC_ID_TX);  // SERMCOM4 == SPI native SERCOM
 	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
@@ -537,8 +543,8 @@ void Adafruit_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_
 		true,									// increment source addr?
 		false);									// increment dest addr?
 
-												//add descriptor
-												//Serial.print("Adding descriptor...");
+	//add descriptor
+	//Serial.print("Adding descriptor...");
 	stat = myDMA.add_descriptor();
 	//printStatus(stat);
 
@@ -561,8 +567,6 @@ void Adafruit_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_
 	*csport |= cspinmask;
 	SPI.endTransaction();
 	stat = myDMA.free(); //free the DMA channel
-
-	PORT->Group[0].OUTCLR.reg = (1 << 17);  // clear PORTA.17 high "digitalWrite(13, LOW)"
 }
 
 //fast method to quickly push a buffered line of pixels
@@ -570,7 +574,7 @@ void Adafruit_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_
 //the color must be formated as the destination
 void Adafruit_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 
-											//configure DMA
+	//configure DMA
 	myDMA.configure_peripheraltrigger(SERCOM4_DMAC_ID_TX);  // SERMCOM4 == SPI native SERCOM
 	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
 
@@ -586,8 +590,8 @@ void Adafruit_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 		true,									// increment source addr?
 		false);									// increment dest addr?
 
-												//add descriptor
-												//Serial.print("Adding descriptor...");
+	//add descriptor
+	//Serial.print("Adding descriptor...");
 	stat = myDMA.add_descriptor();
 	//printStatus(stat);
 
@@ -595,15 +599,91 @@ void Adafruit_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 	transfer_is_done = false;
 
 	myDMA.register_callback(dma_callback); // by default, called when xfer done
-	myDMA.enable_callback(); // by default, for xfer done registers
+	myDMA.enable_callback();// by default, for xfer done registers
 
-							 //start transfer
-							 // once started, we dont need to trigger it because it will autorun
-							 //Serial.println("Starting transfer job");
-
-
+	//start transfer
+	// once started, we dont need to trigger it because it will autorun
+	//Serial.println("Starting transfer job");
 	myDMA.start_transfer_job();
+}
 
+void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img){
+
+	int16_t w = img.width();
+	int16_t h = img.height();
+
+	if ((img.colorMode == ColorMode::INDEX) && (w = _width) && (h = _height)) {
+
+		uint16_t preBufferLineArray[w];
+		uint16_t sendBufferLineArray[w];
+		uint16_t *preBufferLine = preBufferLineArray;
+		uint16_t *sendBufferLine = sendBufferLineArray;
+
+		//set the window to the whole screen
+		setAddrWindow(0, 0, _width - 1, _height - 1);
+
+		//initiate SPI
+		SPI.beginTransaction(mySPISettings);
+		*rsport |= rspinmask;
+		*csport &= ~cspinmask;
+
+		//prepare the first line
+		indexTo565(preBufferLine, img._buffer, img.colorIndex, w);
+		for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
+		    uint16_t color = preBufferLine[i];
+			color = (color << 8) | (color >> 8); //change endianness
+			preBufferLine[i] = color;
+		}
+
+		//start sending lines and processing them in parallel using DMA
+		for (uint16_t j = 1; j < h; j++) { //vertical coordinate in source image, start from the second line
+		PORT->Group[0].OUTSET.reg = (1 << 17);  // set PORTA.17 high  "digitalWrite(13, HIGH)"
+
+			//memcpy is too slow to transfer from pre buffer to send buffer
+			//memcpy(sendBufferLine, preBufferLine, w2 * 2 * 2);
+
+			//swap buffers pointers instead
+			uint16_t *temp = preBufferLine;
+			preBufferLine = sendBufferLine;
+			sendBufferLine = temp;
+			
+			sendBuffer(sendBufferLine, w); //start DMA send
+
+
+			//prepare the next line while the current one is being transferred
+			indexTo565(preBufferLine, img._buffer + ((j * w) / 4), img.colorIndex, w);
+			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
+				uint16_t color = preBufferLine[i];
+				color = (color << 8) | (color >> 8); //change endianness
+				preBufferLine[i] = color;
+			}
+
+			PORT->Group[0].OUTCLR.reg = (1 << 17);  // clear PORTA.17 high "digitalWrite(13, LOW)"
+
+			while (!transfer_is_done); //chill
+
+			stat = myDMA.free(); //free the DMA channel
+		}
+
+		//swap buffers
+		uint16_t *temp = preBufferLine;
+		preBufferLine = sendBufferLine;
+		sendBufferLine = temp;
+
+		//send the last line
+		sendBuffer(sendBufferLine, w); //start DMA send
+		while (!transfer_is_done); //chill
+		stat = myDMA.free(); //free the DMA channel
+
+							 //finish SPI
+		*csport |= cspinmask;
+		SPI.endTransaction();
+
+		return;
+	}
+	else {
+		Adafruit_GFX::drawImage(x, y, img); //fallback to the usual
+	}
 }
 
 void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2) {
@@ -671,8 +751,12 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int
 		    stat = myDMA.free(); //free the DMA channel
 		}
 
+		//swap buffers pointers
+		uint16_t *temp = preBufferLine;
+		preBufferLine = sendBufferLine;
+		sendBufferLine = temp;
+
 		//send the last line
-		memcpy(sendBufferLine, preBufferLine, w2 * 2 * 2); //transfer from pre buffer to send buffer
 		sendBuffer(sendBufferLine, _width * 2); //start DMA send
 		while (!transfer_is_done); //chill
 		stat = myDMA.free(); //free the DMA channel

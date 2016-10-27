@@ -59,10 +59,11 @@ void loop() {
 
 		buffer.fillScreen(0xFFFF);
 		buffer.setTextColor(0x0000);
-		buffer.setCursor(0, 0);
 
+		buffer.setCursor(10, 10);
 		buffer.print(endTime - startTime);
 		buffer.println("ms");
+		buffer.setCursor(64, 10);
 		buffer.print(1000 / (endTime - startTime));
 		buffer.println("FPS");
 		buffer.drawImage((millis() / 10) % (buffer.width()-16) , 32, favicon);

@@ -47,6 +47,16 @@ uint16_t Adafruit_GFX::tint = 0xFFFF;
 uint8_t Adafruit_GFX::alpha = 255;
 BlendMode Adafruit_GFX::blendMode = BlendMode::BLEND;
 
+void Adafruit_GFX::indexTo565(uint16_t *dest, uint16_t *src, uint16_t *index, uint16_t length) {
+	//length is the number of destination pixels
+	for (uint16_t i = 0; i < length/2; i++) {
+		uint8_t index1 = ((uint8_t*)src)[i] & 0x0F;
+		uint8_t index2 = ((uint8_t*)src)[i] >> 4;
+		dest[i * 2] = index[index1];
+		dest[(i * 2) + 1] = index[index2];
+	}
+}
+
 // Many (but maybe not all) non-AVR board installs define macros
 // for compatibility with existing PROGMEM-reading AVR code.
 // Do our own checks and defines here for good measure...
@@ -90,6 +100,7 @@ Adafruit_GFX::Adafruit_GFX(int16_t w, int16_t h):
   wrap      = true;
   _cp437    = false;
   gfxFont   = NULL;
+  colorMode = ColorMode::RGB565;
 }
 
 // Draw a circle outline
@@ -505,6 +516,27 @@ void Adafruit_GFX::drawImage(int16_t x, int16_t y, Image img) {
 		}
 	}
 
+
+	if ((img.colorMode == ColorMode::INDEX) && (colorMode == ColorMode::RGB565)) {
+		for (int j2 = 0; j2 < h2cropped; j2++) {
+			uint16_t destLineArray[w2cropped];
+			uint16_t *destLine = destLineArray;
+			uint16_t *srcLine;
+				
+			srcLine = img._buffer + (((j2 + j2offset) * w1) + i2offset) / 4;
+
+			indexTo565(destLine, srcLine, img.colorIndex, w2cropped);
+			//memset(destLineArray, 0xFF, w2cropped * 2);
+
+			drawBufferedLine(
+				x + i2offset,
+				y + j2offset + j2,
+				destLine,
+				w2cropped);
+		}
+		return;
+	}
+
 	for (int j2 = 0; j2 < h2cropped; j2++) { //j2 : offseted vertical coordinate in the destination image
 		drawBufferedLine(
 			x + i2offset,
@@ -634,7 +666,7 @@ void Adafruit_GFX::write(uint8_t c) {
 #endif
 }
 
-// Draw a character
+// Draw a characteri
 void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
  uint16_t color, uint16_t bg, uint8_t size) {
 

@@ -20,6 +20,11 @@ enum class BlendMode {
 	SCREEN
 };
 
+enum class ColorMode {
+	RGB565,
+	INDEX
+};
+
 class Adafruit_GFX : public Print {
 
  public:
@@ -86,10 +91,14 @@ class Adafruit_GFX : public Print {
       int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
 
 
+  static void indexTo565(uint16_t *dest, uint16_t *src, uint16_t *index, uint16_t length);
+
   static uint16_t transparentColor;
   static uint8_t alpha;
   static uint16_t tint;
   static BlendMode blendMode;
+  ColorMode colorMode;
+  uint16_t *colorIndex;
 
 #if ARDUINO >= 100
   virtual size_t write(uint8_t);
