@@ -22,7 +22,23 @@ Image favicon = Image(favicon16Width, favicon16Height, const_cast<uint16_t*>(fav
 Image buffer = Image(30, 30);
 
 //up to 16 indexed colors
-uint16_t colorIndex[8] = { 0x0000, 0xFFFF, 0xF800, 0xFFE0, 0x07E0, 0x07FF, 0x001F, 0xF81F };
+uint16_t colorIndex[16] = { 0x0,
+0x194A,
+0x792A,
+0x42A,
+0xAA86,
+0x62C9,
+0xC618,
+0xFF9D,
+0xE8CA,
+0xFD03,
+0xF765,
+0x5DC9,
+0x553B,
+0x83B3,
+0xF3B4,
+0xFE75,
+};
 
 uint16_t imgBuffer[16] = { 0x6116, 0x6226, 0x6336, 0x6446 };
 Image image = Image(4, 4, imgBuffer, colorIndex);
@@ -39,7 +55,7 @@ void setup(void) {
 	buffer.fillScreen(0xFFFF);
 	buffer.drawImage(8, 8, image); //draw indexed image to RGB image
 	tft.drawImage(0, 0, buffer, buffer.width() * 3, buffer.height() * 3);
-	delay(5000);
+	delay(2000);
 }
 
 void loop() {
@@ -48,12 +64,15 @@ void loop() {
 	uint16_t endTime = millis();
 
 	memset(indexBuffer._buffer, 0x11, indexBuffer.width()*indexBuffer.height() / 2); //clear buffer
-	indexBuffer.drawCircle((millis() / 10) % 160, 20, 10, 2); //draw to indexed buffer
-	indexBuffer.setTextColor(6);
+	indexBuffer.drawCircle((millis() / 10) % 160, 20, 10, 13); //draw to indexed buffer
+	for (uint16_t i = 0; i < 16; i++) {
+		indexBuffer.fillRect(8+i*9, 32, 8, 8, i);
+	}
+	indexBuffer.setTextColor(3);
 	indexBuffer.setCursor(10, 10);
 	indexBuffer.print(endTime - startTime);
 	indexBuffer.println("ms");
-	indexBuffer.setTextColor(7);
+	indexBuffer.setTextColor(11);
 	indexBuffer.setCursor(64, 10);
 	indexBuffer.print(1000 / (endTime - startTime));
 	indexBuffer.println("FPS");
