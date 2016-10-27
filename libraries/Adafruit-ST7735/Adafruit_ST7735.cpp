@@ -480,7 +480,7 @@ void Adafruit_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, u
 	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
 
 	//allocate DMA
-	stat = myDMA.allocate();
+	myDMA.allocate();
 	//printStatus(stat);
 
 	//set up transfer 
@@ -493,7 +493,7 @@ void Adafruit_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, u
 
 												//add descriptor
 												//Serial.print("Adding descriptor...");
-	stat = myDMA.add_descriptor();
+	myDMA.add_descriptor();
 	//printStatus(stat);
 
 	//register and enable call back
@@ -514,7 +514,7 @@ void Adafruit_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, u
 
 	*csport |= cspinmask;
 	SPI.endTransaction();
-	stat = myDMA.free(); //free the DMA channel
+	myDMA.free(); //free the DMA channel
 
 	PORT->Group[0].OUTCLR.reg = (1 << 17);  // clear PORTA.17 high "digitalWrite(13, LOW)"
 }
@@ -532,7 +532,7 @@ void Adafruit_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_
 	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
 
 	//allocate DMA
-	stat = myDMA.allocate();
+	myDMA.allocate();
 	//printStatus(stat);
 
 	//set up transfer 
@@ -545,7 +545,7 @@ void Adafruit_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_
 
 	//add descriptor
 	//Serial.print("Adding descriptor...");
-	stat = myDMA.add_descriptor();
+	myDMA.add_descriptor();
 	//printStatus(stat);
 
 	//register and enable call back
@@ -566,7 +566,7 @@ void Adafruit_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_
 
 	*csport |= cspinmask;
 	SPI.endTransaction();
-	stat = myDMA.free(); //free the DMA channel
+	myDMA.free(); //free the DMA channel
 }
 
 //fast method to quickly push a buffered line of pixels
@@ -579,7 +579,7 @@ void Adafruit_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
 
 	//allocate DMA
-	stat = myDMA.allocate();
+	myDMA.allocate();
 	//printStatus(stat);
 
 	//set up transfer 
@@ -592,7 +592,7 @@ void Adafruit_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 
 	//add descriptor
 	//Serial.print("Adding descriptor...");
-	stat = myDMA.add_descriptor();
+	myDMA.add_descriptor();
 	//printStatus(stat);
 
 	//register and enable call back
@@ -662,7 +662,7 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img){
 
 			while (!transfer_is_done); //chill
 
-			stat = myDMA.free(); //free the DMA channel
+			myDMA.free(); //free the DMA channel
 		}
 
 		//swap buffers
@@ -673,9 +673,9 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img){
 		//send the last line
 		sendBuffer(sendBufferLine, w); //start DMA send
 		while (!transfer_is_done); //chill
-		stat = myDMA.free(); //free the DMA channel
+		myDMA.free(); //free the DMA channel
 
-							 //finish SPI
+		//finish SPI
 		*csport |= cspinmask;
 		SPI.endTransaction();
 
@@ -687,18 +687,20 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img){
 }
 
 void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2) {
-
+	//out of screen
 	if ((x > _width) || ((x + abs(w2)) < 0) || (y > _height) || ((y + abs(h2)) < 0) || (w2 == 0) || (h2 == 0)) return;
 
 	int16_t w = img.width();
 	int16_t h = img.height();
 
-	if ((w == w2) && (h == h2)) { //no scaling
-		Adafruit_GFX::drawImage(x, y, img);
+	//no scaling
+	if ((w == w2) && (h == h2)) { 
+		drawImage(x, y, img);
 		return;
 	}
 
-	if ((w2 == (w * 2)) && (h2 == (h * 2)) && (_width == w2) && (_height == h2)) { //x2 upscaling to full screen
+	//x2 upscaling to full screen
+	if ((w2 == (w * 2)) && (h2 == (h * 2)) && (_width == w2) && (_height == h2)) {
 		uint16_t preBufferLineArray[w2 * 2];
 		uint16_t sendBufferLineArray[w2 * 2];
 		uint16_t *preBufferLine = preBufferLineArray;
@@ -731,7 +733,6 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int
 			preBufferLine = sendBufferLine;
 			sendBufferLine = temp;
 
-
 			sendBuffer(sendBufferLine, _width * 2); //start DMA send
 
 			PORT->Group[0].OUTSET.reg = (1 << 17);  // set PORTA.17 high  "digitalWrite(13, HIGH)"
@@ -748,7 +749,7 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int
 
 			while (!transfer_is_done); //chill
 
-		    stat = myDMA.free(); //free the DMA channel
+		    myDMA.free(); //free the DMA channel
 		}
 
 		//swap buffers pointers
@@ -759,7 +760,7 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int
 		//send the last line
 		sendBuffer(sendBufferLine, _width * 2); //start DMA send
 		while (!transfer_is_done); //chill
-		stat = myDMA.free(); //free the DMA channel
+		myDMA.free(); //free the DMA channel
 
 		//finish SPI
 		*csport |= cspinmask;
@@ -768,12 +769,12 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int
 		return;
 	}
 
+	//most generic but slow resizing
 	boolean invertX = (w2 < 0);
 	boolean invertY = (h2 < 0);
 	w2 = abs(w2);
 	h2 = abs(h2);
 	uint16_t bufferLine[w2];
-
 
 	//horizontal cropping
 	int16_t w2cropped = w2; //width of the cropped buffer
