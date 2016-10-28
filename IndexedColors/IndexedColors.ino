@@ -65,8 +65,13 @@ void loop() {
 
 	memset(indexBuffer._buffer, 0x11, indexBuffer.width()*indexBuffer.height() / 2); //clear buffer
 	indexBuffer.drawCircle((millis() / 10) % 160, 20, 10, 13); //draw to indexed buffer
+	indexBuffer.setCursor(0, 48);
 	for (uint16_t i = 0; i < 16; i++) {
 		indexBuffer.fillRect(8+i*9, 32, 8, 8, i);
+		indexBuffer.setTextColor(1,i);
+		if (i == 1) indexBuffer.setTextColor(0, i);
+		if (i < 10) indexBuffer.print(" ");
+		indexBuffer.print(i);
 	}
 	indexBuffer.setTextColor(3);
 	indexBuffer.setCursor(10, 10);
