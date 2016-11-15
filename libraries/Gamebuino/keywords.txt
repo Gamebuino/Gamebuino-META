@@ -1,0 +1,152 @@
+/*
+ * (C) Copyright 2014 Aurélien Rodot. All rights reserved.
+ *
+ * This file is part of the Gamebuino Library (http://gamebuino.com)
+ *
+ * The Gamebuino Library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+Gamebuino 	KEYWORD3
+gb 	KEYWORD3
+display	KEYWORD1
+backlight	KEYWORD1
+battery	KEYWORD1
+sound	KEYWORD1
+buttons	KEYWORD1
+
+////////////////////////core
+begin	KEYWORD1
+titleScreen	KEYWORD1
+update	KEYWORD1
+setFrameRate	KEYWORD1
+frameCount	KEYWORD1
+changeGame	KEYWORD1
+getDefaultName KEYWORD1
+menu	KEYWORD1
+keyboard	KEYWORD1
+popup	KEYWORD1
+pickRandomSeed	KEYWORD1
+adjustVolume	KEYWORD1
+getCpuLoad	KEYWORD1
+freeRam	KEYWORD1
+frameDurationMicros	KEYWORD1
+collideRectRect	KEYWORD1
+collidepointRect	KEYWORD1
+collideBitampBitmap	KEYWORD1
+
+////////////////////////buttons
+pressed	KEYWORD1
+released	KEYWORD1
+held	KEYWORD1
+repeat	KEYWORD1
+timeHeld	KEYWORD1
+BTN_A 	LITERAL1
+BTN_B 	LITERAL1
+BTN_C 	LITERAL1
+BTN_UP 	LITERAL1
+BTN_RIGHT 	LITERAL1
+BTN_DOWN 	LITERAL1
+BTN_LEFT 	LITERAL1
+
+////////////////////////sound
+playTrack	 KEYWORD1
+updateTrack	 KEYWORD1
+stopTrack	 KEYWORD1
+changePatternSet	 KEYWORD1
+boolean trackIsPlaying	 KEYWORD1
+
+playPattern	 KEYWORD1
+changeInstrumentSet	 KEYWORD1
+updatePattern	 KEYWORD1
+setPatternLooping	 KEYWORD1
+stopPattern	 KEYWORD1
+patternIsPlaying	 KEYWORD1
+
+command	 KEYWORD1
+playNote	 KEYWORD1
+updateNote	 KEYWORD1
+stopNote	 KEYWORD1
+
+setVolume	 KEYWORD1
+getVolume	 KEYWORD1
+
+playOK	 KEYWORD1
+playCancel	 KEYWORD1
+playTick	 KEYWORD1
+
+prescaler	 KEYWORD1
+
+////////////////////////battery
+voltage	KEYWORD1
+level	KEYWORD1
+show	KEYWORD1
+
+////////////////////////backlight
+set	KEYWORD1
+automatic	KEYWORD1
+backlightValue	KEYWORD1
+ambientLight	KEYWORD1
+backlightMin	KEYWORD1
+backlightMax	KEYWORD1
+ambientLightMin	KEYWORD1
+ambientLightMax	KEYWORD1
+
+////////////////////////Display
+getBuffer	KEYWORD1
+setContrast	KEYWORD1
+clear	KEYWORD1
+update	KEYWORD1
+fillScreen	KEYWORD1
+persistence	KEYWORD1
+setColor	KEYWORD1
+drawPixel	KEYWORD1
+getPixel	KEYWORD1
+drawLine	KEYWORD1
+drawFastVLine	KEYWORD1
+drawFastHLine	KEYWORD1
+drawRect	KEYWORD1
+fillRect	KEYWORD1
+drawRoundRect	KEYWORD1
+fillRoundRect	KEYWORD1
+drawCircle	KEYWORD1
+fillCircle	KEYWORD1
+drawCircleHelper	KEYWORD1
+fillCircleHelper	KEYWORD1
+drawTriangle	KEYWORD1
+fillTriangle	KEYWORD1
+drawBitmap	KEYWORD1
+drawChar	KEYWORD1
+print	KEYWORD1
+cursorX	KEYWORD1
+cursorY	KEYWORD1
+fontSize	KEYWORD1
+textWrap	KEYWORD1
+fontWidth	KEYWORD1
+fontHeight	KEYWORD1
+setFont	KEYWORD1
+
+WHITE 	LITERAL1
+BLACK 	LITERAL1
+INVERT 	LITERAL1
+GRAY 	LITERAL1
+NOROT 	LITERAL1
+ROTCCW 	LITERAL1
+ROT180 	LITERAL1
+ROTCW 	LITERAL1
+NOFLIP	LITERAL1
+FLIPH 	LITERAL1
+FLIPV 	LITERAL1
+FLIPVH 	LITERAL1
+LCDWIDTH	LITERAL1
+LCDHEIGHT	LITERAL1
