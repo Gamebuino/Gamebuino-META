@@ -87,7 +87,7 @@ while (myFile.available()) {
  * channel mode configured for event triggered conversions.
  */
 void AudioZeroClass::dacConfigure(void){
-	analogWriteResolution(10);
+	analogWriteResolution(8);
 	analogWrite(A0, 0);
 }
 
