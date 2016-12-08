@@ -46,9 +46,9 @@ void loop(){
 }
 
 void initGame(){
-  gb.titleScreen(F("    PHYSICS DEMO\n\nControls:\n \25 jump\n \26 crouch "));
-  gb.pickRandomSeed(); //pick a different random seed each time for games to be different
-  gb.battery.show = false; //hide the battery indicator
+  //gb.titleScreen(F("    PHYSICS DEMO\n\nControls:\n \25 jump\n \26 crouch "));
+  //gb.pickRandomSeed(); //pick a different random seed each time for games to be different
+  //gb.battery.show = false; //hide the battery indicator
   
   initObstacles();
   initPlayer();
