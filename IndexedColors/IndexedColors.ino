@@ -8,11 +8,12 @@
 #include <Images/favicon16.h>
 //#include <Images/logo.h>
 
-
-#define TFT_CS     10
-#define TFT_RST    9
-#define TFT_DC     8
-
+#define TFT_CS		(30)
+#define TFT_RST		(0)
+#define TFT_DC		(31)
+#define SD_CS		(PIN_LED_TXL)
+#define BTN_CS		(PIN_LED_RXL)
+#define NEOPIX		(38)
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
@@ -50,7 +51,7 @@ Image indexBuffer = Image(160, 128, ColorMode::INDEX, colorIndex);
 void setup(void) {
 	pinMode(13, OUTPUT);
 	tft.initR(INITR_BLACKTAB);
-	tft.setRotation(3);
+	tft.setRotation(1);
 	tft.fillScreen(0x0000);
 	buffer.fillScreen(0xFFFF);
 	buffer.drawImage(8, 8, image); //draw indexed image to RGB image
