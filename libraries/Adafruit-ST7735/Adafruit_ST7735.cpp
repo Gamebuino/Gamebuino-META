@@ -854,15 +854,14 @@ void Adafruit_ST7735::drawPixel(int16_t x, int16_t y, uint16_t color) {
 }
 
 
-void Adafruit_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h,
- uint16_t color) {
+void Adafruit_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h) {
 
   // Rudimentary clipping
   if((x >= _width) || (y >= _height)) return;
   if((y+h-1) >= _height) h = _height-y;
   setAddrWindow(x, y, x, y+h-1);
 
-  uint8_t hi = color >> 8, lo = color;
+  uint8_t hi = Adafruit_GFX::color >> 8, lo = Adafruit_GFX::color;
     
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);
@@ -880,15 +879,14 @@ void Adafruit_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h,
 }
 
 
-void Adafruit_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w,
-  uint16_t color) {
+void Adafruit_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w) {
 
   // Rudimentary clipping
   if((x >= _width) || (y >= _height)) return;
   if((x+w-1) >= _width)  w = _width-x;
   setAddrWindow(x, y, x+w-1, y);
 
-  uint8_t hi = color >> 8, lo = color;
+  uint8_t hi = Adafruit_GFX::color >> 8, lo = Adafruit_GFX::color;
 
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);
@@ -907,14 +905,13 @@ void Adafruit_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w,
 
 
 void Adafruit_ST7735::fillScreen(uint16_t color) {
-  fillRect(0, 0,  _width, _height, color);
+  fillRect(0, 0,  _width, _height);
 }
 
 
 
 // fill a rectangle
-void Adafruit_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
-  uint16_t color) {
+void Adafruit_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 
   // rudimentary clipping (drawChar w/big text requires this)
   if((x >= _width) || (y >= _height)) return;
@@ -923,7 +920,7 @@ void Adafruit_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
 
   setAddrWindow(x, y, x+w-1, y+h-1);
 
-  uint8_t hi = color >> 8, lo = color;
+  uint8_t hi = Adafruit_GFX::color >> 8, lo = Adafruit_GFX::color;
     
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);

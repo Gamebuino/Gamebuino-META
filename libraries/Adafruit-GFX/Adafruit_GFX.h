@@ -110,70 +110,22 @@ class Adafruit_GFX : public Print {
   int16_t getCursorX(void) const;
   int16_t getCursorY(void) const;
 
- protected:
+ //protected:
   const int16_t
     WIDTH, HEIGHT;   // This is the 'raw' display w/h - never changes
   int16_t
     _width, _height, // Display w/h as modified by current rotation
-    cursor_x, cursor_y;
-  static uint16_t
+    cursorX, cursorY;
+  uint16_t
     color, bgcolor;
-  static uint8_t
+  uint8_t
     textsize,
     rotation;
-  static boolean
+  boolean
     wrap,   // If set, 'wrap' text at right edge of display
     _cp437; // If set, use correct CP437 charset (default is off)
   GFXfont
     *gfxFont;
-};
-
-class Adafruit_GFX_Button {
-
- public:
-  Adafruit_GFX_Button(void);
-  void initButton(Adafruit_GFX *gfx, int16_t x, int16_t y,
-   uint8_t w, uint8_t h, uint16_t outline, uint16_t fill,
-   uint16_t textcolor, char *label, uint8_t textsize);
-  void drawButton(boolean inverted = false);
-  boolean contains(int16_t x, int16_t y);
-
-  void press(boolean p);
-  boolean isPressed();
-  boolean justPressed();
-  boolean justReleased();
-
- private:
-  Adafruit_GFX *_gfx;
-  int16_t _x, _y;
-  uint16_t _w, _h;
-  uint8_t _textsize;
-  uint16_t _outlinecolor, _fillcolor, _textcolor;
-  char _label[10];
-
-  boolean currstate, laststate;
-};
-
-class GFXcanvas1 : public Adafruit_GFX {
-
- public:
-  GFXcanvas1(uint16_t w, uint16_t h);
-  ~GFXcanvas1(void);
-  void     drawPixel(int16_t x, int16_t y, uint16_t color),
-           fillScreen(uint16_t color);
-  uint8_t *getBuffer(void);
- private:
-  uint8_t *buffer;
-};
-
-class GFXcanvas16 : public Adafruit_GFX {
-  GFXcanvas16(uint16_t w, uint16_t h);
-  ~GFXcanvas16(void);
-  void      drawPixel(int16_t x, int16_t y, uint16_t color),
-            fillScreen(uint16_t color);
-  uint16_t *getBuffer(void);
- private:
-  uint16_t *buffer;
 };
 
 #endif // _ADAFRUIT_GFX_H

@@ -137,15 +137,14 @@ class Adafruit_ST7735 : public Adafruit_GFX {
            pushColor(uint16_t color),
            fillScreen(uint16_t color),
            drawPixel(int16_t x, int16_t y, uint16_t color),
-           drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color),
-	       drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color),
+           drawFastVLine(int16_t x, int16_t y, int16_t h),
+	       drawFastHLine(int16_t x, int16_t y, int16_t w),
 	       drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w),
 		   drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h),
 	       sendBuffer(uint16_t *buffer, uint16_t n),
 	       drawImage(int16_t x, int16_t y, Image img),
 	       drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2),
-		   fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
-             uint16_t color),
+		   fillRect(int16_t x, int16_t y, int16_t w, int16_t h),
            setRotation(uint8_t r),
            invertDisplay(boolean i);
   uint16_t Color565(uint8_t r, uint8_t g, uint8_t b);
