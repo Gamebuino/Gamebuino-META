@@ -4,35 +4,47 @@
 
 #include "Image.h"
 
-Image::Image(uint16_t w, uint16_t h) : Adafruit_GFX(w, h) {
-	uint16_t bytes = w * h * 2;
-	if ((_buffer = (uint16_t *)malloc(bytes))) {
-		memset(_buffer, 0, bytes);
-	}
+Image::Image() : Adafruit_GFX(0, 0){
 }
 
-Image::Image(uint16_t w, uint16_t h, ColorMode col, uint16_t* index) : Adafruit_GFX(w, h) {
-	uint16_t bytes = w * h / 2;
-	if ((_buffer = (uint16_t *)malloc(bytes))) {
-		memset(_buffer, 0, bytes);
-	}
-	colorMode = ColorMode::INDEX;
-	colorIndex = index;
+Image::Image(uint16_t w, uint16_t h, ColorMode col) : Adafruit_GFX(w, h) {
+	colorMode = col;
+	allocateBuffer(w, h);
+	_width = w;
+	_height = h;
 }
 
-Image::Image(uint16_t w, uint16_t h, uint16_t* buffer) : Adafruit_GFX(w,h){
+Image::Image(uint16_t w, uint16_t h, ColorMode col, uint16_t* buffer) : Adafruit_GFX(w, h) {
+	colorMode = col;
 	_buffer = buffer;
-}
-
-Image::Image(uint16_t w, uint16_t h, uint16_t* buffer, uint16_t* index) : Adafruit_GFX(w, h) {
-	_buffer = buffer;
-	colorMode = ColorMode::INDEX;
-	colorIndex = index;
+	_width = w;
+	_height = h;
 }
 
 Image::~Image(void) {
 	//if ((uint32_t)_buffer < 0x20000000) return; //don't try to deallocate variables from flash
 	//if (_buffer) free(_buffer);
+}
+
+void Image::allocateBuffer(uint16_t w, uint16_t h) {
+	switch (colorMode) {
+	case (ColorMode::INDEX):
+	{
+		uint16_t bytes = w * h / 2; //4 bits per pixel = 1/2 byte
+		if ((_buffer = (uint16_t *)malloc(bytes))) {
+			memset(_buffer, 0, bytes);
+		}
+		break;
+	}
+	case (ColorMode::RGB565):
+	{
+		uint16_t bytes = w * h * 2; //16 bits per pixel = 2 bytes
+		if ((_buffer = (uint16_t *)malloc(bytes))) {
+			memset(_buffer, 0, bytes);
+		}
+		break;
+	}
+	}
 }
 
 

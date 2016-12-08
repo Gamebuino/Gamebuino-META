@@ -53,7 +53,7 @@ class Gamebuino {
 public:
     Buttons buttons;
     Sound sound;
-    Image display = Image(80,64);
+    Image display = Image(80,64, ColorMode::RGB565);
 	Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
     void begin();

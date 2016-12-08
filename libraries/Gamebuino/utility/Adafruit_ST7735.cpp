@@ -628,7 +628,7 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img){
 		*csport &= ~cspinmask;
 
 		//prepare the first line
-		indexTo565(preBufferLine, img._buffer, img.colorIndex, w);
+		indexTo565(preBufferLine, img._buffer, Adafruit_GFX::colorIndex, w);
 		for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
 		    uint16_t color = preBufferLine[i];
 			color = (color << 8) | (color >> 8); //change endianness
@@ -651,7 +651,7 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img){
 
 
 			//prepare the next line while the current one is being transferred
-			indexTo565(preBufferLine, img._buffer + ((j * w) / 4), img.colorIndex, w);
+			indexTo565(preBufferLine, img._buffer + ((j * w) / 4), Adafruit_GFX::colorIndex, w);
 			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
 				uint16_t color = preBufferLine[i];
 				color = (color << 8) | (color >> 8); //change endianness
