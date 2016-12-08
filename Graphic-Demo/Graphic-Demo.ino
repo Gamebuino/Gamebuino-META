@@ -18,10 +18,10 @@
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
-Image favicon = Image(favicon16Width, favicon16Height, const_cast<uint16_t*>(favicon16));
+Image favicon = Image(favicon16Width, favicon16Height, ColorMode::RGB565, const_cast<uint16_t*>(favicon16));
 //Image logoImg = Image(logoWidth, logoHeight, const_cast<uint16_t*>(logo));
 
-Image buffer = Image(80, 64);
+Image buffer = Image(80, 64, ColorMode::RGB565);
 
 void setup(void) {
 	tft.initR(INITR_BLACKTAB);

@@ -45,6 +45,8 @@ POSSIBILITY OF SUCH DAMAGE.
 uint16_t Adafruit_GFX::transparentColor = 0xF81F; //magenta is the default transparent color
 uint16_t Adafruit_GFX::tint = 0xFFFF;
 uint8_t Adafruit_GFX::alpha = 255;
+uint16_t _colorIndex[16] = {0x0,0x194A,0x792A,0x42A,0xAA86,0x62C9,0xC618,0xFF9D,0xE8CA,0xFD03,0xF765,0x5DC9,0x553B,0x83B3,0xF3B4,0xFE75 };
+uint16_t* Adafruit_GFX::colorIndex = _colorIndex;
 BlendMode Adafruit_GFX::blendMode = BlendMode::BLEND;
 
 void Adafruit_GFX::indexTo565(uint16_t *dest, uint16_t *src, uint16_t *index, uint16_t length) {
@@ -525,7 +527,7 @@ void Adafruit_GFX::drawImage(int16_t x, int16_t y, Image img) {
 				
 			srcLine = img._buffer + (((j2 + j2offset) * w1) + i2offset) / 4;
 
-			indexTo565(destLine, srcLine, img.colorIndex, w2cropped);
+			indexTo565(destLine, srcLine, Adafruit_GFX::colorIndex, w2cropped);
 			//memset(destLineArray, 0xFF, w2cropped * 2);
 
 			drawBufferedLine(

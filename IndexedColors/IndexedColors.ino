@@ -17,13 +17,13 @@
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
-Image favicon = Image(favicon16Width, favicon16Height, const_cast<uint16_t*>(favicon16));
+Image favicon = Image(favicon16Width, favicon16Height, ColorMode::RGB565, const_cast<uint16_t*>(favicon16));
 //Image logoImg = Image(logoWidth, logoHeight, const_cast<uint16_t*>(logo));
 
-Image buffer = Image(30, 30);
+Image buffer = Image(30, 30, ColorMode::RGB565);
 
 //up to 16 indexed colors
-uint16_t colorIndex[16] = { 0x0,
+/*uint16_t colorIndex[16] = { 0x0,
 0x194A,
 0x792A,
 0x42A,
@@ -39,14 +39,14 @@ uint16_t colorIndex[16] = { 0x0,
 0x83B3,
 0xF3B4,
 0xFE75,
-};
+};*/
 
 uint16_t imgBuffer[16] = { 0x6116, 0x6226, 0x6336, 0x6446 };
-Image image = Image(4, 4, imgBuffer, colorIndex);
+Image image = Image(4, 4, ColorMode::INDEX, imgBuffer);
 
 //full screen indexed buffer
 //160x128x1/2 bytes = 10240B of RAM
-Image indexBuffer = Image(160, 128, ColorMode::INDEX, colorIndex);
+Image indexBuffer = Image(160, 128, ColorMode::INDEX);
 
 void setup(void) {
 	pinMode(13, OUTPUT);

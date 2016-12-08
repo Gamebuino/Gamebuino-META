@@ -97,8 +97,8 @@ class Adafruit_GFX : public Print {
   static uint8_t alpha;
   static uint16_t tint;
   static BlendMode blendMode;
+  static uint16_t *colorIndex;
   ColorMode colorMode;
-  uint16_t *colorIndex;
 
 #if ARDUINO >= 100
   virtual size_t write(uint8_t);
