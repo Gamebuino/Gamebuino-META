@@ -26,9 +26,9 @@
 class Sound {
 public:
 	void begin();
-	void playOK(){tone(A0,1000,500);};
-	void playCancel(){tone(A0,500,500);};
-	void playTick(){tone(A0,1000,50);};
+	void playOK(){tone(A0,1000,50);};
+	void playCancel(){tone(A0,500,50);};
+	void playTick(){tone(A0,1000,5);};
 };
 
 #endif	/* SOUND_H */
