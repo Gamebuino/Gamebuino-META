@@ -10,6 +10,20 @@
 
 #include "gfxfont.h"
 
+#define WHITE (0xFFFF)
+#define BLACK (0x0000)
+
+#define ENABLE_BITMAPS 1
+//for extended bitmap function :
+#define NOROT 0
+#define ROTCCW 1
+#define ROT180 2
+#define ROTCW 3
+#define NOFLIP 0
+#define FLIPH 1
+#define FLIPV 2
+#define FLIPVH 3
+
 class Image;
 
 enum class BlendMode {
@@ -70,8 +84,13 @@ class Adafruit_GFX : public Print {
       int16_t w, int16_t h),
     drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
       int16_t w, int16_t h),
+
+	//Gamebuino bitmaps
+	drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap),
+    drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip),
+
     drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color,
-      uint16_t bg, uint8_t size),
+    uint16_t bg, uint8_t size),
     setCursor(int16_t x, int16_t y),
     setColor(uint16_t c),
     setColor(uint16_t c, uint16_t bg),

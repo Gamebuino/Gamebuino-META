@@ -430,6 +430,83 @@ void Adafruit_GFX::drawBitmap(int16_t x, int16_t y,
   }
 }
 
+void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
+	int8_t w = pgm_read_byte(bitmap);
+	int8_t h = pgm_read_byte(bitmap + 1);
+	bitmap = bitmap + 2; //add an offset to the pointer to start after the width and height
+#if (ENABLE_BITMAPS > 0)
+	int8_t i, j, byteWidth = (w + 7) / 8;
+	for (j = 0; j < h; j++) {
+	   for (i = 0; i < w; i++) {
+	      if (pgm_read_byte(bitmap + j * byteWidth + i / 8) & (B10000000 >> (i % 8))) {
+	         drawPixel(x + i, y + j, color);
+	      }
+	   }
+	}
+#else
+	drawRect(x, y, w, h);
+#endif
+}
+
+void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
+	uint8_t rotation, uint8_t flip) {
+	if ((rotation == NOROT) && (flip == NOFLIP)) {
+		drawBitmap(x, y, bitmap); //use the faster algorithm
+		return;
+	}
+	uint8_t w = pgm_read_byte(bitmap);
+	uint8_t h = pgm_read_byte(bitmap + 1);
+	bitmap = bitmap + 2; //add an offset to the pointer to start after the width and height
+#if (ENABLE_BITMAPS > 0)
+	int8_t i, j, //coordinates in the raw bitmap
+		k, l, //coordinates in the rotated/flipped bitmap
+		byteNum, bitNum, byteWidth = (w + 7) >> 3;
+
+	rotation %= 4;
+
+	for (i = 0; i < w; i++) {
+		byteNum = i / 8;
+		bitNum = i % 8;
+		for (j = 0; j < h; j++) {
+			if (pgm_read_byte(bitmap + j * byteWidth + byteNum) & (B10000000 >> bitNum)) {
+				switch (rotation) {
+				case NOROT: //no rotation
+					k = i;
+					l = j;
+					break;
+				case ROTCCW: //90° counter-clockwise
+					k = j;
+					l = w - i - 1;
+					break;
+				case ROT180: //180°
+					k = w - i - 1;
+					l = h - j - 1;
+					break;
+				case ROTCW: //90° clockwise
+					k = h - j - 1;
+					l = i;
+					break;
+				}
+				if (flip) {
+					flip %= 4;
+					if (flip & B00000001) { //horizontal flip
+						k = w - k - 1;
+					}
+					if (flip & B00000010) { //vertical flip
+						l = h - l;
+					}
+				}
+				k += x; //place the bitmap on the screen
+				l += y;
+				drawPixel(k, l, color);
+			}
+		}
+	}
+#else
+	drawRect(x, y, w, h);
+#endif
+}
+
 //Draw XBitMap Files (*.xbm), exported from GIMP,
 //Usage: Export from GIMP to *.xbm, rename *.xbm to *.c and open in editor.
 //C Array can be directly used with this function
