@@ -25,9 +25,9 @@
 #include "utility/Sound.h"
 #include <Adafruit_ZeroDMA.h>
 #include <Adafruit_ASFcore.h>
-#include "utility/Adafruit_ST7735.h"
-#include "utility/Adafruit_GFX.h"
-#include "utility/Image.h"
+#include <Adafruit_ST7735.h>
+#include <Adafruit_GFX.h>
+#include <Image.h>
 
 //GUI settings
 #define ENABLE_GUI 0 //enable menu, keyboard, pop-up, volume adjust functions
