@@ -160,7 +160,7 @@ boolean Gamebuino::update() {
 			
 			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
 			//if(!display.persistence)
-			display.fillScreen(0); //clear the buffer
+			display.fillScreen(WHITE); //clear the buffer
 			display.setCursor(0, 0);
 
 			frameEndMicros = micros(); //measure the frame's end time
