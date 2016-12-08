@@ -98,7 +98,7 @@ Adafruit_GFX::Adafruit_GFX(int16_t w, int16_t h):
   rotation  = 0;
   cursor_y  = cursor_x    = 0;
   textsize  = 1;
-  textcolor = textbgcolor = 0xFFFF;
+  color = bgcolor = 0xFFFF;
   wrap      = true;
   _cp437    = false;
   gfxFont   = NULL;
@@ -631,7 +631,7 @@ void Adafruit_GFX::write(uint8_t c) {
         cursor_x  = 0;            // Reset x to zero
         cursor_y += textsize * 8; // Advance y one line
       }
-      drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor, textsize);
+      drawChar(cursor_x, cursor_y, c, color, bgcolor, textsize);
       cursor_x += textsize * 6;
     }
 
@@ -656,7 +656,7 @@ void Adafruit_GFX::write(uint8_t c) {
             cursor_y += (int16_t)textsize *
                         (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
           }
-          drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor, textsize);
+          drawChar(cursor_x, cursor_y, c, color, bgcolor, textsize);
         }
         cursor_x += pgm_read_byte(&glyph->xAdvance) * (int16_t)textsize;
       }
@@ -775,15 +775,15 @@ void Adafruit_GFX::setTextSize(uint8_t s) {
   textsize = (s > 0) ? s : 1;
 }
 
-void Adafruit_GFX::setTextColor(uint16_t c) {
+void Adafruit_GFX::setColor(uint16_t c) {
   // For 'transparent' background, we'll set the bg
   // to the same as fg instead of using a flag
-  textcolor = textbgcolor = c;
+  color = bgcolor = c;
 }
 
-void Adafruit_GFX::setTextColor(uint16_t c, uint16_t b) {
-  textcolor   = c;
-  textbgcolor = b;
+void Adafruit_GFX::setColor(uint16_t c, uint16_t b) {
+  color   = c;
+  bgcolor = b;
 }
 
 void Adafruit_GFX::setTextWrap(boolean w) {
