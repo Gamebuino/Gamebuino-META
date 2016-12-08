@@ -31,7 +31,7 @@ void setup()
 
   // setup SD-card
   Serial.print("Initializing SD card...");
-  if (!SD.begin(4)) {
+  if (!SD.begin(PIN_LED_TXL)) {
     Serial.println(" failed!");
     while(true);
   }
@@ -59,5 +59,6 @@ void loop()
   AudioZero.play(myFile);
 
   Serial.println("End of file. Thank you for listening!");
-  while (true) ;
+  AudioZero.end();
+  delay(1000);
 }
