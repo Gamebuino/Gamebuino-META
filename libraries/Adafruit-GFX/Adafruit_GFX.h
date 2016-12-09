@@ -78,14 +78,15 @@ class Adafruit_GFX : public Print {
       int16_t radius),
     fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
       int16_t radius),
-    drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
+	//Adafruit bitmaps
+    /*drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
       int16_t w, int16_t h),
     drawBitmap(int16_t x, int16_t y, uint8_t *bitmap,
       int16_t w, int16_t h),
     drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
-      int16_t w, int16_t h),
+      int16_t w, int16_t h),*/
 
-	//Gamebuino bitmaps
+	//Gamebuino legacy bitmaps
 	drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap),
     drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip),
 
@@ -93,7 +94,7 @@ class Adafruit_GFX : public Print {
     setCursor(int16_t x, int16_t y),
     setColor(uint16_t c),
     setColor(uint16_t c, uint16_t bg),
-    setTextSize(uint8_t s),
+    setFontSize(uint8_t s),
     setTextWrap(boolean w),
     setRotation(uint8_t r),
     cp437(boolean x=true),
@@ -103,6 +104,9 @@ class Adafruit_GFX : public Print {
       int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h),
     getTextBounds(const __FlashStringHelper *s, int16_t x, int16_t y,
       int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
+
+  //Gamebuino legacy function
+  boolean getBitmapPixel(const uint8_t* bitmap, uint8_t x, uint8_t y);
 
 
   static void indexTo565(uint16_t *dest, uint16_t *src, uint16_t *index, uint16_t length);
@@ -138,10 +142,10 @@ class Adafruit_GFX : public Print {
   uint16_t
     color, bgcolor;
   uint8_t
-    textsize,
+    fontSize,
     rotation;
   boolean
-    wrap,   // If set, 'wrap' text at right edge of display
+    textWrap,   // If set, 'wrap' text at right edge of display
     _cp437; // If set, use correct CP437 charset (default is off)
   GFXfont *gfxFont; //adafruit custom font
 

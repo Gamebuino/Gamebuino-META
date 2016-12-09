@@ -99,9 +99,9 @@ Adafruit_GFX::Adafruit_GFX(int16_t w, int16_t h):
   _height   = HEIGHT;
   rotation  = 0;
   cursorY  = cursorX    = 0;
-  textsize  = 1;
+  fontSize  = 1;
   color = bgcolor = 0xFFFF;
-  wrap      = true;
+  textWrap      = true;
   _cp437    = false;
   gfxFont   = NULL;
   colorMode = ColorMode::RGB565;
@@ -396,7 +396,7 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
     drawFastHLine(a, y, b-a+1);
   }
 }
-
+/*
 // Draw a 1-bit image (bitmap) at the specified (x,y) position from the
 // provided bitmap buffer (must be PROGMEM memory)
 void Adafruit_GFX::drawBitmap(int16_t x, int16_t y,
@@ -448,7 +448,7 @@ void Adafruit_GFX::drawXBitmap(int16_t x, int16_t y,
 		}
 	}
 }
-
+*/
 void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
 	int8_t w = pgm_read_byte(bitmap);
 	int8_t h = pgm_read_byte(bitmap + 1);
@@ -524,6 +524,10 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 #else
 	drawRect(x, y, w, h);
 #endif
+}
+
+boolean Adafruit_GFX::getBitmapPixel(const uint8_t* bitmap, uint8_t x, uint8_t y) {
+	return pgm_read_byte(bitmap + 2 + y * ((pgm_read_byte(bitmap) + 7) / 8) + (x >> 3)) & (B10000000 >> (x % 8));
 }
 
 void Adafruit_GFX::drawImage(int16_t x, int16_t y, Image img) {
@@ -660,24 +664,24 @@ void Adafruit_GFX::write(uint8_t c) {
   if(!gfxFont) { // 'Classic' built-in font
 
     if(c == '\n') {
-      cursorY += textsize*8;
+      cursorY += fontSize*8;
       cursorX  = 0;
     } else if(c == '\r') {
       // skip em
     } else {
-      if(wrap && ((cursorX + textsize * 6) >= _width)) { // Heading off edge?
+      if(textWrap && ((cursorX + fontSize * 6) >= _width)) { // Heading off edge?
         cursorX  = 0;            // Reset x to zero
-        cursorY += textsize * fontHeight; // Advance y one line
+        cursorY += fontSize * fontHeight; // Advance y one line
       }
-      drawChar(cursorX, cursorY, c, textsize);
-      cursorX += textsize * fontWidth;
+      drawChar(cursorX, cursorY, c, fontSize);
+      cursorX += fontSize * fontWidth;
     }
 
   } else { // Custom font
 
     if(c == '\n') {
       cursorX  = 0;
-      cursorY += (int16_t)textsize *
+      cursorY += (int16_t)fontSize *
                   (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
     } else if(c != '\r') {
       uint8_t first = pgm_read_byte(&gfxFont->first);
@@ -688,15 +692,15 @@ void Adafruit_GFX::write(uint8_t c) {
                   h     = pgm_read_byte(&glyph->height);
         if((w > 0) && (h > 0)) { // Is there an associated bitmap?
           int16_t xo = (int8_t)pgm_read_byte(&glyph->xOffset); // sic
-          if(wrap && ((cursorX + textsize * (xo + w)) >= _width)) {
-            // Drawing character would go off right edge; wrap to new line
+          if(textWrap && ((cursorX + fontSize * (xo + w)) >= _width)) {
+            // Drawing character would go off right edge; textWrap to new line
             cursorX  = 0;
-            cursorY += (int16_t)textsize *
+            cursorY += (int16_t)fontSize *
                         (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
           }
-          drawChar(cursorX, cursorY, c, textsize);
+          drawChar(cursorX, cursorY, c, fontSize);
         }
-        cursorX += pgm_read_byte(&glyph->xAdvance) * (int16_t)textsize;
+        cursorX += pgm_read_byte(&glyph->xAdvance) * (int16_t)fontSize;
       }
     }
 
@@ -821,8 +825,8 @@ int16_t Adafruit_GFX::getCursorY(void) const {
   return cursorY;
 }
 
-void Adafruit_GFX::setTextSize(uint8_t s) {
-  textsize = (s > 0) ? s : 1;
+void Adafruit_GFX::setFontSize(uint8_t s) {
+  fontSize = (s > 0) ? s : 1;
 }
 
 void Adafruit_GFX::setColor(uint16_t c) {
@@ -837,7 +841,7 @@ void Adafruit_GFX::setColor(uint16_t c, uint16_t b) {
 }
 
 void Adafruit_GFX::setTextWrap(boolean w) {
-  wrap = w;
+  textWrap = w;
 }
 
 uint8_t Adafruit_GFX::getRotation(void) const {
@@ -912,7 +916,7 @@ void Adafruit_GFX::getTextBounds(char *str, int16_t x, int16_t y,
               gw, gh, xa;
     int8_t    xo, yo;
     int16_t   minx = _width, miny = _height, maxx = -1, maxy = -1,
-              gx1, gy1, gx2, gy2, ts = (int16_t)textsize,
+              gx1, gy1, gx2, gy2, ts = (int16_t)fontSize,
               ya = ts * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
 
     while((c = *str++)) {
@@ -926,8 +930,8 @@ void Adafruit_GFX::getTextBounds(char *str, int16_t x, int16_t y,
             xa    = pgm_read_byte(&glyph->xAdvance);
             xo    = pgm_read_byte(&glyph->xOffset);
             yo    = pgm_read_byte(&glyph->yOffset);
-            if(wrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
-              // Line wrap
+            if(textWrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
+              // Line textWrap
               x  = 0;  // Reset x to 0
               y += ya; // Advance y by 1 line
             }
@@ -960,24 +964,24 @@ void Adafruit_GFX::getTextBounds(char *str, int16_t x, int16_t y,
     while((c = *str++)) {
       if(c != '\n') { // Not a newline
         if(c != '\r') { // Not a carriage return, is normal char
-          if(wrap && ((x + textsize * 6) >= _width)) {
+          if(textWrap && ((x + fontSize * 6) >= _width)) {
             x  = 0;            // Reset x to 0
-            y += textsize * 8; // Advance y by 1 line
+            y += fontSize * 8; // Advance y by 1 line
             if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
-            lineWidth  = textsize * 6; // First char on new line
-          } else { // No line wrap, just keep incrementing X
-            lineWidth += textsize * 6; // Includes interchar x gap
+            lineWidth  = fontSize * 6; // First char on new line
+          } else { // No line textWrap, just keep incrementing X
+            lineWidth += fontSize * 6; // Includes interchar x gap
           }
         } // Carriage return = do nothing
       } else { // Newline
         x  = 0;            // Reset x to 0
-        y += textsize * 8; // Advance y by 1 line
+        y += fontSize * 8; // Advance y by 1 line
         if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
         lineWidth = 0;     // Reset lineWidth for new line
       }
     }
     // End of string
-    if(lineWidth) y += textsize * 8; // Add height of last (or only) line
+    if(lineWidth) y += fontSize * 8; // Add height of last (or only) line
     if(lineWidth > maxWidth) maxWidth = lineWidth; // Is the last or only line the widest?
     *w = maxWidth - 1;               // Don't include last interchar x gap
     *h = y - *y1;
@@ -1002,7 +1006,7 @@ void Adafruit_GFX::getTextBounds(const __FlashStringHelper *str,
               gw, gh, xa;
     int8_t    xo, yo;
     int16_t   minx = _width, miny = _height, maxx = -1, maxy = -1,
-              gx1, gy1, gx2, gy2, ts = (int16_t)textsize,
+              gx1, gy1, gx2, gy2, ts = (int16_t)fontSize,
               ya = ts * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
 
     while((c = pgm_read_byte(s++))) {
@@ -1016,8 +1020,8 @@ void Adafruit_GFX::getTextBounds(const __FlashStringHelper *str,
             xa    = pgm_read_byte(&glyph->xAdvance);
             xo    = pgm_read_byte(&glyph->xOffset);
             yo    = pgm_read_byte(&glyph->yOffset);
-            if(wrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
-              // Line wrap
+            if(textWrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
+              // Line textWrap
               x  = 0;  // Reset x to 0
               y += ya; // Advance y by 1 line
             }
@@ -1050,24 +1054,24 @@ void Adafruit_GFX::getTextBounds(const __FlashStringHelper *str,
     while((c = pgm_read_byte(s++))) {
       if(c != '\n') { // Not a newline
         if(c != '\r') { // Not a carriage return, is normal char
-          if(wrap && ((x + textsize * 6) >= _width)) {
+          if(textWrap && ((x + fontSize * 6) >= _width)) {
             x  = 0;            // Reset x to 0
-            y += textsize * 8; // Advance y by 1 line
+            y += fontSize * 8; // Advance y by 1 line
             if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
-            lineWidth  = textsize * 6; // First char on new line
-          } else { // No line wrap, just keep incrementing X
-            lineWidth += textsize * 6; // Includes interchar x gap
+            lineWidth  = fontSize * 6; // First char on new line
+          } else { // No line textWrap, just keep incrementing X
+            lineWidth += fontSize * 6; // Includes interchar x gap
           }
         } // Carriage return = do nothing
       } else { // Newline
         x  = 0;            // Reset x to 0
-        y += textsize * 8; // Advance y by 1 line
+        y += fontSize * 8; // Advance y by 1 line
         if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
         lineWidth = 0;     // Reset lineWidth for new line
       }
     }
     // End of string
-    if(lineWidth) y += textsize * 8; // Add height of last (or only) line
+    if(lineWidth) y += fontSize * 8; // Add height of last (or only) line
     if(lineWidth > maxWidth) maxWidth = lineWidth; // Is the last or only line the widest?
     *w = maxWidth - 1;               // Don't include last interchar x gap
     *h = y - *y1;
