@@ -39,6 +39,7 @@ const uint8_t gamebuinoLogo[] PROGMEM =
 };
 
 void Gamebuino::begin() {
+
 	timePerFrame = 40;
 	//nextFrameMillis = 0;
 	//frameCount = 0;
@@ -50,13 +51,26 @@ void Gamebuino::begin() {
 	buttons.update();
 	
 	//sound
-	sound.playOK();
+	sound.playTick();
 	
 	//tft
 	tft.initR(INITR_BLACKTAB);
 	tft.setRotation(1);
 	display.fillScreen(tft.Color565(127, 127, 127));
+
 	tft.drawImage(0, 0, display, tft.width(), tft.height());
+	tft.setColor(WHITE, BLACK);
+	tft.print("SD INIT... ");
+	if (!SD.begin(SD_CS)) {
+		tft.setColor(RED, BLACK);
+		tft.println("FAILED");
+		delay(1000);
+	}
+	else {
+		tft.setColor(GREEN, BLACK);
+		tft.println("OK");
+	}
+	tft.setColor(WHITE, BLACK);
 }
 
 void Gamebuino::titleScreen(const __FlashStringHelper* name){
@@ -154,11 +168,23 @@ boolean Gamebuino::update() {
 		if (!frameEndMicros) { //runs once at the end of the frame
 		
 			updatePopup();
+
 			
 			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
+
+			if (buttons.pressed(BTN_D)) {
+				tft.setColor(RED,BLACK);
+				tft.drawRect(0, 0, tft._width, tft._height);
+				tft.drawRect(1, 1, tft._width - 2, tft._height - 2);
+				tft.cursorX = 0;
+				tft.cursorY = 4;
+				Gamebuino_SD_GFX::writeImage(display, "SCREEN.BMP");
+			}
+
 			//if(!display.persistence)
 			display.fillScreen(WHITE); //clear the buffer
 			display.setCursor(0, 0);
+			display.setColor(BLACK);
 
 			frameEndMicros = micros(); //measure the frame's end time
 			frameDurationMicros = frameEndMicros - frameStartMicros;

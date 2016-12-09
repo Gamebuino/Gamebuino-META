@@ -27,6 +27,8 @@ Image::~Image(void) {
 }
 
 void Image::allocateBuffer(uint16_t w, uint16_t h) {
+	_width = w;
+	_height = h;
 	switch (colorMode) {
 	case (ColorMode::INDEX):
 	{

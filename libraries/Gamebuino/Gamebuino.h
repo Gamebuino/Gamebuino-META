@@ -28,6 +28,9 @@
 #include <Adafruit_ST7735.h>
 #include <Adafruit_GFX.h>
 #include <Image.h>
+#include <SPI.h>
+#include <SD.h>
+#include <Gamebuino-SD-GFX.h>
 
 //GUI settings
 #define ENABLE_GUI 1 //enable menu, keyboard, pop-up, volume adjust functions

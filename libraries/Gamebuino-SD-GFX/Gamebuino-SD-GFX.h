@@ -6,11 +6,13 @@
 #include "Image.h"
 #include "SD.h"
 
+#define BUFFPIXEL 20
+
 class Gamebuino_SD_GFX{
 	public:
 	void begin();
-	uint8_t writeImage(Image img, char *filename);
-	uint8_t readImage(Image img, char *filename);
+	static uint8_t writeImage(Image img, char *filename);
+	static uint8_t readImage(Image img, char *filename);
 };
 
 #endif /* GAMEBUINO-SD-GFX_H */
