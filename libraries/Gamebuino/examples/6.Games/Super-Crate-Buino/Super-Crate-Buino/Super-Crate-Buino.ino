@@ -319,7 +319,7 @@ class World {
 
     void draw() {
       int xMin = cameraX / SPRITE_SIZE;
-      int xMax = (LCDWIDTH / SPRITE_SIZE) + (cameraX / SPRITE_SIZE) + 1;
+      int xMax = (LCDWIDTH / SPRITE_SIZE) + (cameraX / SPRITE_SIZE) + 2;
       int yMin = cameraY / SPRITE_SIZE;
       int yMax = (LCDHEIGHT / SPRITE_SIZE) + (cameraY / SPRITE_SIZE) + 2;
 
@@ -1953,8 +1953,8 @@ void loadEEPROM() {
   unlockedWeapons = EEPROM.read(EEPROM_WEAPONS_OFFSET);
   unlockedMaps = EEPROM.read(EEPROM_MAPS_OFFSET);
   world.mapNumber = unlockedMaps; //select the last unlocked map by */
-  unlockedMaps = 5;
-  unlockedWeapons = 5;
+  unlockedMaps = NUMMAPS - 1;
+  unlockedWeapons = NUMWEAPONS - 1;
 }
 
 void saveEEPROM() {
