@@ -761,6 +761,7 @@ class Bullet :
           shakeTimeLeft = 10;
           shakeAmplitude = 2;
           //gb.sound.playPattern(blast_sound, 0);
+          gb.sound.playTick();
         }
       }
     }
@@ -998,18 +999,22 @@ class Weapon {
       switch (subtype) {
         case W_ROCKET :
           //gb.sound.playPattern(rocket_sound, 0);
+          gb.sound.playTick();
           break;
         case W_REVOLVER :
         case W_MACHINEGUN :
         case W_SNIPER :
           //gb.sound.playPattern(machinegun_sound, 0);
+          gb.sound.playTick();
           break;
         case W_GRENADE :
         case W_DISK :
           //gb.sound.playPattern(grenade_sound, 0);
+          gb.sound.playTick();
           break;
         case W_SHOTGUN :
           //gb.sound.playPattern(shotgun_sound, 0);
+          gb.sound.playTick();
           break;
         case W_MINE :
           break;
@@ -1020,9 +1025,11 @@ class Weapon {
           break;
         case W_LASER :
           //gb.sound.playPattern(laser_sound, 0);
+          gb.sound.playTick();
           break;
         case W_CLUB :
           //gb.sound.playPattern(club_sound, 0);
+          gb.sound.playTick();
           break;
       }
     }
@@ -1272,6 +1279,7 @@ class Player :
             vy = -32;
             jumping = true;
             //gb.sound.playPattern(jump_sound, 1);
+            gb.sound.playTick();
           }
           else {
             if (doubleJumped == false) {
@@ -1279,6 +1287,7 @@ class Player :
               doubleJumped = true;
               jumping = true;
               //gb.sound.playPattern(jump_sound, 1);
+              gb.sound.playTick();
             }
           }
         }
@@ -1496,6 +1505,7 @@ class EnemiesEngine {
               enemies[i].vx = dir * random(24, 32);
               enemies[i].vy = random(-48, -64);
               //gb.sound.playPattern(enemy_death_sound, 1);
+              gb.sound.playCancel();
             }
             else {
               if (bullets[j].subtype == W_CLUB) { // if not dead, go away from the player when hit by a club
@@ -1943,6 +1953,8 @@ void loadEEPROM() {
   unlockedWeapons = EEPROM.read(EEPROM_WEAPONS_OFFSET);
   unlockedMaps = EEPROM.read(EEPROM_MAPS_OFFSET);
   world.mapNumber = unlockedMaps; //select the last unlocked map by */
+  unlockedMaps = 5;
+  unlockedWeapons = 5;
 }
 
 void saveEEPROM() {
