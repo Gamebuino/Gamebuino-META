@@ -41,7 +41,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 // default 3x5 font table
 #include "font3x5.c"
-//extern const uint8_t font3x5[] PROGMEM;
 
 //default values of static members
 uint16_t Adafruit_GFX::transparentColor = 0xF81F; //magenta is the default transparent color
@@ -664,7 +663,7 @@ void Adafruit_GFX::write(uint8_t c) {
   if(!gfxFont) { // 'Classic' built-in font
 
     if(c == '\n') {
-      cursorY += fontSize*8;
+      cursorY += fontSize*fontHeight;
       cursorX  = 0;
     } else if(c == '\r') {
       // skip em
