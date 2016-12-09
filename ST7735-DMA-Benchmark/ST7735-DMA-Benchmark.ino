@@ -41,7 +41,7 @@ void loop() {
 		uint16_t endTime = millis();
 
 		buffer.fillScreen(0xFFFF);
-		buffer.setTextColor(0x0000);
+		buffer.setColor(0x0000);
 		buffer.setCursor(0, 0);
 
 		buffer.print(endTime - startTime);
@@ -59,7 +59,7 @@ void loop() {
 		uint16_t endTime = millis();
 
 		buffer.fillScreen(0xFFFF);
-		buffer.setTextColor(0x0000);
+		buffer.setColor(0x0000);
 
 		buffer.setCursor(10, 10);
 		buffer.print(endTime - startTime);
