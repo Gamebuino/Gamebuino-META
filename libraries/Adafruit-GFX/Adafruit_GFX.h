@@ -10,8 +10,14 @@
 
 #include "gfxfont.h"
 
-#define WHITE (0xFFFF)
-#define BLACK (0x0000)
+#define	BLACK   (0x0000)
+#define	BLUE    (0x001F)
+#define	RED     (0xF800)
+#define	GREEN   (0x07E0)
+#define CYAN    (0x07FF)
+#define MAGENTA (0xF81F)
+#define YELLOW  (0xFFE0)
+#define WHITE   (0xFFFF)
 
 #define ENABLE_BITMAPS 1
 //for extended bitmap function :
@@ -58,7 +64,8 @@ class Adafruit_GFX : public Print {
     drawFastHLine(int16_t x, int16_t y, int16_t w),
     drawRect(int16_t x, int16_t y, int16_t w, int16_t h),
     fillRect(int16_t x, int16_t y, int16_t w, int16_t h),
-    fillScreen(uint16_t color),
+	fillScreen(),
+	fillScreen(uint16_t color), //legacy version
     invertDisplay(boolean i),
 	drawImage(int16_t x, int16_t y, Image img),
 	drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2);
@@ -139,7 +146,7 @@ class Adafruit_GFX : public Print {
   int16_t
     _width, _height, // Display w/h as modified by current rotation
     cursorX, cursorY;
-  uint16_t
+  static uint16_t
     color, bgcolor;
   uint8_t
     fontSize,

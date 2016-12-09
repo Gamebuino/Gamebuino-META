@@ -49,6 +49,8 @@ uint8_t Adafruit_GFX::alpha = 255;
 uint16_t _colorIndex[16] = {0x0,0x194A,0x792A,0x42A,0xAA86,0x62C9,0xC618,0xFF9D,0xE8CA,0xFD03,0xF765,0x5DC9,0x553B,0x83B3,0xF3B4,0xFE75 };
 uint16_t* Adafruit_GFX::colorIndex = _colorIndex;
 BlendMode Adafruit_GFX::blendMode = BlendMode::BLEND;
+uint16_t Adafruit_GFX::color = BLACK;
+uint16_t Adafruit_GFX::bgcolor = WHITE;
 
 void Adafruit_GFX::indexTo565(uint16_t *dest, uint16_t *src, uint16_t *index, uint16_t length) {
 	//length is the number of destination pixels
@@ -280,8 +282,16 @@ void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
   }
 }
 
-void Adafruit_GFX::fillScreen(uint16_t color) {
-  fillRect(0, 0, _width, _height);
+void Adafruit_GFX::fillScreen() {
+	fillRect(0, 0, _width, _height);
+}
+
+//legacy fillScreen
+void Adafruit_GFX::fillScreen(uint16_t c) {
+	uint16_t tempColor = color;
+	color = c;
+	fillScreen();
+	color = tempColor;
 }
 
 // Draw a rounded rectangle
@@ -711,7 +721,6 @@ void Adafruit_GFX::write(uint8_t c) {
 
 // Draw a character
 void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
-
   if(!gfxFont) { // 'Classic' built-in font
 
     if((x >= _width)            || // Clip right
@@ -722,7 +731,6 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size)
 
     if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
 
-	int8_t tempcolor = color;
 	for (int8_t i = 0; i < fontWidth; i++) {
 		uint8_t line;
 		if (i == (fontWidth - 1))
@@ -738,6 +746,7 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size)
 				}
 			}
 			else if (bgcolor != color) {
+				int16_t tempcolor = color;
 				color = bgcolor;
 				if (size == 1) // default size
 					drawPixel(x + i, y + j);

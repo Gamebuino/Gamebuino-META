@@ -816,15 +816,15 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int
 
 
 
-void Adafruit_ST7735::pushColor(uint16_t color) {
+void Adafruit_ST7735::pushColor(uint16_t c) {
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);
 #endif
   *rsport |=  rspinmask;
   *csport &= ~cspinmask;
   
-  spiwrite(color >> 8);
-  spiwrite(color);
+  spiwrite(c >> 8);
+  spiwrite(c);
 
   *csport |= cspinmask;
 #if defined (SPI_HAS_TRANSACTION)
@@ -902,13 +902,6 @@ void Adafruit_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w) {
     SPI.endTransaction();
 #endif
 }
-
-
-void Adafruit_ST7735::fillScreen(uint16_t color) {
-  fillRect(0, 0,  _width, _height);
-}
-
-
 
 // fill a rectangle
 void Adafruit_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
