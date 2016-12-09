@@ -48,7 +48,7 @@ void Image::allocateBuffer(uint16_t w, uint16_t h) {
 }
 
 
-void Image::drawPixel(int16_t x, int16_t y, uint16_t color) {
+void Image::drawPixel(int16_t x, int16_t y) {
 	if (_buffer) {
 		if (colorMode == ColorMode::RGB565) {
 			if ((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;

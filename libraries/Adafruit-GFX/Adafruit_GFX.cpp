@@ -113,10 +113,10 @@ void Adafruit_GFX::drawCircle(int16_t x0, int16_t y0, int16_t r) {
   int16_t x = 0;
   int16_t y = r;
 
-  drawPixel(x0  , y0+r, color);
-  drawPixel(x0  , y0-r, color);
-  drawPixel(x0+r, y0  , color);
-  drawPixel(x0-r, y0  , color);
+  drawPixel(x0  , y0+r);
+  drawPixel(x0  , y0-r);
+  drawPixel(x0+r, y0  );
+  drawPixel(x0-r, y0  );
 
   while (x<y) {
     if (f >= 0) {
@@ -128,14 +128,14 @@ void Adafruit_GFX::drawCircle(int16_t x0, int16_t y0, int16_t r) {
     ddF_x += 2;
     f += ddF_x;
 
-    drawPixel(x0 + x, y0 + y, color);
-    drawPixel(x0 - x, y0 + y, color);
-    drawPixel(x0 + x, y0 - y, color);
-    drawPixel(x0 - x, y0 - y, color);
-    drawPixel(x0 + y, y0 + x, color);
-    drawPixel(x0 - y, y0 + x, color);
-    drawPixel(x0 + y, y0 - x, color);
-    drawPixel(x0 - y, y0 - x, color);
+    drawPixel(x0 + x, y0 + y);
+    drawPixel(x0 - x, y0 + y);
+    drawPixel(x0 + x, y0 - y);
+    drawPixel(x0 - x, y0 - y);
+    drawPixel(x0 + y, y0 + x);
+    drawPixel(x0 - y, y0 + x);
+    drawPixel(x0 + y, y0 - x);
+    drawPixel(x0 - y, y0 - x);
   }
 }
 
@@ -157,20 +157,20 @@ void Adafruit_GFX::drawCircleHelper( int16_t x0, int16_t y0,
     ddF_x += 2;
     f     += ddF_x;
     if (cornername & 0x4) {
-      drawPixel(x0 + x, y0 + y, color);
-      drawPixel(x0 + y, y0 + x, color);
+      drawPixel(x0 + x, y0 + y);
+      drawPixel(x0 + y, y0 + x);
     }
     if (cornername & 0x2) {
-      drawPixel(x0 + x, y0 - y, color);
-      drawPixel(x0 + y, y0 - x, color);
+      drawPixel(x0 + x, y0 - y);
+      drawPixel(x0 + y, y0 - x);
     }
     if (cornername & 0x8) {
-      drawPixel(x0 - y, y0 + x, color);
-      drawPixel(x0 - x, y0 + y, color);
+      drawPixel(x0 - y, y0 + x);
+      drawPixel(x0 - x, y0 + y);
     }
     if (cornername & 0x1) {
-      drawPixel(x0 - y, y0 - x, color);
-      drawPixel(x0 - x, y0 - y, color);
+      drawPixel(x0 - y, y0 - x);
+      drawPixel(x0 - x, y0 - y);
     }
   }
 }
@@ -239,9 +239,9 @@ void Adafruit_GFX::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1) {
 
   for (; x0<=x1; x0++) {
     if (steep) {
-      drawPixel(y0, x0, color);
+      drawPixel(y0, x0);
     } else {
-      drawPixel(x0, y0, color);
+      drawPixel(x0, y0);
     }
     err -= dy;
     if (err < 0) {
@@ -395,8 +395,7 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
 }
 
 // Draw a 1-bit image (bitmap) at the specified (x,y) position from the
-// provided bitmap buffer (must be PROGMEM memory) using the specified
-// foreground (for set bits) and background (for clear bits) colors.
+// provided bitmap buffer (must be PROGMEM memory)
 void Adafruit_GFX::drawBitmap(int16_t x, int16_t y,
  const uint8_t *bitmap, int16_t w, int16_t h) {
 
@@ -407,8 +406,7 @@ void Adafruit_GFX::drawBitmap(int16_t x, int16_t y,
     for(i=0; i<w; i++ ) {
       if(i & 7) byte <<= 1;
       else      byte   = pgm_read_byte(bitmap + j * byteWidth + i / 8);
-      if(byte & 0x80) drawPixel(x+i, y+j, color);
-      else            drawPixel(x+i, y+j, bgcolor);
+      if(byte & 0x80) drawPixel(x+i, y+j);
     }
   }
 }
@@ -424,10 +422,28 @@ void Adafruit_GFX::drawBitmap(int16_t x, int16_t y,
     for(i=0; i<w; i++ ) {
       if(i & 7) byte <<= 1;
       else      byte   = bitmap[j * byteWidth + i / 8];
-      if(byte & 0x80) drawPixel(x+i, y+j, color);
-      else            drawPixel(x+i, y+j, bgcolor);
+      if(byte & 0x80) drawPixel(x+i, y+j);
     }
   }
+}
+
+
+//Draw XBitMap Files (*.xbm), exported from GIMP,
+//Usage: Export from GIMP to *.xbm, rename *.xbm to *.c and open in editor.
+//C Array can be directly used with this function
+void Adafruit_GFX::drawXBitmap(int16_t x, int16_t y,
+	const uint8_t *bitmap, int16_t w, int16_t h) {
+
+	int16_t i, j, byteWidth = (w + 7) / 8;
+	uint8_t byte;
+
+	for (j = 0; j<h; j++) {
+		for (i = 0; i<w; i++) {
+			if (i & 7) byte >>= 1;
+			else      byte = pgm_read_byte(bitmap + j * byteWidth + i / 8);
+			if (byte & 0x01) drawPixel(x + i, y + j);
+		}
+	}
 }
 
 void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
@@ -439,7 +455,7 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
 	for (j = 0; j < h; j++) {
 	   for (i = 0; i < w; i++) {
 	      if (pgm_read_byte(bitmap + j * byteWidth + i / 8) & (B10000000 >> (i % 8))) {
-	         drawPixel(x + i, y + j, color);
+	         drawPixel(x + i, y + j);
 	      }
 	   }
 	}
@@ -498,7 +514,7 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 				}
 				k += x; //place the bitmap on the screen
 				l += y;
-				drawPixel(k, l, color);
+				drawPixel(k, l);
 			}
 		}
 	}
@@ -506,25 +522,6 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 	drawRect(x, y, w, h);
 #endif
 }
-
-//Draw XBitMap Files (*.xbm), exported from GIMP,
-//Usage: Export from GIMP to *.xbm, rename *.xbm to *.c and open in editor.
-//C Array can be directly used with this function
-void Adafruit_GFX::drawXBitmap(int16_t x, int16_t y,
- const uint8_t *bitmap, int16_t w, int16_t h) {
-
-  int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t byte;
-
-  for(j=0; j<h; j++) {
-    for(i=0; i<w; i++ ) {
-      if(i & 7) byte >>= 1;
-      else      byte   = pgm_read_byte(bitmap + j * byteWidth + i / 8);
-      if(byte & 0x01) drawPixel(x+i, y+j, color);
-    }
-  }
-}
-
 
 void Adafruit_GFX::drawImage(int16_t x, int16_t y, Image img) {
 	int16_t w1 = img._width; //width of the source image
@@ -709,6 +706,7 @@ void Adafruit_GFX::write(uint8_t c) {
 // Draw a characteri
 void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
  uint16_t color, uint16_t bg, uint8_t size) {
+  int8_t tempcolor = color;
 
   if(!gfxFont) { // 'Classic' built-in font
 
@@ -726,12 +724,14 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
       else      line = 0x0;
       for(int8_t j=0; j<8; j++, line >>= 1) {
         if(line & 0x1) {
-          if(size == 1) drawPixel(x+i, y+j, color);
+          if(size == 1) drawPixel(x+i, y+j);
           else          fillRect(x+(i*size), y+(j*size), size, size);
         } else if(bg != color) {
-          if(size == 1) drawPixel(x+i, y+j, bg);
+          color = bgcolor;
+          if(size == 1) drawPixel(x+i, y+j);
           else          fillRect(x+i*size, y+j*size, size, size);
         }
+		color = tempcolor; //restore color to its initial value
       }
     }
 
@@ -784,7 +784,7 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
         }
         if(bits & 0x80) {
           if(size == 1) {
-            drawPixel(x+xo+xx, y+yo+yy, color);
+            drawPixel(x+xo+xx, y+yo+yy);
           } else {
             fillRect(x+(xo16+xx)*size, y+(yo16+yy)*size, size, size);
           }

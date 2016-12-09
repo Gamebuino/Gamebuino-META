@@ -136,7 +136,7 @@ class Adafruit_ST7735 : public Adafruit_GFX {
            setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1),
            pushColor(uint16_t color),
            fillScreen(uint16_t color),
-           drawPixel(int16_t x, int16_t y, uint16_t color),
+           drawPixel(int16_t x, int16_t y),
            drawFastVLine(int16_t x, int16_t y, int16_t h),
 	       drawFastHLine(int16_t x, int16_t y, int16_t w),
 	       drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w),

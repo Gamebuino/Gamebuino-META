@@ -832,7 +832,7 @@ void Adafruit_ST7735::pushColor(uint16_t color) {
 #endif
 }
 
-void Adafruit_ST7735::drawPixel(int16_t x, int16_t y, uint16_t color) {
+void Adafruit_ST7735::drawPixel(int16_t x, int16_t y) {
 
   if((x < 0) ||(x >= _width) || (y < 0) || (y >= _height)) return;
 
