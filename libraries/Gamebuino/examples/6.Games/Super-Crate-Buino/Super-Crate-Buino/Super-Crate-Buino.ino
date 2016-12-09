@@ -319,9 +319,9 @@ class World {
 
     void draw() {
       int xMin = cameraX / SPRITE_SIZE;
-      int xMax = LCDWIDTH / SPRITE_SIZE + cameraX / SPRITE_SIZE + 1;
+      int xMax = (LCDWIDTH / SPRITE_SIZE) + (cameraX / SPRITE_SIZE) + 1;
       int yMin = cameraY / SPRITE_SIZE;
-      int yMax = LCDHEIGHT / SPRITE_SIZE + cameraY / SPRITE_SIZE + 1;
+      int yMax = (LCDHEIGHT / SPRITE_SIZE) + (cameraY / SPRITE_SIZE) + 2;
 
       int w = pgm_read_byte(tiles);
       int h = pgm_read_byte(tiles + 1);
@@ -1818,7 +1818,7 @@ void loop() {
       cameraY = 0;
     } else {
       cameraY = (player.y + player.getHeight() / 2) / SCALE - LCDHEIGHT / 2;
-      cameraY = constrain(cameraY, 0, world.getHeight() / SCALE - LCDHEIGHT - SPRITE_SIZE / 2);
+      cameraY = constrain(cameraY, 0, (world.getHeight() / SCALE) - LCDHEIGHT);
     }
 
     if (shakeTimeLeft > 0) {
