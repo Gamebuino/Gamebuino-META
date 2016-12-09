@@ -1,12 +1,12 @@
-#ifndef GAMEBUINO-SD-GFX_H
-#define	GAMEBUINO-SD-GFX_H
+#ifndef GAMEBUINO_SD_GFX_H
+#define	GAMEBUINO_SD_GFX_H
 
 #include "Arduino.h"
 #include "Adafruit_GFX.h"
 #include "Image.h"
 #include "SD.h"
 
-class Gamebuino-SD-GFX{
+class Gamebuino_SD_GFX{
 	public:
 	void begin();
 	uint8_t writeImage(Image img, char *filename);
