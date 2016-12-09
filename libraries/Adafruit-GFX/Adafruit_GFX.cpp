@@ -37,9 +37,11 @@ POSSIBILITY OF SUCH DAMAGE.
  #include <pgmspace.h>
 #endif
 #include "Adafruit_GFX.h"
-#include "glcdfont.c"
-
 #include "Image.h"
+
+// default 3x5 font table
+#include "font3x5.c"
+//extern const uint8_t font3x5[] PROGMEM;
 
 //default values of static members
 uint16_t Adafruit_GFX::transparentColor = 0xF81F; //magenta is the default transparent color
@@ -103,6 +105,7 @@ Adafruit_GFX::Adafruit_GFX(int16_t w, int16_t h):
   _cp437    = false;
   gfxFont   = NULL;
   colorMode = ColorMode::RGB565;
+  setFont(font3x5);
 }
 
 // Draw a circle outline
@@ -664,10 +667,10 @@ void Adafruit_GFX::write(uint8_t c) {
     } else {
       if(wrap && ((cursorX + textsize * 6) >= _width)) { // Heading off edge?
         cursorX  = 0;            // Reset x to zero
-        cursorY += textsize * 8; // Advance y one line
+        cursorY += textsize * fontHeight; // Advance y one line
       }
-      drawChar(cursorX, cursorY, c, color, bgcolor, textsize);
-      cursorX += textsize * 6;
+      drawChar(cursorX, cursorY, c, textsize);
+      cursorX += textsize * fontWidth;
     }
 
   } else { // Custom font
@@ -691,7 +694,7 @@ void Adafruit_GFX::write(uint8_t c) {
             cursorY += (int16_t)textsize *
                         (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
           }
-          drawChar(cursorX, cursorY, c, color, bgcolor, textsize);
+          drawChar(cursorX, cursorY, c, textsize);
         }
         cursorX += pgm_read_byte(&glyph->xAdvance) * (int16_t)textsize;
       }
@@ -703,37 +706,46 @@ void Adafruit_GFX::write(uint8_t c) {
 #endif
 }
 
-// Draw a characteri
-void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
- uint16_t color, uint16_t bg, uint8_t size) {
-  int8_t tempcolor = color;
+// Draw a character
+void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 
   if(!gfxFont) { // 'Classic' built-in font
 
     if((x >= _width)            || // Clip right
        (y >= _height)           || // Clip bottom
-       ((x + 6 * size - 1) < 0) || // Clip left
-       ((y + 8 * size - 1) < 0))   // Clip top
+       ((x + fontWidth * size - 1) < 0) || // Clip left
+       ((y + fontHeight * size - 1) < 0))   // Clip top
       return;
 
     if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
 
-    for(int8_t i=0; i<6; i++ ) {
-      uint8_t line;
-      if(i < 5) line = pgm_read_byte(font+(c*5)+i);
-      else      line = 0x0;
-      for(int8_t j=0; j<8; j++, line >>= 1) {
-        if(line & 0x1) {
-          if(size == 1) drawPixel(x+i, y+j);
-          else          fillRect(x+(i*size), y+(j*size), size, size);
-        } else if(bg != color) {
-          color = bgcolor;
-          if(size == 1) drawPixel(x+i, y+j);
-          else          fillRect(x+i*size, y+j*size, size, size);
-        }
-		color = tempcolor; //restore color to its initial value
-      }
-    }
+	int8_t tempcolor = color;
+	for (int8_t i = 0; i < fontWidth; i++) {
+		uint8_t line;
+		if (i == (fontWidth - 1))
+			line = 0x0;
+		else
+			line = pgm_read_byte(font + (c * (fontWidth - 1)) + i);
+		for (int8_t j = 0; j < fontHeight; j++) {
+			if (line & 0x1) {
+				if (size == 1) // default size
+					drawPixel(x + i, y + j);
+				else { // big size
+					fillRect(x + (i * size), y + (j * size), size, size);
+				}
+			}
+			else if (bgcolor != color) {
+				color = bgcolor;
+				if (size == 1) // default size
+					drawPixel(x + i, y + j);
+				else { // big size
+					fillRect(x + i*size, y + j*size, size, size);
+				}
+				color = tempcolor; //restore color to its initial value
+			}
+			line >>= 1;
+		}
+	}
 
   } else { // Custom font
 
@@ -859,6 +871,7 @@ void Adafruit_GFX::cp437(boolean x) {
   _cp437 = x;
 }
 
+//adafruit custom font
 void Adafruit_GFX::setFont(const GFXfont *f) {
   if(f) {          // Font struct pointer passed in?
     if(!gfxFont) { // And no current font struct?
@@ -872,6 +885,14 @@ void Adafruit_GFX::setFont(const GFXfont *f) {
     cursorY -= 6;
   }
   gfxFont = (GFXfont *)f;
+}
+
+//gamebuino legacy font
+void Adafruit_GFX::setFont(const uint8_t *f) {
+	font = (uint8_t*)f;
+	fontWidth = pgm_read_byte(font) + 1;
+	fontHeight = pgm_read_byte(font + 1) + 1;
+	font += 2; //offset the pointer to start after the width and height bytes
 }
 
 // Pass string and a cursor position, returns UL corner and W,H.

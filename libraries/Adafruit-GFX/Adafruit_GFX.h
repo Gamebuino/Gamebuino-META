@@ -89,8 +89,7 @@ class Adafruit_GFX : public Print {
 	drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap),
     drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip),
 
-    drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color,
-    uint16_t bg, uint8_t size),
+    drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size),
     setCursor(int16_t x, int16_t y),
     setColor(uint16_t c),
     setColor(uint16_t c, uint16_t bg),
@@ -98,7 +97,8 @@ class Adafruit_GFX : public Print {
     setTextWrap(boolean w),
     setRotation(uint8_t r),
     cp437(boolean x=true),
-    setFont(const GFXfont *f = NULL),
+    setFont(const GFXfont *f = NULL), //adafruit custom font
+	setFont(const uint8_t* f), //gamebuino legacy font
     getTextBounds(char *string, int16_t x, int16_t y,
       int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h),
     getTextBounds(const __FlashStringHelper *s, int16_t x, int16_t y,
@@ -143,8 +143,10 @@ class Adafruit_GFX : public Print {
   boolean
     wrap,   // If set, 'wrap' text at right edge of display
     _cp437; // If set, use correct CP437 charset (default is off)
-  GFXfont
-    *gfxFont;
+  GFXfont *gfxFont; //adafruit custom font
+
+  uint8_t *font; //gamebuino legacy font
+  uint8_t fontWidth, fontHeight; //gamebuino legacy font size
 };
 
 #endif // _ADAFRUIT_GFX_H
