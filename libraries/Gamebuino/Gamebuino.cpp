@@ -39,7 +39,7 @@ const uint8_t gamebuinoLogo[] PROGMEM =
 };
 
 void Gamebuino::begin() {
-	timePerFrame = 30;
+	timePerFrame = 40;
 	//nextFrameMillis = 0;
 	//frameCount = 0;
 	frameEndMicros = 1;
