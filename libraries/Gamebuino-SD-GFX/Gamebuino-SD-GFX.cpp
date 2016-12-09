@@ -47,16 +47,16 @@ void Gamebuino_SD_GFX::begin(){
 
 uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 	File file;
-	uint8_t bmpDepth = 24;        // value for rgb 888
-	uint32_t width, height;       // image size (w+h in pixels)
-	uint32_t headerSize = 40;     // default value (ignoring bitmasks)
-	uint32_t rowSize;             // Not always = width; may have padding
-	uint32_t fileSize;            // We have to know the file size before completing the headers
-	uint32_t bmpImageoffset;      // Start of image data in file
-	uint32_t rawImageSize;        // Image Size including padding
-	uint32_t colorTable = 0;      // Number of colors in the palette
+	int8_t bmpDepth = 24;        // value for rgb 888
+	int32_t width, height;       // image size (w+h in pixels)
+	int32_t headerSize = 40;     // default value (ignoring bitmasks)
+	int32_t rowSize;             // Not always = width; may have padding
+	int32_t fileSize;            // We have to know the file size before completing the headers
+	int32_t bmpImageoffset;      // Start of image data in file
+	int32_t rawImageSize;        // Image Size including padding
+	int32_t colorTable = 0;      // Number of colors in the palette
 	int row, col, rambuffind;    
-	uint32_t startTime = millis();
+	int32_t startTime = millis();
 	uint16_t* rambuffer = img._buffer;
 
   SerialUSB.println("Checking if file exists");
@@ -133,11 +133,11 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 			SerialUSB.print('.');
 
 			//Pixel Array
-			for (row = 0;row < height;row++) {//each row of the array
+			for (row = (height-1);row >= 0;row--) {//each row of the array
 				for (col = 0;col < width;col++) {//each pixel
-					file.write((rambuffer[rambuffind] << 3));           //r
-					file.write((rambuffer[rambuffind] >> 3) & 0xfc);    //g
-					file.write((rambuffer[rambuffind++] >> 8) & 0xf8);  //b
+					file.write((rambuffer[(row * width) + col] << 3));           //r
+					file.write((rambuffer[(row * width) + col] >> 3) & 0xfc);    //g
+					file.write((rambuffer[(row * width) + col] >> 8) & 0xf8);  //b
 					SerialUSB.print('.');
 				}
 				for (col =3*width;col < rowSize;col++) {//padding with zeros
