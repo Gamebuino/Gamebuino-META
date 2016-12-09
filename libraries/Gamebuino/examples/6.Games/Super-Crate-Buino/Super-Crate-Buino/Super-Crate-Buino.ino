@@ -76,7 +76,7 @@ const byte scoreThresholds[] = {SCORETHRESHOLD_1, SCORETHRESHOLD_2, SCORETHRESHO
 
 int cameraX, cameraY, shakeTimeLeft, shakeAmplitude;
 byte popupTimeLeft;
-const __FlashStringHelper* popupText;
+const char* popupText;
 
 int toScreenX(int x) {
   return x / SCALE - cameraX;
@@ -387,10 +387,10 @@ class World {
           }
 
           gb.display.cursorY = LCDHEIGHT - 17;
-          printCentered(F("\21 Select map \20"));
+          printCentered("\21 Select map \20");
           gb.display.cursorX = 24;
           gb.display.cursorY = LCDHEIGHT - 11;
-          gb.display.print(F("Score: "));
+          gb.display.print("Score: ");
           gb.display.print(score[thisMap]);
           //draw the map centered on the screen
           gb.display.drawBitmap(LCDWIDTH / 2 - getWidth() / 2 / SCALE / SPRITE_SIZE, LCDHEIGHT / 2 - getHeight() / 2 / SCALE / SPRITE_SIZE - 5, maps[thisMap]);
@@ -416,7 +416,7 @@ class World {
                 gb.display.cursorY = LCDHEIGHT - 5;
                 gb.display.cursorX = 12;
                 if ((gb.frameCount % 10) > 3) { //make it blink !
-                  gb.display.print(F("Next unlock: "));
+                  gb.display.print("Next unlock: ");
                   gb.display.print(scoreThresholds[i]);
                 }
                 break;
@@ -430,7 +430,7 @@ class World {
               gb.display.setColor(WHITE);
               gb.display.cursorX = 29;
               gb.display.cursorY = 16;
-              gb.display.print(F("LOCKED!"));
+              gb.display.print("LOCKED!");
               gb.display.setColor(BLACK);
             }
           }
@@ -1236,7 +1236,7 @@ class Player :
       vy = -32;
       popupTimeLeft = 0;
       if (world.addScore(score)) {
-        popup(F("NEW HIGHSCORE!"), 40);
+        popup("NEW HIGHSCORE!", 40);
       }
       saveEEPROM();
     }
@@ -1256,7 +1256,7 @@ class Player :
           weapon.subtype ++;
           weapon.subtype %= NUMWEAPONS;
           score = 0;
-          popup(F("WEAPON CHEAT"));
+          popup("WEAPON CHEAT");
         }
 
         if (y > world.getHeight()) {
@@ -1581,43 +1581,43 @@ class Crate :
         player.weapon.subtype = (player.weapon.subtype + random(1, unlockedWeapons + 1)) % (unlockedWeapons + 1);
         switch (player.weapon.subtype) {
           case W_CLUB :
-            popup(F("CLUB"));
+            popup("CLUB");
             break;
           case W_PISTOL :
-            popup(F("PISTOL"));
+            popup("PISTOL");
             break;
           case W_AKIMBO :
-            popup(F("AKIMBO"));
+            popup("AKIMBO");
             break;
           case W_REVOLVER :
-            popup(F("REVOLVER"));
+            popup("REVOLVER");
             break;
           case W_SNIPER :
-            popup(F("SNIPER"));
+            popup("SNIPER");
             break;
           case W_SHOTGUN :
-            popup(F("SHOTGUN"));
+            popup("SHOTGUN");
             break;
           case W_RIFLE :
-            popup(F("RIFLE"));
+            popup("RIFLE");
             break;
           case W_MACHINEGUN :
-            popup(F("MACHINEGUN"));
+            popup("MACHINEGUN");
             break;
           case W_DISK :
-            popup(F("DISK"));
+            popup("DISK");
             break;
           case W_LASER :
-            popup(F("LASER"));
+            popup("LASER");
             break;
           case W_GRENADE :
-            popup(F("GRENADE"));
+            popup("GRENADE");
             break;
           case W_ROCKET :
-            popup(F("ROCKET"));
+            popup("ROCKET");
             break;
           case W_MINE :
-            popup(F("MINE"));
+            popup("MINE");
             break;
         }
         if (world.mapNumber == 0) {
@@ -1626,7 +1626,7 @@ class Crate :
               if (unlockedWeapons < W_RIFLE) {
                 unlockedWeapons = W_RIFLE;
                 player.weapon.subtype = W_RIFLE;
-                popup(F("RIFLE UNLOCKED!"), 40);
+                popup("RIFLE UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 2);
               }
               break;
@@ -1634,14 +1634,14 @@ class Crate :
               if (unlockedWeapons < W_SHOTGUN) {
                 unlockedWeapons = W_SHOTGUN;
                 player.weapon.subtype = W_SHOTGUN;
-                popup(F("SHOTGUN UNLOCKED!"), 40);
+                popup("SHOTGUN UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 2);
               }
               break;
             case (SCORETHRESHOLD_3):
               if (unlockedMaps < 1) {
                 unlockedMaps = 1;
-                popup(F("NEW MAP UNLOCKED!"), 40);
+                popup("NEW MAP UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 0);
               }
               break;
@@ -1653,7 +1653,7 @@ class Crate :
               if (unlockedWeapons < W_ROCKET) {
                 unlockedWeapons = W_ROCKET;
                 player.weapon.subtype = W_ROCKET;
-                popup(F("ROCKETS UNLOCKED!"), 40);
+                popup("ROCKETS UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 0);
               }
               break;
@@ -1661,7 +1661,7 @@ class Crate :
               if (unlockedWeapons < W_CLUB) {
                 unlockedWeapons = W_CLUB;
                 player.weapon.subtype = W_CLUB;
-                popup(F("CLUB UNLOCKED!"), 40);
+                popup("CLUB UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 0);
               }
               break;
@@ -1669,7 +1669,7 @@ class Crate :
               if (unlockedWeapons < W_REVOLVER) {
                 unlockedWeapons = W_REVOLVER;
                 player.weapon.subtype = W_REVOLVER;
-                popup(F("REVOLVER UNLOCKED!"), 40);
+                popup("REVOLVER UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 0);
               }
               break;
@@ -1677,14 +1677,14 @@ class Crate :
               if (unlockedWeapons < W_MINE) {
                 unlockedWeapons = W_MINE;
                 player.weapon.subtype = W_MINE;
-                popup(F("MINES UNLOCKED!"), 40);
+                popup("MINES UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 0);
               }
               break;
             case (SCORETHRESHOLD_5):
               if (unlockedMaps < 2) {
                 unlockedMaps = 2;
-                popup(F("NEW MAP UNLOCKED!"), 40);
+                popup("NEW MAP UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 0);
               }
               break;
@@ -1696,7 +1696,7 @@ class Crate :
               if (unlockedWeapons < W_SNIPER) {
                 unlockedWeapons = W_SNIPER;
                 player.weapon.subtype = W_SNIPER;
-                popup(F("SNIPER UNLOCKED!"), 40);
+                popup("SNIPER UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 0);
               }
               break;
@@ -1704,7 +1704,7 @@ class Crate :
               if (unlockedWeapons < W_MACHINEGUN) {
                 unlockedWeapons = W_MACHINEGUN;
                 player.weapon.subtype = W_MACHINEGUN;
-                popup(F("MACHINEGUN UNLOCKED!"), 40);
+                popup("MACHINEGUN UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 0);
               }
               break;
@@ -1712,7 +1712,7 @@ class Crate :
               if (unlockedWeapons < W_GRENADE) {
                 unlockedWeapons = W_GRENADE;
                 player.weapon.subtype = W_GRENADE;
-                popup(F("GRENADES UNLOCKED!"), 40);
+                popup("GRENADES UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 0);
               }
               break;
@@ -1720,14 +1720,14 @@ class Crate :
               if (unlockedWeapons < W_AKIMBO) {
                 unlockedWeapons = W_AKIMBO;
                 player.weapon.subtype = W_AKIMBO;
-                popup(F("AKIMBO UNLOCKED!"), 40);
+                popup("AKIMBO UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 0);
               }
               break;
             case (SCORETHRESHOLD_5):
               if (unlockedMaps < 3) {
                 unlockedMaps = 3;
-                popup(F("NEW MAP UNLOCKED!"), 40);
+                popup("NEW MAP UNLOCKED!", 40);
                 //gb.sound.playPattern(power_up_sound, 0);
               }
               break;
@@ -1739,20 +1739,20 @@ class Crate :
               if (unlockedWeapons < W_DISK) {
                 unlockedWeapons = W_DISK;
                 player.weapon.subtype = W_DISK;
-                popup(F("DISK UNLOCKED!"), 40);
+                popup("DISK UNLOCKED!", 40);
               }
               break;
             case (SCORETHRESHOLD_4):
               if (unlockedWeapons < W_LASER) {
                 unlockedWeapons = W_LASER;
                 player.weapon.subtype = W_LASER;
-                popup(F("LASER UNLOCKED!"), 40);
+                popup("LASER UNLOCKED!", 40);
               }
               break;
             case (SCORETHRESHOLD_5):
               if (unlockedMaps < 4) {
                 unlockedMaps = 4;
-                popup(F("LAST MAP UNLOCKED!"), 40);
+                popup("LAST MAP UNLOCKED!", 40);
               }
               break;
           }
@@ -1846,7 +1846,7 @@ void loop() {
     if (player.dead) {
       byte count = 20;
       if (!popupTimeLeft) { //if the "new highscore" popup is no here
-        popup(F("GAME OVER!"), 20);
+        popup("GAME OVER!", 20);
       }
       while (1) {
         if (gb.update()) {
@@ -1880,9 +1880,9 @@ void gamePaused() {
       gb.display.setColor(BLACK, WHITE);
       gb.display.cursorX = 0;
       gb.display.cursorY = 0;
-      gb.display.println(F("GAME PAUSED"));
-      gb.display.println(F("B: SAVE & QUIT"));
-      gb.display.println(F("C: RESUME"));
+      gb.display.println("GAME PAUSED");
+      gb.display.println("B: SAVE & QUIT");
+      gb.display.println("C: RESUME");
 
       if (gb.buttons.pressed(BTN_C)) {
         return;
@@ -1980,24 +1980,24 @@ void cleanEEPROM() {
 }
 
 
-void printCentered(const __FlashStringHelper* text) {
-  //gb.display.cursorX = (LCDWIDTH / 2) - (strlen_PF((unsigned long) text) * gb.display.fontSize * gb.display.fontWidth / 2);
-  gb.display.cursorX = 5;
+void printCentered(const char* text) {
+  gb.display.cursorX = (LCDWIDTH / 2) - (strlen(text) * gb.display.fontSize * gb.display.fontWidth / 2);
+  //gb.display.cursorX = 5;
   gb.display.print(text);
 }
 
 void printCentered(char* text) {
-  //gb.display.cursorX = (LCDWIDTH / 2) - (strlen(text) * gb.display.fontSize * gb.display.fontWidth / 2);
-  gb.display.cursorX = 5;
+  gb.display.cursorX = (LCDWIDTH / 2) - (strlen(text) * gb.display.fontSize * gb.display.fontWidth / 2);
+  //gb.display.cursorX = 5;
   gb.display.print(text);
 }
 
-void popup(const __FlashStringHelper* text, uint8_t duration) {
+void popup(const char* text, uint8_t duration) {
   popupText = text;
   popupTimeLeft = duration + 12;
 }
 
-void popup(const __FlashStringHelper* text) {
+void popup(const char* text) {
   popup(text, 20);
 }
 
@@ -2007,8 +2007,8 @@ void updatePopup() {
     if (popupTimeLeft < 12) {
       yOffset = popupTimeLeft - 12;
     }
-    //byte width = strlen_PF((unsigned long) popupText) * gb.display.fontSize * gb.display.fontWidth;
-    byte width = 70;
+    byte width = strlen(popupText) * gb.display.fontSize * gb.display.fontWidth;
+    //byte width = 70;
     gb.display.fontSize = 1;
     gb.display.setColor(BLACK);
     gb.display.drawRect(LCDWIDTH / 2 - width / 2 - 2, yOffset - 1, width + 2, gb.display.fontHeight + 2);
