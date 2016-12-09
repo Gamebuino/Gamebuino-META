@@ -30,7 +30,7 @@
 #include <Image.h>
 
 //GUI settings
-#define ENABLE_GUI 0 //enable menu, keyboard, pop-up, volume adjust functions
+#define ENABLE_GUI 1 //enable menu, keyboard, pop-up, volume adjust functions
 #define START_MENU_TIMER 255 //40 = 40 frames (2sec) before start menu is skipped, 0 = no start menu, 255 = start menu until you press A
 #define KEYBOARD_W 16
 #define KEYBOARD_H 8

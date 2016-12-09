@@ -72,25 +72,23 @@ void Gamebuino::titleScreen(){
 }
 
 void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *logo){
-	return;
-	/*if(startMenuTimer){
 		display.fontSize = 1;
 		display.textWrap = false;
-		display.persistence = false;
-		battery.show = false;
+		//display.persistence = false;
+		//battery.show = false;
 		display.setColor(BLACK);
 		while(1){
 			if(update()){
 				uint8_t logoOffset = pgm_read_byte(name)?display.fontHeight:0; //add an offset the logo when there is a name to display
 				//draw graphics
-				#if LCDWIDTH == LCDWIDTH_NOROT
-				display.drawBitmap(0,0, gamebuinoLogo);
+				//#if LCDWIDTH == LCDWIDTH_NOROT
+				display.drawBitmap(-1,1, gamebuinoLogo);
 				if(logo){
 					display.drawBitmap(0, 12+logoOffset, logo);
 				}
 				display.cursorX = 0;
 				display.cursorY = 12; 
-				#else
+				/*#else
 				display.drawBitmap(7,0, gamebuinoLogo);
 				display.drawBitmap(-41,12,gamebuinoLogo);
 				if(logo){
@@ -98,7 +96,7 @@ void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *log
 				}
 				display.cursorX = 0;
 				display.cursorY = 24; 
-				#endif
+				#endif*/
 				display.print(name);
 				
 				//A button
@@ -111,10 +109,10 @@ void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *log
 				//B button
 				display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
 				display.cursorY++;
-				if(sound.globalVolume)
+				//if(sound.globalVolume)
 					display.println(F("\26\23\24"));
-				else
-					display.println(F("\26\23x"));
+				//else
+				//	display.println(F("\26\23x"));
 				//C button
 				display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
 				display.cursorY++;
@@ -122,13 +120,13 @@ void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *log
 				
 				//toggle volume when B is pressed
 				if(buttons.pressed(BTN_B)){
-					sound.setVolume(sound.getVolume() + 1);
+					//sound.setVolume(sound.getVolume() + 1);
 					sound.playTick();
 				}
 				//leave the menu
-				if(buttons.pressed(BTN_A) || ((frameCount>=startMenuTimer)&&(startMenuTimer != 255))){
-					startMenuTimer = 255; //don't automatically skip the title screen next time it's displayed
-					sound.stopPattern(0);
+				if(buttons.pressed(BTN_A)){
+					//startMenuTimer = 255; //don't automatically skip the title screen next time it's displayed
+					//sound.stopPattern(0);
 					sound.playOK();
 					break;
 				}
@@ -137,8 +135,7 @@ void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *log
 					changeGame();
 			}
 		}
-		battery.show = true;
-	}*/
+		//battery.show = true;
 }
 
 boolean Gamebuino::update() {
@@ -206,7 +203,7 @@ uint16_t Gamebuino::getFreeRam() {
 
 int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 #if (ENABLE_GUI > 0)
-	display.persistence = false;
+	//display.persistence = false;
 	int8_t activeItem = 0;
 	int8_t currentY = LCDHEIGHT;
 	int8_t targetY = 0;
@@ -270,7 +267,7 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 
 void Gamebuino::keyboard(char* text, uint8_t length) {
 #if (ENABLE_GUI > 0)
-	display.persistence = false;
+	//display.persistence = false;
 	//memset(text, 0, length); //clear the text
 	text[length-1] = '\0';
 	//active character in the typing area
@@ -451,7 +448,7 @@ boolean Gamebuino::collideRectRect(int16_t x1, int16_t y1, int16_t w1, int16_t h
 }
 
 boolean Gamebuino::collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, int16_t x2, int16_t y2, const uint8_t* b2){
-  /*int16_t w1 = pgm_read_byte(b1);
+  int16_t w1 = pgm_read_byte(b1);
   int16_t h1 = pgm_read_byte(b1 + 1);
   int16_t w2 = pgm_read_byte(b2);
   int16_t h2 = pgm_read_byte(b2 + 1);
@@ -470,6 +467,6 @@ boolean Gamebuino::collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1
         return true;
       }
     }
-  }*/
+  }
   return false;
 }
