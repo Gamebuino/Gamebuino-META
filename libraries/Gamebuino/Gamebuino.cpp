@@ -51,6 +51,7 @@ void Gamebuino::begin() {
 	buttons.update();
 	
 	//sound
+	sound.begin();
 	sound.playTick();
 	
 	//tft
@@ -123,10 +124,10 @@ void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *log
 				//B button
 				display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
 				display.cursorY++;
-				//if(sound.globalVolume)
+				if(sound.globalVolume)
 					display.println(F("\26\23\24"));
-				//else
-				//	display.println(F("\26\23x"));
+				else
+					display.println(F("\26\23x"));
 				//C button
 				display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
 				display.cursorY++;
@@ -134,7 +135,7 @@ void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *log
 				
 				//toggle volume when B is pressed
 				if(buttons.pressed(BTN_B)){
-					//sound.setVolume(sound.getVolume() + 1);
+					sound.setVolume(sound.getVolume() + 1);
 					sound.playTick();
 				}
 				//leave the menu

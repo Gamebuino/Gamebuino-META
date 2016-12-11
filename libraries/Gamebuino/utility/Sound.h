@@ -2,7 +2,7 @@
  * (C) Copyright 2014 Aurélien Rodot. All rights reserved.
  *
  * This file is part of the Gamebuino Library (http://gamebuino.com)
- *
+ *é
  * The Gamebuino Library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,10 +25,32 @@
 
 class Sound {
 public:
-	void begin();
-	void playOK(){tone(A0,1000,50);};
-	void playCancel(){tone(A0,500,50);};
-	void playTick(){tone(A0,1000,5);};
+	void begin(){
+		volumeMax = 1;
+		globalVolume = 0;
+	};
+	void playOK(){
+		if(globalVolume)
+			tone(A0,1000,50);
+	};
+	void playCancel(){
+		if(globalVolume)
+			tone(A0,500,50);
+	};
+	void playTick(){
+		if(globalVolume)
+			tone(A0,1000,5);
+	};
+	
+	void setVolume(int8_t volume) {
+		globalVolume = (volume < 0) ? volumeMax : volume % (volumeMax+1); //wrap volume value
+	};
+	uint8_t getVolume() {
+		return globalVolume;
+	};
+	
+	uint8_t globalVolume;
+	uint8_t volumeMax;
 };
 
 #endif	/* SOUND_H */
