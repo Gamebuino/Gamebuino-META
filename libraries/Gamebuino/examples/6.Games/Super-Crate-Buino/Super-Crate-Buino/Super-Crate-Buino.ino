@@ -1259,11 +1259,17 @@ class Player :
           dir = 1;
           vx += 16;
         }
-        if (gb.buttons.repeat(BTN_UP, 10) && (gb.buttons.timeHeld(BTN_DOWN) > 40)) {
+        if (gb.buttons.repeat(BTN_UP, 10) && (gb.buttons.timeHeld(BTN_DOWN) > 10)) {
           weapon.subtype ++;
           weapon.subtype %= NUMWEAPONS;
           score = 0;
           popup("WEAPON CHEAT");
+        }
+        if (gb.buttons.repeat(BTN_LEFT, 10) && (gb.buttons.timeHeld(BTN_RIGHT) > 10)) {
+          unlockedMaps = NUMMAPS - 1;
+          unlockedWeapons = NUMWEAPONS - 1;
+          score = 0;
+          popup("ALL UNLOCKED");
         }
 
         if (y > world.getHeight()) {
@@ -1953,8 +1959,6 @@ void loadEEPROM() {
   unlockedWeapons = EEPROM.read(EEPROM_WEAPONS_OFFSET);
   unlockedMaps = EEPROM.read(EEPROM_MAPS_OFFSET);
   world.mapNumber = unlockedMaps; //select the last unlocked map by */
-  unlockedMaps = NUMMAPS - 1;
-  unlockedWeapons = NUMWEAPONS - 1;
 }
 
 void saveEEPROM() {
