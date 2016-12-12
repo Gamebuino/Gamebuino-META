@@ -41,8 +41,8 @@
 #define TFT_CS		30
 #define TFT_RST		0
 #define TFT_DC		31
-#define SD_CS		PIN_LED_TXL
-#define BTN_CS		PIN_LED_RXL
+#define SD_CS		26
+#define BTN_CS		25
 
 #define LCDHEIGHT	64
 #define LCDWIDTH	80

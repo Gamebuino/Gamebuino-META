@@ -23,8 +23,9 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+#define BTN_CS		(25)
+
 #define NUM_BTN		(8)
-#define BTN_CS		(PIN_LED_RXL)
 
 #define BTN_DOWN	(0)
 #define BTN_LEFT	(1)
