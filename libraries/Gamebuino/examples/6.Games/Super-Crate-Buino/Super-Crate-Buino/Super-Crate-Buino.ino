@@ -119,7 +119,7 @@ const unsigned int club_sound[] PROGMEM = {0x8005, 0x784D, 0x7849, 0x318, 0x0000
 
 //maps are encoded like bitmaps
 const byte map0[] PROGMEM = {
-  16, 10,
+  16, 11,
   B11111110, B01111111,
   B10000000, B00000001,
   B10000000, B00000001,
@@ -129,6 +129,7 @@ const byte map0[] PROGMEM = {
   B11111100, B00111111,
   B10000000, B00000001,
   B10000000, B00000001,
+  B10011111, B11111001,
   B10011111, B11111001,
 };
 
