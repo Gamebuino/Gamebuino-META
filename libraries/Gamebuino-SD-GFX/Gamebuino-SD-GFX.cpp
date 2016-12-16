@@ -62,7 +62,17 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 	printDebug("SAVING TO ");
 	printlnDebug(filename);
 	File file;
-	int8_t bmpDepth = 24;        // value for rgb 888
+	int8_t bmpDepth;        // value for rgb 888
+	switch(img.colorMode){
+		case ColorMode::INDEX: 
+			bmpDepth=24;
+			break;
+		case ColorMode::RGB565: 
+			bmpDepth=4;
+			break;
+		default:
+		return 255;
+	}
 	int16_t width = img._width;
 	int16_t height = img._height;       // image size (w+h in pixels)
 	int32_t headerSize = 40;     // default value (ignoring bitmasks)
@@ -242,13 +252,13 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 	uint32_t bmpImageoffset;                    // Start of image data in file
 	uint32_t bmpColorTable, ImpColorCount;      // Number of colors in color table and Important color count
 	uint32_t rowSize;                           // Not always = bmpWidth; may have padding
-	uint8_t  sdbuffer[3 * BUFFPIXEL];           // pixel buffer (R+G+B per pixel)
+	uint8_t  sdbuffer[BUFFPIXEL/2];           // pixel buffer (R+G+B per pixel)
 	uint8_t  buffidx = sizeof(sdbuffer);        // Current position in sdbuffer
 	boolean  goodBmp = false;                   // Set to true on valid header parse
 	boolean  flip = true;                       // BMP is stored bottom-to-top
 	//uint16_t rambuffer[5 + MAXWIDHT*MAXHEIGHT]; // The buffer in RAM to be returned
 	uint16_t* rambuffer = img._buffer;
-	int      rambuffid = 0;                     // Current position in rambuffer
+	uint16_t  rambuffid = 0;                     // Current position in rambuffer
 	int      w, h, row, col;
 	uint8_t  r, g, b;                    
 	uint32_t pos = 0, startTime = millis();
@@ -365,6 +375,10 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 						//Extract Color Table
 						int i;
 						uint32_t color;
+						bmpColorTable = min(16,bmpColorTable);
+						for (i = 0;i < bmpColorTable;i++) {
+							(void)read32(myFile);         // read and ignore color table
+						}
 						/*for (i = 0;i < bmpColorTable;i++) {
 							color = read32(myFile);
 							rambuffer[rambuffid++] = ((uint16_t *)&color)[0];
@@ -383,6 +397,12 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 
 						w = bmpWidth;
 						h = bmpHeight;
+						
+						img.colorMode = ColorMode::INDEX;
+						
+						//img.freeBuffer();
+						img.allocateBuffer(w,h);
+						
 						for (row = 0; row<h; row++) { // For each scanline...
 
 													  // Seek to start of scan line.  It might seem labor-
@@ -391,7 +411,7 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 													  // and scanline padding.  Also, the seek only takes
 													  // place if the file position actually needs to change
 													  // (avoids a lot of cluster math in SD library).
-							if (!flip) // Bitmap is stored top-to-bottom
+							if (flip) // Bitmap is stored top-to-bottom
 								pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
 							else     // Bitmap is stored bottom-to-top order (normal BMP)
 								pos = bmpImageoffset + row * rowSize;
@@ -405,13 +425,29 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 									myFile.read(sdbuffer, sizeof(sdbuffer));
 									buffidx = 0; // Set index to beginning
 								}
+								
 
 								// With index 16, pixels are written on only 4 bits (one semi byte)
 								// So when we store 2 bytes in rambuffer[rambuffid], we actually have 4 pixels in it
-								rambuffer[rambuffid++] = (sdbuffer[buffidx++]<<8) | sdbuffer[buffidx++];
+								//rambuffer[rambuffid] =  sdbuffer[buffidx++] | (sdbuffer[buffidx++]<<8) ;
+								
+								rambuffer[rambuffid] = (sdbuffer[buffidx]<<8);
+								buffidx++;
+								rambuffer[rambuffid] |= sdbuffer[buffidx] ;
+								buffidx++;
+								
+								//SerialUSB.print(sdbuffer[buffidx],HEX);
+								//rambuffer[rambuffid] =  (sdbuffer[buffidx]>>4) | (sdbuffer[buffidx]<<4) ;
+								//buffidx++;
+								//SerialUSB.print(sdbuffer[buffidx],HEX);
+								//rambuffer[rambuffid] |=  ((sdbuffer[buffidx]>>4) | (sdbuffer[buffidx]<<4))<<8 ;
+								//buffidx++;
+								//Gamebuino_SD_GFX::debugOutput->print(rambuffer[rambuffid],HEX);
+								rambuffid++;
 
 							} // end pixel
 							//printlnDebug();
+							//SerialUSB.println();
 						} // end scanline
 						printDebug("\nLoaded in ");
 						printDebug(millis() - startTime);
@@ -429,9 +465,9 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 		// if the file didn't open, print an error:
 		printDebug("error opening ");
 		printlnDebug(filename);
-		printlnDebug("=============================================================");
+		//printlnDebug("=============================================================");
 	}//if(myFile)
-	printlnDebug("=============================================================");
+	//printlnDebug("=============================================================");
 	//return rambuffer;
 }
 

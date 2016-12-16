@@ -6,7 +6,7 @@
 #include "Image.h"
 #include "SD.h"
 
-#define BUFFPIXEL 20
+#define BUFFPIXEL 16
 
 class Gamebuino_SD_GFX{
 	public:

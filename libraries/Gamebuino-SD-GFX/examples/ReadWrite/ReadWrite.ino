@@ -11,8 +11,8 @@
 #define TFT_CS    (30)
 #define TFT_RST   (0)
 #define TFT_DC    (31)
-#define SD_CS     (PIN_LED_TXL)
-#define BTN_CS    (PIN_LED_RXL)
+#define SD_CS     (26)
+#define BTN_CS    (25)
 #define NEOPIX    (38)
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
@@ -40,7 +40,8 @@ void setup() {
     tft.setColor(GREEN, BLACK);
     tft.println("OK");
   }
-
+/*
+  //RGB888 BITMAP
   tft.setColor(WHITE, BLACK);
 
   Gamebuino_SD_GFX::readImage(image, "RGB888.BMP");
@@ -49,9 +50,35 @@ void setup() {
   for (int i = 0; i < (image._width * image._height); i++) {
     SerialUSB.print(image._buffer[i], HEX);
   }
-  tft.drawImage(30, 30, image, 32, 32);
+  tft.drawImage(120, 30, image, 32, 32);
 
   Gamebuino_SD_GFX::writeImage(image, "WRITE888.BMP");
+*/
+  //INDEX4 BITMAP
+   tft.setColor(WHITE, BLACK);
+
+  Gamebuino_SD_GFX::readImage(imageIndex, "INDEX4.BMP");
+  SerialUSB.println(imageIndex._width);
+  SerialUSB.println(imageIndex._height);
+  tft.setColor(BLACK);
+  tft.fillScreen();
+   tft.setColor(WHITE, BLACK);
+  tft.setCursor(0,0);
+  for (int i = 0; i < (imageIndex._width * imageIndex._height / 4); i++) {
+    if(!(i%4)){
+      tft.print("\n");
+    }
+    //tft.print(imageIndex._buffer[i], HEX);
+    tft.print((imageIndex._buffer[i]>>12)&0x000F, HEX);
+    tft.print((imageIndex._buffer[i]>>8)&0x000F, HEX);
+    tft.print((imageIndex._buffer[i]>>4)&0x000F, HEX);
+    tft.print((imageIndex._buffer[i])&0x000F, HEX);
+  }
+  
+  image.drawImage(0,0, imageIndex);
+  tft.drawImage(120, 8, image, 32, 32);
+
+  //Gamebuino_SD_GFX::writeImage(image, "WRITE4.BMP");
 }
 
 void loop() {
