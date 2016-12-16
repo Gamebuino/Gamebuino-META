@@ -46,7 +46,7 @@ POSSIBILITY OF SUCH DAMAGE.
 uint16_t Adafruit_GFX::transparentColor = 0xF81F; //magenta is the default transparent color
 uint16_t Adafruit_GFX::tint = 0xFFFF;
 uint8_t Adafruit_GFX::alpha = 255;
-uint16_t _colorIndex[16] = {0x0,0x194A,0x792A,0x42A,0xAA86,0x62C9,0xC618,0xFF9D,0xE8CA,0xFD03,0xF765,0x5DC9,0x553B,0x83B3,0xF3B4,0xFE75 };
+uint16_t _colorIndex[16] = {0x0,0x194A,0x792A,0x42A,0xAA86,0x62C9,0xC618,0xFFFF,0xE8CA,0xFD03,0xF765,0x5DC9,0x553B,0x83B3,0xF3B4,0xFE75 };
 uint16_t* Adafruit_GFX::colorIndex = _colorIndex;
 BlendMode Adafruit_GFX::blendMode = BlendMode::BLEND;
 uint16_t Adafruit_GFX::color = BLACK;
@@ -674,11 +674,14 @@ void Adafruit_GFX::write(uint8_t c) {
 
     if(c == '\n') {
       cursorY += fontSize*fontHeight;
+	  if(textWrap && ((cursorY + fontSize * fontHeight) >= _height)) {//Heading off bottom edge ?
+		cursorY = 0;
+	  }
       cursorX  = 0;
     } else if(c == '\r') {
       // skip em
     } else {
-      if(textWrap && ((cursorX + fontSize * 6) >= _width)) { // Heading off edge?
+      if(textWrap && ((cursorX + fontSize * fontWidth) >= _width)) { // Heading off right edge?
         cursorX  = 0;            // Reset x to zero
         cursorY += fontSize * fontHeight; // Advance y one line
       }
