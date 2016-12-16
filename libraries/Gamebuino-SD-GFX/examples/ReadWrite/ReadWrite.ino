@@ -15,20 +15,22 @@
 #define BTN_CS    (PIN_LED_RXL)
 #define NEOPIX    (38)
 
-
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
 Image image = Image(16, 16, ColorMode::RGB565);
+Image imageIndex = Image(16, 16, ColorMode::INDEX);
 
 void setup() {
   SerialUSB.begin(9600);
-  while (!SerialUSB);
+  //while (!SerialUSB);
 
   tft.initR(INITR_BLACKTAB);
   tft.setRotation(1);
   tft.setColor(BLACK);
   tft.fillScreen();
 
+  Gamebuino_SD_GFX::debugOutput = &tft;
+  
   if (!SD.begin(SD_CS)) {
     tft.setColor(RED, BLACK);
     tft.println("FAILED");
@@ -39,7 +41,9 @@ void setup() {
     tft.println("OK");
   }
 
-  Gamebuino_SD_GFX::readImage(image, "TEST.BMP");
+  tft.setColor(WHITE, BLACK);
+
+  Gamebuino_SD_GFX::readImage(image, "RGB888.BMP");
   SerialUSB.println(image._width);
   SerialUSB.println(image._height);
   for (int i = 0; i < (image._width * image._height); i++) {
@@ -47,7 +51,7 @@ void setup() {
   }
   tft.drawImage(30, 30, image, 32, 32);
 
-  Gamebuino_SD_GFX::writeImage(image, "WRITE.BMP");
+  Gamebuino_SD_GFX::writeImage(image, "WRITE888.BMP");
 }
 
 void loop() {

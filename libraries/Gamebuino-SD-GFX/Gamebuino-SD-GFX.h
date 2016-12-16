@@ -13,6 +13,7 @@ class Gamebuino_SD_GFX{
 	void begin();
 	static uint8_t writeImage(Image img, char *filename);
 	static uint8_t readImage(Image img, char *filename);
+	static Print* debugOutput;
 };
 
 #endif /* GAMEBUINO-SD-GFX_H */

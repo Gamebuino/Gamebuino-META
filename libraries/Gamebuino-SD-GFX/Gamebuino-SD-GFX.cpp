@@ -1,9 +1,22 @@
 #include "Gamebuino-SD-GFX.h"
 
+Print* Gamebuino_SD_GFX::debugOutput = 0;
+
+template <typename T>
+inline void printDebug(T output){
+	if(!Gamebuino_SD_GFX::debugOutput) return;
+	Gamebuino_SD_GFX::debugOutput->print(output);
+}
+
+template <typename T>
+inline void printlnDebug(T output){
+	if(!Gamebuino_SD_GFX::debugOutput) return;
+	Gamebuino_SD_GFX::debugOutput->println(output);
+}
+
 // These read 16- and 32-bit types from the SD card file.
 // BMP data is stored little-endian, Arduino is little-endian too.
 // May need to reverse subscript order if porting elsewhere.
-
 uint16_t read16(File f) {
 	uint16_t result;
 	((uint8_t *)&result)[0] = f.read(); // LSB
@@ -46,57 +59,51 @@ void Gamebuino_SD_GFX::begin(){
 }
 
 uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
+	printDebug("SAVING TO ");
+	printlnDebug(filename);
 	File file;
 	int8_t bmpDepth = 24;        // value for rgb 888
-	int32_t width, height;       // image size (w+h in pixels)
+	int16_t width = img._width;
+	int16_t height = img._height;       // image size (w+h in pixels)
 	int32_t headerSize = 40;     // default value (ignoring bitmasks)
 	int32_t rowSize;             // Not always = width; may have padding
 	int32_t fileSize;            // We have to know the file size before completing the headers
 	int32_t bmpImageoffset;      // Start of image data in file
 	int32_t rawImageSize;        // Image Size including padding
 	int32_t colorTable = 0;      // Number of colors in the palette
-	int row, col, rambuffind;    
+	int row, col;
+	int rambuffind = 0;
 	int32_t startTime = millis();
 	uint16_t* rambuffer = img._buffer;
+	
+	printDebug(" ");
+	printDebug(width);
+	printDebug(" x ");
+	printDebug(height);
+	printDebug(" x ");
+	printDebug(bmpDepth);
+	printlnDebug("-BIT");
 
-  SerialUSB.println("Checking if file exists");
+
 	if (SD.exists(filename)) {
-		SerialUSB.print(filename );
-		SerialUSB.println(" already exists.");
-		// delete the file:
-		SerialUSB.print("Removing ");
-		SerialUSB.println(filename);
-		if (SD.remove(filename)) SerialUSB.println("Removal success");
+		printDebug(" ALREADY EXISTS, REMOVING");
+		if (SD.remove(filename)) printlnDebug(" OK");
 		else {
-			SerialUSB.println("ERROR in removing the file!");
+			printlnDebug(" FAILED");
 			return 1;
 		}
 	}
-	SerialUSB.print("Creating ");
-	SerialUSB.println(filename );
+	printDebug(" CREATING FILE ");
 	file = SD.open(filename, FILE_WRITE);
 	if (file) {
-		//Color depth, width and height info
-		//rambuffind = 0;
-		//bmpDepth = rambuffer[rambuffind++];
-		//width = rambuffer[rambuffind++] | (rambuffer[rambuffind++] << 16);
-		//height = rambuffer[rambuffind++] | (rambuffer[rambuffind++] << 16);
-		rambuffind = 0;
-		bmpDepth = 24;
-		width = img._width;
-		height = img._height;
-		
-		SerialUSB.print("Bit Depth: "); SerialUSB.println(bmpDepth);
-		SerialUSB.print("Image size: ");
-		SerialUSB.print(width);
-		SerialUSB.print('x');
-		SerialUSB.println(height);
+		printlnDebug(" OK");
+	    printDebug(" ");
 
 		if (bmpDepth == 24) {//the file is a rgb888
 
 			//BMP Header : BMP header size is 14 bytes
 			write16(0x42, 0x4D, file); // BMP signature
-			SerialUSB.print('.');
+			printDebug('.');
 			rowSize = (width * 3 + 3) & ~3; // BMP rows are padded (if needed) to 4-byte boundary
 			rawImageSize = rowSize*height;
 			bmpImageoffset = 14 + headerSize;
@@ -105,32 +112,32 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 				((uint8_t *)&fileSize)[2], ((uint8_t *)&fileSize)[3], file); //BMP file size
 			write16(0, 0, file); //Reserved
 			write16(0, 0, file); //Reserved
-			SerialUSB.print('.');
+			printDebug('.');
 			write32(((uint8_t *)&bmpImageoffset)[0], ((uint8_t *)&bmpImageoffset)[1],
 				((uint8_t *)&bmpImageoffset)[2], ((uint8_t *)&bmpImageoffset)[3], file); //BMP pixel array offset
-			SerialUSB.print('.');
+			printDebug('.');
 
 			//DIB Header : DIB header size is 40 
 			write32(((uint8_t *)&headerSize)[0], ((uint8_t *)&headerSize)[1],
 				((uint8_t *)&headerSize)[2], ((uint8_t *)&headerSize)[3], file); //BMP header Size
-			SerialUSB.print('.');
+			printDebug('.');
 			write32(((uint8_t *)&width)[0], ((uint8_t *)&width)[1],
 				((uint8_t *)&width)[2], ((uint8_t *)&width)[3], file); //BMP Widht
 			write32(((uint8_t *)&height)[0], ((uint8_t *)&height)[1],
 				((uint8_t *)&height)[2], ((uint8_t *)&height)[3], file); //BMP Height
-			SerialUSB.print('.');
+			printDebug('.');
 			write16(1, 0, file); //Planes must be 1
 			write16(bmpDepth, 0, file); //BMP Depth = bits per pixel
 			write32(0, 0, 0, 0, file); //No compression = 0
-			SerialUSB.print('.');
+			printDebug('.');
 			write32(((uint8_t *)&rawImageSize)[0], ((uint8_t *)&rawImageSize)[1],
 				((uint8_t *)&rawImageSize)[2], ((uint8_t *)&rawImageSize)[3], file); //Raw Image Size (including padding)
-			SerialUSB.print('.');
+			printDebug('.');
 			write32(0, 0, 0, 0, file); //X pixels per meter horizontal
 			write32(0, 0, 0, 0, file); //Y pixels per meter vertical
 			write32(0, 0, 0, 0, file); //Number of colors in the palette
 			write32(0, 0, 0, 0, file); //Important color count
-			SerialUSB.print('.');
+			printDebug('.');
 
 			//Pixel Array
 			for (row = (height-1);row >= 0;row--) {//each row of the array
@@ -138,12 +145,13 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 					file.write((rambuffer[(row * width) + col] << 3));           //r
 					file.write((rambuffer[(row * width) + col] >> 3) & 0xfc);    //g
 					file.write((rambuffer[(row * width) + col] >> 8) & 0xf8);  //b
-					SerialUSB.print('.');
+					//printDebug('.');
 				}
 				for (col =3*width;col < rowSize;col++) {//padding with zeros
 					file.write((uint8_t)0);
-					SerialUSB.print('.');
+					//printDebug('.');
 				}
+				printDebug('.');
 			}
 		}else if(bmpDepth==4) { //index 16, there must be an color table
 
@@ -151,7 +159,7 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 
 			//BMP Header : BMP header size is 14 bytes
 			write16(0x42, 0x4D, file); // BMP signature
-			SerialUSB.print('.');
+			printDebug('.');
 			rowSize = ((bmpDepth*width + 31)/32) * 4; // BMP rows are padded (if needed) to 4-byte boundary
 			rawImageSize = rowSize*height;
 			bmpImageoffset = 14 + headerSize + colorTable * 4;
@@ -160,27 +168,27 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 				((uint8_t *)&fileSize)[2], ((uint8_t *)&fileSize)[3], file); //BMP file size
 			write16(0, 0, file); //Reserved
 			write16(0, 0, file); //Reserved
-			SerialUSB.print('.');
+			printDebug('.');
 			write32(((uint8_t *)&bmpImageoffset)[0], ((uint8_t *)&bmpImageoffset)[1],
 				((uint8_t *)&bmpImageoffset)[2], ((uint8_t *)&bmpImageoffset)[3], file); //BMP pixel array offset
-			SerialUSB.print('.');
+			printDebug('.');
 
 			//DIB Header : DIB header size is 40 
 			write32(((uint8_t *)&headerSize)[0], ((uint8_t *)&headerSize)[1],
 				((uint8_t *)&headerSize)[2], ((uint8_t *)&headerSize)[3], file); //BMP header Size
-			SerialUSB.print('.');
+			printDebug('.');
 			write32(((uint8_t *)&width)[0], ((uint8_t *)&width)[1],
 				((uint8_t *)&width)[2], ((uint8_t *)&width)[3], file); //BMP Widht
 			write32(((uint8_t *)&height)[0], ((uint8_t *)&height)[1],
 				((uint8_t *)&height)[2], ((uint8_t *)&height)[3], file); //BMP Height
-			SerialUSB.print('.');
+			printDebug('.');
 			write16(1, 0, file); //Planes must be 1
 			write16(bmpDepth, 0, file); //BMP Depth = bits per pixel
 			write32(0, 0, 0, 0, file); //No compression = 0
-			SerialUSB.print('.');
+			printDebug('.');
 			write32(((uint8_t *)&rawImageSize)[0], ((uint8_t *)&rawImageSize)[1],
 				((uint8_t *)&rawImageSize)[2], ((uint8_t *)&rawImageSize)[3], file); //Raw Image Size (including padding)
-			SerialUSB.print('.');
+			printDebug('.');
 			write32(0, 0, 0, 0, file); //X pixels per meter horizontal
 			write32(0, 0, 0, 0, file); //Y pixels per meter vertical
 			write32(((uint8_t *)&colorTable)[0], ((uint8_t *)&colorTable)[1],
@@ -189,7 +197,7 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 			impColor = rambuffer[rambuffind++] | (rambuffer[rambuffind++] << 16);
 			write32(((uint8_t *)&impColor)[0], ((uint8_t *)&impColor)[1],
 				((uint8_t *)&impColor)[2], ((uint8_t *)&impColor)[3], file); //Important color count
-			SerialUSB.print('.');
+			printDebug('.');
 
 			// Color Palette
 			int i;
@@ -197,7 +205,7 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 				impColor = rambuffer[rambuffind++] | (rambuffer[rambuffind++] << 16);
 				write32(((uint8_t *)&impColor)[0], ((uint8_t *)&impColor)[1],
 					((uint8_t *)&impColor)[2], ((uint8_t *)&impColor)[3], file);  //each color is added to the palette
-				SerialUSB.print('.');
+				printDebug('.');
 			}
 
 			//Pixel Array
@@ -205,21 +213,19 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 				for (col = 0;col < width;col+=4) {//write 4 pixels in a row
 					file.write(rambuffer[rambuffind]);
 					file.write(rambuffer[rambuffind++] >> 8);
-					SerialUSB.print('.');
+					printDebug('.');
 				}//no padding is needed, as any padding is stored in rambuffer
 			}
 		}//end if(bmpDepth==24)
-		SerialUSB.println();
-		SerialUSB.print("written in ");
-		SerialUSB.print(millis() - startTime);
-		SerialUSB.println(" ms");
+		printDebug("\n WRITTEN IN ");
+		printDebug(millis() - startTime);
+		printlnDebug(" MS");
 
 		//Close the file
 		file.close();
 	}
-	else {
-		SerialUSB.print("Error opening ");
-		SerialUSB.println(filename);
+	else { //failed to open file
+		printlnDebug(" FAILED");
 		return 2;
 	}
 
@@ -247,32 +253,32 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 	uint8_t  r, g, b;                    
 	uint32_t pos = 0, startTime = millis();
 
-  SerialUSB.println("Opening file...");
+  printlnDebug("Opening file...");
 	myFile = SD.open(filename);
 	if (myFile) {
-		SerialUSB.println(filename);
+		printlnDebug(filename);
 
 		// read from the file until there's nothing else in it:
 		while (myFile.available()) {
 			// Parse BMP header
 			if (read16(myFile) == 0x4D42) { // BMP signature
-				SerialUSB.print("File size: "); SerialUSB.println(read32(myFile));
+				printDebug("File size: "); printlnDebug(read32(myFile));
 				(void)read32(myFile); // Read & ignore creator bytes
 				bmpImageoffset = read32(myFile); // Start of image data
-				SerialUSB.print("Image Offset: "); SerialUSB.println(bmpImageoffset, DEC);
+				printDebug("Image Offset: "); printlnDebug(bmpImageoffset);
 				
 				// Read DIB header
 				headerSize = read32(myFile);
-				SerialUSB.print("Header size: "); SerialUSB.println(headerSize);
+				printDebug("Header size: "); printlnDebug(headerSize);
 				bmpWidth = read32(myFile);
 				bmpHeight = read32(myFile);
 				if (read16(myFile) == 1) { // # planes -- must be '1'
 					bmpDepth = read16(myFile); // bits per pixel
-					SerialUSB.print("Bit Depth: "); SerialUSB.println(bmpDepth);
-					SerialUSB.print("Image size: ");
-					SerialUSB.print(bmpWidth);
-					SerialUSB.print('x');
-					SerialUSB.println(bmpHeight);
+					printDebug("Bit Depth: "); printlnDebug(bmpDepth);
+					printDebug("Image size: ");
+					printDebug(bmpWidth);
+					printDebug('x');
+					printlnDebug(bmpHeight);
 					
 					//RGB565 uncompressed
 					if ((bmpDepth == 24) && (read32(myFile) == 0)) { // 0 = uncompressed
@@ -325,21 +331,20 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 								b = sdbuffer[buffidx++];
 								g = sdbuffer[buffidx++];
 								r = sdbuffer[buffidx++];
-								/*SerialUSB.print(b, HEX);
-								SerialUSB.print(g, HEX);
-								SerialUSB.print(r, HEX);
-								SerialUSB.print(" | ");*/
+								/*printDebug(b, HEX);
+								printDebug(g, HEX);
+								printDebug(r, HEX);
+								printDebug(" | ");*/
 
 								//Conversion into rgb565
 								rambuffer[rambuffid++] = convertTo565(r, g, b);
 
 							} // end pixel
-							//SerialUSB.println();
+							//printlnDebug();
 						} // end scanline
-						SerialUSB.println();
-						SerialUSB.print("Loaded in ");
-						SerialUSB.print(millis() - startTime);
-						SerialUSB.println(" ms");
+						printDebug("\nLoaded in ");
+						printDebug(millis() - startTime);
+						printlnDebug(" ms");
 						
 					//16 colors index, uncompressed
 					}else if ((bmpDepth == 4) && (read32(myFile) == 0)) { // 0 = uncompressed
@@ -353,9 +358,9 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 						(void)read32(myFile); // Read & ignore X pixels per meter
 						(void)read32(myFile); // Read & ignore Y pixels per meter
 						bmpColorTable = read32(myFile);
-						SerialUSB.print("Colors in color table: "); SerialUSB.println(bmpColorTable);
+						printDebug("Colors in color table: "); printlnDebug(bmpColorTable);
 						ImpColorCount = read32(myFile);
-						SerialUSB.print("Important color count: "); SerialUSB.println(ImpColorCount);
+						printDebug("Important color count: "); printlnDebug(ImpColorCount);
 
 						//Extract Color Table
 						int i;
@@ -406,28 +411,27 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 								rambuffer[rambuffid++] = (sdbuffer[buffidx++]<<8) | sdbuffer[buffidx++];
 
 							} // end pixel
-							//SerialUSB.println();
+							//printlnDebug();
 						} // end scanline
-						SerialUSB.println();
-						SerialUSB.print("Loaded in ");
-						SerialUSB.print(millis() - startTime);
-						SerialUSB.println(" ms");
+						printDebug("\nLoaded in ");
+						printDebug(millis() - startTime);
+						printlnDebug(" ms");
 					}// end goodBmp
 				}//planes=/=1
 			}
 
-			if (!goodBmp) SerialUSB.println("BMP format not recognized.");
+			if (!goodBmp) printlnDebug("BMP format not recognized.");
 		}
 		// close the file:
 		myFile.close();
 	}
 	else {
 		// if the file didn't open, print an error:
-		SerialUSB.print("error opening ");
-		SerialUSB.println(filename);
-		SerialUSB.println("=============================================================");
+		printDebug("error opening ");
+		printlnDebug(filename);
+		printlnDebug("=============================================================");
 	}//if(myFile)
-	SerialUSB.println("=============================================================");
+	printlnDebug("=============================================================");
 	//return rambuffer;
 }
 
