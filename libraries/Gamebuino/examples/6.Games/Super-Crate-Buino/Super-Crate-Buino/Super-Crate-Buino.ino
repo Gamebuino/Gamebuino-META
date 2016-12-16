@@ -1541,7 +1541,10 @@ class EnemiesEngine {
     void draw() {
       for (byte i = 0; i < NUMENEMIES; i++) {
         if (enemies[i].active) {
+          if((abs(enemies[i].vx) > 10) && (enemies[i].health > 0)) //angry enemy
+            gb.display.setColor(RED);
           enemies[i].draw();
+          gb.display.setColor(BLACK);
         }
       }
     }
@@ -1780,7 +1783,11 @@ class Crate :
     void draw() {
       if (isOffScreen())
         return;
+      gb.display.setColor(0xFD03);
+      gb.display.fillRect(toScreenX(x), toScreenY(y), 6, 6);
+      gb.display.setColor(0xAA86);
       gb.display.drawBitmap(toScreenX(x), toScreenY(y), crateBitmap);
+      gb.display.setColor(BLACK);
     }
 };
 
@@ -2046,8 +2053,9 @@ void drawCompass() {
     int dx = toScreenX(player.x + player.getWidth() / 2)   + (16 * x / dist);
     int dy = toScreenY(player.y + player.getHeight() / 2)  + (16 * y / dist);
     //gb.display.setColor(GRAY);
+    gb.display.setColor(0xFD03);
     gb.display.drawLine(dx, dy, dx + x / 8, dy + y / 8);
-    //gb.display.setColor(BLACK);
+    gb.display.setColor(BLACK);
   }
 }
 
