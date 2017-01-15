@@ -54,11 +54,16 @@ uint16_t Adafruit_GFX::bgcolor = WHITE;
 
 void Adafruit_GFX::indexTo565(uint16_t *dest, uint16_t *src, uint16_t *index, uint16_t length) {
 	//length is the number of destination pixels
-	for (uint16_t i = 0; i < length/2; i++) {
-		uint8_t index1 = ((uint8_t*)src)[i] & 0x0F;
-		uint8_t index2 = ((uint8_t*)src)[i] >> 4;
-		dest[i * 2] = index[index1];
-		dest[(i * 2) + 1] = index[index2];
+	for (uint16_t i = 0; i < length/4; i++) {
+		uint16_t index1 = (src[i] >> 0)  & 0x000F;
+		uint16_t index2 = (src[i] >> 4)  & 0x000F;
+		uint16_t index3 = (src[i] >> 8)  & 0x000F;
+		uint16_t index4 = (src[i] >> 12) & 0x000F;
+		//change pixel order (because of words endianness) at the same time
+		dest[i * 4] = index[index4];
+		dest[(i * 4) + 1] = index[index3];
+		dest[(i * 4) + 2] = index[index2];
+		dest[(i * 4) + 3] = index[index1];
 	}
 }
 
@@ -569,7 +574,7 @@ void Adafruit_GFX::drawImage(int16_t x, int16_t y, Image img) {
 		}
 	}
 
-
+	//draw INDEX => RGB
 	if ((img.colorMode == ColorMode::INDEX) && (colorMode == ColorMode::RGB565)) {
 		for (int j2 = 0; j2 < h2cropped; j2++) {
 			uint16_t destLineArray[w2cropped];
@@ -579,7 +584,12 @@ void Adafruit_GFX::drawImage(int16_t x, int16_t y, Image img) {
 			srcLine = img._buffer + (((j2 + j2offset) * w1) + i2offset) / 4;
 
 			indexTo565(destLine, srcLine, Adafruit_GFX::colorIndex, w2cropped);
-			//memset(destLineArray, 0xFF, w2cropped * 2);
+
+			/*for (uint16_t i = 0; i < w2cropped/2; i++) { //horizontal coordinate in source image
+				uint16_t color = destLine[i];
+				color = (color << 8) | (color >> 8); //change endianness
+				destLine[i] = color;
+			}*/
 
 			drawBufferedLine(
 				x + i2offset,
@@ -590,19 +600,32 @@ void Adafruit_GFX::drawImage(int16_t x, int16_t y, Image img) {
 		return;
 	}
 
-	for (int j2 = 0; j2 < h2cropped; j2++) { //j2 : offseted vertical coordinate in the destination image
-		drawBufferedLine(
-			x + i2offset,
-			y + j2offset + j2,
-			img._buffer + ((j2 + j2offset) * w1) + i2offset,
-			w2cropped);
+	//draw RGB => RGB
+	if ((img.colorMode == ColorMode::RGB565) && (colorMode == ColorMode::RGB565)) {
+		for (int j2 = 0; j2 < h2cropped; j2++) { //j2 : offseted vertical coordinate in the destination image
+			drawBufferedLine(
+				x + i2offset,
+				y + j2offset + j2,
+				img._buffer + ((j2 + j2offset) * w1) + i2offset,
+				w2cropped);
+		}
+		return;
 	}
 
-	//the dumb way
-	/*for (int i = 0; i < img._width; i++) {
-	for (int j = 0; j < img._height; j++) {
-	drawPixel(x + i, y + j, img._buffer[i + img._width*j]);
+	//draw INDEX => INDEX
+	if ((img.colorMode == ColorMode::INDEX) && (colorMode == ColorMode::INDEX)) {
+		setColor(8);
+		fillRect(x, y, img._width, img._height);
+		setColor(7);
+		drawRect(x, y, img._width, img._height);
 	}
+
+	/*//the dumb way
+	for (int i = 0; i < img._width; i++) {
+		for (int j = 0; j < img._height; j++) {
+			setColor(img._buffer[i + img._width*j]);
+			drawPixel(x + i, y + j);
+		}
 	}*/
 }
 
@@ -613,6 +636,7 @@ void Adafruit_GFX::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_
 	int16_t w = img._width;
 	int16_t h = img._height;
 
+	//no scaling, fall back to the regular function
 	if ((w == w2) && (h == h2)) {
 		drawImage(x, y, img);
 		return;
