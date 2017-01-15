@@ -18,6 +18,7 @@
 #define MAGENTA (0xF81F)
 #define YELLOW  (0xFFE0)
 #define WHITE   (0xFFFF)
+#define GRAY	(0x8410)
 
 #define ENABLE_BITMAPS 1
 //for extended bitmap function :
