@@ -46,6 +46,10 @@ void Gamebuino::begin() {
 	frameEndMicros = 1;
 	startMenuTimer = 255;
 
+	//neoPixels
+	neoPixels.begin();
+	neoPixels.show();
+
 	//buttons
 	buttons.begin();
 	buttons.update();
@@ -188,6 +192,10 @@ boolean Gamebuino::update() {
 			display.fillScreen(WHITE); //clear the buffer
 			display.setCursor(0, 0);
 			display.setColor(BLACK);
+
+			//neoPixels update
+			neoPixels.show();
+			neoPixels.clear();
 
 			frameEndMicros = micros(); //measure the frame's end time
 			frameDurationMicros = frameEndMicros - frameStartMicros;

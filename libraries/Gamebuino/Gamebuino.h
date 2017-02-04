@@ -31,6 +31,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <Gamebuino-SD-GFX.h>
+#include <Adafruit_NeoPixel.h>
 
 //GUI settings
 #define ENABLE_GUI 1 //enable menu, keyboard, pop-up, volume adjust functions
@@ -42,7 +43,7 @@
 #define TFT_RST		(0u)
 #define TFT_DC		(31u)
 #define SD_CS		(26u)
-#define NEOPIX		(38u)
+#define NEOPIX_PIN	(38u)
 
 #define LCDHEIGHT	64
 #define LCDWIDTH	80
@@ -58,6 +59,7 @@ public:
     Sound sound;
     Image display = Image(80,64, ColorMode::RGB565);
 	Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 
     void begin();
 	void titleScreen(const __FlashStringHelper* name, const uint8_t *logo);

@@ -1016,6 +1016,9 @@ class Weapon {
         case W_SHOTGUN :
           //gb.sound.playPattern(shotgun_sound, 0);
           gb.sound.playTick();
+          for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
+            gb.neoPixels.setPixelColor(i, 255, 255, 128);
+          }
           break;
         case W_MINE :
           break;
