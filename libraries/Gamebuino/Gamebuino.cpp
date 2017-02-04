@@ -178,7 +178,9 @@ boolean Gamebuino::update() {
 				tft.drawRect(0, 0, tft._width, tft._height);
 				tft.drawRect(1, 1, tft._width - 2, tft._height - 2);
 				tft.cursorX = 0;
-				tft.cursorY = 4;
+				tft.cursorY = 2;
+				tft.setColor(WHITE, BLACK);
+				Gamebuino_SD_GFX::debugOutput = &tft;
 				Gamebuino_SD_GFX::writeImage(display, "SCREEN.BMP");
 			}
 
