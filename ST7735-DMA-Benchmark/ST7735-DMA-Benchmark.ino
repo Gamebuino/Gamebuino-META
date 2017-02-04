@@ -25,7 +25,7 @@ Image buffer = Image(80, 64, ColorMode::RGB565);
 void setup(void) {
 	pinMode(13, OUTPUT);
 	tft.initR(INITR_BLACKTAB);
-	tft.setRotation(1);
+	tft.setRotation(3);
 	tft.fillScreen(0x0000);
 	buffer.drawImage(8, 0, favicon, 64, 64);
 	tft.drawImage(0, 0, buffer, tft.width(), tft.height());

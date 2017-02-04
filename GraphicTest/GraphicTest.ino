@@ -75,7 +75,7 @@ Image testImgIndex = Image(16, 8, ColorMode::INDEX, textImgIndexBuffer);
 void setup()
 {
 	tft.initR(INITR_BLACKTAB);
-	tft.setRotation(1);
+	tft.setRotation(3);
 	tft.fillScreen(BLACK);
 	tft.setColor(WHITE);
 	tft.println("GRAPHIC TEST");

@@ -56,7 +56,7 @@ void Gamebuino::begin() {
 	
 	//tft
 	tft.initR(INITR_BLACKTAB);
-	tft.setRotation(1);
+	tft.setRotation(3);
 	display.fillScreen(tft.Color565(127, 127, 127));
 
 	tft.drawImage(0, 0, display, tft.width(), tft.height());

@@ -62,7 +62,7 @@ Image buffer = Image(30, 30, ColorMode::RGB565);
 void setup(void) {
 	pinMode(13, OUTPUT);
 	tft.initR(INITR_BLACKTAB);
-	tft.setRotation(1);
+	tft.setRotation(3);
 	tft.fillScreen(0x0000);
 	buffer.fillScreen(0xFFFF);
 	buffer.drawImage(8, 8, image); //draw indexed image to RGB image
