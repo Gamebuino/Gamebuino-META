@@ -40,7 +40,7 @@ void setup() {
     tft.setColor(GREEN, BLACK);
     tft.println("OK");
   }
-/*
+
   //RGB888 BITMAP
   tft.setColor(WHITE, BLACK);
 
@@ -50,22 +50,25 @@ void setup() {
   for (int i = 0; i < (image._width * image._height); i++) {
     SerialUSB.print(image._buffer[i], HEX);
   }
-  tft.drawImage(120, 30, image, 32, 32);
+  tft.drawImage(120, 8, image, 32, 32);
 
   Gamebuino_SD_GFX::writeImage(image, "WRITE888.BMP");
-*/
+
+  delay(3000);
+
   //INDEX4 BITMAP
    tft.setColor(WHITE, BLACK);
 
   Gamebuino_SD_GFX::readImage(imageIndex, "INDEX4.BMP");
   SerialUSB.println(imageIndex._width);
   SerialUSB.println(imageIndex._height);
+  //DRAW INDEX4 BUFFER
   tft.setColor(BLACK);
   tft.fillScreen();
    tft.setColor(WHITE, BLACK);
   tft.setCursor(0,0);
   for (int i = 0; i < (imageIndex._width * imageIndex._height / 4); i++) {
-    if(!(i%4)){
+    if(!(i%(imageIndex._width/4))){
       tft.print("\n");
     }
     //tft.print(imageIndex._buffer[i], HEX);
@@ -76,7 +79,8 @@ void setup() {
   }
   
   image.drawImage(0,0, imageIndex);
-  tft.drawImage(120, 8, image, 32, 32);
+  tft.drawImage(120, 8, imageIndex, 32, 32);
+  tft.drawImage(120, 48, image, 32, 32);
 
   //Gamebuino_SD_GFX::writeImage(image, "WRITE4.BMP");
 }
