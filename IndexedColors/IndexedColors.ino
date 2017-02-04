@@ -8,12 +8,12 @@
 #include <Images/favicon16.h>
 //#include <Images/logo.h>
 
-#define TFT_CS		(30)
-#define TFT_RST		(0)
-#define TFT_DC		(31)
-#define SD_CS		(PIN_LED_TXL)
-#define BTN_CS		(PIN_LED_RXL)
-#define NEOPIX		(38)
+#define TFT_CS		(30u)
+#define TFT_RST		(0u)
+#define TFT_DC		(31u)
+#define SD_CS		(26u)
+#define BTN_CS		(25u)
+#define NEOPIX		(38u)
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 

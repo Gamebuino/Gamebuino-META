@@ -38,11 +38,11 @@
 #define KEYBOARD_W 16
 #define KEYBOARD_H 8
 
-#define TFT_CS		30
-#define TFT_RST		0
-#define TFT_DC		31
-#define SD_CS		26
-#define BTN_CS		25
+#define TFT_CS		(30u)
+#define TFT_RST		(0u)
+#define TFT_DC		(31u)
+#define SD_CS		(26u)
+#define NEOPIX		(38u)
 
 #define LCDHEIGHT	64
 #define LCDWIDTH	80
