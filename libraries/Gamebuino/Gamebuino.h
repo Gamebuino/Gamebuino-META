@@ -44,6 +44,7 @@
 #define TFT_DC		(31u)
 #define SD_CS		(26u)
 #define NEOPIX_PIN	(38u)
+#define BAT_PIN		(A5)
 
 #define LCDHEIGHT	64
 #define LCDWIDTH	80
@@ -96,6 +97,8 @@ private:
     void updatePopup();
     const __FlashStringHelper* popupText;
     uint8_t popupTimeLeft;
+	uint16_t batteryTimeLeft;
+	uint16_t battery;
 };
 
 #endif	/* GAMEBUINO_H */

@@ -46,8 +46,13 @@ void Gamebuino::begin() {
 	frameEndMicros = 1;
 	startMenuTimer = 255;
 
+	//battery
+	battery = 3300;
+	batteryTimeLeft = 0;
+
 	//neoPixels
 	neoPixels.begin();
+	neoPixels.clear();
 	neoPixels.show();
 
 	//buttons
@@ -172,11 +177,58 @@ boolean Gamebuino::update() {
 	} else {
 		if (!frameEndMicros) { //runs once at the end of the frame
 		
+			//draw and update popups
 			updatePopup();
 
+			//battery monitor
+			analogReadResolution(10);
+			//indirectly read VCC value, convert it to millivolts and smooth it out
+			// - 1.2V: VDDCORE used as voltage reference, connected to A5 pin
+			// - 1024: 10-bit analog resolution
+			// - 1000: convert to millivolts to avoid the use of float
+			// - low pass filter: weighted floating average
+			//   averaging the previous value Y(N-1) with a weight of 7
+			//   and the new value Y(N) with a weight of 1
+			//   Y(N) = ( 7 * Y(N-1) + Y(N) ) / 8
+			battery = ((7 * battery) + ((1024 * 1000 * 1.2) / analogRead(A5))) / 8;
+			//if VCC drops under 3.2V, start showing the low battery indicator
+			if (battery < 3200) {
+				batteryTimeLeft = 1000;
+			}
+			//actually draw the battery indicator
+			if (batteryTimeLeft) {
+				batteryTimeLeft--;
+				display.setColor(RED, BLACK);
+				display.drawFastVLine(0, 0, display.height());
+				display.cursorX = 1;
+				display.cursorY = 0;
+				if ((frameCount % 20) < 10) {
+					display.print("\7");
+				}
+				else {
+					display.print("\10");
+				}
+				display.setColor(BLACK);
+				display.drawFastVLine(0, 0, display.height() - map(battery, 2500, 3300, 0, display.height()));
+			}
 			
+			//battery debug display
+			/*
+			display.setColor(GREEN, BLACK);
+			if (battery < 3200) {
+				tft.setColor(RED, BLACK);
+			}
+			display.cursorX = 0;
+			display.cursorY = 6;
+			display.print(battery);
+			display.print("mV");
+			*/
+			
+
+			//send buffer to the screen
 			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
 
+			//record screenshot
 			if (buttons.pressed(BTN_D)) {
 				tft.setColor(RED,BLACK);
 				tft.drawRect(0, 0, tft._width, tft._height);
@@ -187,6 +239,7 @@ boolean Gamebuino::update() {
 				Gamebuino_SD_GFX::debugOutput = &tft;
 				Gamebuino_SD_GFX::writeImage(display, "SCREEN.BMP");
 			}
+
 
 			//if(!display.persistence)
 			display.fillScreen(WHITE); //clear the buffer
