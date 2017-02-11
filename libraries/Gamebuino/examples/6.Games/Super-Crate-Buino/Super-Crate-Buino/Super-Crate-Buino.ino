@@ -996,6 +996,11 @@ class Weapon {
         case W_SHOTGUN:
           addBullet(shooter->x, shooter->y, shooter->dir, W_SHELL);
       }
+      
+      int16_t light = random(0,255);
+      for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
+          gb.neoPixels.setPixelColor(i, light, light, light);
+      }
 
       switch (subtype) {
         case W_ROCKET :
@@ -1016,9 +1021,6 @@ class Weapon {
         case W_SHOTGUN :
           //gb.sound.playPattern(shotgun_sound, 0);
           gb.sound.playTick();
-          for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
-            gb.neoPixels.setPixelColor(i, 255, 255, 128);
-          }
           break;
         case W_MINE :
           break;
@@ -1904,7 +1906,7 @@ void gamePaused() {
   while (1) {
     if (gb.update()) {
       drawAll();
-      gb.display.setColor(BLACK, WHITE);
+      gb.display.setColor(WHITE, BLACK);
       gb.display.cursorX = 0;
       gb.display.cursorY = 0;
       gb.display.println("GAME PAUSED");
@@ -1948,7 +1950,7 @@ void drawAll() {
     bullets[i].draw();
     gb.display.setColor(BLACK);
   }
-  gb.display.setColor(BLACK, WHITE);
+  gb.display.setColor(WHITE, BLACK);
   gb.display.println(player.score);
   updatePopup();
   /*gb.display.cursorX = 0;
@@ -2037,11 +2039,11 @@ void updatePopup() {
     byte width = strlen(popupText) * gb.display.fontSize * gb.display.fontWidth;
     //byte width = 70;
     gb.display.fontSize = 1;
-    gb.display.setColor(BLACK);
-    gb.display.drawRect(LCDWIDTH / 2 - width / 2 - 2, yOffset - 1, width + 2, gb.display.fontHeight + 2);
     gb.display.setColor(WHITE);
-    gb.display.fillRect(LCDWIDTH / 2 - width / 2 - 1, yOffset - 1, width + 1, gb.display.fontHeight + 1);
+    gb.display.drawRect(LCDWIDTH / 2 - width / 2 - 2, yOffset - 1, width + 2, gb.display.fontHeight + 2);
     gb.display.setColor(BLACK);
+    gb.display.fillRect(LCDWIDTH / 2 - width / 2 - 1, yOffset - 1, width + 1, gb.display.fontHeight + 1);
+    gb.display.setColor(WHITE);
     gb.display.cursorY = yOffset;
     printCentered(popupText);
     popupTimeLeft--;
