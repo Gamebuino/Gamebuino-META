@@ -699,17 +699,17 @@ class Bullet :
         case W_CLUB :
           return 2;
         case W_SHELL :
-          return 20;
+          return 40;
         case W_MINE :
         case W_DISK :
-          return 100;
+          return 120;
         case W_EXPLOSION :
           return 5;
         case W_GRENADE :
         case W_ROCKET :
           return 40;
         default :
-          return 25;
+          return 40;
       }
 
     }
@@ -772,12 +772,23 @@ class Bullet :
         if (subtype == W_LASER) {
           //gb.display.setColor(INVERT);
         }
+        if (subtype == W_EXPLOSION){
+          uint8_t r,g,b;
+          g = r = random (128,255);
+          b = r / 2;
+          for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
+            int16_t xScreen = toScreenX(x) + (getWidth() / 2 / SCALE);
+            if((xScreen < 0) && (i < 4)) continue;
+            if((xScreen > gb.display.width()) && (i > 3)) continue;
+            gb.neoPixels.setPixelColor(i, r, g, b);
+          }
+        }
         Box::draw();
       }
     }
 };
 
-#define NUMBULLETS 20
+#define NUMBULLETS 50
 static Bullet bullets[NUMBULLETS];
 
 /////////////////////////////////////////////
@@ -886,6 +897,7 @@ class Weapon {
             case W_REVOLVER :
               shakeTimeLeft = 4;
               shakeAmplitude = 4;
+            case W_SHOTGUN:
             case W_MACHINEGUN :
               shakeTimeLeft = 2;
               shakeAmplitude = 1;
@@ -994,12 +1006,44 @@ class Weapon {
         case W_RIFLE:
         case W_SNIPER:
         case W_SHOTGUN:
+        case W_MACHINEGUN:
           addBullet(shooter->x, shooter->y, shooter->dir, W_SHELL);
       }
-      
-      int16_t light = random(0,255);
+
+
+      uint8_t r, g, b;
+      switch (subtype) {
+        case W_PISTOL :
+        case W_AKIMBO :
+        case W_RIFLE :
+          r = g = b = random(0,128);
+          break;
+        case W_MACHINEGUN :
+        case W_SHOTGUN :
+        case W_REVOLVER :
+        case W_SNIPER :
+          r = g = b = random(128,255);
+          break;
+        case W_LASER :
+          r = random(128,255);
+          b = g = 0;
+          break;
+      default:
+        r = g = b = 0;
+        break;
+      }
       for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
-          gb.neoPixels.setPixelColor(i, light, light, light);
+        switch(subtype){
+        //light only in the shooting direction for these weapons
+        case W_PISTOL :
+        case W_RIFLE :
+        case W_LASER :
+          if((shooter->dir < 0) && (i < 4)) continue;
+          if((shooter->dir > 0) && (i > 3)) continue;
+        default:
+          break;
+        }
+        gb.neoPixels.setPixelColor(i, r, g, b);
       }
 
       switch (subtype) {
