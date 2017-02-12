@@ -197,18 +197,19 @@ boolean Gamebuino::update() {
 			if (battery > 3200) lowBattery = false;
 			//actually draw the battery indicator
 			if (lowBattery) {
-				display.setColor(RED, BLACK);
-				display.drawFastVLine(0, 0, display.height());
-				display.cursorX = 1;
-				display.cursorY = 0;
+				display.cursorX = display.width() - display.fontWidth + 1;
+				display.cursorY = display.height() - display.fontHeight + 1;
+				display.setColor(BLACK);
+				display.fillRect(display.cursorX - 1, display.cursorY - 1, display.fontWidth, display.fontHeight);
+				display.setColor(RED);
 				if ((frameCount % 20) < 10) {
 					display.print("\7");
 				}
 				else {
-					display.print("\10");
+					display.print("\11");
 				}
-				display.setColor(BLACK);
-				display.drawFastVLine(0, 0, display.height() - map(battery, 2500, 3300, 0, display.height()));
+				uint8_t barHeight = map(battery, 2500, 3300, 0, display.height() - display.fontHeight );
+				display.drawFastVLine(display.width() - 1, display.height() - display.fontHeight  - barHeight, barHeight);
 				//disable light effects
 				neoPixels.clear();
 				//disable sound
