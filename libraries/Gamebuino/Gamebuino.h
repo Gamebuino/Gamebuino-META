@@ -97,7 +97,7 @@ private:
     void updatePopup();
     const __FlashStringHelper* popupText;
     uint8_t popupTimeLeft;
-	uint16_t batteryTimeLeft;
+	boolean lowBattery;
 	uint16_t battery;
 };
 

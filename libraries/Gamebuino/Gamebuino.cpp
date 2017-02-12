@@ -48,7 +48,7 @@ void Gamebuino::begin() {
 
 	//battery
 	battery = 3300;
-	batteryTimeLeft = 0;
+	lowBattery = false;
 
 	//neoPixels
 	neoPixels.begin();
@@ -191,13 +191,12 @@ boolean Gamebuino::update() {
 			//   and the new value Y(N) with a weight of 1
 			//   Y(N) = ( 7 * Y(N-1) + Y(N) ) / 8
 			battery = ((7 * battery) + ((1024 * 1000 * 1.2) / analogRead(A5))) / 8;
-			//if VCC drops under 3.2V, start showing the low battery indicator
-			if (battery < 3200) {
-				batteryTimeLeft = 1000;
-			}
+			//if VCC drops under 3.1V, start showing the low battery indicator
+			if (battery < 3100) lowBattery = true;
+			//if VCC raises above 3.2V, stop showing the battery indicator
+			if (battery > 3200) lowBattery = false;
 			//actually draw the battery indicator
-			if (batteryTimeLeft) {
-				batteryTimeLeft--;
+			if (lowBattery) {
 				display.setColor(RED, BLACK);
 				display.drawFastVLine(0, 0, display.height());
 				display.cursorX = 1;
