@@ -209,6 +209,11 @@ boolean Gamebuino::update() {
 				}
 				display.setColor(BLACK);
 				display.drawFastVLine(0, 0, display.height() - map(battery, 2500, 3300, 0, display.height()));
+				//disable light effects
+				neoPixels.clear();
+				//disable sound
+				sound.setVolume(0);
+
 			}
 			
 			//battery debug display
