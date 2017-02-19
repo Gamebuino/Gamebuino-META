@@ -38,8 +38,10 @@ const uint8_t gamebuinoLogo[] PROGMEM =
 	B00001111, B10110000, B01111000, B11000110, B11111111, B01111110, B00011111, B00011011, B00000110, B00011110, B00001111, 
 };
 
-void Gamebuino::begin() {
-
+void Gamebuino::begin() {		
+	// first we disable the watchdog timer so that we tell the bootloader everything is fine!
+	WDT->CTRL.bit.ENABLE = 0;
+	
 	timePerFrame = 40;
 	//nextFrameMillis = 0;
 	//frameCount = 0;
