@@ -41,9 +41,10 @@ const uint8_t gamebuinoLogo[] PROGMEM =
 	B00001111, B10110000, B01111000, B11000110, B11111111, B01111110, B00011111, B00011011, B00000110, B00011110, B00001111, 
 };
 
-void Gamebuino::begin() {
+void Gamebuino::begin() {		
+	// first we disable the watchdog timer so that we tell the bootloader everything is fine!
 	WDT->CTRL.bit.ENABLE = 0;
-
+	
 	timePerFrame = 40;
 	//nextFrameMillis = 0;
 	//frameCount = 0;
@@ -201,26 +202,26 @@ boolean Gamebuino::update() {
 			if (battery < 3100) lowBattery = true;
 			//if VCC raises above 3.2V, stop showing the battery indicator
 			if (battery > 3200) lowBattery = false;
-			//actually draw the battery indicator
+			//actually draw the low battery indicator
 			if (lowBattery) {
+				display.setFont(font3x5);
 				display.cursorX = display.width() - display.fontWidth + 1;
-				display.cursorY = display.height() - display.fontHeight + 1;
+				display.cursorY = 0;
 				display.setColor(BLACK);
-				display.fillRect(display.cursorX - 1, display.cursorY - 1, display.fontWidth, display.fontHeight);
+				display.fillRect(display.cursorX - 1, 0, display.fontWidth, display.fontHeight);
 				display.setColor(RED);
 				if ((frameCount % 20) < 10) {
+					//draw the empty battery character
 					display.print("\7");
 				}
 				else {
+					//draw the full battery character
 					display.print("\11");
 				}
-				uint8_t barHeight = map(battery, 2500, 3300, 0, display.height() - display.fontHeight );
-				display.drawFastVLine(display.width() - 1, display.height() - display.fontHeight  - barHeight, barHeight);
 				//disable light effects
 				neoPixels.clear();
 				//disable sound
 				sound.setVolume(0);
-
 			}
 			
 			//battery debug display
@@ -229,6 +230,9 @@ boolean Gamebuino::update() {
 			if (battery < 3200) {
 				tft.setColor(RED, BLACK);
 			}
+			//draw a  bar showing the voltage
+			uint8_t barHeight = map(battery, 2500, 3300, 0, display.height() - display.fontHeight );
+				display.drawFastVLine(display.width() - 1, display.height() - display.fontHeight  - barHeight, barHeight);
 			display.cursorX = 0;
 			display.cursorY = 6;
 			display.print(battery);
@@ -527,7 +531,16 @@ void Gamebuino::updatePopup(){
 }
 
 void Gamebuino::changeGame(){
-
+	//display a "loading" message
+	display.fontSize = 1;
+	display.cursorX = 0;
+	display.cursorY = 0;
+	display.fillScreen(BLACK);
+	display.setColor(WHITE);
+	display.print("LOADING...");
+	tft.drawImage(0, 0, display, tft.width(), tft.height());
+	//flash loader.bin
+	((void(*)(const char* filename))(*((uint32_t*)0x3FF8)))("loader.bin");
 }
 
 void Gamebuino::getDefaultName(char* string){

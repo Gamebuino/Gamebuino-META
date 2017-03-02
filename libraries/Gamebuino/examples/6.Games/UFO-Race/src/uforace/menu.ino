@@ -13,6 +13,9 @@ const char* const pauseMenu[PAUSEMENULENGTH] PROGMEM = {
 };
 
 void drawMenu(){
+    initGame();
+    play();
+  /*
   switch(gb.menu(pauseMenu, PAUSEMENULENGTH)){
   case 0: //play
     initGame();
@@ -54,4 +57,5 @@ void drawMenu(){
     drawTitleScreen();
     break;
   }
+  */
 }
