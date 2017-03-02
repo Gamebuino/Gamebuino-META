@@ -197,26 +197,26 @@ boolean Gamebuino::update() {
 			if (battery < 3100) lowBattery = true;
 			//if VCC raises above 3.2V, stop showing the battery indicator
 			if (battery > 3200) lowBattery = false;
-			//actually draw the battery indicator
+			//actually draw the low battery indicator
 			if (lowBattery) {
+				display.setFont(font3x5);
 				display.cursorX = display.width() - display.fontWidth + 1;
-				display.cursorY = display.height() - display.fontHeight + 1;
+				display.cursorY = 0;
 				display.setColor(BLACK);
-				display.fillRect(display.cursorX - 1, display.cursorY - 1, display.fontWidth, display.fontHeight);
+				display.fillRect(display.cursorX - 1, 0, display.fontWidth, display.fontHeight);
 				display.setColor(RED);
 				if ((frameCount % 20) < 10) {
+					//draw the empty battery character
 					display.print("\7");
 				}
 				else {
+					//draw the full battery character
 					display.print("\11");
 				}
-				uint8_t barHeight = map(battery, 2500, 3300, 0, display.height() - display.fontHeight );
-				display.drawFastVLine(display.width() - 1, display.height() - display.fontHeight  - barHeight, barHeight);
 				//disable light effects
 				neoPixels.clear();
 				//disable sound
 				sound.setVolume(0);
-
 			}
 			
 			//battery debug display
@@ -225,6 +225,9 @@ boolean Gamebuino::update() {
 			if (battery < 3200) {
 				tft.setColor(RED, BLACK);
 			}
+			//draw a  bar showing the voltage
+			uint8_t barHeight = map(battery, 2500, 3300, 0, display.height() - display.fontHeight );
+				display.drawFastVLine(display.width() - 1, display.height() - display.fontHeight  - barHeight, barHeight);
 			display.cursorX = 0;
 			display.cursorY = 6;
 			display.print(battery);
