@@ -1,5 +1,7 @@
 #include "Gamebuino-SD-GFX.h"
 
+extern SdFat SD;
+
 Print* Gamebuino_SD_GFX::debugOutput = 0;
 
 template <typename T>

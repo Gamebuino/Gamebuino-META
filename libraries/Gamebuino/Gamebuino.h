@@ -29,7 +29,7 @@
 #include <Adafruit_GFX.h>
 #include <Image.h>
 #include <SPI.h>
-#include <SD.h>
+#include <SdFat.h>
 #include <Gamebuino-SD-GFX.h>
 #include <Adafruit_NeoPixel.h>
 
@@ -101,5 +101,5 @@ private:
 	uint16_t battery;
 };
 
-#endif	/* GAMEBUINO_H */
 
+#endif	/* GAMEBUINO_H */

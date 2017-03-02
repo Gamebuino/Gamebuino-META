@@ -17,7 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+
+
 #include "Gamebuino.h"
+SdFat SD;
 const uint16_t startupSound[] PROGMEM = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
 
 // a 3x5 font table
@@ -39,6 +42,7 @@ const uint8_t gamebuinoLogo[] PROGMEM =
 };
 
 void Gamebuino::begin() {
+	WDT->CTRL.bit.ENABLE = 0;
 
 	timePerFrame = 40;
 	//nextFrameMillis = 0;
@@ -111,7 +115,7 @@ void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *log
 					display.drawBitmap(0, 12+logoOffset, logo);
 				}
 				display.cursorX = 0;
-				display.cursorY = 12; 
+				display.cursorY = 12;
 				/*#else
 				display.drawBitmap(7,0, gamebuinoLogo);
 				display.drawBitmap(-41,12,gamebuinoLogo);
@@ -119,8 +123,10 @@ void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *log
 					display.drawBitmap(0, 24+logoOffset, logo);
 				}
 				display.cursorX = 0;
-				display.cursorY = 24; 
+				display.cursorY = 24;
 				#endif*/
+				display.cursorY = 12;
+				
 				display.print(name);
 				
 				//A button
@@ -556,6 +562,7 @@ boolean Gamebuino::collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1
   int16_t ymin = (y1>=y2)? 0 : y2-y1;
   int16_t xmax = (x1+w1>=x2+w2)? x2+w2-x1 : w1;
   int16_t ymax = (y1+h1>=y2+h2)? y2+h2-y1 : h1;
+
   for(uint8_t y = ymin; y < ymax; y++){
     for(uint8_t x = xmin; x < xmax; x++){
       if(display.getBitmapPixel(b1, x, y) && display.getBitmapPixel(b2, x1+x-x2, y1+y-y2)){
@@ -563,5 +570,6 @@ boolean Gamebuino::collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1
       }
     }
   }
+
   return false;
 }

@@ -507,15 +507,15 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 					k = i;
 					l = j;
 					break;
-				case ROTCCW: //90° counter-clockwise
+				case ROTCCW: //90ï¿½ counter-clockwise
 					k = j;
 					l = w - i - 1;
 					break;
-				case ROT180: //180°
+				case ROT180: //180ï¿½
 					k = w - i - 1;
 					l = h - j - 1;
 					break;
-				case ROTCW: //90° clockwise
+				case ROTCW: //90ï¿½ clockwise
 					k = h - j - 1;
 					l = i;
 					break;

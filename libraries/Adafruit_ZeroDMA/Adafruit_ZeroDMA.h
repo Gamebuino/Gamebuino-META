@@ -29,4 +29,3 @@ class Adafruit_ZeroDMA {
 };
 
 static void configure_dma_resource(struct dma_resource *resource);
-

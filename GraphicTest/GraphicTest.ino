@@ -13,7 +13,7 @@ GRAHPIC TEST
 -- Scaled x2
 -- Scaled by arbitrary number
 -- Scaled by negative numbers (flipped)
--- Rotated 90/180/270°
+-- Rotated 90/180/270ï¿½
 -- Rotated by any angle 
 -- Screen edge clipping
 -- Transparent color (magenta)
@@ -74,6 +74,8 @@ Image testImgIndex = Image(16, 8, ColorMode::INDEX, textImgIndexBuffer);
 
 void setup()
 {
+	WDT->CTRL.bit.ENABLE = 0;
+	
 	tft.initR(INITR_BLACKTAB);
 	tft.setRotation(3);
 	tft.fillScreen(BLACK);
@@ -86,6 +88,7 @@ void setup()
 	tft.setColor(BLUE);
 	tft.println("BLUE");
 	delay(1500);
+	((void(*)(const char* filename))(*((uint32_t*)0x3FF8)))("led_red.ino.bin");
 }
 
 void loop()
@@ -155,7 +158,6 @@ void loop()
 		imgRGB.print(i);
 	}
 	drawImage(imgRGB, 2);
-
 }
 
 void drawTitle(char* title) {
@@ -194,4 +196,3 @@ void drawImage(Image img, float scale) {
 	tft.drawImage(x, y, img, w, h);
 	delay(1500);
 }
-

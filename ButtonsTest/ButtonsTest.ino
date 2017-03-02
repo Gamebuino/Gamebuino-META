@@ -4,8 +4,10 @@ Buttons buttons;
 
 void setup()
 {
+  WDT->CTRL.bit.ENABLE = 0;
   buttons.begin();
   SerialUSB.begin(9600);
+  
 }
 
 void loop()
@@ -30,4 +32,5 @@ void loop()
     SerialUSB.println("D");
 
   delay(100);
+  ((void(*)(const char* filename))(*((uint32_t*)0x3FF8)))("led_red.ino.bin");
 }
