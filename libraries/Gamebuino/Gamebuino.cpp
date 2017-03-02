@@ -523,7 +523,16 @@ void Gamebuino::updatePopup(){
 }
 
 void Gamebuino::changeGame(){
-
+	//display a "loading" message
+	display.fontSize = 1;
+	display.cursorX = 0;
+	display.cursorY = 0;
+	display.fillScreen(BLACK);
+	display.setColor(WHITE);
+	display.print("LOADING...");
+	tft.drawImage(0, 0, display, tft.width(), tft.height());
+	//flash loader.bin
+	((void(*)(const char* filename))(*((uint32_t*)0x3FF8)))("loader.bin");
 }
 
 void Gamebuino::getDefaultName(char* string){
