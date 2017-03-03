@@ -15,7 +15,6 @@ int camera_x, camera_y;
 void setup()
 {
   gb.begin();
-  gb.display.setFont(font5x7);
   initHighscore();
   drawTitleScreen();
 }
@@ -36,7 +35,6 @@ void play(){
     if(gb.update()){
       //pause the game if C is pressed
       if(gb.buttons.pressed(BTN_C)){
-        gb.display.setFont(font5x7);
         return;
       }
 
