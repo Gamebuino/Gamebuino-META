@@ -13,6 +13,7 @@ const char* const pauseMenu[PAUSEMENULENGTH] PROGMEM = {
 };
 
 void drawMenu(){
+    drawTitleScreen();
     initGame();
     play();
   /*

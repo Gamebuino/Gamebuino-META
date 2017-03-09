@@ -16,7 +16,6 @@ void setup()
 {
   gb.begin();
   initHighscore();
-  drawTitleScreen();
 }
 
 void loop(){

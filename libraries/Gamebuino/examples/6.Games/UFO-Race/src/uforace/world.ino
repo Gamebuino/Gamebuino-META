@@ -91,8 +91,10 @@ void drawMap(){
         gb.display.drawPixel(x+1, y+1);
     }
   }
-  gb.display.setColor(BLACK);
+  //player position
+  gb.display.setColor(RED);
   gb.display.drawPixel(9,9);
+  gb.display.setColor(BLACK);
 }
 
 
