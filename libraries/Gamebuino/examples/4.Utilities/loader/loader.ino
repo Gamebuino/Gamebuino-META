@@ -45,21 +45,21 @@ bool loadPage(uint32_t offset) {
     uint16_t color = WHITE;
     //gray out system entry
     if (entry.isSystem()) {
-      color = GRAY;
+      color = BROWN;
     //gray out directories
     } else if (entry.isDirectory()) {
-      color = GRAY;
+      color = BROWN;
       //dirty way to add a slash in front of directories names
       entry.getName(pageFiles[i] + 1, MAX_NAME_LEN - 1);
       pageFiles[i][0] = '/';
     }
     //gray out non .bin files
     if (!(strstr(pageFiles[i], ".BIN"))){
-      color = GRAY;
+      color = BROWN;
     }
     //gray out LOADER.BIN
     if ((strstr(pageFiles[i], "LOADER.BIN"))){
-      color = GRAY;
+      color = BROWN;
     }
     pageFileColors[i] = color;
     entry.close();

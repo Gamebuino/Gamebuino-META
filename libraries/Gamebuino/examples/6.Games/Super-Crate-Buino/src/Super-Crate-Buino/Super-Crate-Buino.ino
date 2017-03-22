@@ -1833,9 +1833,9 @@ class Crate :
     void draw() {
       if (isOffScreen())
         return;
-      gb.display.setColor(0xFD03);
+      gb.display.setColor(BROWN);
       gb.display.fillRect(toScreenX(x), toScreenY(y), 6, 6);
-      gb.display.setColor(0xAA86);
+      gb.display.setColor(DARKGRAY);
       gb.display.drawBitmap(toScreenX(x), toScreenY(y), crateBitmap);
       gb.display.setColor(BLACK);
     }
@@ -2103,7 +2103,7 @@ void drawCompass() {
     int dx = toScreenX(player.x + player.getWidth() / 2)   + (16 * x / dist);
     int dy = toScreenY(player.y + player.getHeight() / 2)  + (16 * y / dist);
     //gb.display.setColor(GRAY);
-    gb.display.setColor(0xFD03);
+    gb.display.setColor(BROWN);
     gb.display.drawLine(dx, dy, dx + x / 8, dy + y / 8);
     gb.display.setColor(BLACK);
   }

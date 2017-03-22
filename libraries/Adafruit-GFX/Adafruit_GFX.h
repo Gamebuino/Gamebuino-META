@@ -10,15 +10,22 @@
 
 #include "gfxfont.h"
 
-#define	BLACK   (0x0000)
-#define	BLUE    (0x001F)
-#define	RED     (0xF800)
-#define	GREEN   (0x07E0)
-#define CYAN    (0x07FF)
-#define MAGENTA (0xF81F)
-#define YELLOW  (0xFFE0)
-#define WHITE   (0xFFFF)
-#define GRAY	(0x8410)
+#define WHITE (0xFFFF)
+#define GRAY (0xACD0)
+#define DARKGRAY (0x72C7)
+#define BLACK (0x0000)
+#define PURPLE (0x8A39)
+#define MAGENTA (0xCA30)
+#define RED (0xD8E4)
+#define ORANGE (0xFD42)
+#define BROWN (0xCC68)
+#define SKIN (0xFEB2)
+#define YELLOW (0xF720)
+#define LIGHTGREEN (0x8668)
+#define GREEN (0x044A)
+#define DARKBLUE (0x0210)
+#define BLUE (0x4439)
+#define LIGHTBLUE (0x7DDF)
 
 #define ENABLE_BITMAPS 1
 //for extended bitmap function :

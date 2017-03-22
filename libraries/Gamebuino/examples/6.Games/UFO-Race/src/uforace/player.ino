@@ -86,13 +86,8 @@ void updatePlayer() {
       g = r = random (128, 255);
       b = r / 2;
       break;
-    case 5: //sand
-      r = random (64, 128);
-      g = r / 2;
-      b = 0;
-      break;
     case 6: //ice
-      b = random (64, 128);
+      b = random (32, 64);
       g = b / 2;
       r = 0;
       break;
