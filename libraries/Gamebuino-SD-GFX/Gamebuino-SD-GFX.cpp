@@ -38,20 +38,24 @@ uint16_t convertTo565(uint8_t r, uint8_t g, uint8_t b) {
 	return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
 }
 
-void write32(uint8_t byte1, uint8_t byte2, uint8_t byte3, uint8_t byte4, File * f) {
+void write32(uint32_t b, File * f) {
 	//Write four bytes
 	//Be careful of the byte order!
-	f->write(byte1); //LSB
-	f->write(byte2);
-	f->write(byte3);
-	f->write(byte4); //MSB
+	f->write(b & 0xFF); //LSB
+	b >>= 8;
+	f->write(b & 0xFF);
+	b >>= 8;
+	f->write(b & 0xFF);
+	b >>= 8;
+	f->write(b); //MSB
 }
 
-void write16(uint8_t byte1, uint8_t byte2, File * f) {
+void write16(uint16_t b, File * f) {
 	//Write two bytes
 	//Be careful of the byte order!
-	f->write(byte1); //LSB
-	f->write(byte2); //MSB
+	f->write(b & 0xFF); //LSB
+	b >>= 8;
+	f->write(b); //MSB
 }
 
 
@@ -62,188 +66,129 @@ void Gamebuino_SD_GFX::begin(){
 uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 	printDebug("SAVING TO ");
 	printlnDebug(filename);
-	File file;
-	int8_t bmpDepth;        // value for rgb 888
-	switch(img.colorMode){
-		case ColorMode::INDEX: 
-			bmpDepth=4;
-			break;
-		case ColorMode::RGB565: 
-			bmpDepth=24;
-			break;
-		default:
-		return 255;
-	}
-	int16_t width = img._width;
-	int16_t height = img._height;       // image size (w+h in pixels)
-	int32_t headerSize = 40;     // default value (ignoring bitmasks)
-	int32_t rowSize;             // Not always = width; may have padding
-	int32_t fileSize;            // We have to know the file size before completing the headers
-	int32_t bmpImageoffset;      // Start of image data in file
-	int32_t rawImageSize;        // Image Size including padding
-	int32_t colorTable = 0;      // Number of colors in the palette
-	int row, col;
-	int rambuffind = 0;
-	int32_t startTime = millis();
-	uint16_t* rambuffer = img._buffer;
-	
-	printDebug(" ");
-	printDebug(width);
-	printDebug(" x ");
-	printDebug(height);
-	printDebug(" x ");
-	printDebug(bmpDepth);
-	printlnDebug("-BIT");
 
-
+	// let's first make sure that our file doesn't already exist
 	if (SD.exists(filename)) {
 		printDebug(" ALREADY EXISTS, REMOVING");
-		if (SD.remove(filename)) printlnDebug(" OK");
-		else {
+		if (SD.remove(filename)) {
+			printlnDebug(" OK");
+		} else {
 			printlnDebug(" FAILED");
 			return 1;
 		}
 	}
 
 	printDebug(" CREATING FILE ");
-	file = SD.open(filename, FILE_WRITE);
-	if (file) {
-		printlnDebug(" OK");
-		printDebug(" ");
-
-		if (bmpDepth == 24) {//the file is a rgb888
-
-			//BMP Header : BMP header size is 14 bytes
-			write16(0x42, 0x4D, &file); // BMP signature
-			printDebug('.');
-			rowSize = (width * 3 + 3) & ~3; // BMP rows are padded (if needed) to 4-byte boundary
-			rawImageSize = rowSize*height;
-			bmpImageoffset = 14 + headerSize;
-			fileSize = bmpImageoffset + rawImageSize;
-			write32(((uint8_t *)&fileSize)[0], ((uint8_t *)&fileSize)[1],
-				((uint8_t *)&fileSize)[2], ((uint8_t *)&fileSize)[3], &file); //BMP file size
-			write16(0, 0, &file); //Reserved
-			write16(0, 0, &file); //Reserved
-			printDebug('.');
-			write32(((uint8_t *)&bmpImageoffset)[0], ((uint8_t *)&bmpImageoffset)[1],
-				((uint8_t *)&bmpImageoffset)[2], ((uint8_t *)&bmpImageoffset)[3], &file); //BMP pixel array offset
-			printDebug('.');
-
-			//DIB Header : DIB header size is 40 
-			write32(((uint8_t *)&headerSize)[0], ((uint8_t *)&headerSize)[1],
-				((uint8_t *)&headerSize)[2], ((uint8_t *)&headerSize)[3], &file); //BMP header Size
-			printDebug('.');
-			write32(width & 0xFF, (width >> 8) & 0xFF,
-				0, 0, &file); //BMP Widht
-			write32(height & 0xFF, (height >> 8) & 0xFF,
-				0, 0, &file); //BMP Height
-			printDebug('.');
-			write16(1, 0, &file); //Planes must be 1
-			write16(bmpDepth, 0, &file); //BMP Depth = bits per pixel
-			write32(0, 0, 0, 0, &file); //No compression = 0
-			printDebug('.');
-			write32(((uint8_t *)&rawImageSize)[0], ((uint8_t *)&rawImageSize)[1],
-				((uint8_t *)&rawImageSize)[2], ((uint8_t *)&rawImageSize)[3], &file); //Raw Image Size (including padding)
-			printDebug('.');
-			write32(0, 0, 0, 0, &file); //X pixels per meter horizontal
-			write32(0, 0, 0, 0, &file); //Y pixels per meter vertical
-			write32(0, 0, 0, 0, &file); //Number of colors in the palette
-			write32(0, 0, 0, 0, &file); //Important color count
-			printDebug('.');
-
-			//Pixel Array
-			for (row = height; row >= 0; row--) {//each row of the array
-				for (col = 0; col < width; col++) {//each pixel
-					file.write((uint8_t)(rambuffer[(row * width) + col] << 3));           //r
-					file.write((uint8_t)((rambuffer[(row * width) + col] >> 3) & 0xfc));    //g
-					file.write((uint8_t)((rambuffer[(row * width) + col] >> 8) & 0xf8));  //b
-				}
-				for (col =3*width;col < rowSize;col++) {//padding with zeros
-					file.write((uint8_t)0);
-					//printDebug('.');
-				}
-				printDebug('.');
-			}
-		}else if(bmpDepth==4) { //index 16, there must be an color table
-
-			colorTable = rambuffer[rambuffind++] | (rambuffer[rambuffind++] << 16);
-
-			//BMP Header : BMP header size is 14 bytes
-			write16(0x42, 0x4D, &file); // BMP signature
-			printDebug('.');
-			rowSize = ((bmpDepth*width + 31)/32) * 4; // BMP rows are padded (if needed) to 4-byte boundary
-			rawImageSize = rowSize*height;
-			bmpImageoffset = 14 + headerSize + colorTable * 4;
-			fileSize = bmpImageoffset + rawImageSize;
-			write32(((uint8_t *)&fileSize)[0], ((uint8_t *)&fileSize)[1],
-				((uint8_t *)&fileSize)[2], ((uint8_t *)&fileSize)[3], &file); //BMP file size
-			write16(0, 0, &file); //Reserved
-			write16(0, 0, &file); //Reserved
-			printDebug('.');
-			write32(((uint8_t *)&bmpImageoffset)[0], ((uint8_t *)&bmpImageoffset)[1],
-				((uint8_t *)&bmpImageoffset)[2], ((uint8_t *)&bmpImageoffset)[3], &file); //BMP pixel array offset
-			printDebug('.');
-
-			//DIB Header : DIB header size is 40 
-			write32(((uint8_t *)&headerSize)[0], ((uint8_t *)&headerSize)[1],
-				((uint8_t *)&headerSize)[2], ((uint8_t *)&headerSize)[3], &file); //BMP header Size
-			printDebug('.');
-			write32(width & 0xFF, (width >> 8) & 0xFF,
-				0, 0, &file); //BMP Widht
-			write32(height & 0xFF, (height >> 8) & 0xFF,
-				0, 0, &file); //BMP Height
-			printDebug('.');
-			write16(1, 0, &file); //Planes must be 1
-			write16(bmpDepth, 0, &file); //BMP Depth = bits per pixel
-			write32(0, 0, 0, 0, &file); //No compression = 0
-			printDebug('.');
-			write32(((uint8_t *)&rawImageSize)[0], ((uint8_t *)&rawImageSize)[1],
-				((uint8_t *)&rawImageSize)[2], ((uint8_t *)&rawImageSize)[3], &file); //Raw Image Size (including padding)
-			printDebug('.');
-			write32(0, 0, 0, 0, &file); //X pixels per meter horizontal
-			write32(0, 0, 0, 0, &file); //Y pixels per meter vertical
-			write32(((uint8_t *)&colorTable)[0], ((uint8_t *)&colorTable)[1],
-				((uint8_t *)&colorTable)[2], ((uint8_t *)&colorTable)[3], &file); //Number of colors in the palette
-			uint32_t impColor = 0;  // Important color count
-			impColor = rambuffer[rambuffind++] | (rambuffer[rambuffind++] << 16);
-			write32(((uint8_t *)&impColor)[0], ((uint8_t *)&impColor)[1],
-				((uint8_t *)&impColor)[2], ((uint8_t *)&impColor)[3], &file); //Important color count
-			printDebug('.');
-
-			// Color Palette
-			int i;
-			for (i = 0;i < colorTable;i++) { // we use impColor in order not to create a new variable
-				impColor = rambuffer[rambuffind++] | (rambuffer[rambuffind++] << 16);
-				write32(((uint8_t *)&impColor)[0], ((uint8_t *)&impColor)[1],
-					((uint8_t *)&impColor)[2], ((uint8_t *)&impColor)[3], &file);  //each color is added to the palette
-				printDebug('.');
-			}
-
-			//Pixel Array
-			for (row = 0;row < height;row++) {//each row of the array
-				for (col = 0;col < width;col+=4) {//write 4 pixels in a row
-					file.write((uint8_t)rambuffer[rambuffind]);
-					file.write((uint8_t)(rambuffer[rambuffind++] >> 8));
-					printDebug('.');
-				}//no padding is needed, as any padding is stored in rambuffer
-			}
-		}//end if(bmpDepth==24)
-		printDebug("\n WRITTEN IN ");
-		printDebug(millis() - startTime);
-		printlnDebug(" MS");
-
-		//Close the file
-		file.close();
-	}
-	else { //failed to open file
+	File file = SD.open(filename, FILE_WRITE);
+	if (!file) {
 		printlnDebug(" FAILED");
 		return 2;
 	}
-
-	return 0; //Success
+	printlnDebug(" OK");
+	
+	uint8_t bmpDepth; // let's generate our bit-depth
+#define BMP_HEADER_SIZE 40
+	uint32_t bmpWidth; // this will hold the bmp width, padded to four bytes
+	uint32_t colorTable = 0; // this is the color table, if needed
+	uint16_t* rambuffer = img._buffer;
+	switch(img.colorMode){
+		case ColorMode::INDEX: 
+			bmpDepth=4;
+			bmpWidth = ((bmpDepth*img._width + 31)/32) * 4;
+			colorTable = *(rambuffer++) | (*(rambuffer++)) << 16;
+			
+			printlnDebug("Indexed colors");
+			break;
+		case ColorMode::RGB565: 
+			bmpDepth=24;
+			bmpWidth = (img._width * 3 + 3) & ~3;
+			
+			printlnDebug("Full colors");
+			break;
+		default:
+			printDebug("Invalid Image mode");
+			return 255;
+	}
+	uint32_t bmpImageoffset = 14 + BMP_HEADER_SIZE + colorTable * 4; // here the image will start
+	uint32_t bmpImageSize = bmpWidth*img._height; // this holds the image size in bytes
+	uint32_t fileSize = bmpImageoffset + bmpImageSize; // this is the filesize
+	
+	// let's start writing the BMP header!
+	file.write("BM"); // this actually is a BMP image
+	printDebug('.');
+	write32(fileSize, &file);
+	write32(0, &file); // reserved
+	printDebug('.');
+	write32(bmpImageoffset, &file);
+	printDebug('.');
+	write32(BMP_HEADER_SIZE, &file);
+	printDebug('.');
+	write32(img._width, &file);
+	printDebug('.');
+	write32(img._height, &file);
+	printDebug('.');
+	write16(1, &file); // planes must be 1
+	write16(bmpDepth, &file);
+	write32(0, &file); // no compression
+	printDebug('.');
+	write32(bmpImageSize, &file);
+	printDebug('.');
+	write32(0, &file); // x pixels per meter horizontal
+	write32(0, &file); // y pixels per meter vertical
+	write32(colorTable, &file); // number of colors in the color table
+	if (colorTable) {
+		// we have a color table
+		write32(*(rambuffer++) | ((*(rambuffer++)) << 16), &file); // important colors
+		for (uint32_t i = 0; i < colorTable; i++) {
+			write32(*(rambuffer++) | ((*(rambuffer++)) << 16), &file); // add the colors!
+			printDebug('.');
+		}
+		// the header is done now, it is time to output the pixels!
+		// we devide height*width by 2 as we output 2 pixels at once
+		for (uint16_t i = 0; i < img._height*img._width/2; i++) {
+			write16(*(rambuffer++), &file);
+			//no padding is needed, as any padding is stored in rambuffer
+		}
+	} else {
+		// we don't have a color table
+		write32(0, &file); // no important colors
+		printDebug(".\n");
+		// the header is done now, it is time to output the pixels!
+		uint8_t j = bmpWidth - (3*img._width);
+		for (int8_t y = img._height - 1; y >= 0; y--) {
+			uint16_t* buf = rambuffer + (y*img._width);
+			for (uint8_t x = 0; x < img._width; x++) {
+				uint16_t b = *(buf++); // fetch our buf
+				
+				// red
+				uint8_t c = (uint8_t)(b << 3);
+				c |= c >> 5;
+				file.write(c);
+				
+				// green
+				c = (uint8_t)((b >> 3) & 0xFC);
+				c |= c >> 6;
+				file.write(c);
+				
+				// blue
+				c = (uint8_t)((b >> 8) & 0xF8);
+				c |= c >> 5;
+				file.write(c);
+			}
+			for (uint8_t i = j; i > 0; i++) {
+				// time to add padding
+				file.write((uint8_t)0);
+			}
+			printDebug('.');
+		}
+	}
+	file.close();
+	printDebug("\n DONE!");
+	return 0;
 }
 
 uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
+#if 0
 	
 	File     myFile;
 	int      bmpWidth, bmpHeight;               // W+H in pixels
@@ -470,4 +415,5 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 	}//if(myFile)
 	//printlnDebug("=============================================================");
 	//return rambuffer;
+#endif
 }
