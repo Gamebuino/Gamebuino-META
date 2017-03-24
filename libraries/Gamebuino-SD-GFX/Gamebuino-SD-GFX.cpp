@@ -1,6 +1,5 @@
 #include "Gamebuino-SD-GFX.h"
-
-extern SdFat SD;
+#include <Gamebuino.h>
 
 Print* Gamebuino_SD_GFX::debugOutput = 0;
 
@@ -39,20 +38,20 @@ uint16_t convertTo565(uint8_t r, uint8_t g, uint8_t b) {
 	return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
 }
 
-void write32(uint8_t byte1, uint8_t byte2, uint8_t byte3, uint8_t byte4, File f) {
+void write32(uint8_t byte1, uint8_t byte2, uint8_t byte3, uint8_t byte4, File * f) {
 	//Write four bytes
 	//Be careful of the byte order!
-	f.write(byte1); //LSB
-	f.write(byte2);
-	f.write(byte3);
-	f.write(byte4); //MSB
+	f->write(byte1); //LSB
+	f->write(byte2);
+	f->write(byte3);
+	f->write(byte4); //MSB
 }
 
-void write16(uint8_t byte1, uint8_t byte2, File f) {
+void write16(uint8_t byte1, uint8_t byte2, File * f) {
 	//Write two bytes
 	//Be careful of the byte order!
-	f.write(byte1); //LSB
-	f.write(byte2); //MSB
+	f->write(byte1); //LSB
+	f->write(byte2); //MSB
 }
 
 
@@ -67,10 +66,10 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 	int8_t bmpDepth;        // value for rgb 888
 	switch(img.colorMode){
 		case ColorMode::INDEX: 
-			bmpDepth=24;
+			bmpDepth=4;
 			break;
 		case ColorMode::RGB565: 
-			bmpDepth=4;
+			bmpDepth=24;
 			break;
 		default:
 		return 255;
@@ -105,59 +104,59 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 			return 1;
 		}
 	}
+
 	printDebug(" CREATING FILE ");
 	file = SD.open(filename, FILE_WRITE);
 	if (file) {
 		printlnDebug(" OK");
-	    printDebug(" ");
+		printDebug(" ");
 
 		if (bmpDepth == 24) {//the file is a rgb888
 
 			//BMP Header : BMP header size is 14 bytes
-			write16(0x42, 0x4D, file); // BMP signature
+			write16(0x42, 0x4D, &file); // BMP signature
 			printDebug('.');
 			rowSize = (width * 3 + 3) & ~3; // BMP rows are padded (if needed) to 4-byte boundary
 			rawImageSize = rowSize*height;
 			bmpImageoffset = 14 + headerSize;
 			fileSize = bmpImageoffset + rawImageSize;
 			write32(((uint8_t *)&fileSize)[0], ((uint8_t *)&fileSize)[1],
-				((uint8_t *)&fileSize)[2], ((uint8_t *)&fileSize)[3], file); //BMP file size
-			write16(0, 0, file); //Reserved
-			write16(0, 0, file); //Reserved
+				((uint8_t *)&fileSize)[2], ((uint8_t *)&fileSize)[3], &file); //BMP file size
+			write16(0, 0, &file); //Reserved
+			write16(0, 0, &file); //Reserved
 			printDebug('.');
 			write32(((uint8_t *)&bmpImageoffset)[0], ((uint8_t *)&bmpImageoffset)[1],
-				((uint8_t *)&bmpImageoffset)[2], ((uint8_t *)&bmpImageoffset)[3], file); //BMP pixel array offset
+				((uint8_t *)&bmpImageoffset)[2], ((uint8_t *)&bmpImageoffset)[3], &file); //BMP pixel array offset
 			printDebug('.');
 
 			//DIB Header : DIB header size is 40 
 			write32(((uint8_t *)&headerSize)[0], ((uint8_t *)&headerSize)[1],
-				((uint8_t *)&headerSize)[2], ((uint8_t *)&headerSize)[3], file); //BMP header Size
+				((uint8_t *)&headerSize)[2], ((uint8_t *)&headerSize)[3], &file); //BMP header Size
 			printDebug('.');
-			write32(((uint8_t *)&width)[0], ((uint8_t *)&width)[1],
-				((uint8_t *)&width)[2], ((uint8_t *)&width)[3], file); //BMP Widht
-			write32(((uint8_t *)&height)[0], ((uint8_t *)&height)[1],
-				((uint8_t *)&height)[2], ((uint8_t *)&height)[3], file); //BMP Height
+			write32(width & 0xFF, (width >> 8) & 0xFF,
+				0, 0, &file); //BMP Widht
+			write32(height & 0xFF, (height >> 8) & 0xFF,
+				0, 0, &file); //BMP Height
 			printDebug('.');
-			write16(1, 0, file); //Planes must be 1
-			write16(bmpDepth, 0, file); //BMP Depth = bits per pixel
-			write32(0, 0, 0, 0, file); //No compression = 0
+			write16(1, 0, &file); //Planes must be 1
+			write16(bmpDepth, 0, &file); //BMP Depth = bits per pixel
+			write32(0, 0, 0, 0, &file); //No compression = 0
 			printDebug('.');
 			write32(((uint8_t *)&rawImageSize)[0], ((uint8_t *)&rawImageSize)[1],
-				((uint8_t *)&rawImageSize)[2], ((uint8_t *)&rawImageSize)[3], file); //Raw Image Size (including padding)
+				((uint8_t *)&rawImageSize)[2], ((uint8_t *)&rawImageSize)[3], &file); //Raw Image Size (including padding)
 			printDebug('.');
-			write32(0, 0, 0, 0, file); //X pixels per meter horizontal
-			write32(0, 0, 0, 0, file); //Y pixels per meter vertical
-			write32(0, 0, 0, 0, file); //Number of colors in the palette
-			write32(0, 0, 0, 0, file); //Important color count
+			write32(0, 0, 0, 0, &file); //X pixels per meter horizontal
+			write32(0, 0, 0, 0, &file); //Y pixels per meter vertical
+			write32(0, 0, 0, 0, &file); //Number of colors in the palette
+			write32(0, 0, 0, 0, &file); //Important color count
 			printDebug('.');
 
 			//Pixel Array
-			for (row = (height-1);row >= 0;row--) {//each row of the array
-				for (col = 0;col < width;col++) {//each pixel
-					file.write((rambuffer[(row * width) + col] << 3));           //r
-					file.write((rambuffer[(row * width) + col] >> 3) & 0xfc);    //g
-					file.write((rambuffer[(row * width) + col] >> 8) & 0xf8);  //b
-					//printDebug('.');
+			for (row = height; row >= 0; row--) {//each row of the array
+				for (col = 0; col < width; col++) {//each pixel
+					file.write((uint8_t)(rambuffer[(row * width) + col] << 3));           //r
+					file.write((uint8_t)((rambuffer[(row * width) + col] >> 3) & 0xfc));    //g
+					file.write((uint8_t)((rambuffer[(row * width) + col] >> 8) & 0xf8));  //b
 				}
 				for (col =3*width;col < rowSize;col++) {//padding with zeros
 					file.write((uint8_t)0);
@@ -170,45 +169,45 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 			colorTable = rambuffer[rambuffind++] | (rambuffer[rambuffind++] << 16);
 
 			//BMP Header : BMP header size is 14 bytes
-			write16(0x42, 0x4D, file); // BMP signature
+			write16(0x42, 0x4D, &file); // BMP signature
 			printDebug('.');
 			rowSize = ((bmpDepth*width + 31)/32) * 4; // BMP rows are padded (if needed) to 4-byte boundary
 			rawImageSize = rowSize*height;
 			bmpImageoffset = 14 + headerSize + colorTable * 4;
 			fileSize = bmpImageoffset + rawImageSize;
 			write32(((uint8_t *)&fileSize)[0], ((uint8_t *)&fileSize)[1],
-				((uint8_t *)&fileSize)[2], ((uint8_t *)&fileSize)[3], file); //BMP file size
-			write16(0, 0, file); //Reserved
-			write16(0, 0, file); //Reserved
+				((uint8_t *)&fileSize)[2], ((uint8_t *)&fileSize)[3], &file); //BMP file size
+			write16(0, 0, &file); //Reserved
+			write16(0, 0, &file); //Reserved
 			printDebug('.');
 			write32(((uint8_t *)&bmpImageoffset)[0], ((uint8_t *)&bmpImageoffset)[1],
-				((uint8_t *)&bmpImageoffset)[2], ((uint8_t *)&bmpImageoffset)[3], file); //BMP pixel array offset
+				((uint8_t *)&bmpImageoffset)[2], ((uint8_t *)&bmpImageoffset)[3], &file); //BMP pixel array offset
 			printDebug('.');
 
 			//DIB Header : DIB header size is 40 
 			write32(((uint8_t *)&headerSize)[0], ((uint8_t *)&headerSize)[1],
-				((uint8_t *)&headerSize)[2], ((uint8_t *)&headerSize)[3], file); //BMP header Size
+				((uint8_t *)&headerSize)[2], ((uint8_t *)&headerSize)[3], &file); //BMP header Size
 			printDebug('.');
-			write32(((uint8_t *)&width)[0], ((uint8_t *)&width)[1],
-				((uint8_t *)&width)[2], ((uint8_t *)&width)[3], file); //BMP Widht
-			write32(((uint8_t *)&height)[0], ((uint8_t *)&height)[1],
-				((uint8_t *)&height)[2], ((uint8_t *)&height)[3], file); //BMP Height
+			write32(width & 0xFF, (width >> 8) & 0xFF,
+				0, 0, &file); //BMP Widht
+			write32(height & 0xFF, (height >> 8) & 0xFF,
+				0, 0, &file); //BMP Height
 			printDebug('.');
-			write16(1, 0, file); //Planes must be 1
-			write16(bmpDepth, 0, file); //BMP Depth = bits per pixel
-			write32(0, 0, 0, 0, file); //No compression = 0
+			write16(1, 0, &file); //Planes must be 1
+			write16(bmpDepth, 0, &file); //BMP Depth = bits per pixel
+			write32(0, 0, 0, 0, &file); //No compression = 0
 			printDebug('.');
 			write32(((uint8_t *)&rawImageSize)[0], ((uint8_t *)&rawImageSize)[1],
-				((uint8_t *)&rawImageSize)[2], ((uint8_t *)&rawImageSize)[3], file); //Raw Image Size (including padding)
+				((uint8_t *)&rawImageSize)[2], ((uint8_t *)&rawImageSize)[3], &file); //Raw Image Size (including padding)
 			printDebug('.');
-			write32(0, 0, 0, 0, file); //X pixels per meter horizontal
-			write32(0, 0, 0, 0, file); //Y pixels per meter vertical
+			write32(0, 0, 0, 0, &file); //X pixels per meter horizontal
+			write32(0, 0, 0, 0, &file); //Y pixels per meter vertical
 			write32(((uint8_t *)&colorTable)[0], ((uint8_t *)&colorTable)[1],
-				((uint8_t *)&colorTable)[2], ((uint8_t *)&colorTable)[3], file); //Number of colors in the palette
+				((uint8_t *)&colorTable)[2], ((uint8_t *)&colorTable)[3], &file); //Number of colors in the palette
 			uint32_t impColor = 0;  // Important color count
 			impColor = rambuffer[rambuffind++] | (rambuffer[rambuffind++] << 16);
 			write32(((uint8_t *)&impColor)[0], ((uint8_t *)&impColor)[1],
-				((uint8_t *)&impColor)[2], ((uint8_t *)&impColor)[3], file); //Important color count
+				((uint8_t *)&impColor)[2], ((uint8_t *)&impColor)[3], &file); //Important color count
 			printDebug('.');
 
 			// Color Palette
@@ -216,15 +215,15 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 			for (i = 0;i < colorTable;i++) { // we use impColor in order not to create a new variable
 				impColor = rambuffer[rambuffind++] | (rambuffer[rambuffind++] << 16);
 				write32(((uint8_t *)&impColor)[0], ((uint8_t *)&impColor)[1],
-					((uint8_t *)&impColor)[2], ((uint8_t *)&impColor)[3], file);  //each color is added to the palette
+					((uint8_t *)&impColor)[2], ((uint8_t *)&impColor)[3], &file);  //each color is added to the palette
 				printDebug('.');
 			}
 
 			//Pixel Array
 			for (row = 0;row < height;row++) {//each row of the array
 				for (col = 0;col < width;col+=4) {//write 4 pixels in a row
-					file.write(rambuffer[rambuffind]);
-					file.write(rambuffer[rambuffind++] >> 8);
+					file.write((uint8_t)rambuffer[rambuffind]);
+					file.write((uint8_t)(rambuffer[rambuffind++] >> 8));
 					printDebug('.');
 				}//no padding is needed, as any padding is stored in rambuffer
 			}
@@ -472,5 +471,3 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 	//printlnDebug("=============================================================");
 	//return rambuffer;
 }
-
-

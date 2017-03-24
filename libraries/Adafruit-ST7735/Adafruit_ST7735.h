@@ -31,7 +31,6 @@ as well as Adafruit raw 1.8" TFT display
  #include "WProgram.h"
 #endif
 
-#include <Adafruit_GFX.h>
 #include <Image.h>
 
 #if defined(__SAM3X8E__)

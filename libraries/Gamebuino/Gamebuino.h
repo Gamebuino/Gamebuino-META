@@ -21,6 +21,10 @@
 #define	GAMEBUINO_H
 
 #include <Arduino.h>
+#include <SPI.h>
+#include <SdFat.h>
+extern SdFat SD;
+
 #include "utility/Buttons.h"
 #include "utility/Sound.h"
 #include <Adafruit_ZeroDMA.h>
@@ -28,8 +32,6 @@
 #include <Adafruit_ST7735.h>
 #include <Adafruit_GFX.h>
 #include <Image.h>
-#include <SPI.h>
-#include <SdFat.h>
 #include <Gamebuino-SD-GFX.h>
 #include <Adafruit_NeoPixel.h>
 

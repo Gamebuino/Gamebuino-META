@@ -4,7 +4,6 @@
 #include "Arduino.h"
 #include "Adafruit_GFX.h"
 #include "Image.h"
-#include <SdFat.h>
 
 #define BUFFPIXEL 16
 

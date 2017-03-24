@@ -101,72 +101,72 @@ void Gamebuino::titleScreen(){
 }
 
 void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *logo){
-		display.fontSize = 1;
-		display.textWrap = false;
-		//display.persistence = false;
-		//battery.show = false;
-		display.setColor(BLACK);
-		while(1){
-			if(update()){
-				uint8_t logoOffset = pgm_read_byte(name)?display.fontHeight:0; //add an offset the logo when there is a name to display
-				//draw graphics
-				//#if LCDWIDTH == LCDWIDTH_NOROT
-				display.drawBitmap(-1,1, gamebuinoLogo);
-				if(logo){
-					display.drawBitmap(0, 12+logoOffset, logo);
-				}
-				display.cursorX = 0;
-				display.cursorY = 12;
-				/*#else
-				display.drawBitmap(7,0, gamebuinoLogo);
-				display.drawBitmap(-41,12,gamebuinoLogo);
-				if(logo){
-					display.drawBitmap(0, 24+logoOffset, logo);
-				}
-				display.cursorX = 0;
-				display.cursorY = 24;
-				#endif*/
-				display.cursorY = 12;
-				
-				display.print(name);
-				
-				//A button
-				display.cursorX = LCDWIDTH - display.fontWidth*3 -1;
-				display.cursorY = LCDHEIGHT - display.fontHeight*3 - 3;
-				if((frameCount/16)%2)
-				  display.println(F("\25 \20"));
-				else
-				  display.println(F("\25\20 "));
-				//B button
-				display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
-				display.cursorY++;
-				if(sound.globalVolume)
-					display.println(F("\26\23\24"));
-				else
-					display.println(F("\26\23x"));
-				//C button
-				display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
-				display.cursorY++;
-				display.println(F("\27SD"));
-				
-				//toggle volume when B is pressed
-				if(buttons.pressed(BTN_B)){
-					sound.setVolume(sound.getVolume() + 1);
-					sound.playTick();
-				}
-				//leave the menu
-				if(buttons.pressed(BTN_A)){
-					//startMenuTimer = 255; //don't automatically skip the title screen next time it's displayed
-					//sound.stopPattern(0);
-					sound.playOK();
-					break;
-				}
-				//flash the loader
-				if(buttons.pressed(BTN_C))
-					changeGame();
+	display.fontSize = 1;
+	display.textWrap = false;
+	//display.persistence = false;
+	//battery.show = false;
+	display.setColor(BLACK);
+	while(1){
+		if(update()){
+			uint8_t logoOffset = pgm_read_byte(name)?display.fontHeight:0; //add an offset the logo when there is a name to display
+			//draw graphics
+			//#if LCDWIDTH == LCDWIDTH_NOROT
+			display.drawBitmap(-1,1, gamebuinoLogo);
+			if(logo){
+				display.drawBitmap(0, 12+logoOffset, logo);
 			}
+			display.cursorX = 0;
+			display.cursorY = 12;
+			/*#else
+			display.drawBitmap(7,0, gamebuinoLogo);
+			display.drawBitmap(-41,12,gamebuinoLogo);
+			if(logo){
+				display.drawBitmap(0, 24+logoOffset, logo);
+			}
+			display.cursorX = 0;
+			display.cursorY = 24;
+			#endif*/
+			display.cursorY = 12;
+			
+			display.print(name);
+			
+			//A button
+			display.cursorX = LCDWIDTH - display.fontWidth*3 -1;
+			display.cursorY = LCDHEIGHT - display.fontHeight*3 - 3;
+			if((frameCount/16)%2)
+			  display.println(F("\25 \20"));
+			else
+			  display.println(F("\25\20 "));
+			//B button
+			display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
+			display.cursorY++;
+			if(sound.globalVolume)
+				display.println(F("\26\23\24"));
+			else
+				display.println(F("\26\23x"));
+			//C button
+			display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
+			display.cursorY++;
+			display.println(F("\27SD"));
+			
+			//toggle volume when B is pressed
+			if(buttons.pressed(BTN_B)){
+				sound.setVolume(sound.getVolume() + 1);
+				sound.playTick();
+			}
+			//leave the menu
+			if(buttons.pressed(BTN_A)){
+				//startMenuTimer = 255; //don't automatically skip the title screen next time it's displayed
+				//sound.stopPattern(0);
+				sound.playOK();
+				break;
+			}
+			//flash the loader
+			if(buttons.pressed(BTN_C))
+				changeGame();
 		}
-		//battery.show = true;
+	}
+	//battery.show = true;
 }
 
 boolean Gamebuino::update() {
