@@ -20,6 +20,11 @@
 #ifndef GAMEBUINO_H
 #define	GAMEBUINO_H
 
+// let's first include our config. First one can be overriden inside the sketch, config.h contains the default configs
+#include <config_gamebuino.h>
+#include "config.h"
+
+
 #include <Arduino.h>
 #include <SPI.h>
 #include <SdFat.h>
@@ -34,6 +39,8 @@ extern SdFat SD;
 #include <Image.h>
 #include <Gamebuino-SD-GFX.h>
 #include <Adafruit_NeoPixel.h>
+
+
 
 //GUI settings
 #define ENABLE_GUI 1 //enable menu, keyboard, pop-up, volume adjust functions
@@ -58,31 +65,31 @@ extern SdFat SD;
 
 class Gamebuino {
 public:
-    Buttons buttons;
-    Sound sound;
-    Image display = Image(80,64, ColorMode::RGB565);
+	Buttons buttons;
+	Sound sound;
+	Image display = Image(80,64, ColorMode::RGB565);
 	Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 
-    void begin();
+	void begin();
 	void titleScreen(const __FlashStringHelper* name, const uint8_t *logo);
 	void titleScreen(const __FlashStringHelper* name);
 	void titleScreen(const uint8_t* logo);
-    void titleScreen();
-    boolean update();
+	void titleScreen();
+	boolean update();
 	uint8_t startMenuTimer;
-    uint32_t frameCount;
-    void setFrameRate(uint8_t fps);
+	uint32_t frameCount;
+	void setFrameRate(uint8_t fps);
 	void pickRandomSeed();
 	
 	uint8_t getCpuLoad();
-    uint16_t getFreeRam();
-    uint16_t frameDurationMicros;
-    uint32_t frameStartMicros, frameEndMicros;
-    
-    int8_t menu(const char* const* items, uint8_t length);
-    void keyboard(char* text, uint8_t length);
-    void popup(const __FlashStringHelper* text, uint8_t duration);
+	uint16_t getFreeRam();
+	uint16_t frameDurationMicros;
+	uint32_t frameStartMicros, frameEndMicros;
+	
+	int8_t menu(const char* const* items, uint8_t length);
+	void keyboard(char* text, uint8_t length);
+	void popup(const __FlashStringHelper* text, uint8_t duration);
 	//void adjustVolume();
 	void changeGame();
 	boolean settingsAvailable();
@@ -91,14 +98,14 @@ public:
 	
 	boolean collidePointRect(int16_t x1, int16_t y1 ,int16_t x2 ,int16_t y2, int16_t w, int16_t h);
 	boolean collideRectRect(int16_t x1, int16_t y1, int16_t w1, int16_t h1 ,int16_t x2 ,int16_t y2, int16_t w2, int16_t h2);
-    boolean collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, int16_t x2, int16_t y2, const uint8_t* b2);
+	boolean collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, int16_t x2, int16_t y2, const uint8_t* b2);
 
 private:
-    uint8_t timePerFrame;
-    uint32_t nextFrameMillis;
-    void updatePopup();
-    const __FlashStringHelper* popupText;
-    uint8_t popupTimeLeft;
+	uint8_t timePerFrame;
+	uint32_t nextFrameMillis;
+	void updatePopup();
+	const __FlashStringHelper* popupText;
+	uint8_t popupTimeLeft;
 	boolean lowBattery;
 	uint16_t battery;
 };
