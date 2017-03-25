@@ -15,6 +15,25 @@ int camera_x, camera_y;
 void setup()
 {
   gb.begin();
+  gb.tft.println(gb.save.get(0));
+  gb.tft.println(gb.save.get(1));
+  
+  gb.save.set(1, -42);
+  
+  gb.save.set(2, "Hello World");
+  gb.save.set(3, "Foxes are BEST!");
+  
+  gb.tft.println(gb.save.get(0));
+  gb.tft.println(gb.save.get(1));
+  char buf[32];
+  gb.save.get(2, buf, 32);
+  gb.tft.println(buf);
+  gb.save.get(3, buf, 32);
+  gb.tft.println(buf);
+  gb.save.set(15, "yay");
+  gb.save.get(15, buf, 32);
+  gb.tft.println(buf);
+  while(1);
   initHighscore();
 }
 

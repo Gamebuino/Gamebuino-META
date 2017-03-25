@@ -20,8 +20,6 @@
 #ifndef GAMEBUINO_H
 #define	GAMEBUINO_H
 
-// let's first include our config. First one can be overriden inside the sketch, config.h contains the default configs
-#include <config_gamebuino.h>
 #include "config.h"
 
 
@@ -32,6 +30,7 @@ extern SdFat SD;
 
 #include "utility/Buttons.h"
 #include "utility/Sound.h"
+#include "utility/Save.h"
 #include <Adafruit_ZeroDMA.h>
 #include <Adafruit_ASFcore.h>
 #include <Adafruit_ST7735.h>
@@ -69,6 +68,7 @@ public:
 	Sound sound;
 	Image display = Image(80,64, ColorMode::RGB565);
 	Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+	Save save = Save(&tft);
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 
 	void begin();
