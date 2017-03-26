@@ -78,11 +78,15 @@ void Save::openFile() {
 	if (open) {
 		return;
 	}
-	exists = SD.exists(filename);
+	const char filename[] = SAVEFILE_NAME;
+	bool exists = SD.exists(filename);
 	f = SD.open(filename, FILE_WRITE);
 	if (!f) {
-		error("Can't create savefile");
-		while(1);
+		// eeeeeh, can't open it so we are read-only
+		open = true;
+		readOnly = true;
+		blocks = SAVEBLOCK_NUM;
+		return;
 	}
 	open = true;
 	if (!exists) {
@@ -250,8 +254,11 @@ void Save::_set(uint16_t i, uint32_t b) {
 	f.write(&b, 4);
 }
 
-void Save::set(uint16_t i, int32_t num) {
+bool Save::set(uint16_t i, int32_t num) {
 	openFile();
+	if (readOnly) {
+		return false;
+	}
 	SaveVar s = getVarInfo(i);
 	if (s.defined && s.type != SAVETYPE_INT) {
 		// trying to store an int in a non-int
@@ -272,6 +279,7 @@ void Save::set(uint16_t i, int32_t num) {
 	}
 	_set(i, (uint32_t)num);
 	f.flush();
+	return true;
 }
 
 void Save::newBlob(uint16_t i, uint8_t size) {
@@ -290,20 +298,23 @@ void Save::newBlob(uint16_t i, uint8_t size) {
 	f.write(&payload_size, 4);
 }
 
-void Save::set(uint16_t i, char* buf) {
-	set(i, (void*)buf, strlen(buf));
+bool Save::set(uint16_t i, char* buf) {
+	return set(i, (void*)buf, strlen(buf));
 }
 
-void Save::set(uint16_t i, const char* buf) {
-	set(i, (void*)buf, strlen(buf));
+bool Save::set(uint16_t i, const char* buf) {
+	return set(i, (void*)buf, strlen(buf));
 }
 
-void Save::set(uint16_t i, const void* buf, uint8_t bufsize) {
-	set(i, (void*)buf, bufsize);
+bool Save::set(uint16_t i, const void* buf, uint8_t bufsize) {
+	return set(i, (void*)buf, bufsize);
 }
 
-void Save::set(uint16_t i, void* buf, uint8_t bufsize) {
+bool Save::set(uint16_t i, void* buf, uint8_t bufsize) {
 	openFile();
+	if (readOnly) {
+		return false;
+	}
 	SaveVar s = getVarInfo(i);
 	if (s.defined && s.type != SAVETYPE_BLOB) {
 		// trying to store an int in a non-int
@@ -335,8 +346,7 @@ void Save::set(uint16_t i, void* buf, uint8_t bufsize) {
 	if (size != want_size) {
 		// ok the size is different, so let's change this!
 		del(i);
-		set(i, buf, bufsize);
-		return;
+		return set(i, buf, bufsize);
 	}
 	size = MIN(size, bufsize);
 	
@@ -347,12 +357,16 @@ void Save::set(uint16_t i, void* buf, uint8_t bufsize) {
 	// now finally perform the write
 	f.write(buf, size);
 	f.flush();
+	return true;
 }
 
 
 
 void Save::del(uint16_t i) {
 	openFile();
+	if (readOnly) {
+		return;
+	}
 	SaveVar s = getVarInfo(i);
 	if (!s.defined) {
 		return; // nothing to do!

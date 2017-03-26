@@ -46,20 +46,19 @@ struct SaveDefault {
 class Save {
 public:
 	Save(Adafruit_ST7735 *_tft);
-	void set(uint16_t i, int32_t num);
 	int32_t get(uint16_t i);
 	bool get(uint16_t i, void* buf, uint8_t bufsize);
-	void set(uint16_t i, char* buf);
-	void set(uint16_t i, const char* buf);
-	void set(uint16_t i, void* buf, uint8_t bufsize);
-	void set(uint16_t i, const void* buf, uint8_t bufsize);
+	bool set(uint16_t i, int32_t num);
+	bool set(uint16_t i, char* buf);
+	bool set(uint16_t i, const char* buf);
+	bool set(uint16_t i, void* buf, uint8_t bufsize);
+	bool set(uint16_t i, const void* buf, uint8_t bufsize);
 	void del(uint16_t i);
 private:
 	Adafruit_ST7735 *tft;
-	const char *filename = "save.sav";
 	File f;
-	bool exists = false;
 	bool open = false;
+	bool readOnly = false;
 	uint16_t blocks = 0;
 	uint32_t payload_size = 0;
 	SaveDefault defaults[SAVECONF_SIZE] = SAVECONF;

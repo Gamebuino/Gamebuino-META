@@ -16,3 +16,7 @@
 #ifndef SAVECONF_SIZE
 #define SAVECONF_SIZE 0
 #endif
+
+#ifndef SAVEFILE_NAME
+#define SAVEFILE_NAME "save.sav"
+#endif
