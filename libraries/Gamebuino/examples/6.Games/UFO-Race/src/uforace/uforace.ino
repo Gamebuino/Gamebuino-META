@@ -18,10 +18,9 @@ void setup()
   gb.tft.println(gb.save.get(0));
   gb.tft.println(gb.save.get(1));
   
-  gb.save.set(1, -42);
   
-  gb.save.set(2, "Hello World");
-  gb.save.set(3, "Foxes are BEST!");
+  gb.save.set(2, "Hello World?");
+  gb.save.set(3, "Foxes are BEST!!!!!");
   
   gb.tft.println(gb.save.get(0));
   gb.tft.println(gb.save.get(1));

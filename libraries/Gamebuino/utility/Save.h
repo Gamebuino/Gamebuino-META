@@ -26,12 +26,12 @@
 extern SdFat SD;
 
 
-typedef struct SaveVar {
+struct SaveVar {
 	bool defined;
 	uint8_t type;
 };
 
-typedef struct SaveDefault {
+struct SaveDefault {
 	SaveDefault(uint16_t _i, uint8_t _type, uint8_t _ival);
 	SaveDefault(uint16_t i, uint8_t _type, const void* _ptr, uint8_t _length);
 	uint16_t i;
@@ -53,6 +53,7 @@ public:
 	void set(uint16_t i, const char* buf);
 	void set(uint16_t i, void* buf, uint8_t bufsize);
 	void set(uint16_t i, const void* buf, uint8_t bufsize);
+	void del(uint16_t i);
 private:
 	Adafruit_ST7735 *tft;
 	const char *filename = "save.sav";

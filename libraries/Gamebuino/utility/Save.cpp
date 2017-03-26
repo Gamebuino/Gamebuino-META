@@ -59,7 +59,7 @@ void Save::error(const char *s) {
 SaveVar Save::getVarInfo(uint16_t i) {
 	if (i > blocks) {
 		// Trying to access bad block...
-		while(1);
+		error("accessing non-existing block");
 	}
 	SaveVar s;
 	f.seekSet(SAVEHEADER_SIZE + i);
@@ -140,14 +140,16 @@ bool Save::get(uint16_t i, void* buf, uint8_t bufsize) {
 	openFile();
 	SaveVar s = getVarInfo(i);
 	if (!s.defined) {
-		// TODO: default handling
+		memset(buf, 0, bufsize);
 		for (uint16_t j = 0; j < SAVECONF_SIZE; j++) {
 			if (defaults[j].i == i) {
 				// we found our element!
 				if (defaults[j].type != SAVETYPE_BLOB) {
 					error("trying to get from a non-blob type");
 				}
-				memcpy(buf, defaults[j].val.ptr, MIN(bufsize, defaults[j].length));
+				if (defaults[j].val.ptr) {
+					memcpy(buf, defaults[j].val.ptr, MIN(bufsize, defaults[j].length));
+				}
 				break;
 			}
 		}
@@ -187,16 +189,16 @@ void Save::set(uint16_t i, int32_t num) {
 		// trying to store an int in a non-int
 		error("trying set to a non-int type");
 	}
-	if (!s.defined) {
-		for (uint16_t j = 0; j < SAVECONF_SIZE; j++) {
-			if (defaults[j].i == i) {
-				// we found our element!
-				if (defaults[j].type != SAVETYPE_INT) {
-					error("trying set to a non-int type");
-				}
-				break;
+	for (uint16_t j = 0; j < SAVECONF_SIZE; j++) {
+		if (defaults[j].i == i) {
+			// we found our element!
+			if (defaults[j].type != SAVETYPE_INT) {
+				error("trying set to a non-int type");
 			}
+			break;
 		}
+	}
+	if (!s.defined) {
 		f.seekSet(SAVEHEADER_SIZE + i);
 		f.write((uint8_t)(0x80 | SAVETYPE_INT));
 	}
@@ -239,29 +241,35 @@ void Save::set(uint16_t i, void* buf, uint8_t bufsize) {
 		// trying to store an int in a non-int
 		error("trying set to a non-blob type");
 	}
-	uint8_t size = SAVECONF_DEFAULT_BLOBSIZE;
-	if (!s.defined) {
-		for (uint16_t j = 0; j < SAVECONF_SIZE; j++) {
-			if (defaults[j].i == i) {
-				// we found our element!
-				if (defaults[j].type != SAVETYPE_BLOB) {
-					error("trying set to a non-blob type");
-				}
-				size = defaults[j].length;
-				break;
+	uint8_t want_size = SAVECONF_DEFAULT_BLOBSIZE;
+	for (uint16_t j = 0; j < SAVECONF_SIZE; j++) {
+		if (defaults[j].i == i) {
+			// we found our element!
+			if (defaults[j].type != SAVETYPE_BLOB) {
+				error("trying set to a non-blob type");
 			}
+			want_size = defaults[j].length;
+			break;
 		}
-		
+	}
+	
+	if (!s.defined) {
 		// first we create the blob entry
 		f.seekSet(SAVEHEADER_SIZE + i);
 		f.write((uint8_t)(0x80 | SAVETYPE_BLOB));
-		newBlob(i, size);
+		newBlob(i, want_size);
 	}
 	
 	uint32_t b = _get(i);
 	
 	// determine how many bytes to set
-	size = b >> 24;
+	uint8_t size = b >> 24;
+	if (size != want_size) {
+		// ok the size is different, so let's change this!
+		del(i);
+		set(i, buf, bufsize);
+		return;
+	}
 	size = MIN(size, bufsize);
 	
 	// get the pointer and seek the file there
@@ -270,5 +278,64 @@ void Save::set(uint16_t i, void* buf, uint8_t bufsize) {
 	
 	// now finally perform the write
 	f.write(buf, size);
+	f.flush();
+}
+
+
+
+void Save::del(uint16_t i) {
+	openFile();
+	SaveVar s = getVarInfo(i);
+	if (!s.defined) {
+		return; // nothing to do!
+	}
+	
+	// let's delete the entry first
+	f.seekSet(SAVEHEADER_SIZE + i);
+	f.write((uint8_t)0);
+	
+	if (s.type == SAVETYPE_INT) {
+		f.flush();
+		return; // with ints that is all what is left to do
+	}
+	
+	// ok, we have a blob, so we must get rid of the payload...
+	uint32_t b = _get(i);
+	
+	// determine the size of the payload
+	uint8_t size = b >> 24;
+	
+	// get the pointer and seek the file there
+	b &= 0x00FFFFFF;
+	
+	// now we need to loop all blocks and shift those with a payload pointer that is greater down a bit
+	for (i = 0; i < blocks; i++) {
+		s = getVarInfo(i);
+		if (s.defined && s.type == SAVETYPE_BLOB) {
+			uint32_t c = _get(i);
+			uint8_t size_c = c >> 24;
+			c &= 0x00FFFFFF;
+			if (c > b) {
+				// we just adjust the pointer here, we do all the shifting later on
+				c -= size;
+				c |= (size_c << 24);
+				_set(i, c);
+			}
+		}
+	}
+	// ok now we actually need to shift the payload data
+	for (uint32_t j = 0; j < (payload_size-b-size); j++) {
+		uint8_t c;
+		f.seekSet(SAVEHEADER_SIZE + (5*blocks) + b + size + j);
+		f.read(&c, 1);
+		f.seekSet(SAVEHEADER_SIZE + (5*blocks) + b + j);
+		f.write(c);
+	}
+	
+	// now all that is left to do is to adjust the payload and filesize
+	payload_size -= size;
+	f.seekSet(6);
+	f.write(&payload_size, 4);
+	f.truncate(SAVEHEADER_SIZE + (5*blocks) + payload_size);
 	f.flush();
 }
