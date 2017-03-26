@@ -5,8 +5,8 @@
 
 
 // save defines
-#ifndef SAVE_BLOCKNUM
-#define SAVE_BLOCKNUM 64
+#ifndef SAVEBLOCK_NUM
+#define SAVEBLOCK_NUM 64
 #endif
 
 #ifndef SAVECONF

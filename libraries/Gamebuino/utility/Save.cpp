@@ -21,6 +21,7 @@
 
 #define SAVEHEADER_SIZE 10
 #define SAVECONF_DEFAULT_BLOBSIZE 32
+#define SAVEFILE_PAYLOAD_START (SAVEHEADER_SIZE + (blocks * 5))
 
 #define MIN(x, y) ((x < y) ? x : y)
 
@@ -57,7 +58,7 @@ void Save::error(const char *s) {
 
 
 SaveVar Save::getVarInfo(uint16_t i) {
-	if (i > blocks) {
+	if (i >= blocks) {
 		// Trying to access bad block...
 		error("accessing non-existing block");
 	}
@@ -85,13 +86,14 @@ void Save::openFile() {
 	}
 	open = true;
 	if (!exists) {
+		blocks = SAVEBLOCK_NUM;
+		
 		// the file doesn't exist yet, so let's create it
-		blocks = SAVE_BLOCKNUM;
-		f.write("asdf"); // four garbage bytes (checksum)
+		f.write("asdf"); // TODO: checksum matching thing
 		f.write(&blocks, 2); // write the amount of blocks
 		
 		// +4 because of 4-byte payload size
-		for (uint32_t i = 0; i < (5*SAVE_BLOCKNUM) + 4; i++) {
+		for (uint32_t i = 0; i < (5*SAVEBLOCK_NUM) + 4; i++) {
 			f.write((uint8_t)0);
 		}
 		
@@ -102,7 +104,73 @@ void Save::openFile() {
 	f.seekSet(4); // TODO: check magic number matching
 	f.read(&blocks, 2); // how many blocks do we have?
 	f.read(&payload_size, 4); // let's grab the payload size!
-	// TODO: check for block number miss-match
+	
+	if (blocks == SAVEBLOCK_NUM) {
+		return; // everything is OK, nothing more to do
+	}
+	if (blocks > SAVEBLOCK_NUM) {
+		// we need to shrink the block size
+		
+		// first we delete the unneeded variables (due to payload maybe being off)
+		for (uint16_t i = SAVEBLOCK_NUM; i < blocks; i++) {
+			del(i);
+		}
+		
+		// next we offset the blocks
+		for (uint16_t i = 0; i < SAVEBLOCK_NUM; i++) {
+			uint32_t b;
+			f.seekSet(SAVEHEADER_SIZE + blocks + i*4);
+			f.read(&b, 4);
+			f.seekSet(SAVEHEADER_SIZE + SAVEBLOCK_NUM + i*4);
+			f.write(&b, 4);
+		}
+		
+		// now we fix the payload
+		for (uint32_t i = 0; i < payload_size; i++) {
+			uint8_t b;
+			f.seek(SAVEHEADER_SIZE + (blocks * 5) + i);
+			f.read(&b, 1);
+			f.seek(SAVEHEADER_SIZE + (SAVEBLOCK_NUM * 5) + i);
+			f.write(&b, 1);
+		}
+		f.truncate(SAVEHEADER_SIZE + (SAVEBLOCK_NUM * 5) + payload_size);
+	} else {
+		// we need to grow the block size
+		
+		// first we grow the file by the desired amount
+		f.seekSet(SAVEHEADER_SIZE + (blocks * 5) + payload_size);
+		for (uint32_t i = 0; i < (SAVEBLOCK_NUM - blocks)*5; i++) {
+			f.write((uint8_t)0);
+		}
+		
+		// next we shift the payload back
+		for (uint32_t i = 0; i < payload_size; i++) {
+			uint8_t b;
+			f.seek(SAVEHEADER_SIZE + (blocks * 5) + (payload_size - i - 1));
+			f.read(&b, 1);
+			f.seek(SAVEHEADER_SIZE + (SAVEBLOCK_NUM * 5) + (payload_size - i - 1));
+			f.write(&b, 1);
+		}
+		
+		// next we offset the blocks
+		for (uint16_t i = 0; i < blocks; i++) {
+			uint32_t b;
+			f.seekSet(SAVEHEADER_SIZE + blocks + (blocks - i - 1)*4);
+			f.read(&b, 4);
+			f.seekSet(SAVEHEADER_SIZE + SAVEBLOCK_NUM + (blocks - i - 1)*4);
+			f.write(&b, 4);
+		}
+		
+		// finally we nullate the new block metadata
+		f.seekSet(SAVEHEADER_SIZE + blocks);
+		for (uint16_t i = blocks; i < SAVEBLOCK_NUM; i++) {
+			f.write((uint8_t)0);
+		}
+	}
+	blocks = SAVEBLOCK_NUM;
+	f.seekSet(4);
+	f.write(&blocks, 2);
+	f.flush();
 }
 
 
@@ -167,7 +235,7 @@ bool Save::get(uint16_t i, void* buf, uint8_t bufsize) {
 	
 	// get the pointer and seek the file there
 	b &= 0x00FFFFFF;
-	f.seekSet(SAVEHEADER_SIZE + (5*blocks) + b);
+	f.seekSet(SAVEFILE_PAYLOAD_START + b);
 	
 	// now finally perform the read
 	f.read(buf, size);
@@ -211,7 +279,7 @@ void Save::newBlob(uint16_t i, uint8_t size) {
 	_set(i, (((uint32_t)size) << 24) | payload_size);
 	
 	// now fill the payload with zeros
-	f.seekSet(SAVEHEADER_SIZE + (5*blocks) + payload_size);
+	f.seekSet(SAVEFILE_PAYLOAD_START + payload_size);
 	for(uint8_t j = 0; j < size; j++) {
 		f.write((uint8_t)0);
 	}
@@ -274,7 +342,7 @@ void Save::set(uint16_t i, void* buf, uint8_t bufsize) {
 	
 	// get the pointer and seek the file there
 	b &= 0x00FFFFFF;
-	f.seekSet(SAVEHEADER_SIZE + (5*blocks) + b);
+	f.seekSet(SAVEFILE_PAYLOAD_START + b);
 	
 	// now finally perform the write
 	f.write(buf, size);
@@ -326,9 +394,9 @@ void Save::del(uint16_t i) {
 	// ok now we actually need to shift the payload data
 	for (uint32_t j = 0; j < (payload_size-b-size); j++) {
 		uint8_t c;
-		f.seekSet(SAVEHEADER_SIZE + (5*blocks) + b + size + j);
+		f.seekSet(SAVEFILE_PAYLOAD_START + b + size + j);
 		f.read(&c, 1);
-		f.seekSet(SAVEHEADER_SIZE + (5*blocks) + b + j);
+		f.seekSet(SAVEFILE_PAYLOAD_START + b + j);
 		f.write(c);
 	}
 	
@@ -336,6 +404,6 @@ void Save::del(uint16_t i) {
 	payload_size -= size;
 	f.seekSet(6);
 	f.write(&payload_size, 4);
-	f.truncate(SAVEHEADER_SIZE + (5*blocks) + payload_size);
+	f.truncate(SAVEFILE_PAYLOAD_START + payload_size);
 	f.flush();
 }
