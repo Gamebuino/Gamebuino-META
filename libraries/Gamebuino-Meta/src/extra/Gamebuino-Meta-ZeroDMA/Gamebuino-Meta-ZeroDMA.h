@@ -5,6 +5,8 @@
 #include "utility/dmac.h"
 #include "utility/dma.h"
 
+namespace Gamebuino_Meta {
+
 class Adafruit_ZeroDMA {
  public:
   Adafruit_ZeroDMA(void);
@@ -32,5 +34,7 @@ class Adafruit_ZeroDMA {
 };
 
 static void configure_dma_resource(struct dma_resource *resource);
+
+} // namespace Gamebuino_Meta
 
 #endif // GAMEBUINO_META_ZERODMA_H

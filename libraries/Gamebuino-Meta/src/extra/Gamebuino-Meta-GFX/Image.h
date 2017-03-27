@@ -6,6 +6,8 @@
 #include <Arduino.h>
 #include "Gamebuino-Meta-GFX.h"
 
+namespace Gamebuino_Meta {
+
 class Image : public Adafruit_GFX {
 public:
 	Image();
@@ -23,5 +25,7 @@ public:
 	uint16_t *_buffer;
 
 };
+
+} // namespace Gamebuino_Meta
 
 #endif

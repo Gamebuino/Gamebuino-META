@@ -19,6 +19,7 @@
 
 #include "Buttons.h"
 
+namespace Gamebuino_Meta {
 
 void Buttons::begin() {
   SPI.begin();
@@ -125,3 +126,5 @@ uint8_t Buttons::timeHeld(uint8_t button){
         return 0;
     
 }
+
+} // Gamebuino_Meta

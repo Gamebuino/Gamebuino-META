@@ -10,6 +10,8 @@
 
 #include "gfxfont.h"
 
+namespace Gamebuino_Meta {
+
 #define WHITE (0xFFFF)
 #define GRAY (0xACD0)
 #define DARKGRAY (0x72C7)
@@ -167,5 +169,7 @@ class Adafruit_GFX : public Print {
   uint8_t *font; //gamebuino legacy font
   uint8_t fontWidth, fontHeight; //gamebuino legacy font size
 };
+
+} // Gamebuino_Meta
 
 #endif // _GAMEBUINO_META_GFX_H

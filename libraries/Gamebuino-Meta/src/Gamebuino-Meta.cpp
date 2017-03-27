@@ -21,10 +21,14 @@
 
 #include "Gamebuino-Meta.h"
 SdFat SD;
-const uint16_t startupSound[] PROGMEM = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
 
 // a 3x5 font table
 extern const uint8_t font3x5[] PROGMEM;
+
+namespace Gamebuino_Meta {
+
+const uint16_t startupSound[] PROGMEM = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
+
 
 const uint8_t gamebuinoLogo[] PROGMEM =
 {
@@ -586,3 +590,5 @@ boolean Gamebuino::collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1
 
   return false;
 }
+
+} // namespace Gamebuino_Meta

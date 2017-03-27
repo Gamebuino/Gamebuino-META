@@ -2,6 +2,8 @@
 #include "../SdFat.h"
 extern SdFat SD;
 
+namespace Gamebuino_Meta {
+
 Print* Gamebuino_SD_GFX::debugOutput = 0;
 
 template <typename T>
@@ -418,3 +420,5 @@ uint8_t Gamebuino_SD_GFX::readImage(Image img, char *filename){
 	//return rambuffer;
 #endif
 }
+
+} // namespace Gamebuino_Meta

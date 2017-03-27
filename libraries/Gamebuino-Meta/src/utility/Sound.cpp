@@ -18,3 +18,7 @@
  */
 
 #include "Sound.h"
+
+namespace Gamebuino_Meta {
+
+} // Gamebuino_Meta

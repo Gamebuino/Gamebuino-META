@@ -50,6 +50,8 @@ as well as Adafruit raw 1.8" TFT display
     #define F(string_literal) string_literal
 #endif
 
+namespace Gamebuino_Meta {
+
 // some flags for initR() :(
 #define INITR_GREENTAB 0x0
 #define INITR_REDTAB   0x1
@@ -187,5 +189,7 @@ class Adafruit_ST7735 : public Adafruit_GFX {
 #endif
 
 };
+
+} // namespace Gamebuino_Meta
 
 #endif // GAMEBUINO_META_ST7735_H

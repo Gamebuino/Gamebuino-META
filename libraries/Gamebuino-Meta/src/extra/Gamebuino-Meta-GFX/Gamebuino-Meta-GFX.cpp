@@ -40,7 +40,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "Image.h"
 
 // default 3x5 font table
-#include "font3x5.c"
+extern const uint8_t font3x5[];
+
+namespace Gamebuino_Meta {
 
 //default values of static members
 uint16_t Adafruit_GFX::transparentColor = 0xF81F; //magenta is the default transparent color
@@ -1126,3 +1128,5 @@ int16_t Adafruit_GFX::height(void) const {
 void Adafruit_GFX::invertDisplay(boolean i) {
   // Do nothing, must be subclassed if supported by hardware
 }
+
+} // namespace Gamebuino_Meta

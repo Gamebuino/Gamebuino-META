@@ -9,6 +9,8 @@
 
 #include "Arduino.h"
 
+namespace Gamebuino_Meta {
+
 typedef struct { // Data stored PER GLYPH
 	uint16_t bitmapOffset;     // Pointer into GFXfont->bitmap
 	uint8_t  width, height;    // Bitmap dimensions in pixels
@@ -22,5 +24,7 @@ typedef struct { // Data stored for FONT AS A WHOLE:
 	uint8_t   first, last; // ASCII extents
 	uint8_t   yAdvance;    // Newline distance (y axis)
 } GFXfont;
+
+} // Gamebuino_Meta
 
 #endif // _GFXFONT_H_

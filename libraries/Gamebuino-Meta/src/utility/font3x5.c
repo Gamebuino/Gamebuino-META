@@ -20,8 +20,7 @@
 #ifndef FONT3X5_C
 #define FONT3X5_C
 
-#include <avr/io.h>
-#include <avr/pgmspace.h> 
+#include <Arduino.h>
 
 //standard ascii 3x5 font
 const uint8_t font3x5[] PROGMEM = {

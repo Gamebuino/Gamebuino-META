@@ -4,6 +4,8 @@
 
 #include "Image.h"
 
+namespace Gamebuino_Meta {
+
 Image::Image() : Adafruit_GFX(0, 0){
 }
 
@@ -210,3 +212,5 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		thisLine[i] = (b1[i] << 11) + (g1[i] << 5) + r1[i];
 	}
 }
+
+} // namespace Gamebuino_Meta

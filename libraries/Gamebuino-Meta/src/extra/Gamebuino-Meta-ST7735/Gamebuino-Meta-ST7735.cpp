@@ -28,42 +28,37 @@ as well as Adafruit raw 1.8" TFT display
 #include <SPI.h>
 #include "../Gamebuino-Meta-Image.h"
 
-//force these for debug
-#define __SAMD21G18A__
-#define SPI_HAS_TRANSACTION
 
-#if defined (__SAMD21G18A__)
-	#define SAMD_DMA
-	#if defined(SAMD_DMA)
-		#include "../Gamebuino-Meta-ASFcore.h"
-		#include "../Gamebuino-Meta-ASFcore/status_codes.h"
-		#include "../Gamebuino-Meta-ZeroDMA.h"
-		#include "../Gamebuino-Meta-ZeroDMA/utility/dmac.h"
-		#include "../Gamebuino-Meta-ZeroDMA/utility/dma.h"
-		Adafruit_ZeroDMA myDMA;
-		status_code stat;  // we'll use this to read and print out the DMA status codes
-		// are we done yet?
-		volatile bool transfer_is_done = false;
-		// If you like, a callback can be used
-		void dma_callback(struct dma_resource* const resource) {
-			transfer_is_done = true;
-		}
-		void printStatus(status_code stat) {
-			Serial.print("Status ");
-			switch (stat) {
-			case STATUS_OK:
-				Serial.println("OK"); break;
-			case STATUS_BUSY:
-				Serial.println("BUSY"); break;
-			case STATUS_ERR_INVALID_ARG:
-				Serial.println("Invalid Arg."); break;
-			default:
-				Serial.print("Unknown 0x"); Serial.println(stat); break;
-			}
-		}
-	#endif
-#endif
+#include "../Gamebuino-Meta-ASFcore.h"
+#include "../Gamebuino-Meta-ASFcore/status_codes.h"
+#include "../Gamebuino-Meta-ZeroDMA.h"
+#include "../Gamebuino-Meta-ZeroDMA/utility/dmac.h"
+#include "../Gamebuino-Meta-ZeroDMA/utility/dma.h"
 
+namespace Gamebuino_Meta {
+
+
+Adafruit_ZeroDMA myDMA;
+status_code stat;  // we'll use this to read and print out the DMA status codes
+// are we done yet?
+volatile bool transfer_is_done = false;
+// If you like, a callback can be used
+void dma_callback(struct dma_resource* const resource) {
+	transfer_is_done = true;
+}
+void printStatus(status_code stat) {
+	Serial.print("Status ");
+	switch (stat) {
+	case STATUS_OK:
+		Serial.println("OK"); break;
+	case STATUS_BUSY:
+		Serial.println("BUSY"); break;
+	case STATUS_ERR_INVALID_ARG:
+		Serial.println("Invalid Arg."); break;
+	default:
+		Serial.print("Unknown 0x"); Serial.println(stat); break;
+	}
+}
 
 
 inline uint16_t swapcolor(uint16_t x) { 
@@ -1149,3 +1144,5 @@ void Adafruit_ST7735::invertDisplay(boolean i) {
  }
  
  */
+
+} // namespace Gamebuino_Meta

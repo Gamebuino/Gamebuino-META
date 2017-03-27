@@ -17,7 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+
 #include "Save.h"
+
+namespace Gamebuino_Meta {
 
 #define SAVEHEADER_SIZE 10
 #define SAVECONF_DEFAULT_BLOBSIZE 32
@@ -421,3 +424,5 @@ void Save::del(uint16_t i) {
 	f.truncate(SAVEFILE_PAYLOAD_START + payload_size);
 	f.flush();
 }
+
+} // Gamebuino_Meta

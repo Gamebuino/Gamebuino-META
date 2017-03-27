@@ -21,10 +21,12 @@
 #define SAVE_H
 
 #include "../config.h"
-#include "../extra/SdFat.h"
 #include "../extra/Gamebuino-Meta-ST7735.h"
+#include "../extra/SdFat.h"
+
 extern SdFat SD;
 
+namespace Gamebuino_Meta {
 
 struct SaveVar {
 	bool defined;
@@ -70,5 +72,6 @@ private:
 	SaveVar getVarInfo(uint16_t i);
 };
 
+} // Gamebuino_Meta
 
 #endif // SAVE_H

@@ -36,6 +36,8 @@
 #define BTN_C		(6)
 #define BTN_D		(7)
 
+namespace Gamebuino_Meta {
+
 class Buttons {
 public:
     void begin();
@@ -48,5 +50,7 @@ public:
     uint8_t states[NUM_BTN];
 
 };
+
+} // Gamebuino_Meta
 
 #endif	/* GAMEBUINO_META_BUTTONS_H */

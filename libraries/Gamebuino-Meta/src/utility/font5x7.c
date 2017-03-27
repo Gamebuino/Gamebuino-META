@@ -20,8 +20,7 @@
 #ifndef FONT5X7_C
 #define FONT5X7_C
 
-#include <avr/io.h>
-#include <avr/pgmspace.h> 
+#include <Arduino.h>
 
 // standard ascii 5x7 font
 const uint8_t font5x7[] PROGMEM = {

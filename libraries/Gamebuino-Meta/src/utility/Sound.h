@@ -22,6 +22,7 @@
 
 #include <Arduino.h>
 
+namespace Gamebuino_Meta {
 
 class Sound {
 public:
@@ -53,5 +54,6 @@ public:
 	uint8_t volumeMax;
 };
 
-#endif	/* SOUND_H */
+} // Gamebuino_Meta
 
+#endif	/* SOUND_H */

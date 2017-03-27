@@ -2,6 +2,8 @@
 #include "utility/dmac.h"
 #include "utility/dma.h"
 
+namespace Gamebuino_Meta {
+
 // mostly from asfdoc_sam0_dma_basic_use_case.html
 
 Adafruit_ZeroDMA::Adafruit_ZeroDMA(void) {
@@ -79,3 +81,5 @@ void Adafruit_ZeroDMA::loop(boolean on) {
   }
   _descriptor.DESCADDR.reg = descriptor_config.next_descriptor_address;
 }
+
+} // namespace Gamebuino_Meta

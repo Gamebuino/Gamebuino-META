@@ -20,8 +20,7 @@
 #ifndef FONT3x3_C
 #define FONT3x3_C
 
-#include <avr/io.h>
-#include <avr/pgmspace.h> 
+#include <Arduino.h>
 
 //standard ascii 3x3font
 static const uint8_t font3x3[] PROGMEM = {

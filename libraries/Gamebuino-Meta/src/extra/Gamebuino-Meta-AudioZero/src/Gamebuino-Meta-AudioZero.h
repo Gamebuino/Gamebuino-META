@@ -17,6 +17,7 @@
 
 #include "../../SdFat.h"
 
+namespace Gamebuino_Meta {
 
 class AudioZeroClass{
 public:
@@ -38,4 +39,7 @@ private:
 };
 
 extern AudioZeroClass AudioZero;
+
+} // Gamebuino_Meta
+
 #endif // GAMEBUINO_META_AUDIOZERO_H

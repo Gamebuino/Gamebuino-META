@@ -1,9 +1,6 @@
-#include <SPI.h>
 #include <Gamebuino-Meta.h>
 Gamebuino gb;
 
-//#include <EEPROM.h>
-#include <avr/pgmspace.h>
 
 extern const byte font3x5[];
 extern const byte font5x7[];

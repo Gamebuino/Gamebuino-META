@@ -28,6 +28,7 @@
 #include "extra/SdFat.h"
 extern SdFat SD;
 
+
 #include "utility/Buttons.h"
 #include "utility/Sound.h"
 #include "utility/Save.h"
@@ -41,6 +42,7 @@ extern SdFat SD;
 #include "extra/Gamebuino-Meta-SD-GFX.h"
 
 
+namespace Gamebuino_Meta {
 
 //GUI settings
 #define ENABLE_GUI 1 //enable menu, keyboard, pop-up, volume adjust functions
@@ -111,5 +113,8 @@ private:
 	uint16_t battery;
 };
 
+} // namespace Gamebuino_Meta
+
+typedef Gamebuino_Meta::Gamebuino Gamebuino;
 
 #endif	/* GAMEBUINO_H */

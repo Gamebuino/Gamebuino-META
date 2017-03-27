@@ -18,6 +18,8 @@
 #include <Print.h>
 #include <SPI.h>
 
+namespace Gamebuino_Meta {
+
 /*Global variables*/
 bool __StartFlag;
 volatile uint32_t __SampleIndex;
@@ -184,3 +186,5 @@ void TC5_Handler (void) __attribute__ ((weak, alias("Audio_Handler")));
 #ifdef __cplusplus
 }
 #endif
+
+} // namespace Gamebuino_Meta

@@ -7,7 +7,7 @@
 #ifndef _GFXFONT_H_
 #define _GFXFONT_H_
 
-#include "Arduino.h"
+#include <Arduino.h>
 
 typedef struct { // Data stored PER GLYPH
 	uint16_t bitmapOffset;     // Pointer into GFXfont->bitmap
