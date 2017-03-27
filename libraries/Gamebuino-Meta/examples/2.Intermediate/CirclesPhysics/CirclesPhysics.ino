@@ -1,6 +1,4 @@
-#include <SPI.h>
-#include <Gamebuino.h>
-Gamebuino gb;
+#include <Gamebuino-Meta.h>
 
 typedef struct{
   float x, y, r, vx, vy;
@@ -26,7 +24,7 @@ void loop()
 }
 
 void initGame(){
-  gb.titleScreen(F("Circle\ncollision\nphysics"));
+  gb.titleScreen("Circle\ncollision\nphysics");
   gb.pickRandomSeed(); //pick a different random seed each time for games to be different
   gb.battery.show = false; //hide the battery indicator
   initCircles();

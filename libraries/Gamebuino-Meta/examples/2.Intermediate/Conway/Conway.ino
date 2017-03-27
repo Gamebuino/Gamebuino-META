@@ -1,8 +1,4 @@
-#include <SPI.h>
-#include <Gamebuino.h>
-Gamebuino gb;
-#include <EEPROM.h>
-#include <avr/pgmspace.h>
+#include <Gamebuino-Meta.h>
 
 //world size
 //use power of 2 for better perfomance
@@ -18,7 +14,7 @@ byte graphCursor = 0;
 
 void setup() {
   gb.begin();
-  gb.titleScreen(F("Conway's game of life"));
+  gb.titleScreen("Conway's game of life");
   gb.pickRandomSeed();
   reset();
 }
@@ -26,7 +22,7 @@ void setup() {
 void loop(){
   if(gb.update()){
     if(gb.buttons.pressed(BTN_C)){
-      gb.titleScreen(F("Conway's game of life"));
+      gb.titleScreen("Conway's game of life");
       reset();
     }
     //compute next gen

@@ -16,11 +16,7 @@
  */
 
 
-//#include <EEPROM.h>
-#include <avr/pgmspace.h>
-#include <SPI.h>
-#include <Gamebuino.h>
-Gamebuino gb;
+#include <Gamebuino-Meta.h>
 
 //prototypes
 void popup(const __FlashStringHelper* text, uint8_t duration);

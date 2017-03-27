@@ -1,6 +1,4 @@
-#include <SPI.h>
-#include <Gamebuino.h>
-Gamebuino gb;
+#include <Gamebuino-Meta.h>
 
 //////////////////////////////////////////////////////
 // DON'T FORGET TO SET THE NUMBER OF CHANNELS TO 4  //
@@ -127,7 +125,7 @@ const unsigned int track4[] PROGMEM = {0x05F,0x05F,0x05F,0x05F,0x05F,0x05F,0x05F
 
 void setup(){
   gb.begin();
-  gb.titleScreen(F("Music demo"));
+  gb.titleScreen("Music demo");
   gb.frameCount = LCDWIDTH*8;
   gb.setFrameRate(30);
   gb.sound.changePatternSet(patternSet,0);
@@ -164,7 +162,7 @@ void loop(){
     
     if(gb.buttons.pressed(BTN_C)){
       gb.sound.stopTrack();
-      gb.titleScreen(F("Music demo"));
+      gb.titleScreen("Music demo");
       gb.sound.playTrack(track2,0);
       gb.sound.playTrack(track1,1);
       gb.sound.playTrack(track3,2);

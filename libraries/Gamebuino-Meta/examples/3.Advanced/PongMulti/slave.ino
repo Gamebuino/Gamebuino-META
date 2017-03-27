@@ -14,7 +14,7 @@ void updateSlave(){
     delay(1);
     timout++;
     if(timout >= 20){
-      gb.popup(F("No master"),2);
+      gb.popup("No master",2);
       disconnected = true;
       paused = true;
       slave_updated = false;
@@ -79,10 +79,3 @@ void receiveEvent(int howMany)
   slave_updated = true;
   disconnected = false;
 }
-
-
-
-
-
-
-

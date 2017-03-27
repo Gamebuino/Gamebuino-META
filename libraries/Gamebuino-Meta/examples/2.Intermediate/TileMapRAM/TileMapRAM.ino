@@ -1,6 +1,4 @@
-#include <SPI.h>
-#include <Gamebuino.h>
-Gamebuino gb;
+#include <Gamebuino-Meta.h>
 
 //store the different sprites in PROGMEM to save RAM
 const byte grass[] PROGMEM = {16, 16, 0x10,0x0,0x28,0x2,0x10,0x0,0x0,0x0,0x0,0x0,0x10,0x40,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x80,0x0,0x0,0x40,0x0,0x0,0x0,0x0,0x8,0x4,0x0,0x0,0x0,};
@@ -66,10 +64,10 @@ void loop(){
 }
 
 void initGame(){
-  gb.titleScreen(F("DYNAMIC TILE MAP DEMO"));
+  gb.titleScreen("DYNAMIC TILE MAP DEMO");
   gb.pickRandomSeed(); //pick a different random seed each time for games to be different
   initWorld();
-  gb.popup(F("\25:change \26:rotate"),60);
+  gb.popup("\25:change \26:rotate",60);
 }
 
 void initWorld(){
@@ -142,16 +140,15 @@ void drawCursor(){
     gb.display.drawRect(x_screen, y_screen, 16, 16);
   }
   
-  gb.display.print(F("X"));
+  gb.display.print("X");
   gb.display.print(cursor_x);
-  gb.display.print(F(" Y"));
+  gb.display.print(" Y");
   gb.display.print(cursor_y);
   
   byte spriteID = getSpriteID(cursor_x, cursor_y);
-  gb.display.print(F(" I"));
+  gb.display.print(" I");
   gb.display.print(spriteID);
   byte rotation = getRotation(cursor_x, cursor_y);
-  gb.display.print(F(" R"));
+  gb.display.print(" R");
   gb.display.print(rotation);
 }
-

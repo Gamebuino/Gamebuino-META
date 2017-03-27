@@ -1,6 +1,4 @@
-#include <SPI.h>
 #include <Gamebuino.h>
-Gamebuino gb;
 
 void setup() {
 	gb.begin();

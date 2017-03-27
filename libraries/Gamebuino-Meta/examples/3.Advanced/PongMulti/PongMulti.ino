@@ -1,6 +1,4 @@
-#include <SPI.h>
-#include <Gamebuino.h>
-Gamebuino gb;
+#include <Gamebuino-Meta.h>
 
 #include <Wire.h>
 
@@ -43,9 +41,9 @@ char ball_vx = 3;
 char ball_vy = 3;
 
 #define MENULENGTH 2
-const char strMaster[] PROGMEM = "Host (master)";
-const char strSlave[] PROGMEM = "Join (slave)";
-const char* const menu[MENULENGTH] PROGMEM = {
+const char strMaster[] = "Host (master)";
+const char strSlave[] = "Join (slave)";
+const char* const menu[MENULENGTH] = {
   strMaster,
   strSlave
 };
@@ -53,7 +51,7 @@ const char* const menu[MENULENGTH] PROGMEM = {
 ///////////////////////////////////// SETUP
 void setup() {
   gb.begin(); //initialize the Gamebuino
-  gb.titleScreen(F("Pong Multiplayer")); //shows the main menu
+  gb.titleScreen("Pong Multiplayer"); //shows the main menu
   gb.battery.show = false; //hide the battery indicator
   //can be either master or slave:
   setupMaster();
@@ -80,7 +78,7 @@ void loop() {
     isMaster = false;
     break;
   default:
-    gb.titleScreen(F("Pong Multiplayer")); //shows the main menu
+    gb.titleScreen("Pong Multiplayer"); //shows the main menu
     break;
   }
 
@@ -100,11 +98,11 @@ void loop() {
 
       gb.display.fontSize = 1;
       if(isMaster){
-        gb.display.print(F(" master "));
+        gb.display.print(" master ");
         updateMaster();
       }
       else {
-        gb.display.print(F(" slave "));
+        gb.display.print(" slave ");
         updateSlave();
       }
 

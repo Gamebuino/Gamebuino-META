@@ -116,5 +116,6 @@ private:
 } // namespace Gamebuino_Meta
 
 typedef Gamebuino_Meta::Gamebuino Gamebuino;
+extern Gamebuino gb;
 
 #endif	/* GAMEBUINO_H */

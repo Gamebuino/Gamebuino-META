@@ -591,4 +591,7 @@ boolean Gamebuino::collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1
   return false;
 }
 
+
 } // namespace Gamebuino_Meta
+
+Gamebuino gb;

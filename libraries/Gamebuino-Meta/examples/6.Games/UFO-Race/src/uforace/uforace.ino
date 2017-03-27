@@ -1,6 +1,4 @@
 #include <Gamebuino-Meta.h>
-Gamebuino gb;
-
 
 extern const byte font3x5[];
 extern const byte font5x7[];

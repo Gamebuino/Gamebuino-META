@@ -1,6 +1,4 @@
-#include <SPI.h>
-#include <Gamebuino.h>
-Gamebuino gb;
+#include <Gamebuino-Meta.h>
 
 boolean paused = false;
 
@@ -33,7 +31,7 @@ extern const byte font5x7[]; //get the default large font
 void setup() {
   gb.begin();
   //gb.display.setFont(font5x7); //change the font to the large one
-  gb.titleScreen(F("Pong Solo"));
+  gb.titleScreen("Pong Solo");
   gb.pickRandomSeed(); //pick a different random seed each time for games to be different
   //gb.battery.show = false; //hide the battery indicator
 }
@@ -43,7 +41,7 @@ void loop() {
   if(gb.update()){
     //pause the game if C is pressed
     if(gb.buttons.pressed(BTN_C)){
-      gb.titleScreen(F("Pong Solo"));
+      gb.titleScreen("Pong Solo");
       //gb.battery.show = false;
       //gb.display.fontSize = 2;
       delay(500);

@@ -1,9 +1,5 @@
-//imports the SPI library (needed to communicate with Gamebuino's screen)
-#include <SPI.h>
-//importe the Gamebuino library
-#include <Gamebuino.h>
-//creates a Gamebuino object named gb
-Gamebuino gb;
+//importe the Gamebuino library and the gb object
+#include <Gamebuino-Meta.h>
 
 //declare all the variables needed for the game :
 int ball_x = LCDWIDTH/2; //set the horizontal position to the middle of the screen
@@ -17,7 +13,7 @@ void setup(){
   // initialize the Gamebuino object
   gb.begin();
   // show the start menu
-  gb.titleScreen(F("Controls"));
+  gb.titleScreen("Controls");
 }
 
 // the loop routine runs over and over again forever
@@ -51,7 +47,7 @@ void loop(){
       gb.sound.playCancel();
     }
     if(gb.buttons.pressed(BTN_C)){
-      gb.titleScreen(F("Controls"));
+      gb.titleScreen("Controls");
     }
     
     //check that the ball is not going out of the screen
@@ -78,4 +74,3 @@ void loop(){
     
   }
 }
-

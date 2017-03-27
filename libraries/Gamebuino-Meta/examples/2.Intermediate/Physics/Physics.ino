@@ -1,6 +1,4 @@
-#include <SPI.h>
-#include <Gamebuino.h>
-Gamebuino gb;
+#include <Gamebuino-Meta.h>
 
 //define de Box structure for obstacles
 typedef struct {
@@ -53,4 +51,3 @@ void initGame(){
   initObstacles();
   initPlayer();
 }
-
