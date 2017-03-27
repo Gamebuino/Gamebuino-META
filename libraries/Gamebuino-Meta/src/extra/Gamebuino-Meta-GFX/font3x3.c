@@ -23,7 +23,7 @@
 #include <Arduino.h>
 
 //standard ascii 3x3font
-static const uint8_t font3x3[] PROGMEM = {
+const uint8_t font3x3[] PROGMEM = {
 	3,3, //width and height
     0x07, 0x05, 0x07, // 0
     0x05, 0x04, 0x05, // 1

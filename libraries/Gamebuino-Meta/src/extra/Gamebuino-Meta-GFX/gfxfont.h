@@ -25,6 +25,6 @@ typedef struct { // Data stored for FONT AS A WHOLE:
 	uint8_t   yAdvance;    // Newline distance (y axis)
 } GFXfont;
 
-} // Gamebuino_Meta
+} // namespace Gamebuino_Meta
 
 #endif // _GFXFONT_H_
