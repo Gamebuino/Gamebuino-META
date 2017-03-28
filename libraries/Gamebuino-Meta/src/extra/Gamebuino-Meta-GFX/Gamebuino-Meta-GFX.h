@@ -51,7 +51,7 @@ enum Flip : uint8_t {
 
 class Image;
 
-enum class BlendMode {
+enum class BlendMode : uint8_t {
 	BLEND,
 	ADD,
 	SUBSTRACT,
@@ -59,7 +59,7 @@ enum class BlendMode {
 	SCREEN
 };
 
-enum class ColorMode {
+enum class ColorMode : uint8_t {
 	RGB565,
 	INDEX
 };

@@ -125,6 +125,8 @@ public:
 
 typedef Gamebuino_Meta::Gamebuino Gamebuino;
 typedef Gamebuino_Meta::Image Image;
+using Gamebuino_Meta::BlendMode;
+using Gamebuino_Meta::ColorMode;
 extern Gamebuino gb;
 
 using namespace Gamebuino_Meta::Rotation;
