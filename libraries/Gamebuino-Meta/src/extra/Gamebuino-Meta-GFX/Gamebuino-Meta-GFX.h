@@ -114,8 +114,6 @@ class Adafruit_GFX : public Print {
 
 	//Gamebuino legacy bitmaps
 	drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap),
-    drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint16_t fg),
-    drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint16_t fg, uint16_t bg),
 	drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, Rotation::Rotation rotation, Flip::Flip flip),
 
 	drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size),

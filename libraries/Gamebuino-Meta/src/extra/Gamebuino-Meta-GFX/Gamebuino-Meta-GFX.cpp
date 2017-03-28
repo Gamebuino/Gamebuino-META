@@ -497,46 +497,6 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
 #endif
 }
 
-void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint16_t fg) {
-	setColor(fg);
-	drawBitmap(x, y, bitmap);
-}
-
-void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint16_t fg, uint16_t bg) {
-	uint8_t w = *(bitmap++);
-	uint8_t h = *(bitmap++);
-	
-#if (ENABLE_BITMAPS > 0)
-	uint8_t byteWidth = (w + 7) / 8;
-	uint8_t _x = x;
-	uint8_t dw = 8 - (w%8);
-	for (uint8_t j = 0; j < h; j++) {
-		x = _x;
-		for (uint8_t i = 0; i < byteWidth;) {
-			uint8_t b = *(bitmap++);
-			i++;
-			for (uint8_t k = 0; k < 8; k++) {
-				if (i == byteWidth && k == dw) {
-					x += (w%8);
-					break;
-				}
-				if (b&0x80) {
-					setColor(fg);
-				} else {
-					setColor(bg);
-				}
-				drawPixel(x, y);
-				b <<= 1;
-				x++;
-			}
-		}
-		y++;
-	}
-#else
-	drawRect(x, y, w, h);
-#endif
-}
-
 void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 	Rotation::Rotation rotation, Flip::Flip flip) {
 	if ((rotation == Rotation::NOROT) && (flip == Flip::NOFLIP)) {
