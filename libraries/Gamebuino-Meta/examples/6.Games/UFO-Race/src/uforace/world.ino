@@ -37,6 +37,24 @@ const byte* sprites[NUM_SPRITES] = {
   block_vertical     //F
 };
 
+const uint16_t spritesColor[NUM_SPRITES] = {
+  SKIN,    //road,              //0
+  ORANGE,   //power_right,       //1
+  ORANGE,   //power_down,        //2
+  ORANGE,   //power_left,        //3
+  ORANGE,   //power_up,          //4
+  SKIN,    //sand,              //5
+  LIGHTBLUE,//ice,               //6
+  BLACK,    //start,             //7
+  RED,      //block_bouncer,     //8
+  BLACK,    //block_single,      //9
+  BLACK,    //block_right,       //A
+  BLACK,    //block_down,        //B
+  BLACK,    //block_left,        //C
+  BLACK,    //block_up,          //D
+  BLACK,    //block_horizontal,  //E
+  BLACK,    //block_vertical     //F
+};
 
 #define WORLD_W 32
 #define WORLD_H 32
@@ -73,9 +91,11 @@ void drawWorld(){
       //coordinates on the screen depending on the camera position
       int x_screen = x*16 - camera_x;
       int y_screen = y*16 - camera_y;
+      gb.display.setColor(spritesColor[spriteID]);
       gb.display.drawBitmap(x_screen, y_screen, sprites[spriteID]);
     }
   }
+  gb.display.setColor(BLACK);
 }
 
 void drawMap(){

@@ -83,13 +83,14 @@ void updatePlayer() {
     case 2: //down
     case 3: //left
     case 4: //up
-      g = r = random (128, 255);
-      b = r / 2;
+      r = 255;
+      g = 168;
+      b = 17;
       break;
     case 6: //ice
-      b = random (32, 64);
-      g = b / 2;
-      r = 0;
+      r = 125/4;
+      g = 187/4;
+      b = 255/4;
       break;
     default :
       r = g = b = 0;
