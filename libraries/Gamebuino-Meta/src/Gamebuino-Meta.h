@@ -124,6 +124,7 @@ public:
 } // namespace Gamebuino_Meta
 
 typedef Gamebuino_Meta::Gamebuino Gamebuino;
+typedef Gamebuino_Meta::Image Image;
 extern Gamebuino gb;
 
 using namespace Gamebuino_Meta::Rotation;
