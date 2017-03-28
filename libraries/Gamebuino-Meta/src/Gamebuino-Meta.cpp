@@ -23,26 +23,26 @@
 SdFat SD;
 
 // a 3x5 font table
-extern const uint8_t font3x5[] PROGMEM;
+extern const uint8_t font3x5[];
 
 namespace Gamebuino_Meta {
 
-const uint16_t startupSound[] PROGMEM = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
+const uint16_t startupSound[] = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
 
 
-const uint8_t gamebuinoLogo[] PROGMEM =
+const uint8_t gamebuinoLogo[] =
 {
 	84,10, //width and height
-	B00000011, B11100001, B10000001, B10000110, B01111111, B00111110, B00011000, B01101101, B10000011, B00001111, B00001111, 
-	B00001110, B00000001, B10000011, B10000110, B01100000, B00110011, B00011000, B01101101, B11000011, B00011001, B10001111, 
-	B00011000, B00000011, B11000011, B10001110, B01100000, B00110011, B00011000, B01101101, B11100011, B00110000, B11001111, 
-	B00011000, B00000011, B11000011, B10011110, B01100000, B00110110, B00110000, B11001101, B11100011, B01100000, B11001111, 
-	B00110000, B00000110, B11000111, B10011110, B01111110, B00111110, B00110000, B11001101, B10110011, B01100000, B11001111, 
-	B00110000, B00001100, B11000110, B11110110, B01100000, B00110011, B00110000, B11011001, B10110110, B01100000, B11001111, 
-	B00110011, B11001111, B11001100, B11110110, B01100000, B01100001, B10110000, B11011011, B00011110, B01100000, B11001111, 
-	B00110000, B11011000, B01101100, B11100110, B11000000, B01100001, B10110000, B11011011, B00011110, B01100001, B10001111, 
-	B00011001, B10011000, B01101100, B11000110, B11000000, B01100011, B10110001, B10011011, B00001110, B00110011, B00001111, 
-	B00001111, B10110000, B01111000, B11000110, B11111111, B01111110, B00011111, B00011011, B00000110, B00011110, B00001111, 
+	0b00000011, 0b11100001, 0b10000001, 0b10000110, 0b01111111, 0b00111110, 0b00011000, 0b01101101, 0b10000011, 0b00001111, 0b00001111, 
+	0b00001110, 0b00000001, 0b10000011, 0b10000110, 0b01100000, 0b00110011, 0b00011000, 0b01101101, 0b11000011, 0b00011001, 0b10001111, 
+	0b00011000, 0b00000011, 0b11000011, 0b10001110, 0b01100000, 0b00110011, 0b00011000, 0b01101101, 0b11100011, 0b00110000, 0b11001111, 
+	0b00011000, 0b00000011, 0b11000011, 0b10011110, 0b01100000, 0b00110110, 0b00110000, 0b11001101, 0b11100011, 0b01100000, 0b11001111, 
+	0b00110000, 0b00000110, 0b11000111, 0b10011110, 0b01111110, 0b00111110, 0b00110000, 0b11001101, 0b10110011, 0b01100000, 0b11001111, 
+	0b00110000, 0b00001100, 0b11000110, 0b11110110, 0b01100000, 0b00110011, 0b00110000, 0b11011001, 0b10110110, 0b01100000, 0b11001111, 
+	0b00110011, 0b11001111, 0b11001100, 0b11110110, 0b01100000, 0b01100001, 0b10110000, 0b11011011, 0b00011110, 0b01100000, 0b11001111, 
+	0b00110000, 0b11011000, 0b01101100, 0b11100110, 0b11000000, 0b01100001, 0b10110000, 0b11011011, 0b00011110, 0b01100001, 0b10001111, 
+	0b00011001, 0b10011000, 0b01101100, 0b11000110, 0b11000000, 0b01100011, 0b10110001, 0b10011011, 0b00001110, 0b00110011, 0b00001111, 
+	0b00001111, 0b10110000, 0b01111000, 0b11000110, 0b11111111, 0b01111110, 0b00011111, 0b00011011, 0b00000110, 0b00011110, 0b00001111, 
 };
 
 void Gamebuino::begin() {		
@@ -92,19 +92,19 @@ void Gamebuino::begin() {
 	tft.setColor(WHITE, BLACK);
 }
 
-void Gamebuino::titleScreen(const __FlashStringHelper* name){
+void Gamebuino::titleScreen(const char* name){
 	titleScreen(name, 0);
 }
 
 void Gamebuino::titleScreen(const uint8_t* logo){
-	titleScreen(F(""), logo);
+	titleScreen("", logo);
 }
 
 void Gamebuino::titleScreen(){
-	titleScreen(F(""));
+	titleScreen("", 0);
 }
 
-void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *logo){
+void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 	display.fontSize = 1;
 	display.textWrap = false;
 	//display.persistence = false;
@@ -138,20 +138,20 @@ void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *log
 			display.cursorX = LCDWIDTH - display.fontWidth*3 -1;
 			display.cursorY = LCDHEIGHT - display.fontHeight*3 - 3;
 			if((frameCount/16)%2)
-			  display.println(F("\25 \20"));
+			  display.println("\25 \20");
 			else
-			  display.println(F("\25\20 "));
+			  display.println("\25\20 ");
 			//B button
 			display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
 			display.cursorY++;
-			if(sound.globalVolume)
-				display.println(F("\26\23\24"));
+			if(sound.getVolume())
+				display.println("\26\23\24");
 			else
-				display.println(F("\26\23x"));
+				display.println("\26\23x");
 			//C button
 			display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
 			display.cursorY++;
-			display.println(F("\27SD"));
+			display.println("\27SD");
 			
 			//toggle volume when B is pressed
 			if(buttons.pressed(BTN_B)){
@@ -173,7 +173,7 @@ void Gamebuino::titleScreen(const __FlashStringHelper*  name, const uint8_t *log
 	//battery.show = true;
 }
 
-boolean Gamebuino::update() {
+bool Gamebuino::update() {
 	if (((nextFrameMillis - millis()) > timePerFrame) && frameEndMicros) { //if time to render a new frame is reached and the frame end has ran once
 		nextFrameMillis = millis() + timePerFrame;
 		frameCount++;
@@ -316,7 +316,7 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 	int8_t activeItem = 0;
 	int8_t currentY = LCDHEIGHT;
 	int8_t targetY = 0;
-	boolean exit = false;
+	bool exit = false;
 	int8_t answer = -1;
 	while (1) {
 		if (update()) {
@@ -359,7 +359,7 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 					display.cursorX = 3;
 					display.cursorY = currentY + display.fontHeight * activeItem;
 				}
-				display.println((const __FlashStringHelper*)pgm_read_word(items+i));
+				display.println((const char*)pgm_read_word(items+i));
 			}
 
 			//display.fillRect(0, currentY + 3 + 8 * activeItem, 2, 2, BLACK);
@@ -449,9 +449,9 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 				while (1) {
 					if (update()) {
 						//display.setCursor(0,0);
-						display.println(F("You entered\n"));
+						display.println("You entered\n");
 						display.print(text);
-						display.println(F("\n\n\n\x15:okay \x16:edit"));
+						display.println("\n\n\n\x15:okay \x16:edit");
 						if(buttons.pressed(BTN_A)){
 							sound.playOK();
 							return;
@@ -472,15 +472,15 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 			//draw instruction
 			display.cursorX = currentX-display.fontWidth*6-2;
 			display.cursorY = currentY+1*(display.fontHeight+1);
-			display.print(F("\25type"));
+			display.print("\25type");
 			
 			display.cursorX = currentX-display.fontWidth*6-2;
 			display.cursorY = currentY+2*(display.fontHeight+1);
-			display.print(F("\26back"));
+			display.print("\26back");
 			
 			display.cursorX = currentX-display.fontWidth*6-2;
 			display.cursorY = currentY+3*(display.fontHeight+1);
-			display.print(F("\27save"));
+			display.print("\27save");
 			
 			//erase some pixels around the selected character
 			display.setColor(WHITE);
@@ -507,7 +507,7 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 #endif
 }
 
-void Gamebuino::popup(const __FlashStringHelper* text, uint8_t duration){
+void Gamebuino::popup(const char* text, uint8_t duration){
 #if (ENABLE_GUI > 0)
 	popupText = text;
 	popupTimeLeft = duration+12;
@@ -536,6 +536,8 @@ void Gamebuino::updatePopup(){
 
 void Gamebuino::changeGame(){
 	//display a "loading" message
+	// unneeded as the bootloader does that when flashing loader.bin
+	/*
 	display.fontSize = 1;
 	display.cursorX = 0;
 	display.cursorY = 0;
@@ -543,29 +545,30 @@ void Gamebuino::changeGame(){
 	display.setColor(WHITE);
 	display.print("LOADING...");
 	tft.drawImage(0, 0, display, tft.width(), tft.height());
+	*/
 	//flash loader.bin
-	((void(*)(const char* filename))(*((uint32_t*)0x3FF8)))("loader.bin");
+	load_loader();
 }
 
 void Gamebuino::getDefaultName(char* string){
 	return;
 }
 
-boolean Gamebuino::collidePointRect(int16_t x1, int16_t y1 ,int16_t x2 ,int16_t y2, int16_t w, int16_t h){
+bool Gamebuino::collidePointRect(int16_t x1, int16_t y1 ,int16_t x2 ,int16_t y2, int16_t w, int16_t h){
 	if((x1>=x2)&&(x1<x2+w))
 	if((y1>=y2)&&(y1<y2+h))
 	return true;
 	return false;
 }
 
-boolean Gamebuino::collideRectRect(int16_t x1, int16_t y1, int16_t w1, int16_t h1 ,int16_t x2 ,int16_t y2, int16_t w2, int16_t h2){
+bool Gamebuino::collideRectRect(int16_t x1, int16_t y1, int16_t w1, int16_t h1 ,int16_t x2 ,int16_t y2, int16_t w2, int16_t h2){
   return !( x2     >=  x1+w1  || 
             x2+w2  <=  x1     || 
             y2     >=  y1+h1  ||
             y2+h2  <=  y1     );
 }
 
-boolean Gamebuino::collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, int16_t x2, int16_t y2, const uint8_t* b2){
+bool Gamebuino::collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, int16_t x2, int16_t y2, const uint8_t* b2){
   int16_t w1 = pgm_read_byte(b1);
   int16_t h1 = pgm_read_byte(b1 + 1);
   int16_t w2 = pgm_read_byte(b2);

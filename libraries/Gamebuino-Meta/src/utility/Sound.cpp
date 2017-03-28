@@ -21,4 +21,35 @@
 
 namespace Gamebuino_Meta {
 
+void Sound::begin() {
+	volumeMax = 1;
+	globalVolume = 0;
+}
+
+void Sound::playOK() {
+	if (globalVolume) {
+		tone(A0,1000,50);
+	}
+}
+
+void Sound::playCancel() {
+	if (globalVolume) {
+		tone(A0,500,50);
+	}
+}
+
+void Sound::playTick() {
+	if (globalVolume) {
+		tone(A0,1000,5);
+	}
+}
+
+void Sound::setVolume(int8_t volume) {
+	globalVolume = (volume < 0) ? volumeMax : volume % (volumeMax+1); //wrap volume value
+}
+
+uint8_t Sound::getVolume() {
+	return globalVolume;
+}
+
 } // Gamebuino_Meta

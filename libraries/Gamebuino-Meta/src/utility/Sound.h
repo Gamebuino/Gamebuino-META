@@ -26,32 +26,17 @@ namespace Gamebuino_Meta {
 
 class Sound {
 public:
-	void begin(){
-		volumeMax = 1;
-		globalVolume = 0;
-	};
-	void playOK(){
-		if(globalVolume)
-			tone(A0,1000,50);
-	};
-	void playCancel(){
-		if(globalVolume)
-			tone(A0,500,50);
-	};
-	void playTick(){
-		if(globalVolume)
-			tone(A0,1000,5);
-	};
+	void begin();
+	void playOK();
+	void playCancel();
+	void playTick();
 	
-	void setVolume(int8_t volume) {
-		globalVolume = (volume < 0) ? volumeMax : volume % (volumeMax+1); //wrap volume value
-	};
-	uint8_t getVolume() {
-		return globalVolume;
-	};
+	void setVolume(int8_t volume);
+	uint8_t getVolume();
 	
-	uint8_t globalVolume;
 	uint8_t volumeMax;
+private:
+	uint8_t globalVolume;
 };
 
 } // Gamebuino_Meta

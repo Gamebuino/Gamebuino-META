@@ -60,10 +60,25 @@ namespace Gamebuino_Meta {
 #define LCDHEIGHT	64
 #define LCDWIDTH	80
 
-#define load_game (1);
-#define write_flash_page (*((void(*)(const char * page, unsigned char * buffer))(0x7ffa/2)))
+// make sure we don't screw things up
+#define F(x) x
 
-#define wrap(i, imax) ((imax+i)%(imax))
+// implement the bootloader functions as inlines
+inline void load_game(const char* filename) {
+	((void(*)(const char*))(*((uint32_t*)0x3FF8)))(filename);
+}
+
+inline void load_game(char* filename) {
+	load_game((const char*)filename);
+}
+
+inline void load_loader(void) {
+	((void(*)(void))(*((uint32_t*)0x3FF4)))();
+}
+
+inline void enter_bootloader(void) {
+	((void(*)(void))(*((uint32_t*)0x3FEC)))();
+}
 
 class Gamebuino {
 public:
@@ -75,11 +90,11 @@ public:
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 
 	void begin();
-	void titleScreen(const __FlashStringHelper* name, const uint8_t *logo);
-	void titleScreen(const __FlashStringHelper* name);
+	void titleScreen(const char* name, const uint8_t *logo);
+	void titleScreen(const char* name);
 	void titleScreen(const uint8_t* logo);
 	void titleScreen();
-	boolean update();
+	bool update();
 	uint8_t startMenuTimer;
 	uint32_t frameCount;
 	void setFrameRate(uint8_t fps);
@@ -92,24 +107,24 @@ public:
 	
 	int8_t menu(const char* const* items, uint8_t length);
 	void keyboard(char* text, uint8_t length);
-	void popup(const __FlashStringHelper* text, uint8_t duration);
+	void popup(const char* text, uint8_t duration);
 	//void adjustVolume();
 	void changeGame();
-	boolean settingsAvailable();
+	bool settingsAvailable();
 	void readSettings();
 	void getDefaultName(char* string);
 	
-	boolean collidePointRect(int16_t x1, int16_t y1 ,int16_t x2 ,int16_t y2, int16_t w, int16_t h);
-	boolean collideRectRect(int16_t x1, int16_t y1, int16_t w1, int16_t h1 ,int16_t x2 ,int16_t y2, int16_t w2, int16_t h2);
-	boolean collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, int16_t x2, int16_t y2, const uint8_t* b2);
+	bool collidePointRect(int16_t x1, int16_t y1 ,int16_t x2 ,int16_t y2, int16_t w, int16_t h);
+	bool collideRectRect(int16_t x1, int16_t y1, int16_t w1, int16_t h1 ,int16_t x2 ,int16_t y2, int16_t w2, int16_t h2);
+	bool collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, int16_t x2, int16_t y2, const uint8_t* b2);
 
 private:
 	uint8_t timePerFrame;
 	uint32_t nextFrameMillis;
 	void updatePopup();
-	const __FlashStringHelper* popupText;
+	const char* popupText;
 	uint8_t popupTimeLeft;
-	boolean lowBattery;
+	bool lowBattery;
 	uint16_t battery;
 };
 

@@ -149,9 +149,8 @@ void handlePress() {
   gb.display.println(path + i);
   // update the screen
   gb.tft.drawImage(0, 0, gb.display, gb.tft.width(), gb.tft.height());
-  //while(1);
   
-  ((void(*)(const char* filename))(*((uint32_t*)0x3FF8)))(path);
+  Gamebuino_Meta::load_game(path);
 }
 
 void setup() {
