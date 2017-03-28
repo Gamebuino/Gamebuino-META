@@ -41,15 +41,11 @@ extern SdFat SD;
 #include "extra/Gamebuino-Meta-Image.h"
 #include "extra/Gamebuino-Meta-SD-GFX.h"
 
+// make sure that sketches don't screw things up, the SAMD architecture has only one addressable space, thus making the PROGMEM concept unneded
+#define F(x) x
+#define PROGMEM  
 
 namespace Gamebuino_Meta {
-
-//GUI settings
-#define ENABLE_GUI 1 //enable menu, keyboard, pop-up, volume adjust functions
-#define START_MENU_TIMER 255 //40 = 40 frames (2sec) before start menu is skipped, 0 = no start menu, 255 = start menu until you press A
-#define KEYBOARD_W 16
-#define KEYBOARD_H 8
-
 #define TFT_CS		(30u)
 #define TFT_RST		(0u)
 #define TFT_DC		(31u)
@@ -57,11 +53,6 @@ namespace Gamebuino_Meta {
 #define NEOPIX_PIN	(38u)
 #define BAT_PIN		(A5)
 
-#define LCDHEIGHT	64
-#define LCDWIDTH	80
-
-// make sure we don't screw things up
-#define F(x) x
 
 // implement the bootloader functions as inlines
 inline void load_game(const char* filename) {
@@ -86,7 +77,6 @@ public:
 	Sound sound;
 	Image display = Image(80,64, ColorMode::RGB565);
 	Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-	Save save = Save(&tft);
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 
 	void begin();
@@ -127,6 +117,8 @@ private:
 	bool lowBattery;
 	uint16_t battery;
 	const char folder_name[sizeof FOLDER_NAME] = FOLDER_NAME;
+public:
+	Save save = Save(&tft, folder_name);
 };
 
 } // namespace Gamebuino_Meta

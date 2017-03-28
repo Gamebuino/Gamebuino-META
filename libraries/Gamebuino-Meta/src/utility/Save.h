@@ -47,7 +47,7 @@ struct SaveDefault {
 
 class Save {
 public:
-	Save(Adafruit_ST7735 *_tft);
+	Save(Adafruit_ST7735 *_tft, const char* _checkbytes);
 	int32_t get(uint16_t i);
 	bool get(uint16_t i, void* buf, uint8_t bufsize);
 	bool set(uint16_t i, int32_t num);
@@ -61,6 +61,7 @@ private:
 	File f;
 	bool open = false;
 	bool readOnly = false;
+	const char* checkbytes;
 	uint16_t blocks = 0;
 	uint32_t payload_size = 0;
 	SaveDefault defaults[SAVECONF_SIZE] = SAVECONF;

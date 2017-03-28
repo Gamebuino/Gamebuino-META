@@ -543,9 +543,9 @@ void Gamebuino::updatePopup(){
 		}
 		display.fontSize = 1;
 		display.setColor(WHITE);
-		display.fillRoundRect(0,LCDHEIGHT-display.fontHeight+yOffset-3,84,display.fontHeight+3,3);
+		display.fillRoundRect(0,LCDHEIGHT-display.fontHeight+yOffset-3,LCDWIDTH,display.fontHeight+3,3);
 		display.setColor(BLACK);
-		display.drawRoundRect(0,LCDHEIGHT-display.fontHeight+yOffset-3,84,display.fontHeight+3,3);
+		display.drawRoundRect(0,LCDHEIGHT-display.fontHeight+yOffset-3,LCDWIDTH,display.fontHeight+3,3);
 		display.cursorX = 4;
 		display.cursorY = LCDHEIGHT-display.fontHeight+yOffset-1;
 		display.print(popupText);

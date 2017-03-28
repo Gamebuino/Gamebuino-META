@@ -46,8 +46,9 @@ SaveDefault::SaveDefault(uint16_t _i, uint8_t _type, const void* _ptr, uint8_t _
 	length = _length;
 }
 
-Save::Save(Adafruit_ST7735 *_tft) {
+Save::Save(Adafruit_ST7735 *_tft, const char* _checkbytes) {
 	tft = _tft;
+	checkbytes = _checkbytes;
 }
 
 void Save::error(const char *s) {
@@ -96,7 +97,7 @@ void Save::openFile() {
 		blocks = SAVEBLOCK_NUM;
 		
 		// the file doesn't exist yet, so let's create it
-		f.write("asdf"); // TODO: checksum matching thing
+		f.write(checkbytes, 4);
 		f.write(&blocks, 2); // write the amount of blocks
 		
 		// +4 because of 4-byte payload size
@@ -105,10 +106,17 @@ void Save::openFile() {
 		}
 		
 		f.flush(); // make sure the file gets created
-		f.rewind(); // rewind it so that we can read its properties
 	}
+	f.rewind(); // rewind it so that we can read its properties
 	// the file already exists, so time to read some properties!
-	f.seekSet(4); // TODO: check magic number matching
+	
+	// first check that the checkbytes match!
+	// we use the payload_size for this because that is just yet another free 4-byte buffer
+	f.read(&payload_size, 4);
+	if ((uint32_t)payload_size ^ *((uint32_t*)checkbytes)) {
+		error("Invalid save file");
+	}
+	
 	f.read(&blocks, 2); // how many blocks do we have?
 	f.read(&payload_size, 4); // let's grab the payload size!
 	
