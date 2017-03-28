@@ -1,6 +1,4 @@
-#define NUM_HIGHSCORE 5
 int highscore[NUM_HIGHSCORE];
-#define NAMELENGTH 10
 char name[NUM_HIGHSCORE][NAMELENGTH+1];
 
 const uint16_t highscore_sound[] PROGMEM = {
@@ -8,13 +6,8 @@ const uint16_t highscore_sound[] PROGMEM = {
 
 void initHighscore(){
   for(byte thisScore = 0; thisScore < NUM_HIGHSCORE; thisScore++){
-    /*for(byte i=0; i<NAMELENGTH; i++){
-      name[thisScore][i] = EEPROM.read(i + thisScore*(NAMELENGTH+2));
-    }
-    highscore[thisScore] = EEPROM.read(NAMELENGTH + thisScore*(NAMELENGTH+2)) & 0x00FF; //LSB
-    highscore[thisScore] += (EEPROM.read(NAMELENGTH+1 + thisScore*(NAMELENGTH+2)) << 8) & 0xFF00; //MSB
-    highscore[thisScore] = (highscore[thisScore]==0) ? 9999 : highscore[thisScore];*/
-    highscore[thisScore] = 9999;
+    highscore[thisScore] = gb.save.get(2*thisScore);
+    gb.save.get(2*thisScore + 1, name[thisScore], NAMELENGTH+1);
   }
 }
 
@@ -39,18 +32,15 @@ void saveHighscore(unsigned int score){
           break;
         }
       }
-      /*for(byte thisScore = 0; thisScore < NUM_HIGHSCORE; thisScore++){
-        for(byte i=0; i<NAMELENGTH; i++){
-          EEPROM.write(i + thisScore*(NAMELENGTH+2), name[thisScore][i]);
-        }
-        EEPROM.write(NAMELENGTH + thisScore*(NAMELENGTH+2), highscore[thisScore] & 0x00FF); //LSB
-        EEPROM.write(NAMELENGTH+1 + thisScore*(NAMELENGTH+2), (highscore[thisScore] >> 8) & 0x00FF); //MSB
-      }*/
+      for(byte thisScore = 0; thisScore < NUM_HIGHSCORE; thisScore++){
+        gb.save.set(2*thisScore, highscore[thisScore]);
+        gb.save.set(2*thisScore + 1, name[thisScore]);
+      }
       drawHighScores();
     }
   }
   else{
-    gb.popup(F("NEW LAP!"),20);
+    gb.popup("NEW LAP!",20);
   }
 }
 
@@ -59,7 +49,7 @@ void drawHighScores(){
     if(gb.update()){
       gb.display.cursorX = 9+random(0,2);
       gb.display.cursorY = 0+random(0,2);
-      gb.display.println(F("BEST TIMES"));
+      gb.display.println("BEST TIMES");
       gb.display.textWrap = false;
       gb.display.cursorX = 0;
       gb.display.cursorY = gb.display.fontHeight;
@@ -87,18 +77,18 @@ boolean drawNewHighscore(unsigned int score){
     if(gb.update()){
       gb.display.cursorX = 2+random(0,2);
       gb.display.cursorY = 0+random(0,2);
-      gb.display.print(F("NEW HIGHSCORE"));
+      gb.display.print("NEW HIGHSCORE");
       gb.display.cursorX = 0;
       gb.display.cursorY = 12;
-      gb.display.print(F("Your time "));
+      gb.display.print("Your time ");
       gb.display.print(score);
-      gb.display.print(F("\nBest      "));
+      gb.display.print("\nBest      ");
       gb.display.print(highscore[0]);
-      gb.display.print(F("\nWorst     "));
+      gb.display.print("\nWorst     ");
       gb.display.print(highscore[NUM_HIGHSCORE-1]);
       gb.display.cursorX = 0;
       gb.display.cursorY = 40;
-      gb.display.print(F("\25:Save \27:Exit"));
+      gb.display.print("\25:Save \27:Exit");
       if(gb.buttons.pressed(BTN_A)){
         gb.sound.playOK();
         return true;

@@ -126,6 +126,7 @@ private:
 	uint8_t popupTimeLeft;
 	bool lowBattery;
 	uint16_t battery;
+	const char folder_name[sizeof FOLDER_NAME] = FOLDER_NAME;
 };
 
 } // namespace Gamebuino_Meta

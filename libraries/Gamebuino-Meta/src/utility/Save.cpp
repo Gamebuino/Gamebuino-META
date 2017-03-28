@@ -29,14 +29,14 @@ namespace Gamebuino_Meta {
 #define MIN(x, y) ((x < y) ? x : y)
 
 
-SaveDefault::SaveDefault(uint16_t _i, uint8_t _type, uint8_t _ival) {
+SaveDefault::SaveDefault(uint16_t _i, uint8_t _type, int32_t _ival) {
 	i = _i;
 	type = _type;
 	if (type == SAVETYPE_INT) {
 		val.ival = _ival;
 	} else {
 		val.ptr = 0;
-		length = _ival;
+		length = (uint8_t)_ival;
 	}
 }
 SaveDefault::SaveDefault(uint16_t _i, uint8_t _type, const void* _ptr, uint8_t _length) {

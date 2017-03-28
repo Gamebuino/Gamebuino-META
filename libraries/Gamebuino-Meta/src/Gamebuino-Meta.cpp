@@ -27,6 +27,15 @@ extern const uint8_t font3x5[];
 
 namespace Gamebuino_Meta {
 
+
+// compile-time assert helper stuff
+template <bool b>
+struct StaticAssert {};
+template <>
+struct StaticAssert<true> {
+	static void assert() {}
+};
+
 const uint16_t startupSound[] = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
 
 
@@ -45,9 +54,15 @@ const uint8_t gamebuinoLogo[] =
 	0b00001111, 0b10110000, 0b01111000, 0b11000110, 0b11111111, 0b01111110, 0b00011111, 0b00011011, 0b00000110, 0b00011110, 0b00001111, 
 };
 
-void Gamebuino::begin() {		
+void Gamebuino::begin() {
 	// first we disable the watchdog timer so that we tell the bootloader everything is fine!
 	WDT->CTRL.bit.ENABLE = 0;
+	
+	// let's to some sanity checks which are done on compile-time
+	
+	// check that the folder name length is at least 4 chars
+	StaticAssert<(sizeof FOLDER_NAME - 1 >= 4)>::assert(); // your FOLDER_NAME must be at least 4 chars long!
+	
 	
 	timePerFrame = 40;
 	//nextFrameMillis = 0;
@@ -84,12 +99,17 @@ void Gamebuino::begin() {
 		tft.setColor(RED, BLACK);
 		tft.println("FAILED");
 		delay(1000);
-	}
-	else {
+	} else {
 		tft.setColor(GREEN, BLACK);
 		tft.println("OK");
 	}
 	tft.setColor(WHITE, BLACK);
+	
+	// SD is initialized, let's switch to the folder!
+	if (!SD.exists(folder_name)) {
+		SD.mkdir(folder_name);
+	}
+	SD.chdir(folder_name);
 }
 
 void Gamebuino::titleScreen(const char* name){
@@ -359,7 +379,7 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 					display.cursorX = 3;
 					display.cursorY = currentY + display.fontHeight * activeItem;
 				}
-				display.println((const char*)pgm_read_word(items+i));
+				display.println((const char*)items[i]);
 			}
 
 			//display.fillRect(0, currentY + 3 + 8 * activeItem, 2, 2, BLACK);

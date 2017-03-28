@@ -1,5 +1,9 @@
-#ifndef GAMEBUINO_TEST
-#define GAMEBUINO_TEST "library"
+#ifndef FOLDER_NAME
+#ifdef __SKETCH_NAME__
+#define FOLDER_NAME __SKETCH_NAME__
+#else
+#define FOLDER_NAME "testsketch"
+#endif
 #endif
 
 

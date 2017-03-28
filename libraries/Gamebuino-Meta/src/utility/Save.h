@@ -34,12 +34,12 @@ struct SaveVar {
 };
 
 struct SaveDefault {
-	SaveDefault(uint16_t _i, uint8_t _type, uint8_t _ival);
+	SaveDefault(uint16_t _i, uint8_t _type, int32_t _ival);
 	SaveDefault(uint16_t i, uint8_t _type, const void* _ptr, uint8_t _length);
 	uint16_t i;
 	uint8_t type;
 	union {
-		uint32_t ival;
+		int32_t ival;
 		const void *ptr;
 	} val;
 	uint8_t length;
