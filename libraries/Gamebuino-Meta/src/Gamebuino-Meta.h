@@ -126,4 +126,7 @@ public:
 typedef Gamebuino_Meta::Gamebuino Gamebuino;
 extern Gamebuino gb;
 
+using namespace Gamebuino_Meta::Rotation;
+using namespace Gamebuino_Meta::Flip;
+
 #endif	/* GAMEBUINO_H */

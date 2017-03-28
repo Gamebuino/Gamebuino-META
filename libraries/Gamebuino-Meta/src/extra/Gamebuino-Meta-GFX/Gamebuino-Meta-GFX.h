@@ -12,6 +12,24 @@
 
 namespace Gamebuino_Meta {
 
+// we don't use enum classes here becuase people want to use NOROT instead of Rotation::NOROT
+namespace Rotation {
+enum Rotation : uint8_t {
+	NOROT,
+	ROTCCW,
+	ROT180,
+	ROTCW
+};
+}
+namespace Flip {
+enum Flip : uint8_t {
+	NOFLIP,
+	FLIPH,
+	FLIPV,
+	FLIPVH
+};
+}
+
 #define WHITE (0xFFFF)
 #define GRAY (0xACD0)
 #define DARKGRAY (0x72C7)
@@ -30,15 +48,6 @@ namespace Gamebuino_Meta {
 #define LIGHTBLUE (0x7DDF)
 
 #define ENABLE_BITMAPS 1
-//for extended bitmap function :
-#define NOROT 0
-#define ROTCCW 1
-#define ROT180 2
-#define ROTCW 3
-#define NOFLIP 0
-#define FLIPH 1
-#define FLIPV 2
-#define FLIPVH 3
 
 class Image;
 
@@ -69,58 +78,60 @@ class Adafruit_GFX : public Print {
   // These MAY be overridden by the subclass to provide device-specific
   // optimized code.  Otherwise 'generic' versions are used.
   virtual void
-    drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1),
-    drawFastVLine(int16_t x, int16_t y, int16_t h),
-    drawFastHLine(int16_t x, int16_t y, int16_t w),
-    drawRect(int16_t x, int16_t y, int16_t w, int16_t h),
-    fillRect(int16_t x, int16_t y, int16_t w, int16_t h),
+	drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1),
+	drawFastVLine(int16_t x, int16_t y, int16_t h),
+	drawFastHLine(int16_t x, int16_t y, int16_t w),
+	drawRect(int16_t x, int16_t y, int16_t w, int16_t h),
+	fillRect(int16_t x, int16_t y, int16_t w, int16_t h),
 	fillScreen(),
 	fillScreen(uint16_t color), //legacy version
-    invertDisplay(boolean i),
+	invertDisplay(boolean i),
 	drawImage(int16_t x, int16_t y, Image img),
 	drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2);
 
   // These exist only with Adafruit_GFX (no subclass overrides)
   void
-    drawCircle(int16_t x0, int16_t y0, int16_t r),
-    drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername),
-    fillCircle(int16_t x0, int16_t y0, int16_t r),
-    fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
-      int16_t delta),
-    drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
-      int16_t x2, int16_t y2),
-    fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
-      int16_t x2, int16_t y2),
-    drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
-      int16_t radius),
-    fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
-      int16_t radius),
+	drawCircle(int16_t x0, int16_t y0, int16_t r),
+	drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername),
+	fillCircle(int16_t x0, int16_t y0, int16_t r),
+	fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
+	  int16_t delta),
+	drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+	  int16_t x2, int16_t y2),
+	fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+	  int16_t x2, int16_t y2),
+	drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
+	  int16_t radius),
+	fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
+	  int16_t radius),
 	//Adafruit bitmaps
-    /*drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
-      int16_t w, int16_t h),
-    drawBitmap(int16_t x, int16_t y, uint8_t *bitmap,
-      int16_t w, int16_t h),
-    drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
-      int16_t w, int16_t h),*/
+	/*drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
+	  int16_t w, int16_t h),
+	drawBitmap(int16_t x, int16_t y, uint8_t *bitmap,
+	  int16_t w, int16_t h),
+	drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
+	  int16_t w, int16_t h),*/
 
 	//Gamebuino legacy bitmaps
 	drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap),
-    drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip),
+    drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint16_t fg),
+    drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint16_t fg, uint16_t bg),
+	drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, Rotation::Rotation rotation, Flip::Flip flip),
 
-    drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size),
-    setCursor(int16_t x, int16_t y),
-    setColor(uint16_t c),
-    setColor(uint16_t c, uint16_t bg),
-    setFontSize(uint8_t s),
-    setTextWrap(boolean w),
-    setRotation(uint8_t r),
-    cp437(boolean x=true),
-    setFont(const GFXfont *f = NULL), //adafruit custom font
+	drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size),
+	setCursor(int16_t x, int16_t y),
+	setColor(uint16_t c),
+	setColor(uint16_t c, uint16_t bg),
+	setFontSize(uint8_t s),
+	setTextWrap(boolean w),
+	setRotation(uint8_t r),
+	cp437(boolean x=true),
+	setFont(const GFXfont *f = NULL), //adafruit custom font
 	setFont(const uint8_t* f), //gamebuino legacy font
-    getTextBounds(char *string, int16_t x, int16_t y,
-      int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h),
-    getTextBounds(const __FlashStringHelper *s, int16_t x, int16_t y,
-      int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
+	getTextBounds(char *string, int16_t x, int16_t y,
+	  int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h),
+	getTextBounds(const __FlashStringHelper *s, int16_t x, int16_t y,
+	  int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
 
   //Gamebuino legacy function
   boolean getBitmapPixel(const uint8_t* bitmap, uint8_t x, uint8_t y);
@@ -152,18 +163,18 @@ class Adafruit_GFX : public Print {
 
  //protected:
   const int16_t
-    WIDTH, HEIGHT;   // This is the 'raw' display w/h - never changes
+	WIDTH, HEIGHT;   // This is the 'raw' display w/h - never changes
   int16_t
-    _width, _height, // Display w/h as modified by current rotation
-    cursorX, cursorY;
+	_width, _height, // Display w/h as modified by current rotation
+	cursorX, cursorY;
   static uint16_t
-    color, bgcolor;
+	color, bgcolor;
   uint8_t
-    fontSize,
-    rotation;
+	fontSize,
+	rotation;
   boolean
-    textWrap,   // If set, 'wrap' text at right edge of display
-    _cp437; // If set, use correct CP437 charset (default is off)
+	textWrap,   // If set, 'wrap' text at right edge of display
+	_cp437; // If set, use correct CP437 charset (default is off)
   GFXfont *gfxFont; //adafruit custom font
 
   uint8_t *font; //gamebuino legacy font

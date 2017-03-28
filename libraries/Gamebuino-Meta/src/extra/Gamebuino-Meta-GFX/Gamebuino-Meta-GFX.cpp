@@ -130,23 +130,23 @@ void Adafruit_GFX::drawCircle(int16_t x0, int16_t y0, int16_t r) {
   drawPixel(x0-r, y0  );
 
   while (x<y) {
-    if (f >= 0) {
-      y--;
-      ddF_y += 2;
-      f += ddF_y;
-    }
-    x++;
-    ddF_x += 2;
-    f += ddF_x;
+	if (f >= 0) {
+	  y--;
+	  ddF_y += 2;
+	  f += ddF_y;
+	}
+	x++;
+	ddF_x += 2;
+	f += ddF_x;
 
-    drawPixel(x0 + x, y0 + y);
-    drawPixel(x0 - x, y0 + y);
-    drawPixel(x0 + x, y0 - y);
-    drawPixel(x0 - x, y0 - y);
-    drawPixel(x0 + y, y0 + x);
-    drawPixel(x0 - y, y0 + x);
-    drawPixel(x0 + y, y0 - x);
-    drawPixel(x0 - y, y0 - x);
+	drawPixel(x0 + x, y0 + y);
+	drawPixel(x0 - x, y0 + y);
+	drawPixel(x0 + x, y0 - y);
+	drawPixel(x0 - x, y0 - y);
+	drawPixel(x0 + y, y0 + x);
+	drawPixel(x0 - y, y0 + x);
+	drawPixel(x0 + y, y0 - x);
+	drawPixel(x0 - y, y0 - x);
   }
 }
 
@@ -159,30 +159,30 @@ void Adafruit_GFX::drawCircleHelper( int16_t x0, int16_t y0,
   int16_t y     = r;
 
   while (x<y) {
-    if (f >= 0) {
-      y--;
-      ddF_y += 2;
-      f     += ddF_y;
-    }
-    x++;
-    ddF_x += 2;
-    f     += ddF_x;
-    if (cornername & 0x4) {
-      drawPixel(x0 + x, y0 + y);
-      drawPixel(x0 + y, y0 + x);
-    }
-    if (cornername & 0x2) {
-      drawPixel(x0 + x, y0 - y);
-      drawPixel(x0 + y, y0 - x);
-    }
-    if (cornername & 0x8) {
-      drawPixel(x0 - y, y0 + x);
-      drawPixel(x0 - x, y0 + y);
-    }
-    if (cornername & 0x1) {
-      drawPixel(x0 - y, y0 - x);
-      drawPixel(x0 - x, y0 - y);
-    }
+	if (f >= 0) {
+	  y--;
+	  ddF_y += 2;
+	  f     += ddF_y;
+	}
+	x++;
+	ddF_x += 2;
+	f     += ddF_x;
+	if (cornername & 0x4) {
+	  drawPixel(x0 + x, y0 + y);
+	  drawPixel(x0 + y, y0 + x);
+	}
+	if (cornername & 0x2) {
+	  drawPixel(x0 + x, y0 - y);
+	  drawPixel(x0 + y, y0 - x);
+	}
+	if (cornername & 0x8) {
+	  drawPixel(x0 - y, y0 + x);
+	  drawPixel(x0 - x, y0 + y);
+	}
+	if (cornername & 0x1) {
+	  drawPixel(x0 - y, y0 - x);
+	  drawPixel(x0 - x, y0 - y);
+	}
   }
 }
 
@@ -202,23 +202,23 @@ void Adafruit_GFX::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
   int16_t y     = r;
 
   while (x<y) {
-    if (f >= 0) {
-      y--;
-      ddF_y += 2;
-      f     += ddF_y;
-    }
-    x++;
-    ddF_x += 2;
-    f     += ddF_x;
+	if (f >= 0) {
+	  y--;
+	  ddF_y += 2;
+	  f     += ddF_y;
+	}
+	x++;
+	ddF_x += 2;
+	f     += ddF_x;
 
-    if (cornername & 0x1) {
-      drawFastVLine(x0+x, y0-y, 2*y+1+delta);
-      drawFastVLine(x0+y, y0-x, 2*x+1+delta);
-    }
-    if (cornername & 0x2) {
-      drawFastVLine(x0-x, y0-y, 2*y+1+delta);
-      drawFastVLine(x0-y, y0-x, 2*x+1+delta);
-    }
+	if (cornername & 0x1) {
+	  drawFastVLine(x0+x, y0-y, 2*y+1+delta);
+	  drawFastVLine(x0+y, y0-x, 2*x+1+delta);
+	}
+	if (cornername & 0x2) {
+	  drawFastVLine(x0-x, y0-y, 2*y+1+delta);
+	  drawFastVLine(x0-y, y0-x, 2*x+1+delta);
+	}
   }
 }
 
@@ -226,13 +226,13 @@ void Adafruit_GFX::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 void Adafruit_GFX::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1) {
   int16_t steep = abs(y1 - y0) > abs(x1 - x0);
   if (steep) {
-    _swap_int16_t(x0, y0);
-    _swap_int16_t(x1, y1);
+	_swap_int16_t(x0, y0);
+	_swap_int16_t(x1, y1);
   }
 
   if (x0 > x1) {
-    _swap_int16_t(x0, x1);
-    _swap_int16_t(y0, y1);
+	_swap_int16_t(x0, x1);
+	_swap_int16_t(y0, y1);
   }
 
   int16_t dx, dy;
@@ -243,22 +243,22 @@ void Adafruit_GFX::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1) {
   int16_t ystep;
 
   if (y0 < y1) {
-    ystep = 1;
+	ystep = 1;
   } else {
-    ystep = -1;
+	ystep = -1;
   }
 
   for (; x0<=x1; x0++) {
-    if (steep) {
-      drawPixel(y0, x0);
-    } else {
-      drawPixel(x0, y0);
-    }
-    err -= dy;
-    if (err < 0) {
-      y0 += ystep;
-      err += dx;
-    }
+	if (steep) {
+	  drawPixel(y0, x0);
+	} else {
+	  drawPixel(x0, y0);
+	}
+	err -= dy;
+	if (err < 0) {
+	  y0 += ystep;
+	  err += dx;
+	}
   }
 }
 
@@ -285,7 +285,7 @@ void Adafruit_GFX::drawFastHLine(int16_t x, int16_t y,
 void Adafruit_GFX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
   // Update in subclasses if desired!
   for (int16_t i=x; i<x+w; i++) {
-    drawFastVLine(i, y, h);
+	drawFastVLine(i, y, h);
   }
 }
 
@@ -343,35 +343,35 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
 
   // Sort coordinates by Y order (y2 >= y1 >= y0)
   if (y0 > y1) {
-    _swap_int16_t(y0, y1); _swap_int16_t(x0, x1);
+	_swap_int16_t(y0, y1); _swap_int16_t(x0, x1);
   }
   if (y1 > y2) {
-    _swap_int16_t(y2, y1); _swap_int16_t(x2, x1);
+	_swap_int16_t(y2, y1); _swap_int16_t(x2, x1);
   }
   if (y0 > y1) {
-    _swap_int16_t(y0, y1); _swap_int16_t(x0, x1);
+	_swap_int16_t(y0, y1); _swap_int16_t(x0, x1);
   }
 
   if(y0 == y2) { // Handle awkward all-on-same-line case as its own thing
-    a = b = x0;
-    if(x1 < a)      a = x1;
-    else if(x1 > b) b = x1;
-    if(x2 < a)      a = x2;
-    else if(x2 > b) b = x2;
-    drawFastHLine(a, y0, b-a+1);
-    return;
+	a = b = x0;
+	if(x1 < a)      a = x1;
+	else if(x1 > b) b = x1;
+	if(x2 < a)      a = x2;
+	else if(x2 > b) b = x2;
+	drawFastHLine(a, y0, b-a+1);
+	return;
   }
 
   int16_t
-    dx01 = x1 - x0,
-    dy01 = y1 - y0,
-    dx02 = x2 - x0,
-    dy02 = y2 - y0,
-    dx12 = x2 - x1,
-    dy12 = y2 - y1;
+	dx01 = x1 - x0,
+	dy01 = y1 - y0,
+	dx02 = x2 - x0,
+	dy02 = y2 - y0,
+	dx12 = x2 - x1,
+	dy12 = y2 - y1;
   int32_t
-    sa   = 0,
-    sb   = 0;
+	sa   = 0,
+	sb   = 0;
 
   // For upper part of triangle, find scanline crossings for segments
   // 0-1 and 0-2.  If y1=y2 (flat-bottomed triangle), the scanline y1
@@ -383,16 +383,16 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
   else         last = y1-1; // Skip it
 
   for(y=y0; y<=last; y++) {
-    a   = x0 + sa / dy01;
-    b   = x0 + sb / dy02;
-    sa += dx01;
-    sb += dx02;
-    /* longhand:
-    a = x0 + (x1 - x0) * (y - y0) / (y1 - y0);
-    b = x0 + (x2 - x0) * (y - y0) / (y2 - y0);
-    */
-    if(a > b) _swap_int16_t(a,b);
-    drawFastHLine(a, y, b-a+1);
+	a   = x0 + sa / dy01;
+	b   = x0 + sb / dy02;
+	sa += dx01;
+	sb += dx02;
+	/* longhand:
+	a = x0 + (x1 - x0) * (y - y0) / (y1 - y0);
+	b = x0 + (x2 - x0) * (y - y0) / (y2 - y0);
+	*/
+	if(a > b) _swap_int16_t(a,b);
+	drawFastHLine(a, y, b-a+1);
   }
 
   // For lower part of triangle, find scanline crossings for segments
@@ -400,16 +400,16 @@ void Adafruit_GFX::fillTriangle(int16_t x0, int16_t y0,
   sa = dx12 * (y - y1);
   sb = dx02 * (y - y0);
   for(; y<=y2; y++) {
-    a   = x1 + sa / dy12;
-    b   = x0 + sb / dy02;
-    sa += dx12;
-    sb += dx02;
-    /* longhand:
-    a = x1 + (x2 - x1) * (y - y1) / (y2 - y1);
-    b = x0 + (x2 - x0) * (y - y0) / (y2 - y0);
-    */
-    if(a > b) _swap_int16_t(a,b);
-    drawFastHLine(a, y, b-a+1);
+	a   = x1 + sa / dy12;
+	b   = x0 + sb / dy02;
+	sa += dx12;
+	sb += dx02;
+	/* longhand:
+	a = x1 + (x2 - x1) * (y - y1) / (y2 - y1);
+	b = x0 + (x2 - x0) * (y - y0) / (y2 - y0);
+	*/
+	if(a > b) _swap_int16_t(a,b);
+	drawFastHLine(a, y, b-a+1);
   }
 }
 /*
@@ -422,11 +422,11 @@ void Adafruit_GFX::drawBitmap(int16_t x, int16_t y,
   uint8_t byte;
 
   for(j=0; j<h; j++) {
-    for(i=0; i<w; i++ ) {
-      if(i & 7) byte <<= 1;
-      else      byte   = pgm_read_byte(bitmap + j * byteWidth + i / 8);
-      if(byte & 0x80) drawPixel(x+i, y+j);
-    }
+	for(i=0; i<w; i++ ) {
+	  if(i & 7) byte <<= 1;
+	  else      byte   = pgm_read_byte(bitmap + j * byteWidth + i / 8);
+	  if(byte & 0x80) drawPixel(x+i, y+j);
+	}
   }
 }
 
@@ -438,11 +438,11 @@ void Adafruit_GFX::drawBitmap(int16_t x, int16_t y,
   uint8_t byte;
 
   for(j=0; j<h; j++) {
-    for(i=0; i<w; i++ ) {
-      if(i & 7) byte <<= 1;
-      else      byte   = bitmap[j * byteWidth + i / 8];
-      if(byte & 0x80) drawPixel(x+i, y+j);
-    }
+	for(i=0; i<w; i++ ) {
+	  if(i & 7) byte <<= 1;
+	  else      byte   = bitmap[j * byteWidth + i / 8];
+	  if(byte & 0x80) drawPixel(x+i, y+j);
+	}
   }
 }
 
@@ -466,17 +466,71 @@ void Adafruit_GFX::drawXBitmap(int16_t x, int16_t y,
 }
 */
 void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
-	int8_t w = pgm_read_byte(bitmap);
-	int8_t h = pgm_read_byte(bitmap + 1);
-	bitmap = bitmap + 2; //add an offset to the pointer to start after the width and height
+	uint8_t w = *(bitmap++);
+	uint8_t h = *(bitmap++);
+	
 #if (ENABLE_BITMAPS > 0)
-	int8_t i, j, byteWidth = (w + 7) / 8;
-	for (j = 0; j < h; j++) {
-	   for (i = 0; i < w; i++) {
-	      if (pgm_read_byte(bitmap + j * byteWidth + i / 8) & (B10000000 >> (i % 8))) {
-	         drawPixel(x + i, y + j);
-	      }
-	   }
+	uint8_t byteWidth = (w + 7) / 8;
+	uint8_t _x = x;
+	uint8_t dw = 8 - (w%8);
+	for (uint8_t j = 0; j < h; j++) {
+		x = _x;
+		for (uint8_t i = 0; i < byteWidth;) {
+			uint8_t b = *(bitmap++);
+			i++;
+			for (uint8_t k = 0; k < 8; k++) {
+				if (i == byteWidth && k == dw) {
+					x += (w%8);
+					break;
+				}
+				if (b&0x80) {
+					drawPixel(x, y);
+				}
+				b <<= 1;
+				x++;
+			}
+		}
+		y++;
+	}
+#else
+	drawRect(x, y, w, h);
+#endif
+}
+
+void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint16_t fg) {
+	setColor(fg);
+	drawBitmap(x, y, bitmap);
+}
+
+void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint16_t fg, uint16_t bg) {
+	uint8_t w = *(bitmap++);
+	uint8_t h = *(bitmap++);
+	
+#if (ENABLE_BITMAPS > 0)
+	uint8_t byteWidth = (w + 7) / 8;
+	uint8_t _x = x;
+	uint8_t dw = 8 - (w%8);
+	for (uint8_t j = 0; j < h; j++) {
+		x = _x;
+		for (uint8_t i = 0; i < byteWidth;) {
+			uint8_t b = *(bitmap++);
+			i++;
+			for (uint8_t k = 0; k < 8; k++) {
+				if (i == byteWidth && k == dw) {
+					x += (w%8);
+					break;
+				}
+				if (b&0x80) {
+					setColor(fg);
+				} else {
+					setColor(bg);
+				}
+				drawPixel(x, y);
+				b <<= 1;
+				x++;
+			}
+		}
+		y++;
 	}
 #else
 	drawRect(x, y, w, h);
@@ -484,8 +538,8 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
 }
 
 void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
-	uint8_t rotation, uint8_t flip) {
-	if ((rotation == NOROT) && (flip == NOFLIP)) {
+	Rotation::Rotation rotation, Flip::Flip flip) {
+	if ((rotation == Rotation::NOROT) && (flip == Flip::NOFLIP)) {
 		drawBitmap(x, y, bitmap); //use the faster algorithm
 		return;
 	}
@@ -497,7 +551,6 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 		k, l, //coordinates in the rotated/flipped bitmap
 		byteNum, bitNum, byteWidth = (w + 7) >> 3;
 
-	rotation %= 4;
 
 	for (i = 0; i < w; i++) {
 		byteNum = i / 8;
@@ -505,29 +558,28 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 		for (j = 0; j < h; j++) {
 			if (pgm_read_byte(bitmap + j * byteWidth + byteNum) & (B10000000 >> bitNum)) {
 				switch (rotation) {
-				case NOROT: //no rotation
+				case Rotation::NOROT: //no rotation
 					k = i;
 					l = j;
 					break;
-				case ROTCCW: //90� counter-clockwise
+				case Rotation::ROTCCW: //90° counter-clockwise
 					k = j;
 					l = w - i - 1;
 					break;
-				case ROT180: //180�
+				case Rotation::ROT180: //180°
 					k = w - i - 1;
 					l = h - j - 1;
 					break;
-				case ROTCW: //90� clockwise
+				case Rotation::ROTCW: //90° clockwise
 					k = h - j - 1;
 					l = i;
 					break;
 				}
-				if (flip) {
-					flip %= 4;
-					if (flip & B00000001) { //horizontal flip
+				if ((uint8_t)flip) {
+					if ((uint8_t)flip & B00000001) { //horizontal flip
 						k = w - k - 1;
 					}
-					if (flip & B00000010) { //vertical flip
+					if ((uint8_t)flip & B00000010) { //vertical flip
 						l = h - l;
 					}
 				}
@@ -698,49 +750,49 @@ void Adafruit_GFX::write(uint8_t c) {
 
   if(!gfxFont) { // 'Classic' built-in font
 
-    if(c == '\n') {
-      cursorY += fontSize*fontHeight;
+	if(c == '\n') {
+	  cursorY += fontSize*fontHeight;
 	  if(textWrap && ((cursorY + fontSize * fontHeight) >= _height)) {//Heading off bottom edge ?
 		cursorY = 0;
 	  }
-      cursorX  = 0;
-    } else if(c == '\r') {
-      // skip em
-    } else {
-      if(textWrap && ((cursorX + fontSize * fontWidth) >= _width)) { // Heading off right edge?
-        cursorX  = 0;            // Reset x to zero
-        cursorY += fontSize * fontHeight; // Advance y one line
-      }
-      drawChar(cursorX, cursorY, c, fontSize);
-      cursorX += fontSize * fontWidth;
-    }
+	  cursorX  = 0;
+	} else if(c == '\r') {
+	  // skip em
+	} else {
+	  if(textWrap && ((cursorX + fontSize * fontWidth) >= _width)) { // Heading off right edge?
+		cursorX  = 0;            // Reset x to zero
+		cursorY += fontSize * fontHeight; // Advance y one line
+	  }
+	  drawChar(cursorX, cursorY, c, fontSize);
+	  cursorX += fontSize * fontWidth;
+	}
 
   } else { // Custom font
 
-    if(c == '\n') {
-      cursorX  = 0;
-      cursorY += (int16_t)fontSize *
-                  (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
-    } else if(c != '\r') {
-      uint8_t first = pgm_read_byte(&gfxFont->first);
-      if((c >= first) && (c <= (uint8_t)pgm_read_byte(&gfxFont->last))) {
-        uint8_t   c2    = c - pgm_read_byte(&gfxFont->first);
-        GFXglyph *glyph = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c2]);
-        uint8_t   w     = pgm_read_byte(&glyph->width),
-                  h     = pgm_read_byte(&glyph->height);
-        if((w > 0) && (h > 0)) { // Is there an associated bitmap?
-          int16_t xo = (int8_t)pgm_read_byte(&glyph->xOffset); // sic
-          if(textWrap && ((cursorX + fontSize * (xo + w)) >= _width)) {
-            // Drawing character would go off right edge; textWrap to new line
-            cursorX  = 0;
-            cursorY += (int16_t)fontSize *
-                        (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
-          }
-          drawChar(cursorX, cursorY, c, fontSize);
-        }
-        cursorX += pgm_read_byte(&glyph->xAdvance) * (int16_t)fontSize;
-      }
-    }
+	if(c == '\n') {
+	  cursorX  = 0;
+	  cursorY += (int16_t)fontSize *
+				  (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+	} else if(c != '\r') {
+	  uint8_t first = pgm_read_byte(&gfxFont->first);
+	  if((c >= first) && (c <= (uint8_t)pgm_read_byte(&gfxFont->last))) {
+		uint8_t   c2    = c - pgm_read_byte(&gfxFont->first);
+		GFXglyph *glyph = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c2]);
+		uint8_t   w     = pgm_read_byte(&glyph->width),
+				  h     = pgm_read_byte(&glyph->height);
+		if((w > 0) && (h > 0)) { // Is there an associated bitmap?
+		  int16_t xo = (int8_t)pgm_read_byte(&glyph->xOffset); // sic
+		  if(textWrap && ((cursorX + fontSize * (xo + w)) >= _width)) {
+			// Drawing character would go off right edge; textWrap to new line
+			cursorX  = 0;
+			cursorY += (int16_t)fontSize *
+						(uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+		  }
+		  drawChar(cursorX, cursorY, c, fontSize);
+		}
+		cursorX += pgm_read_byte(&glyph->xAdvance) * (int16_t)fontSize;
+	  }
+	}
 
   }
 #if ARDUINO >= 100
@@ -752,13 +804,13 @@ void Adafruit_GFX::write(uint8_t c) {
 void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
   if(!gfxFont) { // 'Classic' built-in font
 
-    if((x >= _width)            || // Clip right
-       (y >= _height)           || // Clip bottom
-       ((x + fontWidth * size - 1) < 0) || // Clip left
-       ((y + fontHeight * size - 1) < 0))   // Clip top
-      return;
+	if((x >= _width)            || // Clip right
+	   (y >= _height)           || // Clip bottom
+	   ((x + fontWidth * size - 1) < 0) || // Clip left
+	   ((y + fontHeight * size - 1) < 0))   // Clip top
+	  return;
 
-    if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
+	if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
 
 	for (int8_t i = 0; i < fontWidth; i++) {
 		uint8_t line;
@@ -790,61 +842,61 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size)
 
   } else { // Custom font
 
-    // Character is assumed previously filtered by write() to eliminate
-    // newlines, returns, non-printable characters, etc.  Calling drawChar()
-    // directly with 'bad' characters of font may cause mayhem!
+	// Character is assumed previously filtered by write() to eliminate
+	// newlines, returns, non-printable characters, etc.  Calling drawChar()
+	// directly with 'bad' characters of font may cause mayhem!
 
-    c -= pgm_read_byte(&gfxFont->first);
-    GFXglyph *glyph  = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
-    uint8_t  *bitmap = (uint8_t *)pgm_read_pointer(&gfxFont->bitmap);
+	c -= pgm_read_byte(&gfxFont->first);
+	GFXglyph *glyph  = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
+	uint8_t  *bitmap = (uint8_t *)pgm_read_pointer(&gfxFont->bitmap);
 
-    uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
-    uint8_t  w  = pgm_read_byte(&glyph->width),
-             h  = pgm_read_byte(&glyph->height),
-             xa = pgm_read_byte(&glyph->xAdvance);
-    int8_t   xo = pgm_read_byte(&glyph->xOffset),
-             yo = pgm_read_byte(&glyph->yOffset);
-    uint8_t  xx, yy, bits, bit = 0;
-    int16_t  xo16, yo16;
+	uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
+	uint8_t  w  = pgm_read_byte(&glyph->width),
+			 h  = pgm_read_byte(&glyph->height),
+			 xa = pgm_read_byte(&glyph->xAdvance);
+	int8_t   xo = pgm_read_byte(&glyph->xOffset),
+			 yo = pgm_read_byte(&glyph->yOffset);
+	uint8_t  xx, yy, bits, bit = 0;
+	int16_t  xo16, yo16;
 
-    if(size > 1) {
-      xo16 = xo;
-      yo16 = yo;
-    }
+	if(size > 1) {
+	  xo16 = xo;
+	  yo16 = yo;
+	}
 
-    // Todo: Add character clipping here
+	// Todo: Add character clipping here
 
-    // NOTE: THERE IS NO 'BACKGROUND' COLOR OPTION ON CUSTOM FONTS.
-    // THIS IS ON PURPOSE AND BY DESIGN.  The background color feature
-    // has typically been used with the 'classic' font to overwrite old
-    // screen contents with new data.  This ONLY works because the
-    // characters are a uniform size; it's not a sensible thing to do with
-    // proportionally-spaced fonts with glyphs of varying sizes (and that
-    // may overlap).  To replace previously-drawn text when using a custom
-    // font, use the getTextBounds() function to determine the smallest
-    // rectangle encompassing a string, erase the area with fillRect(),
-    // then draw new text.  This WILL infortunately 'blink' the text, but
-    // is unavoidable.  Drawing 'background' pixels will NOT fix this,
-    // only creates a new set of problems.  Have an idea to work around
-    // this (a canvas object type for MCUs that can afford the RAM and
-    // displays supporting setAddrWindow() and pushColors()), but haven't
-    // implemented this yet.
+	// NOTE: THERE IS NO 'BACKGROUND' COLOR OPTION ON CUSTOM FONTS.
+	// THIS IS ON PURPOSE AND BY DESIGN.  The background color feature
+	// has typically been used with the 'classic' font to overwrite old
+	// screen contents with new data.  This ONLY works because the
+	// characters are a uniform size; it's not a sensible thing to do with
+	// proportionally-spaced fonts with glyphs of varying sizes (and that
+	// may overlap).  To replace previously-drawn text when using a custom
+	// font, use the getTextBounds() function to determine the smallest
+	// rectangle encompassing a string, erase the area with fillRect(),
+	// then draw new text.  This WILL infortunately 'blink' the text, but
+	// is unavoidable.  Drawing 'background' pixels will NOT fix this,
+	// only creates a new set of problems.  Have an idea to work around
+	// this (a canvas object type for MCUs that can afford the RAM and
+	// displays supporting setAddrWindow() and pushColors()), but haven't
+	// implemented this yet.
 
-    for(yy=0; yy<h; yy++) {
-      for(xx=0; xx<w; xx++) {
-        if(!(bit++ & 7)) {
-          bits = pgm_read_byte(&bitmap[bo++]);
-        }
-        if(bits & 0x80) {
-          if(size == 1) {
-            drawPixel(x+xo+xx, y+yo+yy);
-          } else {
-            fillRect(x+(xo16+xx)*size, y+(yo16+yy)*size, size, size);
-          }
-        }
-        bits <<= 1;
-      }
-    }
+	for(yy=0; yy<h; yy++) {
+	  for(xx=0; xx<w; xx++) {
+		if(!(bit++ & 7)) {
+		  bits = pgm_read_byte(&bitmap[bo++]);
+		}
+		if(bits & 0x80) {
+		  if(size == 1) {
+			drawPixel(x+xo+xx, y+yo+yy);
+		  } else {
+			fillRect(x+(xo16+xx)*size, y+(yo16+yy)*size, size, size);
+		  }
+		}
+		bits <<= 1;
+	  }
+	}
 
   } // End classic vs custom font
 }
@@ -890,14 +942,14 @@ void Adafruit_GFX::setRotation(uint8_t x) {
   switch(rotation) {
    case 0:
    case 2:
-    _width  = WIDTH;
-    _height = HEIGHT;
-    break;
+	_width  = WIDTH;
+	_height = HEIGHT;
+	break;
    case 1:
    case 3:
-    _width  = HEIGHT;
-    _height = WIDTH;
-    break;
+	_width  = HEIGHT;
+	_height = WIDTH;
+	break;
   }
 }
 
@@ -915,15 +967,15 @@ void Adafruit_GFX::cp437(boolean x) {
 //adafruit custom font
 void Adafruit_GFX::setFont(const GFXfont *f) {
   if(f) {          // Font struct pointer passed in?
-    if(!gfxFont) { // And no current font struct?
-      // Switching from classic to new font behavior.
-      // Move cursor pos down 6 pixels so it's on baseline.
-      cursorY += 6;
-    }
+	if(!gfxFont) { // And no current font struct?
+	  // Switching from classic to new font behavior.
+	  // Move cursor pos down 6 pixels so it's on baseline.
+	  cursorY += 6;
+	}
   } else if(gfxFont) { // NULL passed.  Current font struct defined?
-    // Switching from new to classic font behavior.
-    // Move cursor pos up 6 pixels so it's at top-left of char.
-    cursorY -= 6;
+	// Switching from new to classic font behavior.
+	// Move cursor pos up 6 pixels so it's at top-left of char.
+	cursorY -= 6;
   }
   gfxFont = (GFXfont *)f;
 }
@@ -947,81 +999,81 @@ void Adafruit_GFX::getTextBounds(char *str, int16_t x, int16_t y,
 
   if(gfxFont) {
 
-    GFXglyph *glyph;
-    uint8_t   first = pgm_read_byte(&gfxFont->first),
-              last  = pgm_read_byte(&gfxFont->last),
-              gw, gh, xa;
-    int8_t    xo, yo;
-    int16_t   minx = _width, miny = _height, maxx = -1, maxy = -1,
-              gx1, gy1, gx2, gy2, ts = (int16_t)fontSize,
-              ya = ts * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+	GFXglyph *glyph;
+	uint8_t   first = pgm_read_byte(&gfxFont->first),
+			  last  = pgm_read_byte(&gfxFont->last),
+			  gw, gh, xa;
+	int8_t    xo, yo;
+	int16_t   minx = _width, miny = _height, maxx = -1, maxy = -1,
+			  gx1, gy1, gx2, gy2, ts = (int16_t)fontSize,
+			  ya = ts * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
 
-    while((c = *str++)) {
-      if(c != '\n') { // Not a newline
-        if(c != '\r') { // Not a carriage return, is normal char
-          if((c >= first) && (c <= last)) { // Char present in current font
-            c    -= first;
-            glyph = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
-            gw    = pgm_read_byte(&glyph->width);
-            gh    = pgm_read_byte(&glyph->height);
-            xa    = pgm_read_byte(&glyph->xAdvance);
-            xo    = pgm_read_byte(&glyph->xOffset);
-            yo    = pgm_read_byte(&glyph->yOffset);
-            if(textWrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
-              // Line textWrap
-              x  = 0;  // Reset x to 0
-              y += ya; // Advance y by 1 line
-            }
-            gx1 = x   + xo * ts;
-            gy1 = y   + yo * ts;
-            gx2 = gx1 + gw * ts - 1;
-            gy2 = gy1 + gh * ts - 1;
-            if(gx1 < minx) minx = gx1;
-            if(gy1 < miny) miny = gy1;
-            if(gx2 > maxx) maxx = gx2;
-            if(gy2 > maxy) maxy = gy2;
-            x += xa * ts;
-          }
-        } // Carriage return = do nothing
-      } else { // Newline
-        x  = 0;  // Reset x
-        y += ya; // Advance y by 1 line
-      }
-    }
-    // End of string
-    *x1 = minx;
-    *y1 = miny;
-    if(maxx >= minx) *w  = maxx - minx + 1;
-    if(maxy >= miny) *h  = maxy - miny + 1;
+	while((c = *str++)) {
+	  if(c != '\n') { // Not a newline
+		if(c != '\r') { // Not a carriage return, is normal char
+		  if((c >= first) && (c <= last)) { // Char present in current font
+			c    -= first;
+			glyph = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
+			gw    = pgm_read_byte(&glyph->width);
+			gh    = pgm_read_byte(&glyph->height);
+			xa    = pgm_read_byte(&glyph->xAdvance);
+			xo    = pgm_read_byte(&glyph->xOffset);
+			yo    = pgm_read_byte(&glyph->yOffset);
+			if(textWrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
+			  // Line textWrap
+			  x  = 0;  // Reset x to 0
+			  y += ya; // Advance y by 1 line
+			}
+			gx1 = x   + xo * ts;
+			gy1 = y   + yo * ts;
+			gx2 = gx1 + gw * ts - 1;
+			gy2 = gy1 + gh * ts - 1;
+			if(gx1 < minx) minx = gx1;
+			if(gy1 < miny) miny = gy1;
+			if(gx2 > maxx) maxx = gx2;
+			if(gy2 > maxy) maxy = gy2;
+			x += xa * ts;
+		  }
+		} // Carriage return = do nothing
+	  } else { // Newline
+		x  = 0;  // Reset x
+		y += ya; // Advance y by 1 line
+	  }
+	}
+	// End of string
+	*x1 = minx;
+	*y1 = miny;
+	if(maxx >= minx) *w  = maxx - minx + 1;
+	if(maxy >= miny) *h  = maxy - miny + 1;
 
   } else { // Default font
 
-    uint16_t lineWidth = 0, maxWidth = 0; // Width of current, all lines
+	uint16_t lineWidth = 0, maxWidth = 0; // Width of current, all lines
 
-    while((c = *str++)) {
-      if(c != '\n') { // Not a newline
-        if(c != '\r') { // Not a carriage return, is normal char
-          if(textWrap && ((x + fontSize * 6) >= _width)) {
-            x  = 0;            // Reset x to 0
-            y += fontSize * 8; // Advance y by 1 line
-            if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
-            lineWidth  = fontSize * 6; // First char on new line
-          } else { // No line textWrap, just keep incrementing X
-            lineWidth += fontSize * 6; // Includes interchar x gap
-          }
-        } // Carriage return = do nothing
-      } else { // Newline
-        x  = 0;            // Reset x to 0
-        y += fontSize * 8; // Advance y by 1 line
-        if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
-        lineWidth = 0;     // Reset lineWidth for new line
-      }
-    }
-    // End of string
-    if(lineWidth) y += fontSize * 8; // Add height of last (or only) line
-    if(lineWidth > maxWidth) maxWidth = lineWidth; // Is the last or only line the widest?
-    *w = maxWidth - 1;               // Don't include last interchar x gap
-    *h = y - *y1;
+	while((c = *str++)) {
+	  if(c != '\n') { // Not a newline
+		if(c != '\r') { // Not a carriage return, is normal char
+		  if(textWrap && ((x + fontSize * 6) >= _width)) {
+			x  = 0;            // Reset x to 0
+			y += fontSize * 8; // Advance y by 1 line
+			if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
+			lineWidth  = fontSize * 6; // First char on new line
+		  } else { // No line textWrap, just keep incrementing X
+			lineWidth += fontSize * 6; // Includes interchar x gap
+		  }
+		} // Carriage return = do nothing
+	  } else { // Newline
+		x  = 0;            // Reset x to 0
+		y += fontSize * 8; // Advance y by 1 line
+		if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
+		lineWidth = 0;     // Reset lineWidth for new line
+	  }
+	}
+	// End of string
+	if(lineWidth) y += fontSize * 8; // Add height of last (or only) line
+	if(lineWidth > maxWidth) maxWidth = lineWidth; // Is the last or only line the widest?
+	*w = maxWidth - 1;               // Don't include last interchar x gap
+	*h = y - *y1;
 
   } // End classic vs custom font
 }
@@ -1037,81 +1089,81 @@ void Adafruit_GFX::getTextBounds(const __FlashStringHelper *str,
 
   if(gfxFont) {
 
-    GFXglyph *glyph;
-    uint8_t   first = pgm_read_byte(&gfxFont->first),
-              last  = pgm_read_byte(&gfxFont->last),
-              gw, gh, xa;
-    int8_t    xo, yo;
-    int16_t   minx = _width, miny = _height, maxx = -1, maxy = -1,
-              gx1, gy1, gx2, gy2, ts = (int16_t)fontSize,
-              ya = ts * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+	GFXglyph *glyph;
+	uint8_t   first = pgm_read_byte(&gfxFont->first),
+			  last  = pgm_read_byte(&gfxFont->last),
+			  gw, gh, xa;
+	int8_t    xo, yo;
+	int16_t   minx = _width, miny = _height, maxx = -1, maxy = -1,
+			  gx1, gy1, gx2, gy2, ts = (int16_t)fontSize,
+			  ya = ts * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
 
-    while((c = pgm_read_byte(s++))) {
-      if(c != '\n') { // Not a newline
-        if(c != '\r') { // Not a carriage return, is normal char
-          if((c >= first) && (c <= last)) { // Char present in current font
-            c    -= first;
-            glyph = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
-            gw    = pgm_read_byte(&glyph->width);
-            gh    = pgm_read_byte(&glyph->height);
-            xa    = pgm_read_byte(&glyph->xAdvance);
-            xo    = pgm_read_byte(&glyph->xOffset);
-            yo    = pgm_read_byte(&glyph->yOffset);
-            if(textWrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
-              // Line textWrap
-              x  = 0;  // Reset x to 0
-              y += ya; // Advance y by 1 line
-            }
-            gx1 = x   + xo * ts;
-            gy1 = y   + yo * ts;
-            gx2 = gx1 + gw * ts - 1;
-            gy2 = gy1 + gh * ts - 1;
-            if(gx1 < minx) minx = gx1;
-            if(gy1 < miny) miny = gy1;
-            if(gx2 > maxx) maxx = gx2;
-            if(gy2 > maxy) maxy = gy2;
-            x += xa * ts;
-          }
-        } // Carriage return = do nothing
-      } else { // Newline
-        x  = 0;  // Reset x
-        y += ya; // Advance y by 1 line
-      }
-    }
-    // End of string
-    *x1 = minx;
-    *y1 = miny;
-    if(maxx >= minx) *w  = maxx - minx + 1;
-    if(maxy >= miny) *h  = maxy - miny + 1;
+	while((c = pgm_read_byte(s++))) {
+	  if(c != '\n') { // Not a newline
+		if(c != '\r') { // Not a carriage return, is normal char
+		  if((c >= first) && (c <= last)) { // Char present in current font
+			c    -= first;
+			glyph = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
+			gw    = pgm_read_byte(&glyph->width);
+			gh    = pgm_read_byte(&glyph->height);
+			xa    = pgm_read_byte(&glyph->xAdvance);
+			xo    = pgm_read_byte(&glyph->xOffset);
+			yo    = pgm_read_byte(&glyph->yOffset);
+			if(textWrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
+			  // Line textWrap
+			  x  = 0;  // Reset x to 0
+			  y += ya; // Advance y by 1 line
+			}
+			gx1 = x   + xo * ts;
+			gy1 = y   + yo * ts;
+			gx2 = gx1 + gw * ts - 1;
+			gy2 = gy1 + gh * ts - 1;
+			if(gx1 < minx) minx = gx1;
+			if(gy1 < miny) miny = gy1;
+			if(gx2 > maxx) maxx = gx2;
+			if(gy2 > maxy) maxy = gy2;
+			x += xa * ts;
+		  }
+		} // Carriage return = do nothing
+	  } else { // Newline
+		x  = 0;  // Reset x
+		y += ya; // Advance y by 1 line
+	  }
+	}
+	// End of string
+	*x1 = minx;
+	*y1 = miny;
+	if(maxx >= minx) *w  = maxx - minx + 1;
+	if(maxy >= miny) *h  = maxy - miny + 1;
 
   } else { // Default font
 
-    uint16_t lineWidth = 0, maxWidth = 0; // Width of current, all lines
+	uint16_t lineWidth = 0, maxWidth = 0; // Width of current, all lines
 
-    while((c = pgm_read_byte(s++))) {
-      if(c != '\n') { // Not a newline
-        if(c != '\r') { // Not a carriage return, is normal char
-          if(textWrap && ((x + fontSize * 6) >= _width)) {
-            x  = 0;            // Reset x to 0
-            y += fontSize * 8; // Advance y by 1 line
-            if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
-            lineWidth  = fontSize * 6; // First char on new line
-          } else { // No line textWrap, just keep incrementing X
-            lineWidth += fontSize * 6; // Includes interchar x gap
-          }
-        } // Carriage return = do nothing
-      } else { // Newline
-        x  = 0;            // Reset x to 0
-        y += fontSize * 8; // Advance y by 1 line
-        if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
-        lineWidth = 0;     // Reset lineWidth for new line
-      }
-    }
-    // End of string
-    if(lineWidth) y += fontSize * 8; // Add height of last (or only) line
-    if(lineWidth > maxWidth) maxWidth = lineWidth; // Is the last or only line the widest?
-    *w = maxWidth - 1;               // Don't include last interchar x gap
-    *h = y - *y1;
+	while((c = pgm_read_byte(s++))) {
+	  if(c != '\n') { // Not a newline
+		if(c != '\r') { // Not a carriage return, is normal char
+		  if(textWrap && ((x + fontSize * 6) >= _width)) {
+			x  = 0;            // Reset x to 0
+			y += fontSize * 8; // Advance y by 1 line
+			if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
+			lineWidth  = fontSize * 6; // First char on new line
+		  } else { // No line textWrap, just keep incrementing X
+			lineWidth += fontSize * 6; // Includes interchar x gap
+		  }
+		} // Carriage return = do nothing
+	  } else { // Newline
+		x  = 0;            // Reset x to 0
+		y += fontSize * 8; // Advance y by 1 line
+		if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
+		lineWidth = 0;     // Reset lineWidth for new line
+	  }
+	}
+	// End of string
+	if(lineWidth) y += fontSize * 8; // Add height of last (or only) line
+	if(lineWidth > maxWidth) maxWidth = lineWidth; // Is the last or only line the widest?
+	*w = maxWidth - 1;               // Don't include last interchar x gap
+	*h = y - *y1;
 
   } // End classic vs custom font
 }
