@@ -132,7 +132,7 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 	display.setColor(BLACK);
 	while(1){
 		if(update()){
-			uint8_t logoOffset = pgm_read_byte(name)?display.fontHeight:0; //add an offset the logo when there is a name to display
+			uint8_t logoOffset = name[0]?display.fontHeight:0; //add an offset the logo when there is a name to display
 			//draw graphics
 			//#if LCDWIDTH == LCDWIDTH_NOROT
 			display.drawBitmap(-1,1, gamebuinoLogo);
@@ -589,10 +589,10 @@ bool Gamebuino::collideRectRect(int16_t x1, int16_t y1, int16_t w1, int16_t h1 ,
 }
 
 bool Gamebuino::collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, int16_t x2, int16_t y2, const uint8_t* b2){
-  int16_t w1 = pgm_read_byte(b1);
-  int16_t h1 = pgm_read_byte(b1 + 1);
-  int16_t w2 = pgm_read_byte(b2);
-  int16_t h2 = pgm_read_byte(b2 + 1);
+  int16_t w1 = b1[0];
+  int16_t h1 = b1[1];
+  int16_t w2 = b2[0];
+  int16_t h2 = b2[1];
 
   if(collideRectRect(x1, y1, w1, h1, x2, y2, w2, h2) == false){
     return false;
