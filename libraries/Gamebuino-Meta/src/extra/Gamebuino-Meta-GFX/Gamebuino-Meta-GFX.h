@@ -12,23 +12,6 @@
 
 namespace Gamebuino_Meta {
 
-// we don't use enum classes here becuase people want to use NOROT instead of Rotation::NOROT
-namespace Rotation {
-enum Rotation : uint8_t {
-	NOROT,
-	ROTCCW,
-	ROT180,
-	ROTCW
-};
-}
-namespace Flip {
-enum Flip : uint8_t {
-	NOFLIP,
-	FLIPH,
-	FLIPV,
-	FLIPVH
-};
-}
 
 #define WHITE (0xFFFF)
 #define GRAY (0xACD0)
@@ -48,6 +31,15 @@ enum Flip : uint8_t {
 #define LIGHTBLUE (0x7DDF)
 
 #define ENABLE_BITMAPS 1
+//for extended bitmap function :
+#define NOROT 0
+#define ROTCCW 1
+#define ROT180 2
+#define ROTCW 3
+#define NOFLIP 0
+#define FLIPH 1
+#define FLIPV 2
+#define FLIPVH 3
 
 class Image;
 
@@ -114,7 +106,7 @@ class Adafruit_GFX : public Print {
 
 	//Gamebuino legacy bitmaps
 	drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap),
-	drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, Rotation::Rotation rotation, Flip::Flip flip),
+	drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip),
 
 	drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size),
 	setCursor(int16_t x, int16_t y),

@@ -498,8 +498,8 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
 }
 
 void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
-	Rotation::Rotation rotation, Flip::Flip flip) {
-	if ((rotation == Rotation::NOROT) && (flip == Flip::NOFLIP)) {
+	uint8_t rotation, uint8_t flip) {
+	if ((rotation == NOROT) && (flip == NOFLIP)) {
 		drawBitmap(x, y, bitmap); //use the faster algorithm
 		return;
 	}
@@ -511,6 +511,7 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 		k, l, //coordinates in the rotated/flipped bitmap
 		byteNum, bitNum, byteWidth = (w + 7) >> 3;
 
+	rotation %= 4;
 
 	for (i = 0; i < w; i++) {
 		byteNum = i / 8;
@@ -518,28 +519,28 @@ void Adafruit_GFX::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 		for (j = 0; j < h; j++) {
 			if (pgm_read_byte(bitmap + j * byteWidth + byteNum) & (B10000000 >> bitNum)) {
 				switch (rotation) {
-				case Rotation::NOROT: //no rotation
+				case NOROT: //no rotation
 					k = i;
 					l = j;
 					break;
-				case Rotation::ROTCCW: //90° counter-clockwise
+				case ROTCCW: //90° counter-clockwise
 					k = j;
 					l = w - i - 1;
 					break;
-				case Rotation::ROT180: //180°
+				case ROT180: //180°
 					k = w - i - 1;
 					l = h - j - 1;
 					break;
-				case Rotation::ROTCW: //90° clockwise
+				case ROTCW: //90° clockwise
 					k = h - j - 1;
 					l = i;
 					break;
 				}
-				if ((uint8_t)flip) {
-					if ((uint8_t)flip & B00000001) { //horizontal flip
+				if (flip) {
+					if (flip & B00000001) { //horizontal flip
 						k = w - k - 1;
 					}
-					if ((uint8_t)flip & B00000010) { //vertical flip
+					if (flip & B00000010) { //vertical flip
 						l = h - l;
 					}
 				}
