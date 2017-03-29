@@ -907,6 +907,20 @@ void Graphics::setColor(Color c, Color b) {
   bgcolor = b;
 }
 
+void Graphics::setColor(ColorIndex c) {
+	setColor((Color)c);
+}
+void Graphics::setColor(ColorIndex c, ColorIndex bg) {
+	setColor((Color)c, (Color)bg);
+}
+
+void Graphics::setColor(uint8_t c) {
+	setColor((Color)c);
+}
+void Graphics::setColor(uint8_t c, uint8_t bg) {
+	setColor((Color)c, (Color)bg);
+}
+
 void Graphics::setTextWrap(boolean w) {
   textWrap = w;
 }

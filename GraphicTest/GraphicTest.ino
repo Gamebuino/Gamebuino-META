@@ -108,24 +108,24 @@ void loop()
 	gb.tft.drawImage(0, 0, imgIndex);
 	uint16_t endTime = millis();
 	memset(imgIndex._buffer, 0x11, imgIndex.width()*imgIndex.height() / 2); //clear buffer
-	imgIndex.setColor((Color)13);
+	imgIndex.setColor(INDEX_BLUE);
 	//imgIndex.drawCircle((millis() / 10) % 160, 20, 10); //draw to indexed buffer
 	imgIndex.setCursor(8, 42);
-	for (uint16_t i = 0; i < 16; i++) {
+	for (uint8_t i = 0; i < 16; i++) {
 		//numbers background
-		imgIndex.setColor((Color)i);
+		imgIndex.setColor(i);
 		imgIndex.fillRect(8 + i * 8, 32, 7, 7);
 		//numbers
-		imgIndex.setColor((Color)i);
-		if (i == 1) imgIndex.setColor((Color)i, (Color)0);
+		imgIndex.setColor(i);
+		if (i == 1) imgIndex.setColor(i, 0);
 		if (i < 10) imgIndex.print(" ");
 		imgIndex.print(i);
 	}
-	imgIndex.setColor((Color)3);
+	imgIndex.setColor(INDEX_GREEN);
 	imgIndex.setCursor(10, 10);
 	imgIndex.print(endTime - startTime);
 	imgIndex.println("ms");
-	imgIndex.setColor((Color)11);
+	imgIndex.setColor(INDEX_LIGHTGREEN);
 	imgIndex.setCursor(64, 10);
 	imgIndex.print(1000 / (endTime - startTime));
 	imgIndex.println("FPS");

@@ -32,6 +32,25 @@ enum class Color : uint16_t {
 	lightblue	= 0x7DDF,
 };
 
+enum class ColorIndex : uint8_t {
+	black,
+	darkblue,
+	purple,
+	green,
+	brown,
+	darkgray,
+	gray,
+	white,
+	red,
+	orange,
+	yellow,
+	lightgreen,
+	lightblue,
+	blue,
+	pink,
+	beige,
+};
+
 #define ENABLE_BITMAPS 1
 //for extended bitmap function :
 #define NOROT 0
@@ -114,6 +133,10 @@ class Graphics : public Print {
 	setCursor(int16_t x, int16_t y),
 	setColor(Color c),
 	setColor(Color c, Color bg),
+	setColor(ColorIndex c),
+	setColor(ColorIndex c, ColorIndex bg),
+	setColor(uint8_t c),
+	setColor(uint8_t c, uint8_t bg),
 	setFontSize(uint8_t s),
 	setTextWrap(boolean w),
 	setRotation(uint8_t r),
