@@ -48,7 +48,7 @@ namespace Gamebuino_Meta {
 uint16_t Adafruit_GFX::transparentColor = 0xF81F; //magenta is the default transparent color
 uint16_t Adafruit_GFX::tint = 0xFFFF;
 uint8_t Adafruit_GFX::alpha = 255;
-uint16_t _colorIndex[16] = {0x0,0x194A,0x792A,0x42A,0xAA86,0x62C9,0xC618,0xFFFF,0xE8CA,0xFD03,0xF765,0x5DC9,0x553B,0x83B3,0xF3B4,0xFE75 };
+uint16_t _colorIndex[16] = {BLACK,DARKBLUE,PURPLE,GREEN,BROWN,DARKGRAY,GRAY,WHITE,RED,ORANGE,YELLOW,LIGHTGREEN,LIGHTBLUE,BLUE,PINK,BEIGE};
 uint16_t* Adafruit_GFX::colorIndex = _colorIndex;
 BlendMode Adafruit_GFX::blendMode = BlendMode::BLEND;
 uint16_t Adafruit_GFX::color = BLACK;

@@ -38,12 +38,12 @@ const byte* sprites[NUM_SPRITES] = {
 };
 
 const uint16_t spritesColor[NUM_SPRITES] = {
-  SKIN,    //road,              //0
+  BEIGE,    //road,              //0
   ORANGE,   //power_right,       //1
   ORANGE,   //power_down,        //2
   ORANGE,   //power_left,        //3
   ORANGE,   //power_up,          //4
-  SKIN,    //sand,              //5
+  BEIGE,    //sand,              //5
   LIGHTBLUE,//ice,               //6
   BLACK,    //start,             //7
   RED,      //block_bouncer,     //8
