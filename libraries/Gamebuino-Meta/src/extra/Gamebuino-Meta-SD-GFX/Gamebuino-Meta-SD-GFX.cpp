@@ -43,22 +43,14 @@ uint16_t convertTo565(uint8_t r, uint8_t g, uint8_t b) {
 
 void write32(uint32_t b, File * f) {
 	//Write four bytes
-	//Be careful of the byte order!
-	f->write(b & 0xFF); //LSB
-	b >>= 8;
-	f->write(b & 0xFF);
-	b >>= 8;
-	f->write(b & 0xFF);
-	b >>= 8;
-	f->write(b); //MSB
+	//Luckily our MCU is little endian so byte order like this is fine
+	f->write(&b, 4);
 }
 
 void write16(uint16_t b, File * f) {
 	//Write two bytes
-	//Be careful of the byte order!
-	f->write(b & 0xFF); //LSB
-	b >>= 8;
-	f->write(b); //MSB
+	//Luckily our MCU is little endian so byte order like this is fine
+	f->write(&b, 2);
 }
 
 
