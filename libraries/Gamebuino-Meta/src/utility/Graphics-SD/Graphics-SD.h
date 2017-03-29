@@ -1,5 +1,5 @@
-#ifndef GAMEBUINO_SD_GFX_H
-#define	GAMEBUINO_SD_GFX_H
+#ifndef _GAMEBUINO_SD_GFX_H_
+#define	_GAMEBUINO_SD_GFX_H_
 
 #include <Arduino.h>
 #include "../Graphics.h"
@@ -19,4 +19,4 @@ class Gamebuino_SD_GFX{
 
 } // namespace Gamebuino_Meta
 
-#endif /* GAMEBUINO-SD-GFX_H */
+#endif /// _GAMEBUINO_SD_GFX_H_

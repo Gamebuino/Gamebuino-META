@@ -75,8 +75,8 @@ inline uint16_t swapcolor(uint16_t x) {
 
 
 // Constructor when using software SPI.  All output pins are configurable.
-Adafruit_ST7735::Adafruit_ST7735(int8_t cs, int8_t rs, int8_t sid, int8_t sclk, int8_t rst) 
-  : Adafruit_GFX(ST7735_TFTWIDTH, ST7735_TFTHEIGHT_18)
+Display_ST7735::Display_ST7735(int8_t cs, int8_t rs, int8_t sid, int8_t sclk, int8_t rst) 
+  : Graphics(ST7735_TFTWIDTH, ST7735_TFTHEIGHT_18)
 {
   _cs   = cs;
   _rs   = rs;
@@ -89,8 +89,8 @@ Adafruit_ST7735::Adafruit_ST7735(int8_t cs, int8_t rs, int8_t sid, int8_t sclk, 
 
 // Constructor when using hardware SPI.  Faster, but must use SPI pins
 // specific to each board type (e.g. 11,13 for Uno, 51,52 for Mega, etc.)
-Adafruit_ST7735::Adafruit_ST7735(int8_t cs, int8_t rs, int8_t rst) 
-  : Adafruit_GFX(ST7735_TFTWIDTH, ST7735_TFTHEIGHT_18) {
+Display_ST7735::Display_ST7735(int8_t cs, int8_t rs, int8_t rst) 
+  : Graphics(ST7735_TFTWIDTH, ST7735_TFTHEIGHT_18) {
   _cs   = cs;
   _rs   = rs;
   _rst  = rst;
@@ -103,7 +103,7 @@ Adafruit_ST7735::Adafruit_ST7735(int8_t cs, int8_t rs, int8_t rst)
 #define __AVR__
 #endif
 
-inline void Adafruit_ST7735::spiwrite(uint8_t c) {
+inline void Display_ST7735::spiwrite(uint8_t c) {
 
   //Serial.println(c, HEX);
 
@@ -134,7 +134,7 @@ inline void Adafruit_ST7735::spiwrite(uint8_t c) {
 }
 
 
-void Adafruit_ST7735::writecommand(uint8_t c) {
+void Display_ST7735::writecommand(uint8_t c) {
 #if defined (SPI_HAS_TRANSACTION)
   SPI.beginTransaction(mySPISettings);
 #endif
@@ -151,7 +151,7 @@ void Adafruit_ST7735::writecommand(uint8_t c) {
 }
 
 
-void Adafruit_ST7735::writedata(uint8_t c) {
+void Display_ST7735::writedata(uint8_t c) {
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);
 #endif
@@ -316,7 +316,7 @@ static const uint8_t PROGMEM
 
 // Companion code to the above tables.  Reads and issues
 // a series of LCD commands stored in PROGMEM byte array.
-void Adafruit_ST7735::commandList(const uint8_t *addr) {
+void Display_ST7735::commandList(const uint8_t *addr) {
 
   uint8_t  numCommands, numArgs;
   uint16_t ms;
@@ -341,7 +341,7 @@ void Adafruit_ST7735::commandList(const uint8_t *addr) {
 
 
 // Initialization code common to both 'B' and 'R' type displays
-void Adafruit_ST7735::commonInit(const uint8_t *cmdList) {
+void Display_ST7735::commonInit(const uint8_t *cmdList) {
   colstart  = rowstart = 0; // May be overridden in init func
 
   pinMode(_rs, OUTPUT);
@@ -402,13 +402,13 @@ void Adafruit_ST7735::commonInit(const uint8_t *cmdList) {
 
 
 // Initialization for ST7735B screens
-void Adafruit_ST7735::initB(void) {
+void Display_ST7735::initB(void) {
   commonInit(Bcmd);
 }
 
 
 // Initialization for ST7735R screens (green or red tabs)
-void Adafruit_ST7735::initR(uint8_t options) {
+void Display_ST7735::initR(uint8_t options) {
   commonInit(Rcmd1);
   if(options == INITR_GREENTAB) {
     commandList(Rcmd2green);
@@ -435,7 +435,7 @@ void Adafruit_ST7735::initR(uint8_t options) {
 }
 
 
-void Adafruit_ST7735::setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1,
+void Display_ST7735::setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1,
  uint8_t y1) {
 
   writecommand(ST7735_CASET); // Column addr set
@@ -456,7 +456,7 @@ void Adafruit_ST7735::setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1,
 //fast method to quickly push a buffered line of pixels
 //boundary check must be made prior to this function
 //the color must be formated as the destination
-void Adafruit_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w) {
+void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w) {
 
 	PORT->Group[0].OUTSET.reg = (1 << 17);  // set PORTA.17 high  "digitalWrite(13, HIGH)"
 
@@ -517,7 +517,7 @@ void Adafruit_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, u
 //fast method to quickly push a buffered line of pixels
 //boundary check must be made prior to this function
 //the color must be formated as the destination
-void Adafruit_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h) {
+void Display_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h) {
 
 	PORT->Group[0].OUTSET.reg = (1 << 17);  // set PORTA.17 high  "digitalWrite(13, HIGH)"
 
@@ -567,7 +567,7 @@ void Adafruit_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_
 //fast method to quickly push a buffered line of pixels
 //boundary check must be made prior to this function
 //the color must be formated as the destination
-void Adafruit_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
+void Display_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 
 	//configure DMA
 	myDMA.configure_peripheraltrigger(SERCOM4_DMAC_ID_TX);  // SERMCOM4 == SPI native SERCOM
@@ -602,7 +602,7 @@ void Adafruit_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 	myDMA.start_transfer_job();
 }
 
-void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img){
+void Display_ST7735::drawImage(int16_t x, int16_t y, Image img){
 
 	int16_t w = img.width();
 	int16_t h = img.height();
@@ -623,7 +623,7 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img){
 		*csport &= ~cspinmask;
 
 		//prepare the first line
-		indexTo565(preBufferLine, img._buffer, Adafruit_GFX::colorIndex, w);
+		indexTo565(preBufferLine, img._buffer, Graphics::colorIndex, w);
 		for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
 		    uint16_t color = preBufferLine[i];
 			color = (color << 8) | (color >> 8); //change endianness
@@ -646,7 +646,7 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img){
 
 
 			//prepare the next line while the current one is being transferred
-			/*indexTo565(preBufferLine, img._buffer + ((j * w) / 4), Adafruit_GFX::colorIndex, w);
+			/*indexTo565(preBufferLine, img._buffer + ((j * w) / 4), Graphics::colorIndex, w);
 			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
 				uint16_t color = preBufferLine[i];
 				color = (color << 8) | (color >> 8); //change endianness
@@ -656,7 +656,7 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img){
 			//length is the number of destination pixels
 			uint16_t *dest = preBufferLine;
 			uint16_t *src = img._buffer + ((j * w) / 4);
-			uint16_t *index = Adafruit_GFX::colorIndex;
+			uint16_t *index = Graphics::colorIndex;
 			uint16_t length = w;
 			for (uint16_t i = 0; i < length / 4; i++) {
 				uint16_t index1 = (src[i] >> 0) & 0x000F;
@@ -700,11 +700,11 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img){
 		return;
 	}
 	else {
-		Adafruit_GFX::drawImage(x, y, img); //fallback to the usual
+		Graphics::drawImage(x, y, img); //fallback to the usual
 	}
 }
 
-void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2) {
+void Display_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2) {
 	//out of screen
 	if ((x > _width) || ((x + abs(w2)) < 0) || (y > _height) || ((y + abs(h2)) < 0) || (w2 == 0) || (h2 == 0)) return;
 
@@ -834,7 +834,7 @@ void Adafruit_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int
 
 
 
-void Adafruit_ST7735::pushColor(uint16_t c) {
+void Display_ST7735::pushColor(uint16_t c) {
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);
 #endif
@@ -850,7 +850,7 @@ void Adafruit_ST7735::pushColor(uint16_t c) {
 #endif
 }
 
-void Adafruit_ST7735::drawPixel(int16_t x, int16_t y) {
+void Display_ST7735::drawPixel(int16_t x, int16_t y) {
 
   if((x < 0) ||(x >= _width) || (y < 0) || (y >= _height)) return;
 
@@ -872,14 +872,14 @@ void Adafruit_ST7735::drawPixel(int16_t x, int16_t y) {
 }
 
 
-void Adafruit_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h) {
+void Display_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h) {
 
   // Rudimentary clipping
   if((x >= _width) || (y >= _height)) return;
   if((y+h-1) >= _height) h = _height-y;
   setAddrWindow(x, y, x, y+h-1);
 
-  uint8_t hi = Adafruit_GFX::color >> 8, lo = Adafruit_GFX::color;
+  uint8_t hi = Graphics::color >> 8, lo = Graphics::color;
     
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);
@@ -897,14 +897,14 @@ void Adafruit_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h) {
 }
 
 
-void Adafruit_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w) {
+void Display_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w) {
 
   // Rudimentary clipping
   if((x >= _width) || (y >= _height)) return;
   if((x+w-1) >= _width)  w = _width-x;
   setAddrWindow(x, y, x+w-1, y);
 
-  uint8_t hi = Adafruit_GFX::color >> 8, lo = Adafruit_GFX::color;
+  uint8_t hi = Graphics::color >> 8, lo = Graphics::color;
 
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);
@@ -922,7 +922,7 @@ void Adafruit_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w) {
 }
 
 // fill a rectangle
-void Adafruit_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
+void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 
   // rudimentary clipping (drawChar w/big text requires this)
   if((x >= _width) || (y >= _height)) return;
@@ -931,7 +931,7 @@ void Adafruit_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 
   setAddrWindow(x, y, x+w-1, y+h-1);
 
-  uint8_t hi = Adafruit_GFX::color >> 8, lo = Adafruit_GFX::color;
+  uint8_t hi = Graphics::color >> 8, lo = Graphics::color;
     
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);
@@ -953,7 +953,7 @@ void Adafruit_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 
 
 // Pass 8-bit (each) R,G,B, get back 16-bit packed color
-uint16_t Adafruit_ST7735::Color565(uint8_t r, uint8_t g, uint8_t b) {
+uint16_t Display_ST7735::Color565(uint8_t r, uint8_t g, uint8_t b) {
   return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
 }
 
@@ -966,7 +966,7 @@ uint16_t Adafruit_ST7735::Color565(uint8_t r, uint8_t g, uint8_t b) {
 #define MADCTL_BGR 0x08
 #define MADCTL_MH  0x04
 
-void Adafruit_ST7735::setRotation(uint8_t m) {
+void Display_ST7735::setRotation(uint8_t m) {
 
   writecommand(ST7735_MADCTL);
   rotation = m % 4; // can't be higher than 3
@@ -1029,7 +1029,7 @@ void Adafruit_ST7735::setRotation(uint8_t m) {
 }
 
 
-void Adafruit_ST7735::invertDisplay(boolean i) {
+void Display_ST7735::invertDisplay(boolean i) {
   writecommand(i ? ST7735_INVON : ST7735_INVOFF);
 }
 
@@ -1037,7 +1037,7 @@ void Adafruit_ST7735::invertDisplay(boolean i) {
 ////////// stuff not actively being used, but kept for posterity
 /*
 
- uint8_t Adafruit_ST7735::spiread(void) {
+ uint8_t Display_ST7735::spiread(void) {
  uint8_t r = 0;
  if (_sid > 0) {
  r = shiftIn(_sid, _sclk, MSBFIRST);
@@ -1057,7 +1057,7 @@ void Adafruit_ST7735::invertDisplay(boolean i) {
  }
  
  
- void Adafruit_ST7735::dummyclock(void) {
+ void Display_ST7735::dummyclock(void) {
  
  if (_sid > 0) {
  digitalWrite(_sclk, LOW);
@@ -1067,7 +1067,7 @@ void Adafruit_ST7735::invertDisplay(boolean i) {
  //SCLK_PORT |= _BV(SCLK);
  }
  }
- uint8_t Adafruit_ST7735::readdata(void) {
+ uint8_t Display_ST7735::readdata(void) {
  *portOutputRegister(rsport) |= rspin;
  
  *portOutputRegister(csport) &= ~ cspin;
@@ -1080,7 +1080,7 @@ void Adafruit_ST7735::invertDisplay(boolean i) {
  
  } 
  
- uint8_t Adafruit_ST7735::readcommand8(uint8_t c) {
+ uint8_t Display_ST7735::readcommand8(uint8_t c) {
  digitalWrite(_rs, LOW);
  
  *portOutputRegister(csport) &= ~ cspin;
@@ -1102,7 +1102,7 @@ void Adafruit_ST7735::invertDisplay(boolean i) {
  }
  
  
- uint16_t Adafruit_ST7735::readcommand16(uint8_t c) {
+ uint16_t Display_ST7735::readcommand16(uint8_t c) {
  digitalWrite(_rs, LOW);
  if (_cs)
  digitalWrite(_cs, LOW);
@@ -1119,7 +1119,7 @@ void Adafruit_ST7735::invertDisplay(boolean i) {
  return r;
  }
  
- uint32_t Adafruit_ST7735::readcommand32(uint8_t c) {
+ uint32_t Display_ST7735::readcommand32(uint8_t c) {
  digitalWrite(_rs, LOW);
  if (_cs)
  digitalWrite(_cs, LOW);

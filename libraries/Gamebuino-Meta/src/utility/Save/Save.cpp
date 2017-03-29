@@ -46,7 +46,7 @@ SaveDefault::SaveDefault(uint16_t _i, uint8_t _type, const void* _ptr, uint8_t _
 	length = _length;
 }
 
-Save::Save(Adafruit_ST7735 *_tft, const char* _checkbytes) {
+Save::Save(Display_ST7735 *_tft, const char* _checkbytes) {
 	tft = _tft;
 	checkbytes = _checkbytes;
 }

@@ -2,9 +2,9 @@
 #include <SPI.h>
 #include <Adafruit_ZeroDMA.h>
 #include <Adafruit_ASFcore.h>
-#include <Adafruit_GFX.h>
+#include <Graphics.h>
 #include <Image.h>
-#include <Adafruit_ST7735.h>
+#include <Display_ST7735.h>
 #include <Gamebuino-SD-GFX.h>
 
 
@@ -15,7 +15,7 @@
 #define BTN_CS    (25)
 #define NEOPIX    (38)
 
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
 Image image = Image(16, 16, ColorMode::RGB565);
 Image imageIndex = Image(16, 16, ColorMode::INDEX);

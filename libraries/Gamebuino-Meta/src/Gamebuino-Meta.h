@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef GAMEBUINO_H
-#define	GAMEBUINO_H
+#ifndef _GAMEBUINO_META_H_
+#define	_GAMEBUINO_META_H_
 
-#include "config/Config.h"
+#include "config/config.h"
 
 #include <Arduino.h>
 #include <SPI.h>
@@ -75,7 +75,7 @@ public:
 	Buttons buttons;
 	Sound sound;
 	Image display = Image(80,64, ColorMode::RGB565);
-	Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+	Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 
 	void begin();
@@ -132,4 +132,4 @@ using Gamebuino_Meta::BlendMode;
 using Gamebuino_Meta::ColorMode;
 extern Gamebuino gb;
 
-#endif	/* GAMEBUINO_H */
+#endif	// _GAMEBUINO_META_H_

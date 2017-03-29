@@ -1,5 +1,5 @@
-#ifndef GAMEBUINO_META_ZERODMA_H
-#define GAMEBUINO_META_ZERODMA_H
+#ifndef ADAFRUIT_ZERODMA_H
+#define ADAFRUIT_ZERODMA_H
 
 #include "Arduino.h"
 #include "utility/dmac.h"
@@ -37,4 +37,4 @@ static void configure_dma_resource(struct dma_resource *resource);
 
 } // namespace Gamebuino_Meta
 
-#endif // GAMEBUINO_META_ZERODMA_H
+#endif // ADAFRUIT_ZERODMA_H

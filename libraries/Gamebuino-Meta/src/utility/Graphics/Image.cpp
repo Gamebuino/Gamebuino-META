@@ -6,17 +6,17 @@
 
 namespace Gamebuino_Meta {
 
-Image::Image() : Adafruit_GFX(0, 0){
+Image::Image() : Graphics(0, 0){
 }
 
-Image::Image(uint16_t w, uint16_t h, ColorMode col) : Adafruit_GFX(w, h) {
+Image::Image(uint16_t w, uint16_t h, ColorMode col) : Graphics(w, h) {
 	colorMode = col;
 	allocateBuffer(w, h);
 	_width = w;
 	_height = h;
 }
 
-Image::Image(uint16_t w, uint16_t h, ColorMode col, uint16_t* buffer) : Adafruit_GFX(w, h) {
+Image::Image(uint16_t w, uint16_t h, ColorMode col, uint16_t* buffer) : Graphics(w, h) {
 	colorMode = col;
 	_buffer = buffer;
 	_width = w;
@@ -90,14 +90,14 @@ void Image::fillScreen(uint16_t color) {
 
 void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w) {
 	if ((alpha == 255) && (tint == 0xFFFF)) { //no alpha blending and not tinting
-		if (Adafruit_GFX::transparentColor == 0xFFFF) { //no transparent color set
+		if (Graphics::transparentColor == 0xFFFF) { //no transparent color set
 			memcpy(&_buffer[x + y * _width], buffer, w * 2); //fastest copy possible
 			return;
 		}
 		else {
 			uint16_t * thisLine = &_buffer[x + y * _width];
 			for (uint8_t i = 0; i < w; i++) { //only copy non-transparent-colored pixels
-				if (buffer[i] == Adafruit_GFX::transparentColor) continue;
+				if (buffer[i] == Graphics::transparentColor) continue;
 				thisLine[i] = buffer[i];
 			}
 			return;
@@ -110,7 +110,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 
 	//Extract RGB channels from buffer
 	for (uint8_t i = 0; i < w; i++) {
-		if (buffer[i] == Adafruit_GFX::transparentColor) continue;
+		if (buffer[i] == Graphics::transparentColor) continue;
 		uint16_t color1 = buffer[i];
 		r1[i] = color1 & B11111;
 		g1[i] = (color1 >> 5) & B111111;
@@ -123,7 +123,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		int8_t tintG = (tint >> 5) & B111111;
 		int8_t tintB = (tint >> 11) & B11111;
 		for (uint8_t i = 0; i < w; i++) {
-			if (buffer[i] == Adafruit_GFX::transparentColor) continue;
+			if (buffer[i] == Graphics::transparentColor) continue;
 			r1[i] = r1[i] * tintR / 32;
 			g1[i] = g1[i] * tintG / 64;
 			b1[i] = b1[i] * tintB / 32;
@@ -137,7 +137,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 	{
 		if (alpha < 255) {
 			for (uint8_t i = 0; i < w; i++) {
-				if (buffer[i] == Adafruit_GFX::transparentColor) continue;
+				if (buffer[i] == Graphics::transparentColor) continue;
 				uint16_t color2 = thisLine[i];
 				int16_t r2 = color2 & B11111;
 				int16_t g2 = (color2 >> 5) & B111111;
@@ -152,7 +152,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 	case BlendMode::ADD:
 	{
 		for (uint8_t i = 0; i < w; i++) {
-			if (buffer[i] == Adafruit_GFX::transparentColor) continue;
+			if (buffer[i] == Graphics::transparentColor) continue;
 			uint16_t color2 = thisLine[i];
 			int16_t r2 = color2 & B11111;
 			int16_t g2 = (color2 >> 5) & B111111;
@@ -166,7 +166,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 	case BlendMode::SUBSTRACT:
 	{
 		for (uint8_t i = 0; i < w; i++) {
-			if (buffer[i] == Adafruit_GFX::transparentColor) continue;
+			if (buffer[i] == Graphics::transparentColor) continue;
 			uint16_t color2 = thisLine[i];
 			int16_t r2 = color2 & B11111;
 			int16_t g2 = (color2 >> 5) & B111111;
@@ -180,7 +180,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 	case BlendMode::MULTIPLY:
 	{
 		for (uint8_t i = 0; i < w; i++) {
-			if (buffer[i] == Adafruit_GFX::transparentColor) continue;
+			if (buffer[i] == Graphics::transparentColor) continue;
 			uint16_t color2 = thisLine[i];
 			int16_t r2 = color2 & B11111;
 			int16_t g2 = (color2 >> 5) & B111111;
@@ -194,7 +194,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 	case BlendMode::SCREEN:
 	{
 		for (uint8_t i = 0; i < w; i++) {
-			if (buffer[i] == Adafruit_GFX::transparentColor) continue;
+			if (buffer[i] == Graphics::transparentColor) continue;
 			uint16_t color2 = thisLine[i];
 			int16_t r2 = color2 & B11111;
 			int16_t g2 = (color2 >> 5) & B111111;
@@ -208,7 +208,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 	}
 
 	for (uint8_t i = 0; i < w; i++) {
-		if (buffer[i] == Adafruit_GFX::transparentColor) continue;
+		if (buffer[i] == Graphics::transparentColor) continue;
 		thisLine[i] = (b1[i] << 11) + (g1[i] << 5) + r1[i];
 	}
 }

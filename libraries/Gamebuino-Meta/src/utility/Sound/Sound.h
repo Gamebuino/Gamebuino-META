@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef SOUND_H
-#define	SOUND_H
+#ifndef _GAMEBUINO_META_SOUND_H_
+#define	_GAMEBUINO_META_SOUND_H_
 
 #include <Arduino.h>
 
@@ -39,6 +39,6 @@ private:
 	uint8_t globalVolume;
 };
 
-} // Gamebuino_Meta
+} // namespace Gamebuino_Meta
 
-#endif	/* SOUND_H */
+#endif	// _GAMEBUINO_META_SOUND_H_

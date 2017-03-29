@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef SAVE_H
-#define SAVE_H
+#ifndef _GAMEBUINO_META_SAVE_H_
+#define _GAMEBUINO_META_SAVE_H_
 
-#include "../../config/Config.h"
+#include "../../config/config.h"
 #include "../Graphics-ST7735.h"
 #include "../SdFat.h"
 
@@ -47,7 +47,7 @@ struct SaveDefault {
 
 class Save {
 public:
-	Save(Adafruit_ST7735 *_tft, const char* _checkbytes);
+	Save(Display_ST7735 *_tft, const char* _checkbytes);
 	int32_t get(uint16_t i);
 	bool get(uint16_t i, void* buf, uint8_t bufsize);
 	bool set(uint16_t i, int32_t num);
@@ -57,7 +57,7 @@ public:
 	bool set(uint16_t i, const void* buf, uint8_t bufsize);
 	void del(uint16_t i);
 private:
-	Adafruit_ST7735 *tft;
+	Display_ST7735 *tft;
 	File f;
 	bool open = false;
 	bool readOnly = false;
@@ -73,6 +73,6 @@ private:
 	SaveVar getVarInfo(uint16_t i);
 };
 
-} // Gamebuino_Meta
+} // namsepace Gamebuino_Meta
 
-#endif // SAVE_H
+#endif // _GAMEBUINO_META_SAVE_H_

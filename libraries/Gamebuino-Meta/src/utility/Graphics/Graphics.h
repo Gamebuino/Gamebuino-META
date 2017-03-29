@@ -1,5 +1,5 @@
-#ifndef _GAMEBUINO_META_GFX_H
-#define _GAMEBUINO_META_GFX_H
+#ifndef _GAMEBUINO_META_GRAPHICS_H_
+#define _GAMEBUINO_META_GRAPHICS_H_
 
 #if ARDUINO >= 100
  #include "Arduino.h"
@@ -56,11 +56,11 @@ enum class ColorMode : uint8_t {
 	INDEX
 };
 
-class Adafruit_GFX : public Print {
+class Graphics : public Print {
 
  public:
 
-  Adafruit_GFX(int16_t w, int16_t h); // Constructor
+  Graphics(int16_t w, int16_t h); // Constructor
 
   // This MUST be defined by the subclass:
   virtual void drawPixel(int16_t x, int16_t y) = 0;
@@ -81,7 +81,7 @@ class Adafruit_GFX : public Print {
 	drawImage(int16_t x, int16_t y, Image img),
 	drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2);
 
-  // These exist only with Adafruit_GFX (no subclass overrides)
+  // These exist only with Graphics (no subclass overrides)
   void
 	drawCircle(int16_t x0, int16_t y0, int16_t r),
 	drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername),
@@ -171,6 +171,6 @@ class Adafruit_GFX : public Print {
   uint8_t fontWidth, fontHeight; //gamebuino legacy font size
 };
 
-} // Gamebuino_Meta
+} // namespace Gamebuino_Meta
 
-#endif // _GAMEBUINO_META_GFX_H
+#endif // _GAMEBUINO_META_GRAPHICS_H_

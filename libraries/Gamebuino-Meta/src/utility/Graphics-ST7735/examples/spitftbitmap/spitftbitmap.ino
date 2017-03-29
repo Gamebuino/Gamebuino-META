@@ -21,8 +21,8 @@ as well as Adafruit raw 1.8" TFT display
   MIT license, all text above must be included in any redistribution
  ****************************************************/
 
-#include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_ST7735.h> // Hardware-specific library
+#include <Graphics.h>    // Core graphics library
+#include <Display_ST7735.h> // Hardware-specific library
 #include <SPI.h>
 #include <SD.h>
 
@@ -39,7 +39,7 @@ as well as Adafruit raw 1.8" TFT display
 //Use this reset pin for the shield!
 //#define TFT_RST  0  // you can also connect this to the Arduino reset!
 
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
 void setup(void) {
   Serial.begin(9600);

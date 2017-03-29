@@ -14,8 +14,8 @@
   MIT license, all text above must be included in any redistribution
  ****************************************************/
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_ST7735.h>
+#include <Graphics.h>
+#include <Display_ST7735.h>
 #include <SD.h>
 #include <SPI.h>
 
@@ -33,7 +33,7 @@
 #define TFT_DC   8  // Data/command line for TFT
 #define TFT_RST  -1  // Reset line for TFT (or connect to +5V)
 
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
 #define BUTTON_NONE 0
 #define BUTTON_DOWN 1

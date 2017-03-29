@@ -1,14 +1,14 @@
 // Image.h
 
-#ifndef _IMAGE_h
-#define _IMAGE_h
+#ifndef _GAMEBUINO_META_IMAGE_h
+#define _GAMEBUINO_META_IMAGE_h
 
 #include <Arduino.h>
 #include "Graphics.h"
 
 namespace Gamebuino_Meta {
 
-class Image : public Adafruit_GFX {
+class Image : public Graphics {
 public:
 	Image();
 	~Image(void);
@@ -28,4 +28,4 @@ public:
 
 } // namespace Gamebuino_Meta
 
-#endif
+#endif // _GAMEBUINO_META_IMAGE_h

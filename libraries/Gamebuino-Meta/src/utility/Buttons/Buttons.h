@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef GAMEBUINO_META_BUTTONS_H
-#define	GAMEBUINO_META_BUTTONS_H
+#ifndef _GAMEBUINO_META_BUTTONS_H_
+#define	_GAMEBUINO_META_BUTTONS_H_
 
 #include <Arduino.h>
 #include <SPI.h>
@@ -51,6 +51,6 @@ public:
 
 };
 
-} // Gamebuino_Meta
+} // namespace Gamebuino_Meta
 
-#endif	/* GAMEBUINO_META_BUTTONS_H */
+#endif	// _GAMEBUINO_META_BUTTONS_H_
