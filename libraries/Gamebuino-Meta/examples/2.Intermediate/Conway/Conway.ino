@@ -21,7 +21,7 @@ void setup() {
 
 void loop(){
   if(gb.update()){
-    if(gb.buttons.pressed(BTN_C)){
+    if(gb.buttons.pressed(BUTTON_C)){
       gb.titleScreen("Conway's game of life");
       reset();
     }

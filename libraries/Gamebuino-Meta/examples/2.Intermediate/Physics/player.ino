@@ -12,11 +12,11 @@ void initPlayer(){
 
 void updatePlayer(){
   ///// crouch
-  if(gb.buttons.pressed(BTN_B)){
+  if(gb.buttons.pressed(BUTTON_B)){
     player.h = 4;
     player.y += 4;
   }
-  if(! gb.buttons.timeHeld(BTN_B)){ //if BTN_B is not held down
+  if(! gb.buttons.timeHeld(BUTTON_B)){ //if BUTTON_B is not held down
     if(player.h ==4){ //and the player is crouched
       //stand up
       player.h = 8;
@@ -30,10 +30,10 @@ void updatePlayer(){
   
   ///// horizontal movement
   player.xv *= 0.9; //friction
-  if(gb.buttons.repeat(BTN_RIGHT, 1)){
+  if(gb.buttons.repeat(BUTTON_RIGHT, 1)){
     player.xv += 0.2;
   }
-  if(gb.buttons.repeat(BTN_LEFT,1)){
+  if(gb.buttons.repeat(BUTTON_LEFT,1)){
     player.xv -= 0.2;
   }
   player.x += player.xv; //move forward of 1 step
@@ -46,10 +46,10 @@ void updatePlayer(){
   ///// vertical movement
   player.yv += 0.3; //gravity
   player.yv *= 0.95; //friction
-  if(gb.buttons.timeHeld(BTN_A) > 0 & gb.buttons.timeHeld(BTN_A) < 5 ){ //higher jump by holding A down
+  if(gb.buttons.timeHeld(BUTTON_A) > 0 & gb.buttons.timeHeld(BUTTON_A) < 5 ){ //higher jump by holding A down
     player.yv -= 1; //jump
   }
-  if(gb.buttons.pressed(BTN_A)){
+  if(gb.buttons.pressed(BUTTON_A)){
     gb.sound.playOK();
   }
   player.y += player.yv; //move forward of 1 step
@@ -72,4 +72,3 @@ boolean playerCollision(){
   }
   return false;
 }
-

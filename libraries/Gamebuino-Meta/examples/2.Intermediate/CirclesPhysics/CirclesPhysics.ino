@@ -14,7 +14,7 @@ void loop()
 {
   if(gb.update()){
     //pause the game if C is pressed
-    if(gb.buttons.pressed(BTN_C)){
+    if(gb.buttons.pressed(BUTTON_C)){
       initGame();
     }
     updateCircles();

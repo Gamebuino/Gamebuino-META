@@ -67,8 +67,8 @@ void Buttons::update() {
  * Returns true when 'button' is pressed.
  * The button has to be released for it to be triggered again.
  */
-bool Buttons::pressed(uint8_t button) {
-	if (states[button] == 1)
+bool Buttons::pressed(Button button) {
+	if (states[(uint8_t)button] == 1)
 		return true;
 	else
 		return false;
@@ -77,8 +77,8 @@ bool Buttons::pressed(uint8_t button) {
 /*
  * return true if 'button' is released
  */
-bool Buttons::released(uint8_t button) {
-	if (states[button] == 0xFF)
+bool Buttons::released(Button button) {
+	if (states[(uint8_t)button] == 0xFF)
 		return true;
 	else
 		return false;
@@ -90,8 +90,8 @@ bool Buttons::released(uint8_t button) {
  * @param time How much frames button must be held, between 1 and 254.
  * @return true when 'button' is held for 'time' frames
  */
-bool Buttons::held(uint8_t button, uint8_t time){
-	if(states[button] == (time+1))
+bool Buttons::held(Button button, uint8_t time){
+	if(states[(uint8_t)button] == (time+1))
 		return true;
 	else
 		return false;
@@ -103,13 +103,13 @@ bool Buttons::held(uint8_t button, uint8_t time){
  * @param period How much frames button must be held, between 1 and 254.
  * @return true if the button is held for the given time
  */
-bool Buttons::repeat(uint8_t button, uint8_t period) {
+bool Buttons::repeat(Button button, uint8_t period) {
 	if (period <= 1) {
-		if ((states[button] != 0xFF) && (states[button])) {
+		if ((states[(uint8_t)button] != 0xFF) && (states[(uint8_t)button])) {
 			return true;
 		}
 	} else {
-		if ((states[button] != 0xFF) && ((states[button] % period) == 1)) {
+		if ((states[(uint8_t)button] != 0xFF) && ((states[(uint8_t)button] % period) == 1)) {
 			return true;
 		}
 	}
@@ -121,12 +121,12 @@ bool Buttons::repeat(uint8_t button, uint8_t period) {
  * @param button The button's ID
  * @return The number of frames during which the button has been held.
  */
-uint8_t Buttons::timeHeld(uint8_t button){
-	if(states[button] != 0xFF) {
-		return states[button];
+uint8_t Buttons::timeHeld(Button button){
+	if(states[(uint8_t)button] != 0xFF) {
+		return states[(uint8_t)button];
 	} else {
 		return 0;
 	}
 }
 
-} // Gamebuino_Meta
+} // namespace Gamebuino_Meta

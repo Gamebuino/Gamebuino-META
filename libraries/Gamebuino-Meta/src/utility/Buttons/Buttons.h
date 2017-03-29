@@ -38,15 +38,26 @@
 
 namespace Gamebuino_Meta {
 
+enum class Button : uint8_t {
+	down,
+	left,
+	right,
+	up,
+	a,
+	b,
+	c,
+	d,
+};
+
 class Buttons {
 public:
 	void begin();
 	void update();
-	bool pressed(uint8_t button);
-	bool released(uint8_t button);
-	bool held(uint8_t button, uint8_t time);
-	bool repeat(uint8_t button, uint8_t period);
-	uint8_t timeHeld(uint8_t button);
+	bool pressed(Button button);
+	bool released(Button button);
+	bool held(Button button, uint8_t time);
+	bool repeat(Button button, uint8_t period);
+	uint8_t timeHeld(Button button);
 	uint8_t states[NUM_BTN];
 
 };

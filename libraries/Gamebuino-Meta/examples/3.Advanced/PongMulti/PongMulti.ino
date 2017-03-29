@@ -84,14 +84,14 @@ void loop() {
 
   while(1){ //infinite loop, like the loop() function
     if(gb.update()){ //update the Gamebuino
-      if(gb.buttons.pressed(BTN_C)){
+      if(gb.buttons.pressed(BUTTON_C)){
         break; //break the infinite loop to get back to the menu
       }
       if(!paused){
-        if(gb.buttons.repeat(BTN_UP, 1)){
+        if(gb.buttons.repeat(BUTTON_UP, 1)){
           player_y = max(0, player_y - player_vy);
         }
-        if(gb.buttons.repeat(BTN_DOWN, 1)){
+        if(gb.buttons.repeat(BUTTON_DOWN, 1)){
           player_y = min(LCDHEIGHT-player_h, player_y + player_vy);
         }
       }

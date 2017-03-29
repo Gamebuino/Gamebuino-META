@@ -172,19 +172,19 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 			display.println("\27SD");
 			
 			//toggle volume when B is pressed
-			if(buttons.pressed(BTN_B)){
+			if(buttons.pressed(Button::b)){
 				sound.setVolume(sound.getVolume() + 1);
 				sound.playTick();
 			}
 			//leave the menu
-			if(buttons.pressed(BTN_A)){
+			if(buttons.pressed(Button::a)){
 				//startMenuTimer = 255; //don't automatically skip the title screen next time it's displayed
 				//sound.stopPattern(0);
 				sound.playOK();
 				break;
 			}
 			//flash the loader
-			if(buttons.pressed(BTN_C))
+			if(buttons.pressed(Button::c))
 				changeGame();
 		}
 	}
@@ -266,7 +266,7 @@ bool Gamebuino::update() {
 			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
 
 			//record screenshot
-			if (buttons.pressed(BTN_D)) {
+			if (buttons.pressed(Button::d)) {
 				tft.setColor(RED,BLACK);
 				tft.drawRect(0, 0, tft._width, tft._height);
 				tft.drawRect(1, 1, tft._width - 2, tft._height - 2);
@@ -338,10 +338,10 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 	int8_t answer = -1;
 	while (1) {
 		if (update()) {
-			if (buttons.pressed(BTN_A) || buttons.pressed(BTN_B) || buttons.pressed(BTN_C)) {
+			if (buttons.pressed(Button::a) || buttons.pressed(Button::b) || buttons.pressed(Button::c)) {
 				exit = true; //time to exit menu !
 				targetY = - display.fontHeight * length - 2; //send the menu out of the screen
-				if (buttons.pressed(BTN_A)) {
+				if (buttons.pressed(Button::a)) {
 					answer = activeItem;
 					sound.playOK();
 				} else {
@@ -349,11 +349,11 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 				}
 			}
 			if (exit == false) {
-				if (buttons.repeat(BTN_DOWN,4)) {
+				if (buttons.repeat(Button::down,4)) {
 					activeItem++;
 					sound.playTick();
 				}
-				if (buttons.repeat(BTN_UP,4)) {
+				if (buttons.repeat(Button::up,4)) {
 					activeItem--;
 					sound.playTick();
 				}
@@ -411,19 +411,19 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 	while (1) {
 		if (update()) {
 			//move the character selector
-			if (buttons.repeat(BTN_DOWN, 4)) {
+			if (buttons.repeat(Button::down, 4)) {
 				activeY++;
 				sound.playTick();
 			}
-			if (buttons.repeat(BTN_UP, 4)) {
+			if (buttons.repeat(Button::up, 4)) {
 				activeY--;
 				sound.playTick();
 			}
-			if (buttons.repeat(BTN_RIGHT, 4)) {
+			if (buttons.repeat(Button::right, 4)) {
 				activeX++;
 				sound.playTick();
 			}
-			if (buttons.repeat(BTN_LEFT, 4)) {
+			if (buttons.repeat(Button::left, 4)) {
 				activeX--;
 				sound.playTick();
 			}
@@ -439,7 +439,7 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 			currentX = (targetX + currentX) / 2;
 			currentY = (targetY + currentY) / 2;
 			//type character
-			if (buttons.pressed(BTN_A)) {
+			if (buttons.pressed(Button::a)) {
 				if (activeChar < (length-1)) {
 					byte thisChar = activeX + KEYBOARD_W * activeY;
 					if((thisChar == 0)||(thisChar == 10)||(thisChar == 13)) //avoid line feed and carriage return
@@ -453,7 +453,7 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 				activeChar = length;
 			}
 			//erase character
-			if (buttons.pressed(BTN_B)) {
+			if (buttons.pressed(Button::b)) {
 				activeChar--;
 				sound.playCancel();
 				if (activeChar >= 0)
@@ -462,7 +462,7 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 				activeChar = 0;
 			}
 			//leave menu
-			if (buttons.pressed(BTN_C)) {
+			if (buttons.pressed(Button::c)) {
 				sound.playOK();
 				while (1) {
 					if (update()) {
@@ -470,11 +470,11 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 						display.println("You entered\n");
 						display.print(text);
 						display.println("\n\n\n\x15:okay \x16:edit");
-						if(buttons.pressed(BTN_A)){
+						if(buttons.pressed(Button::a)){
 							sound.playOK();
 							return;
 						}
-						if(buttons.pressed(BTN_B)){
+						if(buttons.pressed(Button::b)){
 							sound.playCancel();
 							break;
 						}

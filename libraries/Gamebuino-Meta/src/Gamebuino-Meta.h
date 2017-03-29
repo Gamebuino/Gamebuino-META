@@ -132,6 +132,7 @@ using Gamebuino_Meta::BlendMode;
 using Gamebuino_Meta::ColorMode;
 using Gamebuino_Meta::Color;
 using Gamebuino_Meta::ColorIndex;
+using Gamebuino_Meta::Button;
 extern Gamebuino gb;
 
 const Color WHITE = Color::white;
@@ -167,5 +168,14 @@ const ColorIndex INDEX_GREEN = ColorIndex::green;
 const ColorIndex INDEX_DARKBLUE = ColorIndex::darkblue;
 const ColorIndex INDEX_BLUE = ColorIndex::blue;
 const ColorIndex INDEX_LIGHTBLUE = ColorIndex::lightblue;
+
+const Button BUTTON_DOWN = Button::down;
+const Button BUTTON_LEFT = Button::left;
+const Button BUTTON_RIGHT = Button::right;
+const Button BUTTON_UP = Button::up;
+const Button BUTTON_A = Button::a;
+const Button BUTTON_B = Button::b;
+const Button BUTTON_C = Button::c;
+const Button BUTTON_D = Button::d;
 
 #endif	// _GAMEBUINO_META_H_

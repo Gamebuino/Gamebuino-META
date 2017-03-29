@@ -40,17 +40,17 @@ void setup() {
 void loop() {
   if(gb.update()){
     //pause the game if C is pressed
-    if(gb.buttons.pressed(BTN_C)){
+    if(gb.buttons.pressed(BUTTON_C)){
       gb.titleScreen("Pong Solo");
       //gb.battery.show = false;
       //gb.display.fontSize = 2;
       delay(500);
     }
     //move the player
-    if(gb.buttons.repeat(BTN_UP, 1)){
+    if(gb.buttons.repeat(BUTTON_UP, 1)){
       player_y = max(0, player_y - player_vy);
     }
-    if(gb.buttons.repeat(BTN_DOWN, 1)){
+    if(gb.buttons.repeat(BUTTON_DOWN, 1)){
       player_y = min(LCDHEIGHT - player_h, player_y + player_vy);
     }
 

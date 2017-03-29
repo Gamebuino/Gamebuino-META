@@ -160,7 +160,7 @@ void loop(){
       gb.display.print("PRESS \27 TO EXIT");
     }
     
-    if(gb.buttons.pressed(BTN_C)){
+    if(gb.buttons.pressed(BUTTON_C)){
       gb.sound.stopTrack();
       gb.titleScreen("Music demo");
       gb.sound.playTrack(track2,0);

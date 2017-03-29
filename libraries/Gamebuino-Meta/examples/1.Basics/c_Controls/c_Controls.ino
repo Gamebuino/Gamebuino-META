@@ -23,30 +23,30 @@ void loop(){
   if(gb.update()){
     
     //move the ball using the buttons
-    if(gb.buttons.repeat(BTN_RIGHT,2)){ //every 2 frames when the right button is held down
+    if(gb.buttons.repeat(BUTTON_RIGHT,2)){ //every 2 frames when the right button is held down
       ball_x = ball_x + ball_vx; //increase the horizontal position by the ball's velocity
       gb.sound.playTick(); //play a preset "tick" sound every time the button is pressed
     }
-    if(gb.buttons.repeat(BTN_LEFT,2)){
+    if(gb.buttons.repeat(BUTTON_LEFT,2)){
       ball_x = ball_x - ball_vx;
       gb.sound.playTick();
     }
-    if(gb.buttons.repeat(BTN_DOWN,2)){
+    if(gb.buttons.repeat(BUTTON_DOWN,2)){
       ball_y = ball_y + ball_vy;
       gb.sound.playTick();
     }
-    if(gb.buttons.repeat(BTN_UP,2)){
+    if(gb.buttons.repeat(BUTTON_UP,2)){
       ball_y = ball_y - ball_vy;
       gb.sound.playTick();
     }
     //bonus : play a preset sound when A and B are pressed
-    if(gb.buttons.pressed(BTN_A)){
+    if(gb.buttons.pressed(BUTTON_A)){
       gb.sound.playOK();
     }
-    if(gb.buttons.pressed(BTN_B)){
+    if(gb.buttons.pressed(BUTTON_B)){
       gb.sound.playCancel();
     }
-    if(gb.buttons.pressed(BTN_C)){
+    if(gb.buttons.pressed(BUTTON_C)){
       gb.titleScreen("Controls");
     }
     

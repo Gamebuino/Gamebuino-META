@@ -51,7 +51,7 @@ void setup()
 void loop(){
   if(gb.update()){
     //pause the game if C is pressed
-    if(gb.buttons.pressed(BTN_C)){
+    if(gb.buttons.pressed(BUTTON_C)){
       initGame();
     }
     
@@ -97,29 +97,29 @@ void drawWorld(){
 void updateCursor(){
   byte spriteID = getSpriteID(cursor_x,cursor_y);
   byte rotation = getRotation(cursor_x,cursor_y);
-  if(gb.buttons.repeat(BTN_A, 4)){
+  if(gb.buttons.repeat(BUTTON_A, 4)){
     spriteID = (spriteID+1) % NUM_SPRITES;
     gb.sound.playOK();
   }
-  if(gb.buttons.repeat(BTN_B, 4)){
+  if(gb.buttons.repeat(BUTTON_B, 4)){
     rotation = (rotation+1) % 4;
     gb.sound.playOK();
   }
   setTile(cursor_x, cursor_y, spriteID, rotation);
   
-  if(gb.buttons.repeat(BTN_RIGHT, 4)){
+  if(gb.buttons.repeat(BUTTON_RIGHT, 4)){
     cursor_x = wrap(cursor_x+1, WORLD_W);
     gb.sound.playTick();
   }
-  if(gb.buttons.repeat(BTN_LEFT, 4)){
+  if(gb.buttons.repeat(BUTTON_LEFT, 4)){
     cursor_x = wrap(cursor_x-1, WORLD_W);
     gb.sound.playTick();
   }
-  if(gb.buttons.repeat(BTN_DOWN, 4)){
+  if(gb.buttons.repeat(BUTTON_DOWN, 4)){
     cursor_y = wrap(cursor_y+1, WORLD_H);
     gb.sound.playTick();
   }
-  if(gb.buttons.repeat(BTN_UP, 4)){
+  if(gb.buttons.repeat(BUTTON_UP, 4)){
     cursor_y = wrap(cursor_y-1, WORLD_H);
     gb.sound.playTick();
   }

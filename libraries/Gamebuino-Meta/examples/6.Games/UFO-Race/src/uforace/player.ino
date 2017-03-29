@@ -17,16 +17,16 @@ void initPlayer() {
 
 void updatePlayer() {
 
-  if (gb.buttons.repeat(BTN_RIGHT, 1)) {
+  if (gb.buttons.repeat(BUTTON_RIGHT, 1)) {
     player.angle += 0.31415 / 2;
   }
-  if (gb.buttons.repeat(BTN_LEFT, 1)) {
+  if (gb.buttons.repeat(BUTTON_LEFT, 1)) {
     player.angle -= 0.31415 / 2;
   }
-  if (gb.buttons.repeat(BTN_A, 1)) {
+  if (gb.buttons.repeat(BUTTON_A, 1)) {
     player.v += 0.02;
   }
-  if (gb.buttons.repeat(BTN_B, 1)) {
+  if (gb.buttons.repeat(BUTTON_B, 1)) {
     player.v *= 0.8;
     player.vx *= 0.8;
     player.vy *= 0.8;
@@ -173,6 +173,3 @@ void drawPlayer() {
     gb.display.setColor(BLACK);
   }
 }
-
-
-

@@ -62,7 +62,7 @@ void drawHighScores(){
         gb.display.cursorY = gb.display.fontHeight+gb.display.fontHeight*thisScore;
         gb.display.println(highscore[thisScore]);
       }
-      if(gb.buttons.pressed(BTN_A) || gb.buttons.pressed(BTN_B) || gb.buttons.pressed(BTN_C)){
+      if(gb.buttons.pressed(BUTTON_A) || gb.buttons.pressed(BUTTON_B) || gb.buttons.pressed(BUTTON_C)){
         gb.sound.playOK();
         break;
       }
@@ -89,11 +89,11 @@ boolean drawNewHighscore(unsigned int score){
       gb.display.cursorX = 0;
       gb.display.cursorY = 40;
       gb.display.print("\25:Save \27:Exit");
-      if(gb.buttons.pressed(BTN_A)){
+      if(gb.buttons.pressed(BUTTON_A)){
         gb.sound.playOK();
         return true;
       }
-      if(gb.buttons.pressed(BTN_C)){
+      if(gb.buttons.pressed(BUTTON_C)){
         gb.sound.playCancel();
         return false;
       }

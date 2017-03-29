@@ -6,7 +6,7 @@ File file;
 #define MAX_NAME_LEN 30
 
 char pageFiles[FILES_PER_PAGE][MAX_NAME_LEN];
-uint16_t pageFileColors[FILES_PER_PAGE];
+Color pageFileColors[FILES_PER_PAGE];
 char path[512];
 int8_t cursorPos = 0;
 int8_t cursorPos_max = 0;
@@ -48,7 +48,7 @@ bool loadPage(uint32_t offset) {
 
     entry.getName(pageFiles[i], MAX_NAME_LEN);
     SerialUSB.println(pageFiles[i]);
-    uint16_t color = WHITE;
+    Color color = WHITE;
     //gray out system entry
     if (entry.isSystem()) {
       color = BROWN;
@@ -165,7 +165,7 @@ void setup() {
 void loop() {
   if (gb.update()) {
     // first check for button presses
-    if (gb.buttons.pressed(BTN_UP)) {
+    if (gb.buttons.pressed(BUTTON_UP)) {
       cursorPos--;
       if (cursorPos < 0) {
         if (page_offset > 0) {
@@ -177,7 +177,7 @@ void loop() {
         }
       }
     }
-    if (gb.buttons.pressed(BTN_DOWN)) {
+    if (gb.buttons.pressed(BUTTON_DOWN)) {
       cursorPos++;
       if (cursorPos >= cursorPos_max) {
         page_offset += FILES_PER_PAGE;
@@ -191,7 +191,7 @@ void loop() {
       }
     }
 
-    if (gb.buttons.pressed(BTN_A)) {
+    if (gb.buttons.pressed(BUTTON_A)) {
       handlePress();
     }
 
