@@ -24,9 +24,6 @@ GRAHPIC TEST
 */
 
 #include <Gamebuino-Meta.h>
-using Gamebuino_Meta::Image;
-using Gamebuino_Meta::BlendMode;
-using Gamebuino_Meta::ColorMode;
 
 Image imgRGB = Image(60, 40, ColorMode::RGB565);
 Image imgIndex = Image(160, 128, ColorMode::INDEX);
