@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-
 #include <Arduino.h>
 #include <SPI.h>
 #include "extra/SdFat.h"
@@ -116,7 +115,11 @@ private:
 	uint8_t popupTimeLeft;
 	bool lowBattery;
 	uint16_t battery;
+#ifdef FOLDER_NAME
 	const char folder_name[sizeof FOLDER_NAME] = FOLDER_NAME;
+#else
+	char folder_name[sizeof __SKETCH_NAME__ - 4];
+#endif
 public:
 	Save save = Save(&tft, folder_name);
 };

@@ -28,14 +28,6 @@ extern const uint8_t font3x5[];
 namespace Gamebuino_Meta {
 
 
-// compile-time assert helper stuff
-template <bool b>
-struct StaticAssert {};
-template <>
-struct StaticAssert<true> {
-	static void assert() {}
-};
-
 const uint16_t startupSound[] = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
 
 
@@ -61,7 +53,12 @@ void Gamebuino::begin() {
 	// let's to some sanity checks which are done on compile-time
 	
 	// check that the folder name length is at least 4 chars
-	StaticAssert<(sizeof FOLDER_NAME - 1 >= 4)>::assert(); // your FOLDER_NAME must be at least 4 chars long!
+#ifdef FOLDER_NAME
+	static_assert(sizeof FOLDER_NAME - 1 >= 4, "your FOLDER_NAME must be at least 4 chars long!");
+#else
+	static_assert(sizeof __SKETCH_NAME__ - 1 >= 4 + 4, "Your sketch name is less than 4 chars long, please define FOLDER_NAME!");
+	memcpy(folder_name, __SKETCH_NAME__, sizeof __SKETCH_NAME__ - 4);
+#endif
 	
 	
 	timePerFrame = 40;

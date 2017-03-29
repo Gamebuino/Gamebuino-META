@@ -7,7 +7,7 @@
 
 
 // let's first include our config. First one can be overriden inside the sketch, config.h contains the default configs
-#include <config_gamebuino.h>
+#include <sketch/config_gamebuino.h>
 #include "config_default.h"
 
 #endif // _CONFIG_GAMEBUINO_

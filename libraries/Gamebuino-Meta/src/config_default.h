@@ -1,7 +1,5 @@
 #ifndef FOLDER_NAME
-#ifdef __SKETCH_NAME__
-#define FOLDER_NAME __SKETCH_NAME__
-#else
+#ifndef __SKETCH_NAME__
 #define FOLDER_NAME "testsketch"
 #endif
 #endif
