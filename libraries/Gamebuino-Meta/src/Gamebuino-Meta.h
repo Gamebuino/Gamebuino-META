@@ -126,8 +126,8 @@ public:
 
 } // namespace Gamebuino_Meta
 
-typedef Gamebuino_Meta::Gamebuino Gamebuino;
-typedef Gamebuino_Meta::Image Image;
+using Gamebuino_Meta::Gamebuino;
+using Gamebuino_Meta::Image;
 using Gamebuino_Meta::BlendMode;
 using Gamebuino_Meta::ColorMode;
 extern Gamebuino gb;
