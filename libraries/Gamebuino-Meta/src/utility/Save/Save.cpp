@@ -53,9 +53,9 @@ Save::Save(Display_ST7735 *_tft, const char* _checkbytes) {
 
 void Save::error(const char *s) {
 	tft->setCursor(0, 0);
-	tft->setColor(RED, BLACK);
+	tft->setColor(Color::red, Color::black);
 	tft->print("SAVE ERROR ");
-	tft->setColor(WHITE, BLACK);
+	tft->setColor(Color::white, Color::black);
 	tft->print(s);
 	while(1);
 }

@@ -74,7 +74,7 @@ class Gamebuino {
 public:
 	Buttons buttons;
 	Sound sound;
-	Image display = Image(80,64, ColorMode::RGB565);
+	Image display = Image(80,64, ColorMode::rgb565);
 	Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -130,6 +130,24 @@ using Gamebuino_Meta::Gamebuino;
 using Gamebuino_Meta::Image;
 using Gamebuino_Meta::BlendMode;
 using Gamebuino_Meta::ColorMode;
+using Gamebuino_Meta::Color;
 extern Gamebuino gb;
+
+const Color WHITE = Color::white;
+const Color GRAY = Color::gray;
+const Color DARKGRAY = Color::darkgray;
+const Color BLACK = Color::black;
+const Color PURPLE = Color::purple;
+const Color PINK = Color::pink;
+const Color RED = Color::red;
+const Color ORANGE = Color::orange;
+const Color BROWN = Color::brown;
+const Color BEIGE = Color::beige;
+const Color YELLOW = Color::yellow;
+const Color LIGHTGREEN = Color::lightgreen;
+const Color GREEN = Color::green;
+const Color DARKBLUE = Color::darkblue;
+const Color BLUE = Color::blue;
+const Color LIGHTBLUE = Color::lightblue;
 
 #endif	// _GAMEBUINO_META_H_

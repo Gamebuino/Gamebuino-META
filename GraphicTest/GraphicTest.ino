@@ -25,8 +25,8 @@ GRAHPIC TEST
 
 #include <Gamebuino-Meta.h>
 
-Image imgRGB = Image(60, 40, ColorMode::RGB565);
-Image imgIndex = Image(160, 128, ColorMode::INDEX);
+Image imgRGB = Image(60, 40, ColorMode::rgb565);
+Image imgIndex = Image(160, 128, ColorMode::index);
 
 //RGB Image sample
 const uint16_t favicon16Width = 16;
@@ -48,7 +48,7 @@ const uint16_t favicon16[256] = {
 	0x4208,0x4208,0xDEFB,0xDEFB,0xFBA5,0xFBA5,0xDEFB,0x4208,0x4208,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F, // row 13, 224 pixels
 	0xF81F,0x4208,0x4208,0xDEFB,0xDEFB,0xDEFB,0x4208,0x4208,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F, // row 14, 240 pixels
 	0xF81F,0xF81F,0x4208,0x4208,0x4208,0x4208,0x4208,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F }; // row 15, 256 pixels
-Image favicon = Image(favicon16Width, favicon16Height, ColorMode::RGB565, const_cast<uint16_t*>(favicon16));
+Image favicon = Image(favicon16Width, favicon16Height, ColorMode::rgb565, const_cast<uint16_t*>(favicon16));
 
 //Indexed color image sample
 uint16_t textImgIndexBuffer[32] = { 
@@ -61,12 +61,11 @@ uint16_t textImgIndexBuffer[32] = {
 	0xFEDC, 0xBA98, 0x7654, 0x3210,
 	0xFEDC, 0xBA98, 0x7654, 0x3210,
 };
-Image testImgIndex = Image(16, 8, ColorMode::INDEX, textImgIndexBuffer);
+Image testImgIndex = Image(16, 8, ColorMode::index, textImgIndexBuffer);
 
 void setup()
 {
-   WDT->CTRL.bit.ENABLE = 0;
-  gb.begin();
+	gb.begin();
 	gb.tft.setRotation(3);
 	gb.tft.fillScreen(BLACK);
 	gb.tft.setColor(WHITE);
@@ -109,24 +108,24 @@ void loop()
 	gb.tft.drawImage(0, 0, imgIndex);
 	uint16_t endTime = millis();
 	memset(imgIndex._buffer, 0x11, imgIndex.width()*imgIndex.height() / 2); //clear buffer
-	imgIndex.setColor(13);
+	imgIndex.setColor((Color)13);
 	//imgIndex.drawCircle((millis() / 10) % 160, 20, 10); //draw to indexed buffer
 	imgIndex.setCursor(8, 42);
 	for (uint16_t i = 0; i < 16; i++) {
 		//numbers background
-		imgIndex.setColor(i);
+		imgIndex.setColor((Color)i);
 		imgIndex.fillRect(8 + i * 8, 32, 7, 7);
 		//numbers
-		imgIndex.setColor(i);
-		if (i == 1) imgIndex.setColor(i, 0);
+		imgIndex.setColor((Color)i);
+		if (i == 1) imgIndex.setColor((Color)i, (Color)0);
 		if (i < 10) imgIndex.print(" ");
 		imgIndex.print(i);
 	}
-	imgIndex.setColor(3);
+	imgIndex.setColor((Color)3);
 	imgIndex.setCursor(10, 10);
 	imgIndex.print(endTime - startTime);
 	imgIndex.println("ms");
-	imgIndex.setColor(11);
+	imgIndex.setColor((Color)11);
 	imgIndex.setCursor(64, 10);
 	imgIndex.print(1000 / (endTime - startTime));
 	imgIndex.println("FPS");
@@ -143,7 +142,7 @@ void loop()
 	imgRGB.drawImage(4, 4, testImgIndex);
 	imgRGB.setCursor(2, 16);
 	for (uint16_t i = 0; i < 16; i++) {
-		imgRGB.setColor(Gamebuino_Meta::Adafruit_GFX::colorIndex[i]);
+		imgRGB.setColor(Gamebuino_Meta::Graphics::colorIndex[i]);
 		imgRGB.print(i);
 	}
 	drawImage(imgRGB, 2);

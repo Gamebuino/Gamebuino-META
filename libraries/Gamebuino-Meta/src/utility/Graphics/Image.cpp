@@ -32,7 +32,7 @@ void Image::allocateBuffer(uint16_t w, uint16_t h) {
 	_width = w;
 	_height = h;
 	switch (colorMode) {
-	case (ColorMode::INDEX):
+	case (ColorMode::index):
 	{
 		uint16_t bytes = w * h / 2; //4 bits per pixel = 1/2 byte
 		if ((_buffer = (uint16_t *)malloc(bytes))) {
@@ -40,7 +40,7 @@ void Image::allocateBuffer(uint16_t w, uint16_t h) {
 		}
 		break;
 	}
-	case (ColorMode::RGB565):
+	case (ColorMode::rgb565):
 	{
 		uint16_t bytes = w * h * 2; //16 bits per pixel = 2 bytes
 		if ((_buffer = (uint16_t *)malloc(bytes))) {
@@ -54,36 +54,36 @@ void Image::allocateBuffer(uint16_t w, uint16_t h) {
 
 void Image::drawPixel(int16_t x, int16_t y) {
 	if (_buffer) {
-		if (colorMode == ColorMode::RGB565) {
+		if (colorMode == ColorMode::rgb565) {
 			if ((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
-			_buffer[x + y * WIDTH] = color;
+			_buffer[x + y * WIDTH] = (uint16_t)color;
 			return;
 		}
-		if (colorMode == ColorMode::INDEX) {
+		if (colorMode == ColorMode::index) {
 			if ((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
 			uint16_t addr = x + y * WIDTH; //nibble number
 			if (addr & 0x0001) { //odd pixels
 				((uint8_t*)_buffer)[addr / 2] &= 0x0F; //clear
-				((uint8_t*)_buffer)[addr / 2] |= (color << 4); //set
+				((uint8_t*)_buffer)[addr / 2] |= ((uint16_t)color << 4); //set
 			}
 			else { //even pixels
 				((uint8_t*)_buffer)[addr / 2] &= 0xF0; //clear
-				((uint8_t*)_buffer)[addr / 2] |= color; //set
+				((uint8_t*)_buffer)[addr / 2] |= (uint16_t)color; //set
 			}
 			return;
 		}
 	}
 }
 
-void Image::fillScreen(uint16_t color) {
+void Image::fillScreen(Color color) {
 	if (_buffer) {
-		uint8_t hi = color >> 8, lo = color & 0xFF;
+		uint8_t hi = (uint16_t)color >> 8, lo = (uint16_t)color & 0xFF;
 		if (hi == lo) {
 			memset(_buffer, lo, WIDTH * HEIGHT * 2);
 		}
 		else {
 			uint16_t i, pixels = WIDTH * HEIGHT;
-			for (i = 0; i<pixels; i++) _buffer[i] = color;
+			for (i = 0; i<pixels; i++) _buffer[i] = (uint16_t)color;
 		}
 	}
 }
@@ -133,7 +133,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 	//blending
 	uint8_t nalpha = 255 - alpha; //complementary of alpha
 	switch (blendMode) {
-	case BlendMode::BLEND:
+	case BlendMode::blend:
 	{
 		if (alpha < 255) {
 			for (uint8_t i = 0; i < w; i++) {
@@ -149,7 +149,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		}
 		break;
 	}
-	case BlendMode::ADD:
+	case BlendMode::add:
 	{
 		for (uint8_t i = 0; i < w; i++) {
 			if (buffer[i] == Graphics::transparentColor) continue;
@@ -163,7 +163,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		}
 		break;
 	}
-	case BlendMode::SUBSTRACT:
+	case BlendMode::subtract:
 	{
 		for (uint8_t i = 0; i < w; i++) {
 			if (buffer[i] == Graphics::transparentColor) continue;
@@ -177,7 +177,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		}
 		break;
 	}
-	case BlendMode::MULTIPLY:
+	case BlendMode::multiply:
 	{
 		for (uint8_t i = 0; i < w; i++) {
 			if (buffer[i] == Graphics::transparentColor) continue;
@@ -191,7 +191,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		}
 		break;
 	}
-	case BlendMode::SCREEN:
+	case BlendMode::screen:
 	{
 		for (uint8_t i = 0; i < w; i++) {
 			if (buffer[i] == Graphics::transparentColor) continue;

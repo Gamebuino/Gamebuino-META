@@ -87,14 +87,14 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image img, char *filename){
 	uint32_t colorTable = 0; // this is the color table, if needed
 	uint16_t* rambuffer = img._buffer;
 	switch(img.colorMode){
-		case ColorMode::INDEX: 
+		case ColorMode::index: 
 			bmpDepth=4;
 			bmpWidth = ((bmpDepth*img._width + 31)/32) * 4;
 			colorTable = *(rambuffer++) | (*(rambuffer++)) << 16;
 			
 			printlnDebug("Indexed colors");
 			break;
-		case ColorMode::RGB565: 
+		case ColorMode::rgb565: 
 			bmpDepth=24;
 			bmpWidth = (img._width * 3 + 3) & ~3;
 			

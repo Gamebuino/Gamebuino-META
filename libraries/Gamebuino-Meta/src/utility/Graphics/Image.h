@@ -19,7 +19,7 @@ public:
 		allocateBuffer(uint16_t w, uint16_t h),
 		freeBuffer(),
 		drawPixel(int16_t x, int16_t y),
-		fillScreen(uint16_t color),
+		fillScreen(Color color),
 		drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w);
 
 	uint16_t *_buffer;

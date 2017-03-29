@@ -18,10 +18,10 @@
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
-Image favicon = Image(favicon16Width, favicon16Height, ColorMode::RGB565, const_cast<uint16_t*>(favicon16));
+Image favicon = Image(favicon16Width, favicon16Height, ColorMode::rgb565, const_cast<uint16_t*>(favicon16));
 //Image logoImg = Image(logoWidth, logoHeight, const_cast<uint16_t*>(logo));
 
-Image buffer = Image(80, 64, ColorMode::RGB565);
+Image buffer = Image(80, 64, ColorMode::rgb565);
 
 void setup(void) {
 	tft.initR(INITR_BLACKTAB);
@@ -34,23 +34,23 @@ void setup(void) {
 void loop() {
 	uint16_t numImages = 64;
 
-	Adafruit_GFX::blendMode = BlendMode::BLEND;
+	Adafruit_GFX::blendMode = BlendMode::blend;
 	Adafruit_GFX::alpha = 255;
 	drawRandomImages(favicon, numImages);
 	Adafruit_GFX::alpha = 255 * 30 / 100;
 	drawRandomImages(favicon, numImages);
 
-	Adafruit_GFX::blendMode = BlendMode::ADD;
+	Adafruit_GFX::blendMode = BlendMode::add;
 	drawRandomImages(favicon, numImages);
 
-	Adafruit_GFX::blendMode = BlendMode::SUBSTRACT;
+	Adafruit_GFX::blendMode = BlendMode::subtract;
 	drawRandomImages(favicon, numImages);
 
-	Adafruit_GFX::blendMode = BlendMode::MULTIPLY;
+	Adafruit_GFX::blendMode = BlendMode::multiply;
 	drawRandomImages(favicon, numImages);
 
 
-	Adafruit_GFX::blendMode = BlendMode::SCREEN;
+	Adafruit_GFX::blendMode = BlendMode::screen;
 	drawRandomImages(favicon, numImages);
 }
 
@@ -58,23 +58,23 @@ void drawRandomImages(Image img, uint16_t num) {
 	buffer.fillScreen(tft.Color565(127, 127, 127));
 	buffer.setCursor(0, 0);
 	switch (Adafruit_GFX::blendMode) {
-	case BlendMode::BLEND:
+	case BlendMode::blend:
 		if (Adafruit_GFX::alpha == 255) {
 			buffer.print("TINT");
 			break;
 		}
 		buffer.print("BLEND");
 		break;
-	case BlendMode::ADD:
+	case BlendMode::add:
 		buffer.print("ADD");
 		break;
-	case BlendMode::SUBSTRACT:
+	case BlendMode::subtract:
 		buffer.print("SUBSTRACT");
 		break;
-	case BlendMode::MULTIPLY:
+	case BlendMode::multiply:
 		buffer.print("MULTIPLY");
 		break;
-	case BlendMode::SCREEN:
+	case BlendMode::screen:
 		buffer.print("SCREEN");
 		break;
 	}

@@ -607,7 +607,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image img){
 	int16_t w = img.width();
 	int16_t h = img.height();
 
-	if ((img.colorMode == ColorMode::INDEX) && (w = _width) && (h = _height)) {
+	if ((img.colorMode == ColorMode::index) && (w = _width) && (h = _height)) {
 
 		uint16_t preBufferLineArray[w];
 		uint16_t sendBufferLineArray[w];
@@ -656,7 +656,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image img){
 			//length is the number of destination pixels
 			uint16_t *dest = preBufferLine;
 			uint16_t *src = img._buffer + ((j * w) / 4);
-			uint16_t *index = Graphics::colorIndex;
+			Color *index = Graphics::colorIndex;
 			uint16_t length = w;
 			for (uint16_t i = 0; i < length / 4; i++) {
 				uint16_t index1 = (src[i] >> 0) & 0x000F;
@@ -664,10 +664,10 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image img){
 				uint16_t index3 = (src[i] >> 8) & 0x000F;
 				uint16_t index4 = (src[i] >> 12) & 0x000F;
 				//change pixel order (because of words endianness) at the same time
-				dest[i * 4] = index[index1];
-				dest[(i * 4) + 1] = index[index2];
-				dest[(i * 4) + 2] = index[index3];
-				dest[(i * 4) + 3] = index[index4];
+				dest[i * 4] = (uint16_t)index[index1];
+				dest[(i * 4) + 1] = (uint16_t)index[index2];
+				dest[(i * 4) + 2] = (uint16_t)index[index3];
+				dest[(i * 4) + 3] = (uint16_t)index[index4];
 			}
 			//change RGB565 color endiannes (bacause of SPI sending byte by byte instead of word by word)
 			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
@@ -862,8 +862,8 @@ void Display_ST7735::drawPixel(int16_t x, int16_t y) {
   *rsport |=  rspinmask;
   *csport &= ~cspinmask;
   
-  spiwrite(color >> 8);
-  spiwrite(color);
+  spiwrite((uint16_t)color >> 8);
+  spiwrite((uint16_t)color);
 
   *csport |= cspinmask;
 #if defined (SPI_HAS_TRANSACTION)
@@ -879,7 +879,7 @@ void Display_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h) {
   if((y+h-1) >= _height) h = _height-y;
   setAddrWindow(x, y, x, y+h-1);
 
-  uint8_t hi = Graphics::color >> 8, lo = Graphics::color;
+  uint8_t hi = (uint16_t)Graphics::color >> 8, lo = (uint16_t)Graphics::color;
     
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);
@@ -904,7 +904,7 @@ void Display_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w) {
   if((x+w-1) >= _width)  w = _width-x;
   setAddrWindow(x, y, x+w-1, y);
 
-  uint8_t hi = Graphics::color >> 8, lo = Graphics::color;
+  uint8_t hi = (uint16_t)Graphics::color >> 8, lo = (uint16_t)Graphics::color;
 
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);
@@ -931,7 +931,7 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 
   setAddrWindow(x, y, x+w-1, y+h-1);
 
-  uint8_t hi = Graphics::color >> 8, lo = Graphics::color;
+  uint8_t hi = (uint16_t)Graphics::color >> 8, lo = (uint16_t)Graphics::color;
     
 #if defined (SPI_HAS_TRANSACTION)
     SPI.beginTransaction(mySPISettings);
@@ -953,8 +953,8 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 
 
 // Pass 8-bit (each) R,G,B, get back 16-bit packed color
-uint16_t Display_ST7735::Color565(uint8_t r, uint8_t g, uint8_t b) {
-  return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+Color Display_ST7735::Color565(uint8_t r, uint8_t g, uint8_t b) {
+  return (Color)(((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3));
 }
 
 

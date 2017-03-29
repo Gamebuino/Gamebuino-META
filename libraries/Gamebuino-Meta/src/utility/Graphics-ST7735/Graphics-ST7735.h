@@ -147,7 +147,7 @@ class Display_ST7735 : public Graphics {
 		   fillRect(int16_t x, int16_t y, int16_t w, int16_t h),
            setRotation(uint8_t r),
            invertDisplay(boolean i);
-  uint16_t Color565(uint8_t r, uint8_t g, uint8_t b);
+  Color Color565(uint8_t r, uint8_t g, uint8_t b);
 
   /* These are not for current use, 8-bit protocol only!
   uint8_t  readdata(void),

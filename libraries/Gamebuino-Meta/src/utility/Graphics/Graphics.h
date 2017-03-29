@@ -2,10 +2,10 @@
 #define _GAMEBUINO_META_GRAPHICS_H_
 
 #if ARDUINO >= 100
- #include "Arduino.h"
- #include "Print.h"
+#include "Arduino.h"
+#include "Print.h"
 #else
- #include "WProgram.h"
+#include "WProgram.h"
 #endif
 
 #include "gfxfont.h"
@@ -13,22 +13,24 @@
 namespace Gamebuino_Meta {
 
 
-#define WHITE		(0xFFFF)
-#define GRAY		(0xACD0)
-#define DARKGRAY	(0x72C7)
-#define BLACK 		(0x0000)
-#define PURPLE		(0x8A39)
-#define PINK		(0xCA30)
-#define RED			(0xD8E4)
-#define ORANGE		(0xFD42)
-#define BROWN		(0xCC68)
-#define BEIGE		(0xFEB2)
-#define YELLOW		(0xF720)
-#define LIGHTGREEN	(0x8668)
-#define GREEN		(0x044A)
-#define DARKBLUE	(0x0210)
-#define BLUE		(0x4439)
-#define LIGHTBLUE	(0x7DDF)
+enum class Color : uint16_t {
+	white		= 0xFFFF,
+	gray		= 0xACD0,
+	darkgray	= 0x72C7,
+	black		= 0x0000,
+	purple		= 0x8A39,
+	pink		= 0xCA30,
+	red			= 0xD8E4,
+	orange		= 0xFD42,
+	brown		= 0xCC68,
+	beige		= 0xFEB2,
+	yellow		= 0xF720,
+	lightgreen	= 0x8668,
+	green		= 0x044A,
+	darkblue	= 0x0210,
+	blue		= 0x4439,
+	lightblue	= 0x7DDF,
+};
 
 #define ENABLE_BITMAPS 1
 //for extended bitmap function :
@@ -44,16 +46,16 @@ namespace Gamebuino_Meta {
 class Image;
 
 enum class BlendMode : uint8_t {
-	BLEND,
-	ADD,
-	SUBSTRACT,
-	MULTIPLY,
-	SCREEN
+	blend,
+	add,
+	subtract,
+	multiply,
+	screen,
 };
 
 enum class ColorMode : uint8_t {
-	RGB565,
-	INDEX
+	rgb565,
+	index,
 };
 
 class Graphics : public Print {
@@ -76,7 +78,7 @@ class Graphics : public Print {
 	drawRect(int16_t x, int16_t y, int16_t w, int16_t h),
 	fillRect(int16_t x, int16_t y, int16_t w, int16_t h),
 	fillScreen(),
-	fillScreen(uint16_t color), //legacy version
+	fillScreen(Color color), //legacy version
 	invertDisplay(boolean i),
 	drawImage(int16_t x, int16_t y, Image img),
 	drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2);
@@ -110,8 +112,8 @@ class Graphics : public Print {
 
 	drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size),
 	setCursor(int16_t x, int16_t y),
-	setColor(uint16_t c),
-	setColor(uint16_t c, uint16_t bg),
+	setColor(Color c),
+	setColor(Color c, Color bg),
 	setFontSize(uint8_t s),
 	setTextWrap(boolean w),
 	setRotation(uint8_t r),
@@ -127,13 +129,13 @@ class Graphics : public Print {
   boolean getBitmapPixel(const uint8_t* bitmap, uint8_t x, uint8_t y);
 
 
-  static void indexTo565(uint16_t *dest, uint16_t *src, uint16_t *index, uint16_t length);
+  static void indexTo565(uint16_t *dest, uint16_t *src, Color *index, uint16_t length);
 
   static uint16_t transparentColor;
   static uint8_t alpha;
   static uint16_t tint;
   static BlendMode blendMode;
-  static uint16_t *colorIndex;
+  static Color *colorIndex;
   ColorMode colorMode;
 
 #if ARDUINO >= 100
@@ -157,7 +159,7 @@ class Graphics : public Print {
   int16_t
 	_width, _height, // Display w/h as modified by current rotation
 	cursorX, cursorY;
-  static uint16_t
+  static Color
 	color, bgcolor;
   uint8_t
 	fontSize,

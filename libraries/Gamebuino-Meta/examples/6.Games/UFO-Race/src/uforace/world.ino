@@ -37,7 +37,7 @@ const byte* sprites[NUM_SPRITES] = {
   block_vertical     //F
 };
 
-const uint16_t spritesColor[NUM_SPRITES] = {
+const Color spritesColor[NUM_SPRITES] = {
   BEIGE,    //road,              //0
   ORANGE,   //power_right,       //1
   ORANGE,   //power_down,        //2

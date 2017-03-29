@@ -32,9 +32,9 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #ifdef __AVR__
- #include <avr/pgmspace.h>
+#include <avr/pgmspace.h>
 #elif defined(ESP8266)
- #include <pgmspace.h>
+#include <pgmspace.h>
 #endif
 #include "Graphics.h"
 #include "Image.h"
@@ -48,13 +48,30 @@ namespace Gamebuino_Meta {
 uint16_t Graphics::transparentColor = 0xF81F; //magenta is the default transparent color
 uint16_t Graphics::tint = 0xFFFF;
 uint8_t Graphics::alpha = 255;
-uint16_t _colorIndex[16] = {BLACK,DARKBLUE,PURPLE,GREEN,BROWN,DARKGRAY,GRAY,WHITE,RED,ORANGE,YELLOW,LIGHTGREEN,LIGHTBLUE,BLUE,PINK,BEIGE};
-uint16_t* Graphics::colorIndex = _colorIndex;
-BlendMode Graphics::blendMode = BlendMode::BLEND;
-uint16_t Graphics::color = BLACK;
-uint16_t Graphics::bgcolor = WHITE;
+Color _colorIndex[16] = {
+	Color::black,
+	Color::darkblue,
+	Color::purple,
+	Color::green,
+	Color::brown,
+	Color::darkgray,
+	Color::gray,
+	Color::white,
+	Color::red,
+	Color::orange,
+	Color::yellow,
+	Color::lightgreen,
+	Color::lightblue,
+	Color::blue,
+	Color::pink,
+	Color::beige,
+};
+Color* Graphics::colorIndex = _colorIndex;
+BlendMode Graphics::blendMode = BlendMode::blend;
+Color Graphics::color = Color::black;
+Color Graphics::bgcolor = Color::white;
 
-void Graphics::indexTo565(uint16_t *dest, uint16_t *src, uint16_t *index, uint16_t length) {
+void Graphics::indexTo565(uint16_t *dest, uint16_t *src, Color *index, uint16_t length) {
 	//length is the number of destination pixels
 	for (uint16_t i = 0; i < length/4; i++) {
 		uint16_t index1 = (src[i] >> 0)  & 0x000F;
@@ -62,10 +79,10 @@ void Graphics::indexTo565(uint16_t *dest, uint16_t *src, uint16_t *index, uint16
 		uint16_t index3 = (src[i] >> 8)  & 0x000F;
 		uint16_t index4 = (src[i] >> 12) & 0x000F;
 		//change pixel order (because of words endianness) at the same time
-		dest[i * 4] = index[index4];
-		dest[(i * 4) + 1] = index[index3];
-		dest[(i * 4) + 2] = index[index2];
-		dest[(i * 4) + 3] = index[index1];
+		dest[i * 4] = (uint16_t)index[index4];
+		dest[(i * 4) + 1] = (uint16_t)index[index3];
+		dest[(i * 4) + 2] = (uint16_t)index[index2];
+		dest[(i * 4) + 3] = (uint16_t)index[index1];
 	}
 }
 
@@ -108,11 +125,11 @@ Graphics::Graphics(int16_t w, int16_t h):
   rotation  = 0;
   cursorY  = cursorX    = 0;
   fontSize  = 1;
-  color = bgcolor = 0xFFFF;
+  color = bgcolor = Color::white;
   textWrap      = true;
   _cp437    = false;
   gfxFont   = NULL;
-  colorMode = ColorMode::RGB565;
+  colorMode = ColorMode::rgb565;
   setFont(font3x5);
 }
 
@@ -294,8 +311,8 @@ void Graphics::fillScreen() {
 }
 
 //legacy fillScreen
-void Graphics::fillScreen(uint16_t c) {
-	uint16_t tempColor = color;
+void Graphics::fillScreen(Color c) {
+	Color tempColor = color;
 	color = c;
 	fillScreen();
 	color = tempColor;
@@ -590,7 +607,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img) {
 	}
 
 	//draw INDEX => RGB
-	if ((img.colorMode == ColorMode::INDEX) && (colorMode == ColorMode::RGB565)) {
+	if ((img.colorMode == ColorMode::index) && (colorMode == ColorMode::rgb565)) {
 		for (int j2 = 0; j2 < h2cropped; j2++) {
 			uint16_t destLineArray[w2cropped];
 			uint16_t *destLine = destLineArray;
@@ -616,7 +633,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img) {
 	}
 
 	//draw RGB => RGB
-	if ((img.colorMode == ColorMode::RGB565) && (colorMode == ColorMode::RGB565)) {
+	if ((img.colorMode == ColorMode::rgb565) && (colorMode == ColorMode::rgb565)) {
 		for (int j2 = 0; j2 < h2cropped; j2++) { //j2 : offseted vertical coordinate in the destination image
 			drawBufferedLine(
 				x + i2offset,
@@ -628,10 +645,10 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img) {
 	}
 
 	//draw INDEX => INDEX
-	if ((img.colorMode == ColorMode::INDEX) && (colorMode == ColorMode::INDEX)) {
-		setColor(8);
+	if ((img.colorMode == ColorMode::index) && (colorMode == ColorMode::index)) {
+		setColor((Color)8);
 		fillRect(x, y, img._width, img._height);
-		setColor(7);
+		setColor((Color)7);
 		drawRect(x, y, img._width, img._height);
 	}
 
@@ -788,7 +805,7 @@ void Graphics::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 				}
 			}
 			else if (bgcolor != color) {
-				int16_t tempcolor = color;
+				Color tempcolor = color;
 				color = bgcolor;
 				if (size == 1) // default size
 					drawPixel(x + i, y + j);
@@ -879,13 +896,13 @@ void Graphics::setFontSize(uint8_t s) {
   fontSize = (s > 0) ? s : 1;
 }
 
-void Graphics::setColor(uint16_t c) {
+void Graphics::setColor(Color c) {
   // For 'transparent' background, we'll set the bg
   // to the same as fg instead of using a flag
   color = bgcolor = c;
 }
 
-void Graphics::setColor(uint16_t c, uint16_t b) {
+void Graphics::setColor(Color c, Color b) {
   color   = c;
   bgcolor = b;
 }
