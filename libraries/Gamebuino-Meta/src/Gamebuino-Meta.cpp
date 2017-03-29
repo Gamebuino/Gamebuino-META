@@ -58,6 +58,7 @@ void Gamebuino::begin() {
 #else
 	static_assert(sizeof __SKETCH_NAME__ - 1 >= 4 + 4, "Your sketch name is less than 4 chars long, please define FOLDER_NAME!");
 	memcpy(folder_name, __SKETCH_NAME__, sizeof __SKETCH_NAME__ - 4);
+	folder_name[sizeof __SKETCH_NAME__ - 4] = '\0';
 #endif
 	
 	
