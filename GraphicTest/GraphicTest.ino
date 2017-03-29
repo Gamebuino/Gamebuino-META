@@ -23,25 +23,18 @@ GRAHPIC TEST
 - Idem draw to screen
 */
 
-#include <Image.h>
-#include <gfxfont.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_ST7735.h>
+#include <Gamebuino-Meta.h>
+using Gamebuino_Meta::Image;
+using Gamebuino_Meta::BlendMode;
+using Gamebuino_Meta::ColorMode;
 
-#define TFT_CS		(30u)
-#define TFT_RST		(0u)
-#define TFT_DC		(31u)
-#define SD_CS		(26u)
-#define BTN_CS		(25u)
-#define NEOPIX		(38u)
-
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 Image imgRGB = Image(60, 40, ColorMode::RGB565);
 Image imgIndex = Image(160, 128, ColorMode::INDEX);
 
+//RGB Image sample
 const uint16_t favicon16Width = 16;
 const uint16_t favicon16Height = 16;
-const uint16_t favicon16[256] PROGMEM = {
+const uint16_t favicon16[256] = {
 	0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0x4208,0x4208,0x4208,0x4208,0xF81F,0xF81F, // row 0, 16 pixels
 	0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xDEFB,0xDEFB,0x4208,0x4208,0xF81F, // row 1, 32 pixels
 	0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xDEFB,0xF81F,0xDEFB,0xDEFB,0x4208,0xDEFB,0x4208,0x4208, // row 2, 48 pixels
@@ -60,6 +53,7 @@ const uint16_t favicon16[256] PROGMEM = {
 	0xF81F,0xF81F,0x4208,0x4208,0x4208,0x4208,0x4208,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F }; // row 15, 256 pixels
 Image favicon = Image(favicon16Width, favicon16Height, ColorMode::RGB565, const_cast<uint16_t*>(favicon16));
 
+//Indexed color image sample
 uint16_t textImgIndexBuffer[32] = { 
 	0x0123, 0x4567, 0x89AB, 0xCDEF,
 	0x0123, 0x4567, 0x89AB, 0xCDEF,
@@ -74,21 +68,19 @@ Image testImgIndex = Image(16, 8, ColorMode::INDEX, textImgIndexBuffer);
 
 void setup()
 {
-	WDT->CTRL.bit.ENABLE = 0;
-	
-	tft.initR(INITR_BLACKTAB);
-	tft.setRotation(3);
-	tft.fillScreen(BLACK);
-	tft.setColor(WHITE);
-	tft.println("GRAPHIC TEST");
-	tft.setColor(RED);
-	tft.print("RED ");
-	tft.setColor(GREEN);
-	tft.print("GREEN ");
-	tft.setColor(BLUE);
-	tft.println("BLUE");
+   WDT->CTRL.bit.ENABLE = 0;
+  gb.begin();
+	gb.tft.setRotation(3);
+	gb.tft.fillScreen(BLACK);
+	gb.tft.setColor(WHITE);
+	gb.tft.println("GRAPHIC TEST");
+	gb.tft.setColor(RED);
+	gb.tft.print("RED ");
+	gb.tft.setColor(GREEN);
+	gb.tft.print("GREEN ");
+	gb.tft.setColor(BLUE);
+	gb.tft.println("BLUE");
 	delay(1500);
-	((void(*)(const char* filename))(*((uint32_t*)0x3FF8)))("led_red.ino.bin");
 }
 
 void loop()
@@ -117,7 +109,7 @@ void loop()
 	drawTitle("DRAW INDEX -> TFT");
 	memset(imgIndex._buffer, 0x11, imgIndex.width()*imgIndex.height() / 2); //clear buffer
 	uint16_t startTime = millis();
-	tft.drawImage(0, 0, imgIndex);
+	gb.tft.drawImage(0, 0, imgIndex);
 	uint16_t endTime = millis();
 	memset(imgIndex._buffer, 0x11, imgIndex.width()*imgIndex.height() / 2); //clear buffer
 	imgIndex.setColor(13);
@@ -141,12 +133,12 @@ void loop()
 	imgIndex.setCursor(64, 10);
 	imgIndex.print(1000 / (endTime - startTime));
 	imgIndex.println("FPS");
-	tft.drawImage(0, 0, imgIndex);
+	gb.tft.drawImage(0, 0, imgIndex);
 	delay(1500);
 
 	memset(imgIndex._buffer, 0x11, imgIndex.width()*imgIndex.height() / 2); //clear buffer
 	imgIndex.drawImage(8, 8, testImgIndex);
-	tft.drawImage(0, 0, imgIndex);
+	gb.tft.drawImage(0, 0, imgIndex);
 	delay(1500);
 
 	drawTitle("DRAW INDEX -> RGB x 2");
@@ -154,45 +146,45 @@ void loop()
 	imgRGB.drawImage(4, 4, testImgIndex);
 	imgRGB.setCursor(2, 16);
 	for (uint16_t i = 0; i < 16; i++) {
-		imgRGB.setColor(Adafruit_GFX::colorIndex[i]);
+		imgRGB.setColor(Gamebuino_Meta::Adafruit_GFX::colorIndex[i]);
 		imgRGB.print(i);
 	}
 	drawImage(imgRGB, 2);
 }
 
 void drawTitle(char* title) {
-	tft.fillScreen(BLACK);
-	tft.setCursor(2, 2);
-	tft.setColor(WHITE);
-	tft.println(title);
+	gb.tft.fillScreen(BLACK);
+	gb.tft.setCursor(2, 2);
+	gb.tft.setColor(WHITE);
+	gb.tft.println(title);
 }
 
 void fillScreenTFT() {
-	tft.setColor(WHITE);
-	tft.setCursor(2, 2);
-	tft.fillScreen(RED);
-	tft.println("FILL SCREEN RED");
+	gb.tft.setColor(WHITE);
+	gb.tft.setCursor(2, 2);
+	gb.tft.fillScreen(RED);
+	gb.tft.println("FILL SCREEN RED");
 	delay(500);
-	tft.setCursor(2, 2);
-	tft.fillScreen(GREEN);
-	tft.println("FILL SCREEN GREEN");
+	gb.tft.setCursor(2, 2);
+	gb.tft.fillScreen(GREEN);
+	gb.tft.println("FILL SCREEN GREEN");
 	delay(500);
-	tft.setCursor(2, 2);
-	tft.fillScreen(BLUE);
-	tft.println("FILL SCREEN BLUE");
+	gb.tft.setCursor(2, 2);
+	gb.tft.fillScreen(BLUE);
+	gb.tft.println("FILL SCREEN BLUE");
 	delay(500);
 }
 
 void drawImage(Image img, float scale) {
 	int w = img._width * scale;
 	int h = img._height * scale;
-	int x = (tft._width - w) / 2;
-	int y = (tft._height - h) / 2;
-	tft.setColor(MAGENTA);
-	tft.fillRect(x - 8, y - 8, w + 16, h + 16);
-	tft.setColor(CYAN);
-	//tft.println("DRAW BUFFER");
-	tft.drawRect(x - 1, y - 1, w + 2, h + 2);
-	tft.drawImage(x, y, img, w, h);
+	int x = (gb.tft._width - w) / 2;
+	int y = (gb.tft._height - h) / 2;
+	gb.tft.setColor(PINK);
+	gb.tft.fillRect(x - 8, y - 8, w + 16, h + 16);
+	gb.tft.setColor(LIGHTBLUE);
+	//gb.tft.println("DRAW BUFFER");
+	gb.tft.drawRect(x - 1, y - 1, w + 2, h + 2);
+	gb.tft.drawImage(x, y, img, w, h);
 	delay(1500);
 }
