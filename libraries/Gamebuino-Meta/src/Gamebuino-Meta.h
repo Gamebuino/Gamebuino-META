@@ -20,11 +20,11 @@
 #ifndef GAMEBUINO_H
 #define	GAMEBUINO_H
 
-#include "config.h"
+#include "config/Config.h"
 
 #include <Arduino.h>
 #include <SPI.h>
-#include "extra/SdFat.h"
+#include "utility/SdFat.h"
 extern SdFat SD;
 
 
@@ -32,13 +32,13 @@ extern SdFat SD;
 #include "utility/Sound.h"
 #include "utility/Save.h"
 
-#include "extra/Adafruit_NeoPixel.h"
-#include "extra/Gamebuino-Meta-ASFcore.h"
-#include "extra/Gamebuino-Meta-ST7735.h"
-#include "extra/Gamebuino-Meta-ZeroDMA.h"
-#include "extra/Gamebuino-Meta-GFX.h"
-#include "extra/Gamebuino-Meta-Image.h"
-#include "extra/Gamebuino-Meta-SD-GFX.h"
+#include "utility/Adafruit_NeoPixel.h"
+#include "utility/Adafruit_ASFcore.h"
+#include "utility/Graphics-ST7735.h"
+#include "utility/Adafruit_ZeroDMA.h"
+#include "utility/Graphics.h"
+#include "utility/Image.h"
+#include "utility/Graphics-SD.h"
 
 // make sure that sketches don't screw things up, the SAMD architecture has only one addressable space, thus making the PROGMEM concept unneded
 #define F(x) x
