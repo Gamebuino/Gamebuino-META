@@ -31,23 +31,16 @@ Image::~Image(void) {
 void Image::allocateBuffer(uint16_t w, uint16_t h) {
 	_width = w;
 	_height = h;
-	switch (colorMode) {
-	case (ColorMode::index):
-	{
-		uint16_t bytes = w * h / 2; //4 bits per pixel = 1/2 byte
-		if ((_buffer = (uint16_t *)malloc(bytes))) {
-			memset(_buffer, 0, bytes);
-		}
-		break;
+	uint16_t bytes;
+	if (colorMode == ColorMode::index) {
+		bytes = w * h / 2; //4 bits per pixel = 1/2 byte
+	} else if (colorMode == ColorMode::rgb565) {
+		bytes = w * h * 2; //16 bits per pixel = 2 bytes
+	} else {
+		return;
 	}
-	case (ColorMode::rgb565):
-	{
-		uint16_t bytes = w * h * 2; //16 bits per pixel = 2 bytes
-		if ((_buffer = (uint16_t *)malloc(bytes))) {
-			memset(_buffer, 0, bytes);
-		}
-		break;
-	}
+	if ((_buffer = (uint16_t *)malloc(bytes))) {
+		memset(_buffer, 0, bytes);
 	}
 }
 
@@ -134,7 +127,6 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 	uint8_t nalpha = 255 - alpha; //complementary of alpha
 	switch (blendMode) {
 	case BlendMode::blend:
-	{
 		if (alpha < 255) {
 			for (uint8_t i = 0; i < w; i++) {
 				if (buffer[i] == Graphics::transparentColor) continue;
@@ -148,9 +140,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 			}
 		}
 		break;
-	}
 	case BlendMode::add:
-	{
 		for (uint8_t i = 0; i < w; i++) {
 			if (buffer[i] == Graphics::transparentColor) continue;
 			uint16_t color2 = thisLine[i];
@@ -162,9 +152,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 			b1[i] = min((b1[i] * alpha + b2 * 255) / 256, 31);
 		}
 		break;
-	}
 	case BlendMode::subtract:
-	{
 		for (uint8_t i = 0; i < w; i++) {
 			if (buffer[i] == Graphics::transparentColor) continue;
 			uint16_t color2 = thisLine[i];
@@ -176,9 +164,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 			b1[i] = max((b2 * 255 - b1[i] * alpha) / 256, 0);
 		}
 		break;
-	}
 	case BlendMode::multiply:
-	{
 		for (uint8_t i = 0; i < w; i++) {
 			if (buffer[i] == Graphics::transparentColor) continue;
 			uint16_t color2 = thisLine[i];
@@ -190,9 +176,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 			b1[i] = max((b2 * b1[i]) / 32, 0);
 		}
 		break;
-	}
 	case BlendMode::screen:
-	{
 		for (uint8_t i = 0; i < w; i++) {
 			if (buffer[i] == Graphics::transparentColor) continue;
 			uint16_t color2 = thisLine[i];
@@ -204,7 +188,6 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 			b1[i] = min(31 - (31 - b2) * (31 - b1[i]) / 32, 31);
 		}
 		break;
-	}
 	}
 
 	for (uint8_t i = 0; i < w; i++) {

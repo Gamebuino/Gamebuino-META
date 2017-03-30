@@ -25,29 +25,29 @@ as well as Adafruit raw 1.8" TFT display
 #define _GAMEBUINO_META_GRAPHICS_ST7735_H_
 
 #if ARDUINO >= 100
- #include "Arduino.h"
- #include "Print.h"
+	#include "Arduino.h"
+	#include "Print.h"
 #else
- #include "WProgram.h"
+	#include "WProgram.h"
 #endif
 
 #include "../Image.h"
 
 #if defined(__SAM3X8E__)
-  #include <include/pio.h>
-  #define PROGMEM
-  #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
-  #define pgm_read_word(addr) (*(const unsigned short *)(addr))
-  typedef unsigned char prog_uchar;
+	#include <include/pio.h>
+	#define PROGMEM
+	#define pgm_read_byte(addr) (*(const unsigned char *)(addr))
+	#define pgm_read_word(addr) (*(const unsigned short *)(addr))
+	typedef unsigned char prog_uchar;
 #elif defined(__AVR__)
-  #include <avr/pgmspace.h>
+	#include <avr/pgmspace.h>
 #elif defined(ESP8266)
-  #include <pgmspace.h>
+	#include <pgmspace.h>
 #endif
 
 #if defined(__SAM3X8E__)
-    #undef __FlashStringHelper::F(string_literal)
-    #define F(string_literal) string_literal
+	#undef __FlashStringHelper::F(string_literal)
+	#define F(string_literal) string_literal
 #endif
 
 namespace Gamebuino_Meta {
@@ -126,66 +126,63 @@ namespace Gamebuino_Meta {
 
 
 class Display_ST7735 : public Graphics {
+public:
+	Display_ST7735(int8_t CS, int8_t RS, int8_t SID, int8_t SCLK, int8_t RST = -1);
+	Display_ST7735(int8_t CS, int8_t RS, int8_t RST = -1);
 
- public:
+	void initB(void),                             // for ST7735B displays
+		initR(uint8_t options = INITR_GREENTAB), // for ST7735R
+		setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1),
+		pushColor(uint16_t c),
+		drawPixel(int16_t x, int16_t y),
+		drawFastVLine(int16_t x, int16_t y, int16_t h),
+		drawFastHLine(int16_t x, int16_t y, int16_t w),
+		drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w),
+		drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h),
+		sendBuffer(uint16_t *buffer, uint16_t n),
+		drawImage(int16_t x, int16_t y, Image img),
+		drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2),
+		fillRect(int16_t x, int16_t y, int16_t w, int16_t h),
+		setRotation(uint8_t r),
+		invertDisplay(boolean i);
+	Color Color565(uint8_t r, uint8_t g, uint8_t b);
 
-  Display_ST7735(int8_t CS, int8_t RS, int8_t SID, int8_t SCLK, int8_t RST = -1);
-  Display_ST7735(int8_t CS, int8_t RS, int8_t RST = -1);
-  
-  void     initB(void),                             // for ST7735B displays
-           initR(uint8_t options = INITR_GREENTAB), // for ST7735R
-           setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1),
-           pushColor(uint16_t c),
-           drawPixel(int16_t x, int16_t y),
-           drawFastVLine(int16_t x, int16_t y, int16_t h),
-	       drawFastHLine(int16_t x, int16_t y, int16_t w),
-	       drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w),
-		   drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h),
-	       sendBuffer(uint16_t *buffer, uint16_t n),
-	       drawImage(int16_t x, int16_t y, Image img),
-	       drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2),
-		   fillRect(int16_t x, int16_t y, int16_t w, int16_t h),
-           setRotation(uint8_t r),
-           invertDisplay(boolean i);
-  Color Color565(uint8_t r, uint8_t g, uint8_t b);
+/* These are not for current use, 8-bit protocol only!
+	uint8_t  readdata(void),
+		readcommand8(uint8_t);
+	uint16_t readcommand16(uint8_t);
+	uint32_t readcommand32(uint8_t);
+	void     dummyclock(void);
+*/
 
-  /* These are not for current use, 8-bit protocol only!
-  uint8_t  readdata(void),
-           readcommand8(uint8_t);
-  uint16_t readcommand16(uint8_t);
-  uint32_t readcommand32(uint8_t);
-  void     dummyclock(void);
-  */
+private:
+	uint8_t  tabcolor;
 
- private:
-  uint8_t  tabcolor;
+	void     spiwrite(uint8_t),
+		writecommand(uint8_t c),
+		writedata(uint8_t d),
+		commandList(const uint8_t *addr),
+		commonInit(const uint8_t *cmdList);
+//	uint8_t  spiread(void);
 
-  void     spiwrite(uint8_t),
-           writecommand(uint8_t c),
-           writedata(uint8_t d),
-           commandList(const uint8_t *addr),
-           commonInit(const uint8_t *cmdList);
-//uint8_t  spiread(void);
-
-  boolean  hwSPI;
+	boolean  hwSPI;
 
 #if defined(__AVR__) || defined(CORE_TEENSY)
-  volatile uint8_t *dataport, *clkport, *csport, *rsport;
-  uint8_t  _cs, _rs, _rst, _sid, _sclk,
-           datapinmask, clkpinmask, cspinmask, rspinmask,
-           colstart, rowstart; // some displays need this changed
+	volatile uint8_t *dataport, *clkport, *csport, *rsport;
+	uint8_t  _cs, _rs, _rst, _sid, _sclk,
+		datapinmask, clkpinmask, cspinmask, rspinmask,
+		colstart, rowstart; // some displays need this changed
 #elif defined(__arm__)
-  volatile RwReg  *dataport, *clkport, *csport, *rsport;
-  uint32_t  _cs, _rs, _sid, _sclk,
-            datapinmask, clkpinmask, cspinmask, rspinmask,
-            colstart, rowstart; // some displays need this changed
-  int32_t   _rst;  // Must use signed type since a -1 sentinel is assigned.
+	volatile RwReg  *dataport, *clkport, *csport, *rsport;
+	uint32_t  _cs, _rs, _sid, _sclk,
+		datapinmask, clkpinmask, cspinmask, rspinmask,
+		colstart, rowstart; // some displays need this changed
+	int32_t _rst;  // Must use signed type since a -1 sentinel is assigned.
 #elif defined(ESP8266)
-    volatile uint32_t *dataport, *clkport, *csport, *rsport;
-    uint32_t  _cs, _rs, _rst, _sid, _sclk,
-    datapinmask, clkpinmask, cspinmask, rspinmask,
-    colstart, rowstart; // some displays need this changed
-
+	volatile uint32_t *dataport, *clkport, *csport, *rsport;
+	uint32_t  _cs, _rs, _rst, _sid, _sclk,
+	datapinmask, clkpinmask, cspinmask, rspinmask,
+	colstart, rowstart; // some displays need this changed
 #endif
 
 };
