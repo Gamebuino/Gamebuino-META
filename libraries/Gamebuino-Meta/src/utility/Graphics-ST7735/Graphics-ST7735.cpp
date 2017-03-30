@@ -603,7 +603,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image img){
 	int16_t w = img.width();
 	int16_t h = img.height();
 
-	if ((img.colorMode == ColorMode::index) && (w = _width) && (h = _height)) {
+	if ((img.colorMode == ColorMode::index) && (w == _width) && (h == _height)) {
 
 		uint16_t preBufferLineArray[w];
 		uint16_t sendBufferLineArray[w];
@@ -619,7 +619,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image img){
 		*csport &= ~cspinmask;
 
 		//prepare the first line
-		indexTo565(preBufferLine, img._buffer, Graphics::colorIndex, w);
+		indexTo565(preBufferLine, (uint8_t*)img._buffer, Graphics::colorIndex, w);
 		for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
 			uint16_t color = preBufferLine[i];
 			color = (color << 8) | (color >> 8); //change endianness

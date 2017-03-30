@@ -10,10 +10,10 @@ namespace Gamebuino_Meta {
 #define BUFFPIXEL 16
 
 class Gamebuino_SD_GFX{
-	public:
+public:
 	void begin();
-	static uint8_t writeImage(Image img, char *filename);
-	static uint8_t readImage(Image img, char *filename);
+	static uint8_t writeImage(Image& img, char *filename);
+	static uint8_t readImage(Image& img, char *filename);
 	static Print* debugOutput;
 };
 

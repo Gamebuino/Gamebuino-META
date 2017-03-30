@@ -71,18 +71,12 @@ BlendMode Graphics::blendMode = BlendMode::blend;
 Color Graphics::color = Color::black;
 Color Graphics::bgcolor = Color::white;
 
-void Graphics::indexTo565(uint16_t *dest, uint16_t *src, Color *index, uint16_t length) {
+void Graphics::indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length) {
 	//length is the number of destination pixels
-	for (uint16_t i = 0; i < length/4; i++) {
-		uint16_t index1 = (src[i] >> 0)  & 0x000F;
-		uint16_t index2 = (src[i] >> 4)  & 0x000F;
-		uint16_t index3 = (src[i] >> 8)  & 0x000F;
-		uint16_t index4 = (src[i] >> 12) & 0x000F;
-		//change pixel order (because of words endianness) at the same time
-		dest[i * 4] = (uint16_t)index[index4];
-		dest[(i * 4) + 1] = (uint16_t)index[index3];
-		dest[(i * 4) + 2] = (uint16_t)index[index2];
-		dest[(i * 4) + 3] = (uint16_t)index[index1];
+	for (uint16_t i = 0; i < length/2; i++) {
+		uint8_t b = *(src++);
+		*(dest++) = (uint16_t)index[(b>>4)&0x0F];
+		*(dest++) = (uint16_t)index[b&0x0F];
 	}
 }
 
@@ -577,8 +571,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img) {
 	if (x < 0) {
 			i2offset = -x;
 			w2cropped = w1 + x;
-	}
-	else {
+	} else {
 			if ((x + w1) > _width) {
 					w2cropped = _width - x;
 			}
@@ -590,8 +583,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img) {
 	if (y < 0) {
 			j2offset = -y;
 			h2cropped = h1 + y;
-	}
-	else {
+	} else {
 			if ((y + h1) > _height) {
 					h2cropped = _height - y;
 			}
@@ -602,9 +594,9 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img) {
 		for (int j2 = 0; j2 < h2cropped; j2++) {
 			uint16_t destLineArray[w2cropped];
 			uint16_t *destLine = destLineArray;
-			uint16_t *srcLine;
+			uint8_t *srcLine;
 				
-			srcLine = img._buffer + (((j2 + j2offset) * w1) + i2offset) / 4;
+			srcLine = (uint8_t*)img._buffer + (((j2 + j2offset) * w1) + i2offset) / 2;
 
 			indexTo565(destLine, srcLine, Graphics::colorIndex, w2cropped);
 
