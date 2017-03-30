@@ -34,7 +34,7 @@ extern SdFat SD;
 
 #include "utility/Adafruit_NeoPixel.h"
 #include "utility/Adafruit_ASFcore.h"
-#include "utility/Graphics-ST7735.h"
+#include "utility/Display-ST7735.h"
 #include "utility/Adafruit_ZeroDMA.h"
 #include "utility/Graphics.h"
 #include "utility/Image.h"

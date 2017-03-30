@@ -21,7 +21,7 @@
 #define _GAMEBUINO_META_SAVE_H_
 
 #include "../../config/config.h"
-#include "../Graphics-ST7735.h"
+#include "../Display-ST7735.h"
 #include "../SdFat.h"
 
 extern SdFat SD;

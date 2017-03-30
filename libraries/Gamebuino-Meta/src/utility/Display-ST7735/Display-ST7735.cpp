@@ -21,7 +21,7 @@ as well as Adafruit raw 1.8" TFT display
 	MIT license, all text above must be included in any redistribution
  ****************************************************/
 
-#include "Graphics-ST7735.h"
+#include "Display-ST7735.h"
 #include <limits.h>
 #include "pins_arduino.h"
 #include "wiring_private.h"
