@@ -37,6 +37,22 @@ uint16_t convertTo565(uint8_t r, uint8_t g, uint8_t b) {
 	return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
 }
 
+void writeAsRGB(uint16_t b, File& f) {
+	uint8_t c = (uint8_t)(b << 3);
+	c |= c >> 5;
+	f.write(c);
+	
+	// green
+	c = (uint8_t)((b >> 3) & 0xFC);
+	c |= c >> 6;
+	f.write(c);
+	
+	// blue
+	c = (uint8_t)((b >> 8) & 0xF8);
+	c |= c >> 5;
+	f.write(c);
+}
+
 void write32(uint32_t b, File& f) {
 	//Write four bytes
 	//Luckily our MCU is little endian so byte order like this is fine
@@ -132,20 +148,7 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image& img, char *filename){
 		// we have a color table
 		write32(colorTable, file); // important colors
 		for (uint32_t i = 0; i < colorTable; i++) {
-			uint16_t b = (uint16_t)img.colorIndex[i];
-			uint8_t c = (uint8_t)(b << 3);
-			c |= c >> 5;
-			file.write(c);
-			
-			// green
-			c = (uint8_t)((b >> 3) & 0xFC);
-			c |= c >> 6;
-			file.write(c);
-			
-			// blue
-			c = (uint8_t)((b >> 8) & 0xF8);
-			c |= c >> 5;
-			file.write(c);
+			writeAsRGB((uint16_t)img.colorIndex[i], file);
 			
 			file.write((uint8_t)0);
 			printDebug('.');
@@ -171,24 +174,10 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image& img, char *filename){
 		for (int8_t y = img._height - 1; y >= 0; y--) {
 			uint16_t* buf = rambuffer + (y*img._width);
 			for (uint8_t x = 0; x < img._width; x++) {
-				uint16_t b = *(buf++); // fetch our buf
-				
-				// red
-				uint8_t c = (uint8_t)(b << 3);
-				c |= c >> 5;
-				file.write(c);
-				
-				// green
-				c = (uint8_t)((b >> 3) & 0xFC);
-				c |= c >> 6;
-				file.write(c);
-				
-				// blue
-				c = (uint8_t)((b >> 8) & 0xF8);
-				c |= c >> 5;
-				file.write(c);
+				writeAsRGB(buf[x], file);
 			}
-			for (uint8_t i = j; i > 0; i++) {
+			uint8_t i = j;
+			while (i--) {
 				// time to add padding
 				file.write((uint8_t)0);
 			}
