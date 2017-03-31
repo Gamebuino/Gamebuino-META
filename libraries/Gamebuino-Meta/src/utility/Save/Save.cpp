@@ -113,7 +113,7 @@ void Save::openFile() {
 	// first check that the checkbytes match!
 	// we use the payload_size for this because that is just yet another free 4-byte buffer
 	f.read(&payload_size, 4);
-	if ((uint32_t)payload_size ^ *((uint32_t*)checkbytes)) {
+	if ((uint32_t)payload_size != *((uint32_t*)checkbytes)) {
 		error("Invalid save file");
 	}
 	

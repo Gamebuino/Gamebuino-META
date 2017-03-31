@@ -158,7 +158,7 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image& img, char *filename){
 		for (int8_t y = img._height - 1; y >= 0; y--) {
 			uint8_t* buf = (uint8_t*)rambuffer + y*halfwidth;
 			for (uint8_t x = 0; x < halfwidth; x++) {
-				file.write(*(buf++));
+				file.write(buf[x]);
 			}
 			uint8_t i = j;
 			while (i--) {
