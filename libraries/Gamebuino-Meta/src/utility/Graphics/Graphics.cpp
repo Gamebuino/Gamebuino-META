@@ -72,8 +72,9 @@ Color Graphics::color = Color::black;
 Color Graphics::bgcolor = Color::white;
 
 void Graphics::indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length) {
-	//length is the number of destination pixels
-	for (uint16_t i = 0; i < length/2; i++) {
+	// length is the number of destination pixels
+	// +1 for cieling rather than flooring
+	for (uint16_t i = 0; i < (length + 1)/2; i++) {
 		uint8_t b = *(src++);
 		*(dest++) = (uint16_t)index[(b>>4)&0x0F];
 		*(dest++) = (uint16_t)index[b&0x0F];
@@ -595,8 +596,9 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img) {
 			uint16_t destLineArray[w2cropped];
 			uint16_t *destLine = destLineArray;
 			uint8_t *srcLine;
-				
-			srcLine = (uint8_t*)img._buffer + (((j2 + j2offset) * w1) + i2offset) / 2;
+			
+			// +j2 for ceiling rather than flooring (+1 for each row)
+			srcLine = (uint8_t*)img._buffer + (((j2 + j2offset) * w1) + i2offset + j2) / 2;
 
 			indexTo565(destLine, srcLine, Graphics::colorIndex, w2cropped);
 

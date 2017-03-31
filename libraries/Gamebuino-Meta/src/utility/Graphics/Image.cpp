@@ -33,7 +33,9 @@ void Image::allocateBuffer(uint16_t w, uint16_t h) {
 	_height = h;
 	uint16_t bytes;
 	if (colorMode == ColorMode::index) {
-		bytes = w * h / 2; //4 bits per pixel = 1/2 byte
+		// 4 bits per pixel = 1/2 byte
+		// add 1 to width to ceil the number, rather than flooring
+		bytes = (w + 1) * h / 2;
 	} else if (colorMode == ColorMode::rgb565) {
 		bytes = w * h * 2; //16 bits per pixel = 2 bytes
 	} else {

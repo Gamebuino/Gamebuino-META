@@ -36,10 +36,22 @@ void setup() {
   gb.tft.drawImage(120, 8, imageIndex);
 
   Gamebuino_Meta::Gamebuino_SD_GFX::writeImage(imageIndex, "WRITE4.BMP");
-  
+  //delay(3000);
+  /*
+  gb.tft.setColor(BLACK);
+  gb.tft.fillScreen();
+  gb.tft.setColor(WHITE, BLACK);
+  gb.tft.setCursor(0,0);
+  for (int i = 0; i < ((imageIndex._width + 1) * imageIndex._height / 2); i++) {
+    if(!(i%((imageIndex._width + 1)/2))){
+      gb.tft.print("\n");
+    }
+    gb.tft.print((((uint8_t*)imageIndex._buffer)[i]>>4)&0x0F, HEX);
+    gb.tft.print((((uint8_t*)imageIndex._buffer)[i])&0x0F, HEX);
+  }
+  */
 }
 
 void loop() {
-  SerialUSB.println("Waiting...");
-  delay(1000);
+  
 }

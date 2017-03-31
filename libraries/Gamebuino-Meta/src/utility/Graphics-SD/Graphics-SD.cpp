@@ -153,13 +153,15 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image& img, char *filename){
 			file.write((uint8_t)0);
 			printDebug('.');
 		}
-		uint8_t j = bmpWidth - (img._width / 2);
+		uint8_t halfwidth = (img._width + 1) / 2;
+		uint8_t j = bmpWidth - halfwidth;
 		for (int8_t y = img._height - 1; y >= 0; y--) {
-			uint8_t* buf = (uint8_t*)rambuffer + (y*img._width)/2;
-			for (uint8_t x = 0; x < img._width/2; x++) {
+			uint8_t* buf = (uint8_t*)rambuffer + y*halfwidth;
+			for (uint8_t x = 0; x < halfwidth; x++) {
 				file.write(*(buf++));
 			}
-			for (uint8_t i = j; i > 0; i++) {
+			uint8_t i = j;
+			while (i--) {
 				// time to add padding
 				file.write((uint8_t)0);
 			}
@@ -225,6 +227,7 @@ uint8_t Gamebuino_SD_GFX::readImage(Image& img, char *filename){
 	}
 	if (bmpDepth != 4 && bmpDepth != 24) {
 		printlnDebug("ERROR: can only load BMPs with img depth 4 or 24");
+		return 1;
 	}
 	// it seems like we have a valid bitmap!
 	bool flip = bmpHeight>=0; // bitmaps are stored bottom-to-top for some weird reason......I wonder who came up with that......oooooh it seems like the BMP standard originates from microsoft, that might explain some things.....NO THIS COMMENT IS NOT TOO LONG! Nor unrelated
@@ -266,6 +269,8 @@ uint8_t Gamebuino_SD_GFX::readImage(Image& img, char *filename){
 	rowSize = read32(file);
 	file.seekCur(4 + min(16, rowSize)*4); // disgard important Colors and colortable (we assume our intern color table)
 	rowSize = ((bmpDepth*bmpWidth+31)/32) * 4;
+	printDebug("rowSize: ");
+	printlnDebug(rowSize);
 	img.colorMode = ColorMode::index;
 	img.allocateBuffer(bmpWidth, bmpHeight);
 	uint8_t* rambuffer = (uint8_t*)img._buffer;
@@ -277,7 +282,8 @@ uint8_t Gamebuino_SD_GFX::readImage(Image& img, char *filename){
 			pos = bmpImageoffset + i * rowSize;
 		}
 		file.seekSet(pos);
-		for (uint16_t j = 0; j < bmpWidth/2; j++) {
+		
+		for (uint16_t j = 0; j < (img._width + 1)/2; j++) {
 			*(rambuffer++) = file.read();
 		}
 	}
