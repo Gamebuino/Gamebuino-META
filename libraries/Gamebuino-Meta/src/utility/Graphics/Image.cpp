@@ -48,25 +48,26 @@ void Image::allocateBuffer(uint16_t w, uint16_t h) {
 
 
 void Image::drawPixel(int16_t x, int16_t y) {
-	if (_buffer) {
-		if (colorMode == ColorMode::rgb565) {
-			if ((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
-			_buffer[x + y * WIDTH] = (uint16_t)color;
-			return;
+	if (!_buffer) {
+		return;
+	}
+	if ((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) {
+		return;
+	}
+	if (colorMode == ColorMode::rgb565) {
+		_buffer[x + y * WIDTH] = (uint16_t)color;
+		return;
+	}
+	if (colorMode == ColorMode::index) {
+		uint16_t addr = ((WIDTH + 1) / 2) * y + x / 2;
+		if (!(x % 2)) { //odd pixels
+			((uint8_t*)_buffer)[addr] &= 0x0F; //clear
+			((uint8_t*)_buffer)[addr] |= ((uint16_t)color << 4); //set
+		} else { //even pixels
+			((uint8_t*)_buffer)[addr] &= 0xF0; //clear
+			((uint8_t*)_buffer)[addr] |= (uint16_t)color; //set
 		}
-		if (colorMode == ColorMode::index) {
-			if ((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
-			uint16_t addr = x + y * WIDTH; //nibble number
-			if (addr & 0x0001) { //odd pixels
-				((uint8_t*)_buffer)[addr / 2] &= 0x0F; //clear
-				((uint8_t*)_buffer)[addr / 2] |= ((uint16_t)color << 4); //set
-			}
-			else { //even pixels
-				((uint8_t*)_buffer)[addr / 2] &= 0xF0; //clear
-				((uint8_t*)_buffer)[addr / 2] |= (uint16_t)color; //set
-			}
-			return;
-		}
+		return;
 	}
 }
 

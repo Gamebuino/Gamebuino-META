@@ -619,7 +619,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image img){
 		*csport &= ~cspinmask;
 
 		//prepare the first line
-		indexTo565(preBufferLine, (uint8_t*)img._buffer, Graphics::colorIndex, w);
+		indexTo565(preBufferLine, (uint8_t*)img._buffer, Graphics::colorIndex, w, false);
 		for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
 			uint16_t color = preBufferLine[i];
 			color = (color << 8) | (color >> 8); //change endianness
@@ -655,10 +655,10 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image img){
 			Color *index = Graphics::colorIndex;
 			uint16_t length = w;
 			for (uint16_t i = 0; i < length / 4; i++) {
-				uint16_t index1 = (src[i] >> 0) & 0x000F;
-				uint16_t index2 = (src[i] >> 4) & 0x000F;
-				uint16_t index3 = (src[i] >> 8) & 0x000F;
-				uint16_t index4 = (src[i] >> 12) & 0x000F;
+				uint16_t index1 = (src[i] >> 4) & 0x000F;
+				uint16_t index2 = (src[i] >> 0) & 0x000F;
+				uint16_t index3 = (src[i] >> 12) & 0x000F;
+				uint16_t index4 = (src[i] >> 8) & 0x000F;
 				//change pixel order (because of words endianness) at the same time
 				dest[i * 4] = (uint16_t)index[index1];
 				dest[(i * 4) + 1] = (uint16_t)index[index2];

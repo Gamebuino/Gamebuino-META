@@ -152,7 +152,7 @@ public:
 	boolean getBitmapPixel(const uint8_t* bitmap, uint8_t x, uint8_t y);
 
 
-	static void indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length);
+	static void indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length, bool skipFirst);
 
 	static uint16_t transparentColor;
 	static uint8_t alpha;

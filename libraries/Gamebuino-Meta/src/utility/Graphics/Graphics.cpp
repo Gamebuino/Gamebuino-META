@@ -71,14 +71,28 @@ BlendMode Graphics::blendMode = BlendMode::blend;
 Color Graphics::color = Color::black;
 Color Graphics::bgcolor = Color::white;
 
-void Graphics::indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length) {
+void Graphics::indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length, bool skipFirst) {
 	// length is the number of destination pixels
 	// +1 for cieling rather than flooring
+	uint8_t b = *(src++);
+	for (uint16_t i = 0; i < length; i++) {
+		if (skipFirst) {
+			dest[i] = (uint16_t)index[b&0x0F];
+			b = *(src++);
+		} else {
+			dest[i] = (uint16_t)index[b >> 4];
+		}
+		skipFirst = !skipFirst;
+	}
+	/*
 	for (uint16_t i = 0; i < (length + 1)/2; i++) {
-		uint8_t b = *(src++);
-		*(dest++) = (uint16_t)index[(b>>4)&0x0F];
+		uint8_t b = src[i];
+		if (!skipFirst || i) {
+			*(dest++) = (uint16_t)index[b>>4];
+		}
 		*(dest++) = (uint16_t)index[b&0x0F];
 	}
+	*/
 }
 
 // Many (but maybe not all) non-AVR board installs define macros
@@ -597,10 +611,12 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img) {
 			uint16_t *destLine = destLineArray;
 			uint8_t *srcLine;
 			
-			// +j2 for ceiling rather than flooring (+1 for each row)
-			srcLine = (uint8_t*)img._buffer + (((j2 + j2offset) * w1) + i2offset + j2) / 2;
+			// w1+1 for ceiling rather than flooring
+			srcLine = (uint8_t*)img._buffer + ((w1 + 1) / 2) * (j2 + j2offset) + (i2offset/2);
+			
+//			srcLine = (uint8_t*)img._buffer + (((j2 + j2offset) * w1) + i2offset) / 2;
 
-			indexTo565(destLine, srcLine, Graphics::colorIndex, w2cropped);
+			indexTo565(destLine, srcLine, Graphics::colorIndex, w2cropped, i2offset%2);
 
 			/*for (uint16_t i = 0; i < w2cropped/2; i++) { //horizontal coordinate in source image
 				uint16_t color = destLine[i];
@@ -698,7 +714,17 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2
 		for (int16_t i2 = 0; i2 < w2cropped; i2++) { //i2: offseted horizontal coordinate in desination
 			uint16_t i = w * (i2 + i2offset) / w2; //i: horizontal coordinate in original image
 			i = invertX ? w - 1 - i : i;
-			bufferLine[i2] = img._buffer[(j * w) + i];
+			if ((img.colorMode == ColorMode::rgb565) && (colorMode == ColorMode::rgb565)) {
+				// draw RGB => RGB
+				bufferLine[i2] = img._buffer[(j * w) + i];
+			} else if ((img.colorMode == ColorMode::index) && (colorMode == ColorMode::rgb565)) {
+				//draw INDEX => RGB
+				uint8_t b = ((uint8_t*)img._buffer)[((j * w) + i) / 2];
+				if (!(i % 2)) {
+					b >>= 4;
+				}
+				bufferLine[i2] = (uint16_t)Graphics::colorIndex[b & 0x0F];
+			}
 		}
 		drawBufferedLine(x + i2offset, y + j2 + j2offset, bufferLine, w2cropped);
 	}
