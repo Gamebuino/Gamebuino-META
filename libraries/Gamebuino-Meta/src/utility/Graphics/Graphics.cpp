@@ -737,7 +737,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h
 					bufferLine[i2] = img._buffer[(j * w) + i];
 				} else if (img.colorMode == ColorMode::index) {
 					//draw INDEX => RGB
-					uint8_t b = ((uint8_t*)img._buffer)[((j * w) + i) / 2];
+					uint8_t b = ((uint8_t*)img._buffer)[((w+1)/2)*j + (i/2)];
 					if (!(i % 2)) {
 						b >>= 4;
 					}
@@ -746,6 +746,37 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h
 			}
 			drawBufferedLine(x + i2offset, y + j2 + j2offset, bufferLine, w2cropped);
 		}
+		return;
+	}
+	if (colorMode == ColorMode::index) {
+		if (img.colorMode == ColorMode::rgb565) {
+			return;
+		}
+		uint8_t bufferLine[w2 + 1];
+		for (int16_t j2 = 0; j2 < h2cropped; j2++) { //j2: offseted vertical coordinate in destination
+			uint8_t* dst = bufferLine;
+			uint16_t j = h * (j2 + j2offset) / h2; //j: vertical coordinate in source image
+			j = invertY ? h - 1 - j : j;
+			for (int16_t i2 = 0; i2 < w2cropped; i2++) { //i2: offseted horizontal coordinate in desination
+				uint16_t i = w * (i2 + i2offset) / w2; //i: horizontal coordinate in original image
+				i = invertX ? w - 1 - i : i;
+				
+				//draw INDEX => INDEX
+				uint8_t b = ((uint8_t*)img._buffer)[((w+1)/2)*j + (i/2)];
+				if (!(i % 2)) {
+					b >>= 4;
+				}
+				b &= 0x0F;
+				if ((x + i2 + i2offset) % 2) {
+					*dst = (*dst & 0xF0) | b;
+					dst++;
+				} else {
+					*dst = (*dst & 0x0F) | (b << 4);
+				}
+			}
+			drawBufferedLine(x + i2offset, y + j2 + j2offset, (uint16_t*)bufferLine, w2cropped);
+		}
+		return;
 	}
 }
 

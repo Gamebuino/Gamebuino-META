@@ -11,7 +11,6 @@ void setup() {
 
   Gamebuino_Meta::Gamebuino_SD_GFX::debugOutput = &gb.tft;
   
-/*
   Gamebuino_Meta::Gamebuino_SD_GFX::readImage(image, "RGB888.BMP");
   SerialUSB.println(image._width);
   SerialUSB.println(image._height);
@@ -27,20 +26,16 @@ void setup() {
   gb.tft.fillScreen();
   gb.tft.setColor(WHITE, BLACK);
   gb.tft.setCursor(0,0);
-*/
+
   //INDEX4 BITMAP
 
   Gamebuino_Meta::Gamebuino_SD_GFX::readImage(imageIndex, "INDEX4.BMP");
-//  SerialUSB.println(imageIndex._width);
-//  SerialUSB.println(imageIndex._height);
-//  gb.tft.drawImage(120, 8, imageIndex, 32, 32);
+  SerialUSB.println(imageIndex._width);
+  SerialUSB.println(imageIndex._height);
+  gb.tft.drawImage(120, 8, imageIndex, 32, 32);
 
-//  Gamebuino_Meta::Gamebuino_SD_GFX::writeImage(imageIndex, "WRITE4.BMP");
+  Gamebuino_Meta::Gamebuino_SD_GFX::writeImage(imageIndex, "WRITE4.BMP");
   
-  Image screenIndex = Image(160, 128, ColorMode::index);
-  screenIndex.drawImage(0, LCDHEIGHT*2 - 16, imageIndex);
-  screenIndex.drawImage(0, LCDHEIGHT*2 - 15, imageIndex);
-  gb.tft.drawImage(0, 0, screenIndex);
   //delay(3000);
   /*
   gb.tft.setColor(BLACK);
