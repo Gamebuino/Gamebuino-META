@@ -598,7 +598,7 @@ void Display_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 	myDMA.start_transfer_job();
 }
 
-void Display_ST7735::drawImage(int16_t x, int16_t y, Image img){
+void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 
 	int16_t w = img.width();
 	int16_t h = img.height();
@@ -694,12 +694,12 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image img){
 		SPI.endTransaction();
 
 		return;
-	} else {
-		Graphics::drawImage(x, y, img); //fallback to the usual
 	}
+	
+	Graphics::drawImage(x, y, img); //fallback to the usual
 }
 
-void Display_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2) {
+void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2) {
 	//out of screen
 	if ((x > _width) || ((x + abs(w2)) < 0) || (y > _height) || ((y + abs(h2)) < 0) || (w2 == 0) || (h2 == 0)) return;
 

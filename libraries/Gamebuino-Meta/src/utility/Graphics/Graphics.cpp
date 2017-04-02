@@ -576,7 +576,7 @@ boolean Graphics::getBitmapPixel(const uint8_t* bitmap, uint8_t x, uint8_t y) {
 	return pgm_read_byte(bitmap + 2 + y * ((pgm_read_byte(bitmap) + 7) / 8) + (x >> 3)) & (B10000000 >> (x % 8));
 }
 
-void Graphics::drawImage(int16_t x, int16_t y, Image img) {
+void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 	int16_t w1 = img._width; //width of the source image
 	int16_t h1 = img._height; //height of the source image
 	if ((x > _width) || ((x + w1) < 0) || (y > _height) || ((y + h1) < 0)) return;
@@ -662,7 +662,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img) {
 	}*/
 }
 
-void Graphics::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2) {
+void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2) {
 
 	if ((x > _width) || ((x + abs(w2)) < 0) || (y > _height) || ((y + abs(h2)) < 0) || (w2 == 0) || (h2 == 0)) return;
 

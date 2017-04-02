@@ -99,8 +99,8 @@ public:
 		fillScreen(),
 		fillScreen(Color color), //legacy version
 		invertDisplay(boolean i),
-		drawImage(int16_t x, int16_t y, Image img),
-		drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2);
+		drawImage(int16_t x, int16_t y, Image& img),
+		drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);
 
 	// These exist only with Graphics (no subclass overrides)
 	void
