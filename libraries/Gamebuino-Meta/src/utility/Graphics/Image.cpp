@@ -85,12 +85,26 @@ void Image::fillScreen(Color color) {
 }
 
 void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w) {
+	if (colorMode == ColorMode::index) {
+		uint8_t *src = (uint8_t*)buffer;
+		uint8_t *dst = (uint8_t*)_buffer + y*((_width + 1) / 2) + x/2;
+		if (x % 2) {
+			*dst = (*dst & 0xF0) | (*(src++) & 0x0F);
+			dst++;
+			w--;
+		}
+		memcpy(dst, src, w / 2);
+		if (w % 2) {
+			dst += (w/2);
+			*dst = (*dst & 0x0F) | (src[w/2] & 0xF0);
+		}
+		return;
+	}
 	if ((alpha == 255) && (tint == 0xFFFF)) { //no alpha blending and not tinting
 		if (Graphics::transparentColor == 0xFFFF) { //no transparent color set
 			memcpy(&_buffer[x + y * _width], buffer, w * 2); //fastest copy possible
 			return;
-		}
-		else {
+		} else {
 			uint16_t * thisLine = &_buffer[x + y * _width];
 			for (uint8_t i = 0; i < w; i++) { //only copy non-transparent-colored pixels
 				if (buffer[i] == Graphics::transparentColor) continue;
