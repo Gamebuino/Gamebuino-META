@@ -688,11 +688,8 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2
 	if (x < 0) {
 		i2offset = -x;
 		w2cropped = w2 + x;
-	}
-	else {
-		if ((x + w2) > _width) {
-			w2cropped = _width - x;
-		}
+	} else if ((x + w2) > _width) {
+		w2cropped = _width - x;
 	}
 
 	//vertical cropping

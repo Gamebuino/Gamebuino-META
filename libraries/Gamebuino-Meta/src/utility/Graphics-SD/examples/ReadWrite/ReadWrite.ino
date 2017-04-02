@@ -33,7 +33,7 @@ void setup() {
   Gamebuino_Meta::Gamebuino_SD_GFX::readImage(imageIndex, "INDEX4.BMP");
   SerialUSB.println(imageIndex._width);
   SerialUSB.println(imageIndex._height);
-  gb.tft.drawImage(120, 8, imageIndex);
+  gb.tft.drawImage(120, 8, imageIndex, 32, 32);
 
   Gamebuino_Meta::Gamebuino_SD_GFX::writeImage(imageIndex, "WRITE4.BMP");
   //delay(3000);

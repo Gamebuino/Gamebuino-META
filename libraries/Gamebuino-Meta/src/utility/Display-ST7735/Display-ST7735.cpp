@@ -713,7 +713,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int1
 	}
 
 	//x2 upscaling to full screen
-	if ((w2 == (w * 2)) && (h2 == (h * 2)) && (_width == w2) && (_height == h2)) {
+	if ((img.colorMode == ColorMode::rgb565) && (w2 == (w * 2)) && (h2 == (h * 2)) && (_width == w2) && (_height == h2)) {
 		uint16_t preBufferLineArray[w2 * 2];
 		uint16_t sendBufferLineArray[w2 * 2];
 		uint16_t *preBufferLine = preBufferLineArray;
@@ -782,47 +782,8 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int1
 		return;
 	}
 
-	//most generic but slow resizing
-	boolean invertX = (w2 < 0);
-	boolean invertY = (h2 < 0);
-	w2 = abs(w2);
-	h2 = abs(h2);
-	uint16_t bufferLine[w2];
-
-	//horizontal cropping
-	int16_t w2cropped = w2; //width of the cropped buffer
-	int16_t i2offset = 0;
-	if (x < 0) {
-		i2offset = -x;
-		w2cropped = w2 + x;
-	} else {
-		if ((x + w2) > _width) {
-			w2cropped = _width - x;
-		}
-	}
-
-	//vertical cropping
-	int16_t h2cropped = h2;
-	int16_t j2offset = 0;
-	if (y < 0) {
-		j2offset = -y;
-		h2cropped = h2 + y;
-	} else {
-		if ((y + h2) > _height) {
-			h2cropped = _height - y;
-		}
-	}
-
-	for (int16_t j2 = 0; j2 < h2cropped; j2++) { //j2: offseted vertical coordinate in destination
-		uint16_t j = h * (j2 + j2offset) / h2; //j: vertical coordinate in source image
-		j = invertY ? h - 1 - j : j;
-		for (int16_t i2 = 0; i2 < w2cropped; i2++) { //i2: offseted horizontal coordinate in desination
-			uint16_t i = w * (i2 + i2offset) / w2; //i: horizontal coordinate in original image
-			i = invertX ? w - 1 - i : i;
-			bufferLine[i2] = img._buffer[(j * w) + i];
-		}
-		drawBufferedLine(x + i2offset, y + j2 + j2offset, bufferLine, w2cropped);
-	}
+	// fall back to most generic but slow resizing
+	Graphics::drawImage(x, y, img, w2, h2);
 }
 
 
