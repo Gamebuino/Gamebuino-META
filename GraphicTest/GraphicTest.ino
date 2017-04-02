@@ -141,8 +141,8 @@ void loop()
 	imgRGB.fillScreen(GRAY);
 	imgRGB.drawImage(4, 4, testImgIndex);
 	imgRGB.setCursor(2, 16);
-	for (uint16_t i = 0; i < 16; i++) {
-		imgRGB.setColor(Gamebuino_Meta::Graphics::colorIndex[i]);
+	for (uint8_t i = 0; i < 16; i++) {
+		imgRGB.setColor(i);
 		imgRGB.print(i);
 	}
 	drawImage(imgRGB, 2);

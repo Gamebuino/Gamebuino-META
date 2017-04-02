@@ -616,7 +616,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img) {
 			
 //			srcLine = (uint8_t*)img._buffer + (((j2 + j2offset) * w1) + i2offset) / 2;
 
-			indexTo565(destLine, srcLine, Graphics::colorIndex, w2cropped, i2offset%2);
+			indexTo565(destLine, srcLine, colorIndex, w2cropped, i2offset%2);
 
 			/*for (uint16_t i = 0; i < w2cropped/2; i++) { //horizontal coordinate in source image
 				uint16_t color = destLine[i];
@@ -647,9 +647,9 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img) {
 
 	//draw INDEX => INDEX
 	if ((img.colorMode == ColorMode::index) && (colorMode == ColorMode::index)) {
-		setColor((Color)8);
+		setColor((ColorIndex)8);
 		fillRect(x, y, img._width, img._height);
-		setColor((Color)7);
+		setColor((ColorIndex)7);
 		drawRect(x, y, img._width, img._height);
 	}
 
@@ -723,7 +723,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image img, int16_t w2, int16_t h2
 				if (!(i % 2)) {
 					b >>= 4;
 				}
-				bufferLine[i2] = (uint16_t)Graphics::colorIndex[b & 0x0F];
+				bufferLine[i2] = (uint16_t)colorIndex[b & 0x0F];
 			}
 		}
 		drawBufferedLine(x + i2offset, y + j2 + j2offset, bufferLine, w2cropped);
@@ -908,26 +908,41 @@ void Graphics::setFontSize(uint8_t s) {
 void Graphics::setColor(Color c) {
 	// For 'transparent' background, we'll set the bg
 	// to the same as fg instead of using a flag
+	if (colorMode == ColorMode::index) {
+		return;
+	}
 	color = bgcolor = c;
 }
 
 void Graphics::setColor(Color c, Color b) {
+	if (colorMode == ColorMode::index) {
+		return;
+	}
 	color   = c;
 	bgcolor = b;
 }
 
 void Graphics::setColor(ColorIndex c) {
-	setColor((Color)c);
+	if (colorMode == ColorMode::index) {
+		color = bgcolor = (Color)c;
+	} else {
+		setColor(colorIndex[(uint8_t)c]);
+	}
 }
 void Graphics::setColor(ColorIndex c, ColorIndex bg) {
-	setColor((Color)c, (Color)bg);
+	if (colorMode == ColorMode::index) {
+		color   = (Color)c;
+		bgcolor = (Color)bg;
+	} else {
+		setColor(colorIndex[(uint8_t)c], colorIndex[(uint8_t)bg]);
+	}
 }
 
 void Graphics::setColor(uint8_t c) {
-	setColor((Color)c);
+	setColor((ColorIndex)c);
 }
 void Graphics::setColor(uint8_t c, uint8_t bg) {
-	setColor((Color)c, (Color)bg);
+	setColor((ColorIndex)c, (ColorIndex)bg);
 }
 
 void Graphics::setTextWrap(boolean w) {
