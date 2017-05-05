@@ -191,6 +191,8 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 	//battery.show = true;
 }
 
+bool recording_screen = false;
+
 bool Gamebuino::update() {
 	if (((nextFrameMillis - millis()) > timePerFrame) && frameEndMicros) { //if time to render a new frame is reached and the frame end has ran once
 		nextFrameMillis = millis() + timePerFrame;
@@ -260,22 +262,41 @@ bool Gamebuino::update() {
 			display.print(battery);
 			display.print("mV");
 			*/
-			
 
 			//send buffer to the screen
 			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
 
+			if (recording_screen) {
+				tft.setColor(RED,BLACK);
+				tft.drawRect(0, 0, tft._width, tft._height);
+				tft.drawRect(1, 1, tft._width - 2, tft._height - 2);
+			}
+
 			//record screenshot
 			if (buttons.pressed(Button::d)) {
+				if (recording_screen) {
+					// stop the recording
+					sd_gfx.stopRecordImage(display);
+					recording_screen = false;
+				} else {
+					if (!sd_gfx.startRecordImage(display, "RECORD.BMP")) {
+						while(1);
+					}
+					recording_screen = true;
+				}
+				
+				/*
 				tft.setColor(RED,BLACK);
 				tft.drawRect(0, 0, tft._width, tft._height);
 				tft.drawRect(1, 1, tft._width - 2, tft._height - 2);
 				tft.cursorX = 0;
 				tft.cursorY = 2;
 				tft.setColor(WHITE, BLACK);
-				Gamebuino_SD_GFX::debugOutput = &tft;
-				Gamebuino_SD_GFX::writeImage(display, "SCREEN.BMP");
+				sd_gfx.writeImage(display, "SCREEN.BMP");
+				*/
 			}
+
+			sd_gfx.update(); // update screen recordings
 
 
 			//if(!display.persistence)

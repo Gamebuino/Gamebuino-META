@@ -9,9 +9,11 @@ void setup() {
   SerialUSB.begin(9600);
   //while (!SerialUSB);
 
-  Gamebuino_Meta::Gamebuino_SD_GFX::debugOutput = &gb.tft;
   
-  Gamebuino_Meta::Gamebuino_SD_GFX::readImage(image, "RGB888.BMP");
+  if (!gb.sd_gfx.readImage(image, "RGB888.BMP")) {
+    gb.tft.println("Couldn't read image RGB888.BMP!");
+    while(1);
+  }
   SerialUSB.println(image._width);
   SerialUSB.println(image._height);
   for (int i = 0; i < (image._width * image._height); i++) {
@@ -19,7 +21,10 @@ void setup() {
   }
   gb.tft.drawImage(120, 8, image, 32, 32);
 
-  Gamebuino_Meta::Gamebuino_SD_GFX::writeImage(image, "WRITE888.BMP");
+  if (!gb.sd_gfx.writeImage(image, "WRITE888.BMP")) {
+    gb.tft.println("Couldn't write image WRITE888.BMP!");
+    while(1);
+  }
 
   delay(3000);
   gb.tft.setColor(BLACK);
@@ -29,12 +34,18 @@ void setup() {
 
   //INDEX4 BITMAP
 
-  Gamebuino_Meta::Gamebuino_SD_GFX::readImage(imageIndex, "INDEX4.BMP");
+  if (!gb.sd_gfx.readImage(imageIndex, "INDEX4.BMP")) {
+      gb.tft.println("Couldn't read image INDEX4.BMP!");
+      while(1);
+  }
   SerialUSB.println(imageIndex._width);
   SerialUSB.println(imageIndex._height);
   gb.tft.drawImage(120, 8, imageIndex, 32, 32);
 
-  Gamebuino_Meta::Gamebuino_SD_GFX::writeImage(imageIndex, "WRITE4.BMP");
+  if (!gb.sd_gfx.writeImage(imageIndex, "WRITE4.BMP")) {
+      gb.tft.println("Couldn't write image WRITE4.BMP!");
+      while(1);
+  }
   
   //delay(3000);
   /*

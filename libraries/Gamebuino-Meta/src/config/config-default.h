@@ -53,4 +53,14 @@
 
 #ifndef SAVEFILE_NAME
 #define SAVEFILE_NAME "save.sav"
+
+
+///////////////
+// recording defines
+///////////////
+
+#ifndef MAX_IMAGE_RECORDING
+#define MAX_IMAGE_RECORDING 5
+#endif
+
 #endif

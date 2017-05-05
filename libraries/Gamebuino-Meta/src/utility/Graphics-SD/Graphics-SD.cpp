@@ -4,20 +4,6 @@ extern SdFat SD;
 
 namespace Gamebuino_Meta {
 
-Print* Gamebuino_SD_GFX::debugOutput = 0;
-
-template <typename T>
-inline void printDebug(T output){
-	if(!Gamebuino_SD_GFX::debugOutput) return;
-	Gamebuino_SD_GFX::debugOutput->print(output);
-}
-
-template <typename T>
-inline void printlnDebug(T output){
-	if(!Gamebuino_SD_GFX::debugOutput) return;
-	Gamebuino_SD_GFX::debugOutput->println(output);
-}
-
 // These read 16- and 32-bit types from the SD card file.
 // BMP data is stored little-endian, Arduino is little-endian too.
 // May need to reverse subscript order if porting elsewhere.
@@ -65,82 +51,59 @@ void write16(uint16_t b, File& f) {
 	f.write(&b, 2);
 }
 
+BMP::BMP(Image* _img) {
+	valid = false;
+	
+	img = _img;
+	header_size = 40;
+	colorTable = 0;
+	rambuffer = img->_buffer;
+	switch (img->colorMode) {
+		case ColorMode::index: 
+			depth=4;
+			width = ((depth*img->_width + 31)/32) * 4;
+			colorTable = 16; // 4-bit index colors
+			break;
+		case ColorMode::rgb565: 
+			depth=24;
+			width = (img->_width * 3 + 3) & ~3;
+			break;
+		default:
+			// unkown / invalid color mode
+			return;
+	}
+	pixel_height = img->_height;
+	imageOffset = 14 + header_size + colorTable * 4; // here the image will start
+	imageSize = width*pixel_height; // this holds the image size in bytes
+	fileSize = imageOffset + imageSize; // this is the filesize
+	
+	valid = true; // everything seems OK!
+}
 
-void Gamebuino_SD_GFX::begin(){
+bool BMP::isValid() {
+	return valid;
+}
+
+void BMP::setFrames(uint32_t frames) {
+	pixel_height = img->_height*frames;
+	imageSize = width*pixel_height; // this holds the image size in bytes
+	fileSize = imageOffset + imageSize; // this is the filesize
 	
 }
 
-uint8_t Gamebuino_SD_GFX::writeImage(Image& img, char *filename){
-	printDebug("SAVING TO ");
-	printlnDebug(filename);
-
-	// let's first make sure that our file doesn't already exist
-	if (SD.exists(filename)) {
-		printDebug(" ALREADY EXISTS, REMOVING");
-		if (SD.remove(filename)) {
-			printlnDebug(" OK");
-		} else {
-			printlnDebug(" FAILED");
-			return 1;
-		}
-	}
-
-	printDebug(" CREATING FILE ");
-	File file = SD.open(filename, FILE_WRITE);
-	if (!file) {
-		printlnDebug(" FAILED");
-		return 2;
-	}
-	printlnDebug(" OK");
-	
-	uint8_t bmpDepth; // let's generate our bit-depth
-#define BMP_HEADER_SIZE 40
-	uint32_t bmpWidth; // this will hold the bmp width, padded to four bytes
-	uint32_t colorTable = 0; // this is the color table, if needed
-	uint16_t* rambuffer = img._buffer;
-	switch(img.colorMode){
-		case ColorMode::index: 
-			bmpDepth=4;
-			bmpWidth = ((bmpDepth*img._width + 31)/32) * 4;
-			colorTable = 16; // 4-bit index colors
-			
-			printlnDebug("Indexed colors");
-			break;
-		case ColorMode::rgb565: 
-			bmpDepth=24;
-			bmpWidth = (img._width * 3 + 3) & ~3;
-			
-			printlnDebug("Full colors");
-			break;
-		default:
-			printDebug("Invalid Image mode");
-			return 255;
-	}
-	uint32_t bmpImageoffset = 14 + BMP_HEADER_SIZE + colorTable * 4; // here the image will start
-	uint32_t bmpImageSize = bmpWidth*img._height; // this holds the image size in bytes
-	uint32_t fileSize = bmpImageoffset + bmpImageSize; // this is the filesize
-	
-	file.truncate(0);
-	// let's start writing the BMP header!
+void BMP::writeHeader(File& file) {
+	file.rewind();
 	file.write("BM"); // this actually is a BMP image
-	printDebug('.');
 	write32(fileSize, file);
 	write32(0, file); // reserved
-	printDebug('.');
-	write32(bmpImageoffset, file);
-	printDebug('.');
-	write32(BMP_HEADER_SIZE, file);
-	printDebug('.');
-	write32(img._width, file);
-	printDebug('.');
-	write32(img._height, file);
-	printDebug('.');
+	write32(imageOffset, file);
+	write32(header_size, file);
+	write32(img->_width, file); // pixel width
+	write32(pixel_height, file); // pixel height
 	write16(1, file); // planes must be 1
-	write16(bmpDepth, file);
+	write16(depth, file);
 	write32(0, file); // no compression
-	printDebug('.');
-	write32(bmpImageSize, file);
-	printDebug('.');
+	write32(imageSize, file);
 	write32(0, file); // x pixels per meter horizontal
 	write32(0, file); // y pixels per meter vertical
 	write32(colorTable, file); // number of colors in the color table
@@ -148,14 +111,20 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image& img, char *filename){
 		// we have a color table
 		write32(colorTable, file); // important colors
 		for (uint32_t i = 0; i < colorTable; i++) {
-			writeAsRGB((uint16_t)img.colorIndex[i], file);
+			writeAsRGB((uint16_t)img->colorIndex[i], file);
 			
 			file.write((uint8_t)0);
-			printDebug('.');
 		}
-		uint8_t halfwidth = (img._width + 1) / 2;
-		uint8_t j = bmpWidth - halfwidth;
-		for (int8_t y = img._height - 1; y >= 0; y--) {
+	} else {
+		write32(0, file); // no important colors
+	}
+}
+
+void BMP::writeBuffer(File& file) {
+	if (colorTable) {
+		uint8_t halfwidth = (img->_width + 1) / 2;
+		uint8_t j = width - halfwidth;
+		for (int8_t y = img->_height - 1; y >= 0; y--) {
 			uint8_t* buf = (uint8_t*)rambuffer + y*halfwidth;
 			for (uint8_t x = 0; x < halfwidth; x++) {
 				file.write(buf[x]);
@@ -165,17 +134,12 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image& img, char *filename){
 				// time to add padding
 				file.write((uint8_t)0);
 			}
-			printDebug('.');
 		}
 	} else {
-		// we don't have a color table
-		write32(0, file); // no important colors
-		printDebug(".\n");
-		// the header is done now, it is time to output the pixels!
-		uint8_t j = bmpWidth - (3*img._width);
-		for (int8_t y = img._height - 1; y >= 0; y--) {
-			uint16_t* buf = rambuffer + (y*img._width);
-			for (uint8_t x = 0; x < img._width; x++) {
+		uint8_t j = width - (3*img->_width);
+		for (int8_t y = img->_height - 1; y >= 0; y--) {
+			uint16_t* buf = rambuffer + (y*img->_width);
+			for (uint8_t x = 0; x < img->_width; x++) {
 				writeAsRGB(buf[x], file);
 			}
 			uint8_t i = j;
@@ -183,26 +147,43 @@ uint8_t Gamebuino_SD_GFX::writeImage(Image& img, char *filename){
 				// time to add padding
 				file.write((uint8_t)0);
 			}
-			printDebug('.');
 		}
 	}
-	file.close();
-	printDebug("\n DONE!");
-	return 0;
 }
 
-uint8_t Gamebuino_SD_GFX::readImage(Image& img, char *filename){
-	printlnDebug("Opening file...");
+bool Gamebuino_SD_GFX::writeImage(Image& img, char *filename) {
+	// let's first make sure that our file doesn't already exist
+	if (SD.exists(filename) && !SD.remove(filename)) {
+		return false;
+	}
+
+	// and now create the file
+	File file = SD.open(filename, FILE_WRITE);
+	if (!file) {
+		return false;
+	}
+	BMP bmp = BMP(&img);
+	if (!bmp.isValid()) {
+		SD.remove(filename);
+		return false;
+	}
+	file.truncate(0);
+	bmp.writeHeader(file);
+	bmp.writeBuffer(file);
+	file.close();
+	return true;
+}
+
+bool Gamebuino_SD_GFX::readImage(Image& img, char *filename){
 	File file = SD.open(filename);
 	if (!file) {
-		printDebug("error opening ");
-		printlnDebug(filename);
-		return 1;
+		// file doesn't exist
+		return false;
 	}
 	file.rewind();
 	if (read16(file) != 0x4D42) {
-		printlnDebug("File isn't a BMP file!");
-		return 1;
+		// file isn't a BMP file
+		return false;
 	}
 	file.seekCur(8); // skip filesize and creator bits
 	uint32_t bmpImageoffset = read32(file);
@@ -211,23 +192,17 @@ uint8_t Gamebuino_SD_GFX::readImage(Image& img, char *filename){
 	int32_t bmpHeight = (int32_t)read32(file);
 	
 	if (read16(file) != 1) { // # planes, must always be 1
-		printlnDebug("Bad # of planes");
-		return 1;
+		return false;
 	}
 	uint16_t bmpDepth = read16(file);
-	printDebug("Bit Depth: ");
-	printlnDebug(bmpDepth);
-	printDebug("Image size: ");
-	printDebug(bmpWidth);
-	printDebug(" x ");
-	printlnDebug(bmpHeight);
+	
 	if (read32(file) != 0) {
-		printlnDebug("ERROR: can load only uncompressed BMPs");
-		return 1;
+		// we can only load uncompressed BMPs
+		return false;
 	}
 	if (bmpDepth != 4 && bmpDepth != 24) {
-		printlnDebug("ERROR: can only load BMPs with img depth 4 or 24");
-		return 1;
+		// only color depth of 4 or 24 is valid
+		return false;
 	}
 	// it seems like we have a valid bitmap!
 	bool flip = bmpHeight>=0; // bitmaps are stored bottom-to-top for some weird reason......I wonder who came up with that......oooooh it seems like the BMP standard originates from microsoft, that might explain some things.....NO THIS COMMENT IS NOT TOO LONG! Nor unrelated
@@ -254,13 +229,14 @@ uint8_t Gamebuino_SD_GFX::readImage(Image& img, char *filename){
 				int16_t g = file.read();
 				int16_t r = file.read();
 				if (b < 0 || g < 0 || r < 0) {
-					printlnDebug("ERROR: file is too small");
-					return 1;
+					// file is too small
+					return false;
 				}
 				*(rambuffer++) = convertTo565(r, g, b);
 			}
 		}
-		return 0;
+		file.close();
+		return true;
 	}
 	// OK we need to load an indexed BMP instead
 	file.seekCur(12); // we ignore image size, x pixels and y pixels per meter
@@ -269,8 +245,7 @@ uint8_t Gamebuino_SD_GFX::readImage(Image& img, char *filename){
 	rowSize = read32(file);
 	file.seekCur(4 + min(16, rowSize)*4); // disgard important Colors and colortable (we assume our intern color table)
 	rowSize = ((bmpDepth*bmpWidth+31)/32) * 4;
-	printDebug("rowSize: ");
-	printlnDebug(rowSize);
+	
 	img.colorMode = ColorMode::index;
 	img.allocateBuffer(bmpWidth, bmpHeight);
 	uint8_t* rambuffer = (uint8_t*)img._buffer;
@@ -287,7 +262,73 @@ uint8_t Gamebuino_SD_GFX::readImage(Image& img, char *filename){
 			*(rambuffer++) = file.read();
 		}
 	}
-	return 0;
+	file.close();
+	return true;
+}
+
+void Gamebuino_SD_GFX::update() {
+	for (uint8_t i = 0; i < MAX_IMAGE_RECORDING; i++) {
+		if (recording[i].recording) {
+			recording[i].bmp.writeBuffer(recording[i].file);
+			recording[i].file.flush();
+			recording[i].frames++;
+		}
+	}
+}
+
+bool Gamebuino_SD_GFX::startRecordImage(Image &img, char *filename) {
+	uint8_t i = 0;
+	for (; i < MAX_IMAGE_RECORDING; i++) {
+		if (!recording[i].recording) {
+			break;
+		}
+	}
+	if (i == MAX_IMAGE_RECORDING) {
+		return false; // no empty slot
+	}
+	if (SD.exists(filename) && !SD.remove(filename)) {
+		return false;
+	}
+
+	// and now create the file
+	File file = SD.open(filename, FILE_WRITE);
+	if (!file) {
+		return false;
+	}
+	BMP bmp = BMP(&img);
+	if (!bmp.isValid()) {
+		SD.remove(filename);
+		return false;
+	}
+	recording[i].bmp = bmp;
+	recording[i].file = file;
+	recording[i].recording = true;
+	recording[i].file.truncate(0);
+	recording[i].bmp.writeHeader(recording[i].file);
+	recording[i].file.flush();
+	
+	
+	return true;
+}
+
+void Gamebuino_SD_GFX::stopRecordImage(Image &img) {
+	uint8_t i = 0;
+	for (; i < MAX_IMAGE_RECORDING; i++) {
+		if (recording[i].bmp.img == &img) {
+			break;
+		}
+		if (!recording[i].recording) {
+			continue;
+		}
+	}
+	if (i == MAX_IMAGE_RECORDING) {
+		while(1);
+		return; // image not found
+	}
+	recording[i].bmp.setFrames(recording[i].frames);
+	recording[i].bmp.writeHeader(recording[i].file);
+	recording[i].file.close();
+	recording[i].recording = false;
 }
 
 } // namespace Gamebuino_Meta
