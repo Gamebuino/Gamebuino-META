@@ -266,17 +266,18 @@ bool Gamebuino::update() {
 			//send buffer to the screen
 			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
 
-			if (recording_screen) {
+			//record screenshot
+			if (buttons.pressed(Button::d)) {
 				tft.setColor(RED,BLACK);
 				tft.drawRect(0, 0, tft._width, tft._height);
 				tft.drawRect(1, 1, tft._width - 2, tft._height - 2);
-			}
-
-			//record screenshot
-			if (buttons.pressed(Button::d)) {
 				if (recording_screen) {
 					// stop the recording
-					sd_gfx.stopRecordImage(display);
+					tft.setColor(WHITE, BLACK);
+					tft.cursorX = 0;
+					tft.cursorY = 2;
+					tft.println("Processing screencapture...");
+					sd_gfx.stopRecordImage(display, tft);
 					recording_screen = false;
 				} else {
 					if (!sd_gfx.startRecordImage(display, "RECORD.BMP")) {

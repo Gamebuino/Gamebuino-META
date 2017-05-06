@@ -4,6 +4,8 @@ extern SdFat SD;
 
 namespace Gamebuino_Meta {
 
+Display_ST7735* tft;
+
 // These read 16- and 32-bit types from the SD card file.
 // BMP data is stored little-endian, Arduino is little-endian too.
 // May need to reverse subscript order if porting elsewhere.
@@ -88,7 +90,6 @@ void BMP::setFrames(uint32_t frames) {
 	pixel_height = img->_height*frames;
 	imageSize = width*pixel_height; // this holds the image size in bytes
 	fileSize = imageOffset + imageSize; // this is the filesize
-	
 }
 
 void BMP::writeHeader(File& file) {
@@ -118,6 +119,7 @@ void BMP::writeHeader(File& file) {
 	} else {
 		write32(0, file); // no important colors
 	}
+	file.truncate(fileSize);
 }
 
 void BMP::writeBuffer(File& file) {
@@ -149,6 +151,146 @@ void BMP::writeBuffer(File& file) {
 			}
 		}
 	}
+}
+
+void BMP::writeFrame(uint32_t frame, uint32_t frames, File& file) {
+	uint32_t size = width * img->_height;
+	uint32_t offset = size * (frames - frame - 1);
+	file.seekSet(imageOffset + offset);
+	writeBuffer(file);
+}
+
+Recording_Image::Recording_Image(BMP& _bmp, File& _file, File& _file_tmp) {
+	bmp = _bmp;
+	file = _file;
+	file_tmp = _file_tmp;
+	frames = 0;
+}
+
+void Recording_Image::writeColor(uint16_t color, uint8_t count) {
+	if (count > 1) {
+		count |= 0x80;
+		file_tmp.write(count);
+	}
+	uint16_t* index = (uint16_t*)bmp.img->colorIndex;
+	for (uint8_t i = 0; i < 16; i++) {
+		if (index[i] == color) {
+			file_tmp.write(i);
+			return;
+		}
+	}
+	file_tmp.write(0x80);
+	file_tmp.write(&color, 2);
+}
+
+void Recording_Image::update() {
+	uint16_t pixels = (bmp.img->getBufferSize() + 1) / 2; 
+	uint16_t i = 1;
+	uint16_t* buf = bmp.img->_buffer;
+	uint16_t color = buf[i];
+	uint16_t count = 1;
+	for (; i < pixels; i++) {
+		if (buf[i] == color && count < 0x7F) {
+			count++;
+			continue;
+		}
+		// ok we need to write stuff
+		writeColor(color, count);
+		count = 1;
+		color = buf[i];
+	}
+	writeColor(color, count);
+	frames++;
+}
+
+void Recording_Image::restoreFrame() {
+	uint16_t* buf = bmp.img->_buffer;
+	uint16_t pixels = (bmp.img->getBufferSize() + 1) / 2; 
+	uint16_t pixels_current = 0;
+	
+	uint16_t* index = (uint16_t*)bmp.img->colorIndex;
+	
+	uint8_t count = 0;
+	uint8_t i;
+	uint16_t color = 0;
+	while (pixels_current < pixels) {
+		count = file_tmp.read();
+		if (count == 0x80) {
+			// we have a single, un-altered pixel
+			file_tmp.read(&color, 2);
+			buf[pixels_current] = color;
+			pixels_current++;
+			continue;
+		}
+		if (!(count & 0x80)) {
+			// single indexed color
+			buf[pixels_current] = index[count];
+			pixels_current++;
+			continue;
+		}
+		// ok we actually have multiple pixels
+		count &= 0x7F;
+		i = file_tmp.read();
+		if (i == 0x80) {
+			file_tmp.read(&color, 2);
+		} else {
+			color = index[i];
+		}
+		for (i = 0; i < count; i++) {
+			buf[pixels_current] = color;
+			pixels_current++;
+		}
+	}
+}
+
+void Recording_Image::finish(bool output) {
+	update(); // save the current frame
+	file_tmp.rewind(); // we'll want to start from the beginning
+	bmp.setFrames(frames);
+	bmp.writeHeader(file);
+	
+	uint8_t x, y;
+	if (output) {
+		tft->print("Total frames: ");
+		tft->println(frames);
+		tft->print("Creating file (");
+		tft->print(bmp.imageSize / 1024);
+		tft->print(") ");
+		x = tft->cursorX;
+		y = tft->cursorY;
+	}
+	uint32_t zero = 0;
+	for (uint32_t i = 0; i < bmp.imageSize; i+=4) {
+		file.write(&zero, 4);
+		if ((i % 65536) == 0) {
+			tft->cursorX = x;
+			tft->cursorY = y;
+			tft->print(i / 1024);
+		}
+	}
+	if (output) {
+		tft->cursorX = x;
+		tft->cursorY = y;
+		tft->println("done!!!");
+		tft->print("Frame: ");
+		x = tft->cursorX;
+		y = tft->cursorY;
+	}
+	for (uint32_t i = 0; i < frames; i++) {
+		if (output) {
+			tft->cursorX = x;
+			tft->cursorY = y;
+			tft->print(i+1); // +1 for human-readability
+		}
+		restoreFrame();
+		bmp.writeFrame(i, frames, file);
+	}
+	file.close();
+	file_tmp.remove(); // we don't need you anymore!
+}
+
+bool Recording_Image::is(Image* img) {
+	return bmp.img == img;
 }
 
 bool Gamebuino_SD_GFX::writeImage(Image& img, char *filename) {
@@ -268,10 +410,8 @@ bool Gamebuino_SD_GFX::readImage(Image& img, char *filename){
 
 void Gamebuino_SD_GFX::update() {
 	for (uint8_t i = 0; i < MAX_IMAGE_RECORDING; i++) {
-		if (recording[i].recording) {
-			recording[i].bmp.writeBuffer(recording[i].file);
-			recording[i].file.flush();
-			recording[i].frames++;
+		if (recording[i]) {
+			recording[i]->update();
 		}
 	}
 }
@@ -279,7 +419,7 @@ void Gamebuino_SD_GFX::update() {
 bool Gamebuino_SD_GFX::startRecordImage(Image &img, char *filename) {
 	uint8_t i = 0;
 	for (; i < MAX_IMAGE_RECORDING; i++) {
-		if (!recording[i].recording) {
+		if (!recording[i]) {
 			break;
 		}
 	}
@@ -300,35 +440,42 @@ bool Gamebuino_SD_GFX::startRecordImage(Image &img, char *filename) {
 		SD.remove(filename);
 		return false;
 	}
-	recording[i].bmp = bmp;
-	recording[i].file = file;
-	recording[i].recording = true;
-	recording[i].file.truncate(0);
-	recording[i].bmp.writeHeader(recording[i].file);
-	recording[i].file.flush();
+	file.truncate(0);
 	
+	File file_tmp = SD.open("/TMP.BIN", FILE_WRITE);
+	if (!file_tmp) {
+		return false;
+	}
+	file_tmp.truncate(0);
+	
+	Recording_Image* rec = new Recording_Image(bmp, file, file_tmp);
+	recording[i] = rec;
 	
 	return true;
 }
 
-void Gamebuino_SD_GFX::stopRecordImage(Image &img) {
+void Gamebuino_SD_GFX::stopRecordImage(Image &img, bool output = false) {
 	uint8_t i = 0;
 	for (; i < MAX_IMAGE_RECORDING; i++) {
-		if (recording[i].bmp.img == &img) {
-			break;
-		}
-		if (!recording[i].recording) {
+		if (!recording[i]) {
 			continue;
+		}
+		if (recording[i]->is(&img)) {
+			break;
 		}
 	}
 	if (i == MAX_IMAGE_RECORDING) {
 		while(1);
 		return; // image not found
 	}
-	recording[i].bmp.setFrames(recording[i].frames);
-	recording[i].bmp.writeHeader(recording[i].file);
-	recording[i].file.close();
-	recording[i].recording = false;
+	recording[i]->finish(output);
+	
+	delete recording[i];
+}
+
+void Gamebuino_SD_GFX::stopRecordImage(Image& img, Display_ST7735& _tft) {
+	tft = &_tft;
+	stopRecordImage(img, true);
 }
 
 } // namespace Gamebuino_Meta

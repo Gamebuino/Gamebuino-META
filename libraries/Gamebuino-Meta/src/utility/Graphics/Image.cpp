@@ -28,19 +28,22 @@ Image::~Image(void) {
 	//if (_buffer) free(_buffer);
 }
 
-void Image::allocateBuffer(uint16_t w, uint16_t h) {
-	_width = w;
-	_height = h;
-	uint16_t bytes;
+uint16_t Image::getBufferSize() {
+	uint16_t bytes = 0;
 	if (colorMode == ColorMode::index) {
 		// 4 bits per pixel = 1/2 byte
 		// add 1 to width to ceil the number, rather than flooring
-		bytes = ((w + 1) / 2) * h;
+		bytes = ((_width + 1) / 2) * _height;
 	} else if (colorMode == ColorMode::rgb565) {
-		bytes = w * h * 2; //16 bits per pixel = 2 bytes
-	} else {
-		return;
+		bytes = _width * _height * 2; //16 bits per pixel = 2 bytes
 	}
+	return bytes;
+}
+
+void Image::allocateBuffer(uint16_t w, uint16_t h) {
+	_width = w;
+	_height = h;
+	uint16_t bytes = getBufferSize();
 	if ((_buffer = (uint16_t *)malloc(bytes))) {
 		memset(_buffer, 0, bytes);
 	}
