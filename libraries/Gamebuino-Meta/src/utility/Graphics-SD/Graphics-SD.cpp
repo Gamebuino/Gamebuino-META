@@ -1,5 +1,6 @@
 #include "Graphics-SD.h"
 #include "../SdFat.h"
+#include "../Misc.h"
 extern SdFat SD;
 
 namespace Gamebuino_Meta {
@@ -442,7 +443,11 @@ bool Gamebuino_SD_GFX::startRecordImage(Image &img, char *filename) {
 	}
 	file.truncate(0);
 	
-	File file_tmp = SD.open("/TMP.BIN", FILE_WRITE);
+	char tmp_name[] = "/TMP0000.BIN";
+	if (!sd_path_no_duplicate(tmp_name, 4, 4)) {
+		return false;
+	}
+	File file_tmp = SD.open(tmp_name, FILE_WRITE);
 	if (!file_tmp) {
 		return false;
 	}
@@ -465,12 +470,12 @@ void Gamebuino_SD_GFX::stopRecordImage(Image &img, bool output = false) {
 		}
 	}
 	if (i == MAX_IMAGE_RECORDING) {
-		while(1);
 		return; // image not found
 	}
 	recording[i]->finish(output);
 	
 	delete recording[i];
+	recording[i] = 0;
 }
 
 void Gamebuino_SD_GFX::stopRecordImage(Image& img, Display_ST7735& _tft) {

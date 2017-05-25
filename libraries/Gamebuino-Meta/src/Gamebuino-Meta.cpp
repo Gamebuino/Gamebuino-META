@@ -17,8 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-
-
 #include "Gamebuino-Meta.h"
 SdFat SD;
 
@@ -276,11 +274,13 @@ bool Gamebuino::update() {
 					tft.setColor(WHITE, BLACK);
 					tft.cursorX = 0;
 					tft.cursorY = 2;
+					
 					tft.println("Processing screencapture...");
 					sd_gfx.stopRecordImage(display, tft);
 					recording_screen = false;
 				} else {
-					if (!sd_gfx.startRecordImage(display, "RECORD.BMP")) {
+					if (!sd_gfx.startRecordImage(display, "RECORD.BMP", tft)) {
+						tft.println("Couldn't start screen recording");
 						while(1);
 					}
 					recording_screen = true;
@@ -342,12 +342,11 @@ uint8_t Gamebuino::getCpuLoad(){
 	return(frameDurationMicros/(10*timePerFrame));
 }
 
-uint16_t Gamebuino::getFreeRam() {
-	return 0;
-	//from http://www.controllerprojects.com/2011/05/23/determining-sram-usage-on-arduino/
-	//extern int __heap_start, *__brkval;
-	//int v;
-	//return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+extern "C" char* sbrk(int incr);	
+uint16_t Gamebuino::getFreeRam() {	
+	// from https://github.com/mpflaga/Arduino-MemoryFree/blob/master/MemoryFree.cpp
+	char top;
+	return &top - reinterpret_cast<char*>(sbrk(0));
 }
 
 int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
