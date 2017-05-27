@@ -279,7 +279,7 @@ bool Gamebuino::update() {
 					sd_gfx.stopRecordImage(display, tft);
 					recording_screen = false;
 				} else {
-					if (!sd_gfx.startRecordImage(display, "RECORD.BMP", tft)) {
+					if (!sd_gfx.startRecordImage(display, "RECORD.BMP")) {
 						tft.println("Couldn't start screen recording");
 						while(1);
 					}

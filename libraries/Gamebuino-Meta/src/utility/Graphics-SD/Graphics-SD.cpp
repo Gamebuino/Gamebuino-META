@@ -83,11 +83,53 @@ BMP::BMP(Image* _img) {
 	valid = true; // everything seems OK!
 }
 
+BMP::BMP(File& file, Image* _img) {
+	valid = false;
+	img = _img;
+	file.rewind();
+	if (read16(file) != 0x4D42) {
+		// no valid BMP header
+		return;
+	}
+	fileSize = read32(file);
+	file.seekCur(4); // skip creator bits
+	imageOffset = read32(file);
+	header_size = read32(file);
+	width = (int32_t)read32(file);
+	pixel_height = (int32_t)read32(file);
+	if (read16(file) != 1) { // # planes, must always be 1
+		return;
+	}
+	depth = read16(file);
+	if (depth != 4 && depth != 24) {
+		// we can only load uncompressed BMPs
+		return;
+	}
+	if (read32(file) != 0) {
+		// we can only load uncompressed BMPs
+		return;
+	}
+	imageSize = read32(file);
+	file.seekCur(8); // we ignore x pixels and y pixels per meter
+	colorTable = read32(file);
+	// we assume our color table so just ignore the one specified in the BMP
+	file.seekSet(header_size);
+	setFrames(pixel_height / img->_height);
+	if (colorTable) {
+		img->colorMode = ColorMode::index;
+	} else {
+		img->colorMode = ColorMode::rgb565;
+	}
+	img->allocateBuffer(width, img->_height);
+	valid = true;
+}
+
 bool BMP::isValid() {
 	return valid;
 }
 
-void BMP::setFrames(uint32_t frames) {
+void BMP::setFrames(uint32_t _frames) {
+	frames = _frames;
 	pixel_height = img->_height*frames;
 	imageSize = width*pixel_height; // this holds the image size in bytes
 	fileSize = imageOffset + imageSize; // this is the filesize
@@ -154,11 +196,108 @@ void BMP::writeBuffer(File& file) {
 	}
 }
 
-void BMP::writeFrame(uint32_t frame, uint32_t frames, File& file) {
+uint32_t BMP::getRowSize() {
+	if (colorTable) {
+		return ((4*width+31)/32) * 4;
+	}
+	return (width * 3 + 3) & ~3;
+}
+
+void BMP::readBuffer(File& file) {
+	readBuffer(file, imageOffset);
+}
+
+void BMP::readBuffer(File& file, uint32_t offset) {
+	int32_t height = img->_height;
+	
+	uint32_t rowSize = getRowSize();
+	if (colorTable) {
+		uint8_t* rambuffer = (uint8_t*)img->_buffer;
+		for (uint16_t i = 0; i < height; i++) {
+			uint32_t pos = offset + (height - 1 - i) * rowSize;
+			
+			file.seekSet(pos);
+			
+			for (uint16_t j = 0; j < (width + 1)/2; j++) {
+				*(rambuffer++) = file.read();
+			}
+		}
+	} else {
+		uint16_t* rambuffer = img->_buffer;
+		for (uint16_t i = 0; i < height; i++) {
+			uint32_t pos = offset + (height - 1 - i) * rowSize;
+			
+			file.seekSet(pos);
+			for (uint16_t j = 0; j < width; j++) {
+				int16_t b = file.read();
+				int16_t g = file.read();
+				int16_t r = file.read();
+				if (b < 0 || g < 0 || r < 0) {
+					// file is too small
+					return;
+				}
+				*(rambuffer++) = convertTo565(r, g, b);
+			}
+		}
+	}
+}
+
+void BMP::writeFrame(uint32_t frame, File& file) {
 	uint32_t size = width * img->_height;
 	uint32_t offset = size * (frames - frame - 1);
 	file.seekSet(imageOffset + offset);
 	writeBuffer(file);
+}
+
+void BMP::readFrame(uint32_t frame, File& file) {
+	uint32_t size = getRowSize() * img->_height;
+	uint32_t offset = size * (frames - frame - 1);
+	readBuffer(file, imageOffset + offset);
+}
+
+RLE_Video::RLE_Video(Image& _img, File& _file) {
+	img = &_img;
+	file = _file;
+}
+
+void RLE_Video::restoreFrame() {
+	uint16_t* buf = img->_buffer;
+	uint16_t pixels = (img->getBufferSize() + 1) / 2; 
+	uint16_t pixels_current = 0;
+	
+	uint16_t* index = (uint16_t*)img->colorIndex;
+	
+	uint8_t count = 0;
+	uint8_t i;
+	uint16_t color = 0;
+	while (pixels_current < pixels) {
+		count = file.read();
+		if (count == 0x80) {
+			// we have a single, un-altered pixel
+			file.read(&color, 2);
+			buf[pixels_current] = color;
+			pixels_current++;
+			continue;
+		}
+		if (!(count & 0x80)) {
+			// single indexed color
+			buf[pixels_current] = index[count];
+			pixels_current++;
+			continue;
+		}
+		// ok we actually have multiple pixels
+		count &= 0x7F;
+		i = file.read();
+		if (i == 0x80) {
+			file.read(&color, 2);
+		} else {
+			color = index[i];
+		}
+		for (i = 0; i < count; i++) {
+			buf[pixels_current] = color;
+			pixels_current++;
+		}
+	}
 }
 
 Recording_Image::Recording_Image(BMP& _bmp, File& _file, File& _file_tmp) {
@@ -204,46 +343,6 @@ void Recording_Image::update() {
 	frames++;
 }
 
-void Recording_Image::restoreFrame() {
-	uint16_t* buf = bmp.img->_buffer;
-	uint16_t pixels = (bmp.img->getBufferSize() + 1) / 2; 
-	uint16_t pixels_current = 0;
-	
-	uint16_t* index = (uint16_t*)bmp.img->colorIndex;
-	
-	uint8_t count = 0;
-	uint8_t i;
-	uint16_t color = 0;
-	while (pixels_current < pixels) {
-		count = file_tmp.read();
-		if (count == 0x80) {
-			// we have a single, un-altered pixel
-			file_tmp.read(&color, 2);
-			buf[pixels_current] = color;
-			pixels_current++;
-			continue;
-		}
-		if (!(count & 0x80)) {
-			// single indexed color
-			buf[pixels_current] = index[count];
-			pixels_current++;
-			continue;
-		}
-		// ok we actually have multiple pixels
-		count &= 0x7F;
-		i = file_tmp.read();
-		if (i == 0x80) {
-			file_tmp.read(&color, 2);
-		} else {
-			color = index[i];
-		}
-		for (i = 0; i < count; i++) {
-			buf[pixels_current] = color;
-			pixels_current++;
-		}
-	}
-}
-
 void Recording_Image::finish(bool output) {
 	update(); // save the current frame
 	file_tmp.rewind(); // we'll want to start from the beginning
@@ -277,21 +376,39 @@ void Recording_Image::finish(bool output) {
 		x = tft->cursorX;
 		y = tft->cursorY;
 	}
+	RLE_Video rle = RLE_Video(*(bmp.img), file_tmp);
 	for (uint32_t i = 0; i < frames; i++) {
 		if (output) {
 			tft->cursorX = x;
 			tft->cursorY = y;
 			tft->print(i+1); // +1 for human-readability
 		}
-		restoreFrame();
-		bmp.writeFrame(i, frames, file);
+		rle.restoreFrame();
+		bmp.writeFrame(i, file);
 	}
 	file.close();
-	file_tmp.remove(); // we don't need you anymore!
+	file_tmp.close();
+//	file_tmp.remove(); // we don't need you anymore!
 }
 
 bool Recording_Image::is(Image* img) {
 	return bmp.img == img;
+}
+
+Playing_Image::Playing_Image(RLE_Video& _rle) {
+	rle = _rle;
+}
+
+void Playing_Image::update() {
+	rle.restoreFrame();
+	
+	if (rle.file.peek() == -1) {
+		rle.file.rewind();
+	}
+}
+
+bool Playing_Image::is(Image* img) {
+	return rle.img == img;
 }
 
 bool Gamebuino_SD_GFX::writeImage(Image& img, char *filename) {
@@ -323,89 +440,12 @@ bool Gamebuino_SD_GFX::readImage(Image& img, char *filename){
 		// file doesn't exist
 		return false;
 	}
-	file.rewind();
-	if (read16(file) != 0x4D42) {
-		// file isn't a BMP file
-		return false;
-	}
-	file.seekCur(8); // skip filesize and creator bits
-	uint32_t bmpImageoffset = read32(file);
-	file.seekCur(4); // skip header size
-	int32_t bmpWidth = (int32_t)read32(file);
-	int32_t bmpHeight = (int32_t)read32(file);
-	
-	if (read16(file) != 1) { // # planes, must always be 1
-		return false;
-	}
-	uint16_t bmpDepth = read16(file);
-	
-	if (read32(file) != 0) {
-		// we can only load uncompressed BMPs
-		return false;
-	}
-	if (bmpDepth != 4 && bmpDepth != 24) {
-		// only color depth of 4 or 24 is valid
-		return false;
-	}
-	// it seems like we have a valid bitmap!
-	bool flip = bmpHeight>=0; // bitmaps are stored bottom-to-top for some weird reason......I wonder who came up with that......oooooh it seems like the BMP standard originates from microsoft, that might explain some things.....NO THIS COMMENT IS NOT TOO LONG! Nor unrelated
-	if (!flip) {
-		bmpHeight = -bmpHeight;
-	}
-	uint32_t rowSize;
-	if (bmpDepth == 24) {
-		// we have an RGB565 image!
-		rowSize = (bmpWidth * 3 + 3) & ~3;
-		img.colorMode = ColorMode::rgb565;
-		img.allocateBuffer(bmpWidth, bmpHeight);
-		uint16_t* rambuffer = img._buffer;
-		for (uint16_t i = 0; i < bmpHeight; i++) {
-			uint32_t pos;
-			if (flip) {
-				pos = bmpImageoffset + (bmpHeight - 1 - i) * rowSize;
-			} else {
-				pos = bmpImageoffset + rowSize * i;
-			}
-			file.seekSet(pos);
-			for (uint16_t j = 0; j < bmpWidth; j++) {
-				int16_t b = file.read();
-				int16_t g = file.read();
-				int16_t r = file.read();
-				if (b < 0 || g < 0 || r < 0) {
-					// file is too small
-					return false;
-				}
-				*(rambuffer++) = convertTo565(r, g, b);
-			}
-		}
+	BMP bmp = BMP(file, &img);
+	if (!bmp.isValid()) {
 		file.close();
-		return true;
+		return false;
 	}
-	// OK we need to load an indexed BMP instead
-	file.seekCur(12); // we ignore image size, x pixels and y pixels per meter
-	
-	// fetch the bmpColorTable but we use rowSize to re-use variables
-	rowSize = read32(file);
-	file.seekCur(4 + min(16, rowSize)*4); // disgard important Colors and colortable (we assume our intern color table)
-	rowSize = ((bmpDepth*bmpWidth+31)/32) * 4;
-	
-	img.colorMode = ColorMode::index;
-	img.allocateBuffer(bmpWidth, bmpHeight);
-	uint8_t* rambuffer = (uint8_t*)img._buffer;
-	for (uint16_t i = 0; i < bmpHeight; i++) {
-		uint32_t pos;
-		if (flip) {
-			pos = bmpImageoffset + (bmpHeight - 1 - i) * rowSize;
-		} else {
-			pos = bmpImageoffset + i * rowSize;
-		}
-		file.seekSet(pos);
-		
-		for (uint16_t j = 0; j < (img._width + 1)/2; j++) {
-			*(rambuffer++) = file.read();
-		}
-	}
-	file.close();
+	bmp.readBuffer(file);
 	return true;
 }
 
@@ -415,6 +455,41 @@ void Gamebuino_SD_GFX::update() {
 			recording[i]->update();
 		}
 	}
+	
+	for (uint8_t i = 0; i < MAX_IMAGE_PLAYING; i++) {
+		if (playing[i]) {
+			playing[i]->update();
+		}
+	}
+}
+
+bool Gamebuino_SD_GFX::playImage(Image &img, char *filename) {
+	uint8_t i = 0;
+	for (; i < MAX_IMAGE_PLAYING; i++) {
+		if (!playing[i]) {
+			break;
+		}
+	}
+	if (i == MAX_IMAGE_PLAYING) {
+		return false; // no empty slot
+	}
+	File file = SD.open(filename);
+	if (!file) {
+		// file doesn't exist
+		return false;
+	}
+	/*BMP bmp = BMP(file, &img);
+	if (!bmp.isValid()) {
+		file.close();
+		return false;
+	}*/
+	file.rewind();
+	RLE_Video rle = RLE_Video(img, file);
+	Playing_Image* play = new Playing_Image(rle);
+	play->update(); // we want to be able to use it right away!
+	playing[i] = play;
+	
+	return true;
 }
 
 bool Gamebuino_SD_GFX::startRecordImage(Image &img, char *filename) {

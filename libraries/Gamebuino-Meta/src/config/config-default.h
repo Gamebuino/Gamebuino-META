@@ -63,4 +63,8 @@
 #define MAX_IMAGE_RECORDING 5
 #endif
 
+#ifndef MAX_IMAGE_PLAYING
+#define MAX_IMAGE_PLAYING 10
+#endif
+
 #endif

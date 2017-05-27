@@ -16,6 +16,7 @@ public:
 	Image(uint16_t w, uint16_t h, ColorMode col);
 	Image(uint16_t w, uint16_t h, ColorMode col, uint16_t* buffer);
 	void
+		deallocateBuffer(),
 		allocateBuffer(uint16_t w, uint16_t h),
 		freeBuffer(),
 		drawPixel(int16_t x, int16_t y),

@@ -24,6 +24,7 @@ Image::Image(uint16_t w, uint16_t h, ColorMode col, uint16_t* buffer) : Graphics
 }
 
 Image::~Image(void) {
+	deallocateBuffer();
 	//if ((uint32_t)_buffer < 0x20000000) return; //don't try to deallocate variables from flash
 	//if (_buffer) free(_buffer);
 }
@@ -40,7 +41,16 @@ uint16_t Image::getBufferSize() {
 	return bytes;
 }
 
+void Image::deallocateBuffer() {
+	if (!_buffer || (uint32_t)_buffer < 0x20000000) {
+		return;
+	}
+	free(_buffer);
+	_buffer = 0;
+}
+
 void Image::allocateBuffer(uint16_t w, uint16_t h) {
+	deallocateBuffer();
 	_width = w;
 	_height = h;
 	uint16_t bytes = getBufferSize();
