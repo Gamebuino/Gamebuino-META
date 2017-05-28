@@ -211,23 +211,24 @@ void BMP::readBuffer(File& file, uint32_t offset) {
 	int32_t height = img->_height;
 	
 	uint32_t rowSize = getRowSize();
+	file.seekSet(offset);
 	if (colorTable) {
-		uint8_t* rambuffer = (uint8_t*)img->_buffer;
+		uint8_t dif = rowSize - ((width + 1) / 2);
+		
 		for (uint16_t i = 0; i < height; i++) {
-			uint32_t pos = offset + (height - 1 - i) * rowSize;
+			uint8_t* rambuffer = (uint8_t*)img->_buffer + (height - 1 - i) * ((width + 1) / 2);
 			
-			file.seekSet(pos);
 			
 			for (uint16_t j = 0; j < (width + 1)/2; j++) {
 				*(rambuffer++) = file.read();
 			}
+			file.seekCur(dif);
 		}
 	} else {
-		uint16_t* rambuffer = img->_buffer;
+		uint8_t dif = rowSize - (width * 3);
 		for (uint16_t i = 0; i < height; i++) {
-			uint32_t pos = offset + (height - 1 - i) * rowSize;
+			uint16_t* rambuffer = img->_buffer + (height - 1 - i) * width;
 			
-			file.seekSet(pos);
 			for (uint16_t j = 0; j < width; j++) {
 				int16_t b = file.read();
 				int16_t g = file.read();
@@ -236,8 +237,9 @@ void BMP::readBuffer(File& file, uint32_t offset) {
 					// file is too small
 					return;
 				}
-				*(rambuffer++) = convertTo565(r, g, b);
+				rambuffer[j] = convertTo565(r, g, b);
 			}
+			file.seekCur(dif);
 		}
 	}
 }
