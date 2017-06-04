@@ -599,7 +599,7 @@ void Display_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 }
 
 void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
-
+	img.nextFrame();
 	int16_t w = img.width();
 	int16_t h = img.height();
 
@@ -700,6 +700,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 }
 
 void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2) {
+	img.nextFrame();
 	//out of screen
 	if ((x > _width) || ((x + abs(w2)) < 0) || (y > _height) || ((y + abs(h2)) < 0) || (w2 == 0) || (h2 == 0)) return;
 

@@ -276,13 +276,13 @@ bool Gamebuino::update() {
 					tft.cursorY = 2;
 					
 					tft.println("Processing screencapture...");
-					sd_gfx.stopRecordImage(display, tft);
+					//sd_gfx.stopRecordImage(display, tft);
 					recording_screen = false;
 				} else {
-					if (!sd_gfx.startRecordImage(display, "RECORD.BMP")) {
+					/*if (!sd_gfx.startRecordImage(display, "RECORD.BMP")) {
 						tft.println("Couldn't start screen recording");
 						while(1);
-					}
+					}*/
 					recording_screen = true;
 				}
 				
@@ -297,7 +297,7 @@ bool Gamebuino::update() {
 				*/
 			}
 
-			sd_gfx.update(); // update screen recordings
+			//sd_gfx.update(); // update screen recordings
 
 
 			//if(!display.persistence)

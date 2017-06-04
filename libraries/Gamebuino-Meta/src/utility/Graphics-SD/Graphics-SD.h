@@ -2,45 +2,12 @@
 #define	_GAMEBUINO_SD_GFX_H_
 
 #include <Arduino.h>
-#include "../Graphics.h"
 #include "../Image.h"
-#include "../SdFat.h"
-#include "../Display-ST7735.h"
-#include "../../config/config.h"
+#include "GMV.h"
 
 namespace Gamebuino_Meta {
 
-#define BUFFPIXEL 16
-
-class BMP {
-public:
-	BMP(){};
-	BMP(Image* img);
-	BMP(File& file, Image* img);
-	bool isValid();
-	void writeHeader(File& file);
-	void writeBuffer(File& file);
-	void readBuffer(File& file);
-	void readBuffer(File& file, uint32_t offset);
-	void writeFrame(uint32_t frame, File& file);
-	void readFrame(uint32_t frame, File& file);
-	void setFrames(uint32_t frames);
-	uint32_t getRowSize();
-	Image* img;
-	uint32_t imageSize;
-	uint32_t frames = 1;
-private:
-	bool valid;
-	uint8_t header_size;
-	uint8_t depth;
-	uint32_t width;
-	uint32_t colorTable;
-	uint16_t* rambuffer;
-	uint32_t imageOffset;
-	uint32_t fileSize;
-	uint32_t pixel_height;
-};
-
+/*
 class RLE_Video {
 public:
 	RLE_Video(){};
@@ -86,6 +53,18 @@ public:
 private:
 	Recording_Image* recording[MAX_IMAGE_RECORDING];
 	Playing_Image* playing[MAX_IMAGE_PLAYING];
+};
+*/
+
+class Frame_Handler_SD : public Frame_Handler {
+public:
+	Frame_Handler_SD(Image* img);
+	~Frame_Handler_SD();
+	void init(char* filename);
+	void next();
+	void set(uint16_t frame);
+private:
+	GMV* gmv;
 };
 
 } // namespace Gamebuino_Meta

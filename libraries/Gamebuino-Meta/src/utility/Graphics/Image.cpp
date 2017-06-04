@@ -3,30 +3,179 @@
 // 
 
 #include "Image.h"
+#include "../Graphics-SD.h"
+#include "../../Gamebuino-Meta.h"
 
 namespace Gamebuino_Meta {
+
+Frame_Handler::Frame_Handler(Image* _img) {
+	img = _img;
+	buf = img->_buffer;
+}
+
+void Frame_Handler::first() {
+	set(0);
+}
+
+uint32_t Frame_Handler::getBufferSizeWithFrames() {
+	return img->getBufferSize();
+}
+
+void Frame_Handler::deallocateBuffer() {
+	if (!buf || (uint32_t)buf < 0x20000000) {
+		return;
+	}
+	free(buf);
+	buf = 0;
+}
+
+void Frame_Handler::allocateBuffer() {
+	deallocateBuffer();
+	uint32_t bytes = getBufferSizeWithFrames();
+	if ((buf = (uint16_t *)malloc(bytes))) {
+		memset(buf, 0, bytes);
+	}
+	img->_buffer = buf;
+}
+
+Frame_Handler_Mem::Frame_Handler_Mem(Image* _img) : Frame_Handler(_img) {
+	
+}
+
+void Frame_Handler_Mem::set(uint16_t frame) {
+	img->_buffer = (uint16_t*)((uint32_t)buf + ((img->getBufferSize() + 1) / 2) * frame);
+	img->frame = frame;
+}
+
+void Frame_Handler_Mem::next() {
+	img->frame++;
+	if (img->frame >= img->frames) {
+		img->frame = 0;
+	}
+	set(img->frame);
+}
+
+Frame_Handler_RAM::Frame_Handler_RAM(Image* _img) : Frame_Handler_Mem(_img) {
+	allocateBuffer();
+}
+
+Frame_Handler_RAM::~Frame_Handler_RAM() {
+	deallocateBuffer();
+}
+
+uint32_t Frame_Handler_RAM::getBufferSizeWithFrames() {
+	return img->getBufferSize() * img->frames;
+}
+
+
+/********
+ * start of actual image class
+ ********/
 
 Image::Image() : Graphics(0, 0){
 }
 
+// ram constructors
+Image::Image(uint16_t w, uint16_t h) : Graphics(w, h) {
+	init(w, h);
+}
+void Image::init(uint16_t w, uint16_t h) {
+	init(w, h, ColorMode::rgb565);
+}
+
 Image::Image(uint16_t w, uint16_t h, ColorMode col) : Graphics(w, h) {
-	colorMode = col;
-	allocateBuffer(w, h);
-	_width = w;
-	_height = h;
+	init(w, h, col);
+}
+void Image::init(uint16_t w, uint16_t h, ColorMode col) {
+	init(w, h, 1, col);
 }
 
-Image::Image(uint16_t w, uint16_t h, ColorMode col, uint16_t* buffer) : Graphics(w, h) {
-	colorMode = col;
-	_buffer = buffer;
-	_width = w;
-	_height = h;
+Image::Image(uint16_t w, uint16_t h, uint16_t frames) : Graphics(w, h) {
+	init(w, h, frames);
+}
+void Image::init(uint16_t w, uint16_t h, uint16_t frames) {
+	init(w, h, frames, ColorMode::rgb565);
 }
 
-Image::~Image(void) {
-	deallocateBuffer();
-	//if ((uint32_t)_buffer < 0x20000000) return; //don't try to deallocate variables from flash
-	//if (_buffer) free(_buffer);
+Image::Image(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col) : Graphics(0, 0) {
+	init(w, h, frames, col);
+}
+void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col) {
+	if (frame_handler) {
+		delete frame_handler;
+	}
+	frames = _frames;
+	colorMode = col;
+	_width = w;
+	_height = h;
+	last_frame = (gb.frameCount % 256) - 1;
+	frame_handler = new Frame_Handler_RAM(this);
+}
+
+// flash constructors
+Image::Image(const uint16_t* buffer) : Graphics(0, 0) {
+	init(buffer);
+}
+void Image::init(const uint16_t* buffer) {
+	init(buffer, ColorMode::rgb565);
+}
+
+Image::Image(const uint16_t* buffer, ColorMode col) : Graphics(0, 0) {
+	init(buffer, col);
+}
+void Image::init(const uint16_t* buffer, ColorMode col) {
+	init(buffer, 1, col);
+}
+
+Image::Image(const uint16_t* buffer, uint16_t frames) : Graphics(0, 0) {
+	init(buffer, frames);
+}
+void Image::init(const uint16_t* buffer, uint16_t frames) {
+	init(buffer, frames, ColorMode::rgb565);
+}
+
+Image::Image(const uint16_t* buffer, uint16_t frames, ColorMode col) : Graphics(0, 0) {
+	init(buffer, frames, col);
+}
+void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col) {
+	if (frame_handler) {
+		delete frame_handler;
+	}
+	frames = _frames;
+	colorMode = col;
+	uint16_t* buf = (uint16_t*)buffer;
+	_width = *(buf++);
+	_height = *(buf++);
+	_buffer = buf;
+	last_frame = (gb.frameCount % 256) - 1;
+	frame_handler = new Frame_Handler_Mem(this);
+}
+
+// SD constructors
+Image::Image(char* filename) : Graphics(0, 0) {
+	init(filename);
+}
+void Image::init(char* filename) {
+	if (frame_handler) {
+		delete frame_handler;
+	}
+	init(0, 0, filename);
+}
+
+Image::Image(uint16_t w, uint16_t h, char* filename) : Graphics(0, 0) {
+	init(w, h, filename);
+}
+void Image::init(uint16_t w, uint16_t h, char* filename) {
+	_width = w;
+	_height = h;
+	last_frame = (gb.frameCount % 256) - 1;
+	frame_handler = new Frame_Handler_SD(this);
+	((Frame_Handler_SD*)frame_handler)->init(filename);
+}
+
+
+Image::~Image() {
+	delete frame_handler;
 }
 
 uint16_t Image::getBufferSize() {
@@ -41,24 +190,26 @@ uint16_t Image::getBufferSize() {
 	return bytes;
 }
 
-void Image::deallocateBuffer() {
-	if (!_buffer || (uint32_t)_buffer < 0x20000000) {
+void Image::allocateBuffer() {
+	frame_handler->allocateBuffer();
+}
+
+void Image::nextFrame() {
+	if (frames == 1) {
 		return;
 	}
-	free(_buffer);
-	_buffer = 0;
-}
-
-void Image::allocateBuffer(uint16_t w, uint16_t h) {
-	deallocateBuffer();
-	_width = w;
-	_height = h;
-	uint16_t bytes = getBufferSize();
-	if ((_buffer = (uint16_t *)malloc(bytes))) {
-		memset(_buffer, 0, bytes);
+	if (last_frame == gb.frameCount % 256) {
+		return;
+	}
+	last_frame = gb.frameCount % 256;
+	if ((frame + 1) >= frames) {
+		frame = 0;
+		frame_handler->first();
+	} else {
+		frame_handler->next();
+		frame++;
 	}
 }
-
 
 void Image::drawPixel(int16_t x, int16_t y) {
 	if (!_buffer) {
