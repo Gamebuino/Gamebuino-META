@@ -43,16 +43,12 @@ Frame_Handler_Mem::Frame_Handler_Mem(Image* _img) : Frame_Handler(_img) {
 }
 
 void Frame_Handler_Mem::set(uint16_t frame) {
-	img->_buffer = (uint16_t*)((uint32_t)buf + ((img->getBufferSize() + 1) / 2) * frame);
-	img->frame = frame;
+	uint32_t buf_size = img->getBufferSize();
+	img->_buffer = (uint16_t*)((uint32_t)buf - buf_size + (buf_size * frame));
 }
 
 void Frame_Handler_Mem::next() {
-	img->frame++;
-	if (img->frame >= img->frames) {
-		img->frame = 0;
-	}
-	set(img->frame);
+	img->_buffer = (uint16_t*)((uint32_t)img->_buffer + img->getBufferSize());
 }
 
 Frame_Handler_RAM::Frame_Handler_RAM(Image* _img) : Frame_Handler_Mem(_img) {
@@ -108,8 +104,8 @@ void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col) {
 	colorMode = col;
 	_width = w;
 	_height = h;
-	last_frame = (gb.frameCount % 256) - 1;
 	frame_handler = new Frame_Handler_RAM(this);
+	setFrame(0);
 }
 
 // flash constructors
@@ -147,8 +143,8 @@ void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col) {
 	_width = *(buf++);
 	_height = *(buf++);
 	_buffer = buf;
-	last_frame = (gb.frameCount % 256) - 1;
 	frame_handler = new Frame_Handler_Mem(this);
+	setFrame(0);
 }
 
 // SD constructors
@@ -168,7 +164,7 @@ Image::Image(uint16_t w, uint16_t h, char* filename) : Graphics(0, 0) {
 void Image::init(uint16_t w, uint16_t h, char* filename) {
 	_width = w;
 	_height = h;
-	last_frame = (gb.frameCount % 256) - 1;
+	last_frame = (gb.frameCount & 0xFF) - 1;
 	frame_handler = new Frame_Handler_SD(this);
 	((Frame_Handler_SD*)frame_handler)->init(filename);
 }
@@ -198,17 +194,30 @@ void Image::nextFrame() {
 	if (frames == 1) {
 		return;
 	}
-	if (last_frame == gb.frameCount % 256) {
+	if (last_frame == gb.frameCount & 0xFF) {
 		return;
 	}
-	last_frame = gb.frameCount % 256;
+	last_frame = gb.frameCount & 0xFF;
 	if ((frame + 1) >= frames) {
 		frame = 0;
 		frame_handler->first();
+		frame_handler->next();
 	} else {
 		frame_handler->next();
 		frame++;
 	}
+}
+
+void Image::setFrame(uint16_t _frame) {
+	if (frames == 1) {
+		return;
+	}
+	if (frames >= _frame) {
+		_frame = frames - 1;
+	}
+	frame = _frame;
+	frame_handler->set(frame);
+	last_frame == (gb.frameCount & 0xFF) - 1; // make sure that it will be rendered next go
 }
 
 void Image::drawPixel(int16_t x, int16_t y) {

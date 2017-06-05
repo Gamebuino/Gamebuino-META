@@ -67,6 +67,7 @@ public:
 	Image(uint16_t w, uint16_t h, char* filename);
 	void init(uint16_t w, uint16_t h, char* filename);
 	void nextFrame();
+	void setFrame(uint16_t frame);
 	void freeBuffer(),
 		drawPixel(int16_t x, int16_t y),
 		fillScreen(Color color),

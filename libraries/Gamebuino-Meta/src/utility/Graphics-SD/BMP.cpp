@@ -33,12 +33,11 @@ BMP::BMP(File* file, Image* img) {
 	if (f_read16(file) != 1) { // # planes, must always be 1
 		return;
 	}
-	uint16_t depth = f_read16(file);
-	if (depth != 4 && depth != 24) {
-		// we can only load uncompressed BMPs
+	depth = f_read16(file);
+	if (depth != 4 && depth != 24 && depth != 32) {
+		// we can only load BMPs of depth 4 or 24 or 32
 		return;
 	}
-	indexed = depth == 4;
 	if (f_read32(file) != 0) {
 		// we can only load uncompressed BMPs
 		return;
@@ -48,7 +47,7 @@ BMP::BMP(File* file, Image* img) {
 	// we assume our color table so just ignore the one specified in the BMP
 	file->seekSet(image_offset);
 	
-	if (indexed) {
+	if (depth == 4) {
 		img->colorMode = ColorMode::index;
 	} else {
 		img->colorMode = ColorMode::rgb565;
@@ -154,17 +153,20 @@ void BMP::writeFrame(uint32_t frame, File& file) {
 */
 
 uint32_t BMP::getRowSize() {
-	if (indexed) {
+	if (depth == 4) {
 		return ((4*width+31)/32) * 4;
 	}
-	return (width * 3 + 3) & ~3;
+	if (depth == 24) {
+		return (width * 3 + 3) & ~3;
+	}
+	return width * 4;
 }
 
 void BMP::readBuffer(File* file, uint16_t* buf, uint16_t height, uint32_t offset) {
 	
 	uint32_t rowSize = getRowSize();
 	file->seekSet(offset);
-	if (indexed) {
+	if (depth == 4) {
 		uint8_t dif = rowSize - ((width + 1) / 2);
 		
 		for (uint16_t i = 0; i < height; i++) {
@@ -185,9 +187,14 @@ void BMP::readBuffer(File* file, uint16_t* buf, uint16_t height, uint32_t offset
 				uint8_t b = file->read();
 				uint8_t g = file->read();
 				uint8_t r = file->read();
+				if (depth == 32) {
+					file->read(); // trash alpha chanel
+				}
 				rambuffer[j] = convertTo565(r, g, b);
 			}
-			file->seekCur(dif);
+			if (depth != 32) { // 32-bit always has dif 0
+				file->seekCur(dif);
+			}
 		}
 	}
 }

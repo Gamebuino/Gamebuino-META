@@ -315,6 +315,10 @@ Frame_Handler_SD::Frame_Handler_SD(Image* img) : Frame_Handler(img) {
 void Frame_Handler_SD::init(char* filename) {
 	gmv = new GMV(img, filename);
 	if (!gmv->isValid()) {
+		if (img->frames == 0) {
+			delete gmv;
+			lazy_filename = filename;
+		}
 		return;
 	}
 	if (img->frames == 1) {
@@ -331,12 +335,32 @@ Frame_Handler_SD::~Frame_Handler_SD() {
 	}
 }
 
+void Frame_Handler_SD::lazy_init() {
+	if (img->frames) {
+		// we already inited
+		return;
+	}
+	init(lazy_filename);
+	if (!gmv->isValid()) {
+		// we are lost
+		delete gmv;
+		gmv = 0;
+		img->frames = 1;
+	}
+}
+
 void Frame_Handler_SD::next() {
-	gmv->readFrame();
+	lazy_init();
+	if (gmv) {
+		gmv->readFrame();
+	}
 }
 
 void Frame_Handler_SD::set(uint16_t frame) {
-	gmv->setFrame(frame);
+	lazy_init();
+	if (gmv) {
+		gmv->setFrame(frame);
+	}
 }
 
 } // namespace Gamebuino_Meta

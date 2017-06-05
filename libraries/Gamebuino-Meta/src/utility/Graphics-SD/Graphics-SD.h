@@ -64,7 +64,11 @@ public:
 	void next();
 	void set(uint16_t frame);
 private:
-	GMV* gmv;
+	void lazy_init();
+	union {
+		GMV* gmv;
+		char* lazy_filename;
+	};
 };
 
 } // namespace Gamebuino_Meta

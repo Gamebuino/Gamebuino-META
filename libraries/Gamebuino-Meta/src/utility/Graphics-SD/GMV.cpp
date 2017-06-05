@@ -12,11 +12,14 @@ GMV::GMV() {
 
 GMV::GMV(Image* _img, char* filename) {
 	valid = false;
+	img = _img;
+	img->frames = 1;
 	file = SD.open(filename, FILE_WRITE);
 	if (!file) {
+		// couldn't find file, perhaps SD isn't inited yet, falling back to lazy init...
+		img->frames = 0;
 		return;
 	}
-	img = _img;
 	file.rewind();
 	uint16_t header = f_read16(&file);
 	if (header == 0x4D42) {
@@ -82,7 +85,7 @@ void GMV::convertFromBMP(BMP& bmp, char* newname) {
 	f_write16(img->_width, &f); // image width
 	f_write16(img->_height, &f); // image height
 	f_write16(img->frames, &f); // number of frames
-	f.write(bmp.indexed ? 1 : 0);
+	f.write(bmp.depth == 4 ? 1 : 0);
 	for (uint16_t frame = 0; frame < img->frames; frame++) {
 		bmp.readFrame(frame, img->frames, img->_height, &file, img->_buffer);
 		writeFrame(&f);

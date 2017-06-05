@@ -23,7 +23,7 @@ public:
 //	void setFrames(uint32_t frames);
 	uint32_t getRowSize();
 //	uint16_t frames;
-	bool indexed;
+	uint8_t depth;
 private:
 	bool valid;
 	uint8_t image_offset;

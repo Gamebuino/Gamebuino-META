@@ -1,9 +1,9 @@
 #include <Gamebuino-Meta.h>
 
-Image img;
+Image img = Image(80, 64, "/uforace/SCREEN.BMP");
 void setup() {
 	gb.begin();
-	img.init(80, 64, "/uforace/RECORD.BMP");
+	//img.init();
 	/*
 	if (!gb.sd_gfx.readImage(img, "/uforace/SCREEN.BMP")) {
 		while(1);
