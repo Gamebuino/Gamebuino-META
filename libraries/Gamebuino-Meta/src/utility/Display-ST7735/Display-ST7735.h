@@ -137,7 +137,7 @@ public:
 		drawPixel(int16_t x, int16_t y),
 		drawFastVLine(int16_t x, int16_t y, int16_t h),
 		drawFastHLine(int16_t x, int16_t y, int16_t w),
-		drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w),
+		drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img),
 		drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h),
 		sendBuffer(uint16_t *buffer, uint16_t n),
 		drawImage(int16_t x, int16_t y, Image& img),

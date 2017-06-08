@@ -85,7 +85,7 @@ public:
 
 	// This MUST be defined by the subclass:
 	virtual void drawPixel(int16_t x, int16_t y) = 0;
-	virtual void drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w) = 0;
+	virtual void drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img) = 0;
 
 
 	// These MAY be overridden by the subclass to provide device-specific
@@ -155,7 +155,7 @@ public:
 	static void indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length, bool skipFirst);
 
 	union {
-		uint16_t transparentColor = 0;
+		uint16_t transparentColor;
 		struct {
 			uint8_t transparentColorIndex;
 			bool useTransparentIndex;

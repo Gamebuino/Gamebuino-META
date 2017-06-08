@@ -627,7 +627,9 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 				x + i2offset,
 				y + j2offset + j2,
 				destLine,
-				w2cropped);
+				w2cropped,
+				img
+			);
 		}
 		return;
 	}
@@ -639,7 +641,9 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 				x + i2offset,
 				y + j2offset + j2,
 				img._buffer + ((j2 + j2offset) * w1) + i2offset,
-				w2cropped);
+				w2cropped,
+				img
+			);
 		}
 		return;
 	}
@@ -663,7 +667,8 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 					x + i2offset,
 					y + j2offset + j2,
 					(uint16_t*)destLine,
-					w2cropped
+					w2cropped,
+					img
 				);
 			} else {
 				uint8_t *destLine = (uint8_t*)img._buffer + ((j2 + j2offset) * ((w1 + 1)/2)) + (i2offset / 2);
@@ -671,7 +676,8 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 					x + i2offset,
 					y + j2offset + j2,
 					(uint16_t*)destLine,
-					w2cropped
+					w2cropped,
+					img
 				);
 			}
 		}
@@ -745,7 +751,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h
 					bufferLine[i2] = (uint16_t)colorIndex[b & 0x0F];
 				}
 			}
-			drawBufferedLine(x + i2offset, y + j2 + j2offset, bufferLine, w2cropped);
+			drawBufferedLine(x + i2offset, y + j2 + j2offset, bufferLine, w2cropped, img);
 		}
 		return;
 	}
@@ -775,7 +781,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h
 					*dst = (*dst & 0x0F) | (b << 4);
 				}
 			}
-			drawBufferedLine(x + i2offset, y + j2 + j2offset, (uint16_t*)bufferLine, w2cropped);
+			drawBufferedLine(x + i2offset, y + j2 + j2offset, (uint16_t*)bufferLine, w2cropped, img);
 		}
 		return;
 	}

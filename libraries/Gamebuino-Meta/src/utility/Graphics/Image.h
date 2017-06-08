@@ -71,7 +71,7 @@ public:
 	void freeBuffer(),
 		drawPixel(int16_t x, int16_t y),
 		fillScreen(Color color),
-		drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w),
+		drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img),
 		allocateBuffer();
 
 	uint16_t getBufferSize();

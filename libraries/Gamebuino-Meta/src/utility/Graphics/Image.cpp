@@ -44,7 +44,7 @@ Frame_Handler_Mem::Frame_Handler_Mem(Image* _img) : Frame_Handler(_img) {
 
 void Frame_Handler_Mem::set(uint16_t frame) {
 	uint32_t buf_size = img->getBufferSize();
-	img->_buffer = (uint16_t*)((uint32_t)buf - buf_size + (buf_size * frame));
+	img->_buffer = (uint16_t*)((uint32_t)buf + (buf_size * frame));
 }
 
 void Frame_Handler_Mem::next() {
@@ -100,6 +100,7 @@ void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col) {
 	if (frame_handler) {
 		delete frame_handler;
 	}
+	transparentColor = 0xF81F;
 	frames = _frames;
 	colorMode = col;
 	_width = w;
@@ -137,6 +138,7 @@ void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col) {
 	if (frame_handler) {
 		delete frame_handler;
 	}
+	transparentColor = 0xF81F;
 	frames = _frames;
 	colorMode = col;
 	uint16_t* buf = (uint16_t*)buffer;
@@ -162,6 +164,7 @@ Image::Image(uint16_t w, uint16_t h, char* filename) : Graphics(0, 0) {
 	init(w, h, filename);
 }
 void Image::init(uint16_t w, uint16_t h, char* filename) {
+	transparentColor = 0;
 	_width = w;
 	_height = h;
 	last_frame = (gb.frameCount & 0xFF) - 1;
@@ -201,7 +204,6 @@ void Image::nextFrame() {
 	if ((frame + 1) >= frames) {
 		frame = 0;
 		frame_handler->first();
-		frame_handler->next();
 	} else {
 		frame_handler->next();
 		frame++;
@@ -217,7 +219,7 @@ void Image::setFrame(uint16_t _frame) {
 	}
 	frame = _frame;
 	frame_handler->set(frame);
-	last_frame == (gb.frameCount & 0xFF) - 1; // make sure that it will be rendered next go
+	last_frame = gb.frameCount & 0xFF; // we already loaded this frame!
 }
 
 void Image::drawPixel(int16_t x, int16_t y) {
@@ -257,7 +259,7 @@ void Image::fillScreen(Color color) {
 	}
 }
 
-void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w) {
+void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img) {
 	if (colorMode == ColorMode::index) {
 		// TODO: transparent index color
 		uint8_t *src = (uint8_t*)buffer;
@@ -275,13 +277,13 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		return;
 	}
 	if ((alpha == 255) && (tint == 0xFFFF)) { //no alpha blending and not tinting
-		if (!transparentColor) { //no transparent color set
+		if (!img.transparentColor) { //no transparent color set
 			memcpy(&_buffer[x + y * _width], buffer, w * 2); //fastest copy possible
 			return;
 		} else {
 			uint16_t * thisLine = &_buffer[x + y * _width];
 			for (uint8_t i = 0; i < w; i++) { //only copy non-transparent-colored pixels
-				if (buffer[i] == transparentColor) continue;
+				if (buffer[i] == img.transparentColor) continue;
 				thisLine[i] = buffer[i];
 			}
 			return;
@@ -294,7 +296,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 
 	//Extract RGB channels from buffer
 	for (uint8_t i = 0; i < w; i++) {
-		if (transparentColor && buffer[i] == transparentColor) continue;
+		if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 		uint16_t color1 = buffer[i];
 		r1[i] = color1 & B11111;
 		g1[i] = (color1 >> 5) & B111111;
@@ -307,7 +309,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		int8_t tintG = (tint >> 5) & B111111;
 		int8_t tintB = (tint >> 11) & B11111;
 		for (uint8_t i = 0; i < w; i++) {
-			if (transparentColor && buffer[i] == transparentColor) continue;
+			if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 			r1[i] = r1[i] * tintR / 32;
 			g1[i] = g1[i] * tintG / 64;
 			b1[i] = b1[i] * tintB / 32;
@@ -320,7 +322,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 	case BlendMode::blend:
 		if (alpha < 255) {
 			for (uint8_t i = 0; i < w; i++) {
-				if (transparentColor && buffer[i] == transparentColor) continue;
+				if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 				uint16_t color2 = thisLine[i];
 				int16_t r2 = color2 & B11111;
 				int16_t g2 = (color2 >> 5) & B111111;
@@ -333,7 +335,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		break;
 	case BlendMode::add:
 		for (uint8_t i = 0; i < w; i++) {
-			if (transparentColor && buffer[i] == transparentColor) continue;
+			if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 			uint16_t color2 = thisLine[i];
 			int16_t r2 = color2 & B11111;
 			int16_t g2 = (color2 >> 5) & B111111;
@@ -345,7 +347,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		break;
 	case BlendMode::subtract:
 		for (uint8_t i = 0; i < w; i++) {
-			if (transparentColor && buffer[i] == transparentColor) continue;
+			if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 			uint16_t color2 = thisLine[i];
 			int16_t r2 = color2 & B11111;
 			int16_t g2 = (color2 >> 5) & B111111;
@@ -357,7 +359,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		break;
 	case BlendMode::multiply:
 		for (uint8_t i = 0; i < w; i++) {
-			if (transparentColor && buffer[i] == transparentColor) continue;
+			if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 			uint16_t color2 = thisLine[i];
 			int16_t r2 = color2 & B11111;
 			int16_t g2 = (color2 >> 5) & B111111;
@@ -369,7 +371,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 		break;
 	case BlendMode::screen:
 		for (uint8_t i = 0; i < w; i++) {
-			if (transparentColor && buffer[i] == transparentColor) continue;
+			if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 			uint16_t color2 = thisLine[i];
 			int16_t r2 = color2 & B11111;
 			int16_t g2 = (color2 >> 5) & B111111;
@@ -382,7 +384,7 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w)
 	}
 
 	for (uint8_t i = 0; i < w; i++) {
-		if (transparentColor && buffer[i] == transparentColor) continue;
+		if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 		thisLine[i] = (b1[i] << 11) + (g1[i] << 5) + r1[i];
 	}
 }

@@ -360,6 +360,7 @@ void Frame_Handler_SD::set(uint16_t frame) {
 	lazy_init();
 	if (gmv) {
 		gmv->setFrame(frame);
+		gmv->readFrame();
 	}
 }
 

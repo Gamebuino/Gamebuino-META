@@ -59,6 +59,8 @@ GMV::GMV(Image* _img, char* filename) {
 	img->_width = f_read16(&file);
 	img->_height = f_read16(&file);
 	img->frames = f_read16(&file);
+	file.seekCur(1); // trash indexed checking for now
+	img->transparentColor = f_read16(&file);
 	file.seekSet(header_size);
 	
 	if (!img->_buffer) {
@@ -82,12 +84,13 @@ void GMV::convertFromBMP(BMP& bmp, char* newname) {
 		return;
 	}
 	f_write16(0x5647, &f); // header "GV"
-	f_write16(12, &f); // header size
+	f_write16(14, &f); // header size
 	f.write((uint8_t)0); // version
 	f_write16(img->_width, &f); // image width
 	f_write16(img->_height, &f); // image height
 	f_write16(img->frames, &f); // number of frames
 	f.write(bmp.depth == 4 ? 1 : 0);
+	f_write16(0, &f); // TODO: transaprent color
 	for (uint16_t frame = 0; frame < img->frames; frame++) {
 		bmp.readFrame(frame, img->frames, img->_height, &file, img->_buffer);
 		writeFrame(&f);

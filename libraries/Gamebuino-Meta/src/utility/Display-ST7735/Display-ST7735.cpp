@@ -452,7 +452,7 @@ void Display_ST7735::setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y
 //fast method to quickly push a buffered line of pixels
 //boundary check must be made prior to this function
 //the color must be formated as the destination
-void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w) {
+void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img) {
 
 	PORT->Group[0].OUTSET.reg = (1 << 17);	// set PORTA.17 high	"digitalWrite(13, HIGH)"
 
