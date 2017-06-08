@@ -7,6 +7,7 @@
 
 #define DISPLAY_MODE_RGB565 0
 #define DISPLAY_MODE_INDEX 1
+#define DISPLAY_MODE_INDEX_HALFRES 2
 
 // let's first include our config. First one can be overriden inside the sketch, config.h contains the default configs
 #include <sketch/config-gamebuino.h>
@@ -18,6 +19,9 @@
 #endif
 #if DISPLAY_MODE == DISPLAY_MODE_INDEX
 #define DISPLAY_CONSTRUCTOR Image(160, 128, ColorMode::index)
+#endif
+#if DISPLAY_MODE == DISPLAY_MODE_INDEX_HALFRES
+#define DISPLAY_CONSTRUCTOR Image(80, 64, ColorMode::index)
 #endif
 #endif // DISPLAY_CONSTRUCTOR
 

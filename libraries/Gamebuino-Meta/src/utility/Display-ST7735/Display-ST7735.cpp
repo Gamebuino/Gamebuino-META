@@ -699,6 +699,36 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 	Graphics::drawImage(x, y, img); //fallback to the usual
 }
 
+void bufferIndexLineDouble(uint16_t* preBufferLine, uint16_t* img_buffer, int16_t w, uint16_t j) {
+	int16_t w2 = w*2;
+	uint16_t *dest = preBufferLine;
+	uint16_t *src = img_buffer + ((j * w) / 4);
+	Color *index = Graphics::colorIndex;
+	uint16_t length = w;
+	for (uint16_t i = 0; i < length / 4; i++) {
+		uint16_t index1 = (src[i] >> 4) & 0x000F;
+		uint16_t index2 = (src[i] >> 0) & 0x000F;
+		uint16_t index3 = (src[i] >> 12) & 0x000F;
+		uint16_t index4 = (src[i] >> 8) & 0x000F;
+		//change pixel order (because of words endianness) at the same time
+		*(dest++) = (uint16_t)index[index1];
+		*(dest++) = (uint16_t)index[index1];
+		*(dest++) = (uint16_t)index[index2];
+		*(dest++) = (uint16_t)index[index2];
+		*(dest++) = (uint16_t)index[index3];
+		*(dest++) = (uint16_t)index[index3];
+		*(dest++) = (uint16_t)index[index4];
+		*(dest++) = (uint16_t)index[index4];
+	}
+	//change RGB565 color endiannes (bacause of SPI sending byte by byte instead of word by word)
+	for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
+		uint16_t color = preBufferLine[i];
+		color = (color << 8) | (color >> 8); //change endianness
+		preBufferLine[i] = color;
+	}
+	memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
+}
+
 void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2) {
 	img.nextFrame();
 	//out of screen
@@ -714,73 +744,144 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 	}
 
 	//x2 upscaling to full screen
-	if ((img.colorMode == ColorMode::rgb565) && (w2 == (w * 2)) && (h2 == (h * 2)) && (_width == w2) && (_height == h2)) {
-		uint16_t preBufferLineArray[w2 * 2];
-		uint16_t sendBufferLineArray[w2 * 2];
-		uint16_t *preBufferLine = preBufferLineArray;
-		uint16_t *sendBufferLine = sendBufferLineArray;
+	if ((w2 == (w * 2)) && (h2 == (h * 2)) && (_width == w2) && (_height == h2)) {
+		if (img.colorMode == ColorMode::rgb565) {
+			uint16_t preBufferLineArray[w2 * 2];
+			uint16_t sendBufferLineArray[w2 * 2];
+			uint16_t *preBufferLine = preBufferLineArray;
+			uint16_t *sendBufferLine = sendBufferLineArray;
 
-		//set the window to the whole screen
-		setAddrWindow(0, 0, _width - 1, _height - 1);
+			//set the window to the whole screen
+			setAddrWindow(0, 0, _width - 1, _height - 1);
 
-		//initiate SPI
-		SPI.beginTransaction(mySPISettings);
-		*rsport |= rspinmask;
-		*csport &= ~cspinmask;
+			//initiate SPI
+			SPI.beginTransaction(mySPISettings);
+			*rsport |= rspinmask;
+			*csport &= ~cspinmask;
 
-		//prepare the first line
-		for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
-			uint16_t color = img._buffer[i];
-			color = (color << 8) | (color >> 8); //change endianness
-			preBufferLine[i * 2] = preBufferLine[(i * 2) + 1] = color;
-		}
-		memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
-
-		//start sending lines and processing them in parallel using DMA
-		for (uint16_t j = 1; j < h; j ++) { //vertical coordinate in source image, start from the second line
-
-			//memcpy is too slow to transfer from pre buffer to send buffer
-			//memcpy(sendBufferLine, preBufferLine, w2 * 2 * 2);
-
-			//swap buffers pointers instead
-			uint16_t *temp = preBufferLine;
-			preBufferLine = sendBufferLine;
-			sendBufferLine = temp;
-
-			sendBuffer(sendBufferLine, _width * 2); //start DMA send
-
-			PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
-
-			//prepare the next line while the current one is being transferred
-			for (uint16_t i = 0; i < w; i ++) { //horizontal coordinate in source image
-				uint16_t color = img._buffer[(j * w) + i];
+			//prepare the first line
+			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
+				uint16_t color = img._buffer[i];
 				color = (color << 8) | (color >> 8); //change endianness
 				preBufferLine[i * 2] = preBufferLine[(i * 2) + 1] = color;
 			}
 			memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
 
+			//start sending lines and processing them in parallel using DMA
+			for (uint16_t j = 1; j < h; j ++) { //vertical coordinate in source image, start from the second line
+
+				//memcpy is too slow to transfer from pre buffer to send buffer
+				//memcpy(sendBufferLine, preBufferLine, w2 * 2 * 2);
+
+				//swap buffers pointers instead
+				uint16_t *temp = preBufferLine;
+				preBufferLine = sendBufferLine;
+				sendBufferLine = temp;
+
+				sendBuffer(sendBufferLine, _width * 2); //start DMA send
+
+				PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
+
+				//prepare the next line while the current one is being transferred
+				for (uint16_t i = 0; i < w; i ++) { //horizontal coordinate in source image
+					uint16_t color = img._buffer[(j * w) + i];
+					color = (color << 8) | (color >> 8); //change endianness
+					preBufferLine[i * 2] = preBufferLine[(i * 2) + 1] = color;
+				}
+				memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
+
+					PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
+
+				while (!transfer_is_done); //chill
+
+				myDMA.free(); //free the DMA channel
+			}
+
+			//swap buffers pointers
+			uint16_t *temp = preBufferLine;
+			preBufferLine = sendBufferLine;
+			sendBufferLine = temp;
+
+			//send the last line
+			sendBuffer(sendBufferLine, _width * 2); //start DMA send
+			while (!transfer_is_done); //chill
+			myDMA.free(); //free the DMA channel
+
+			//finish SPI
+			*csport |= cspinmask;
+			SPI.endTransaction();
+
+			return;
+		}
+		if (img.colorMode == ColorMode::index) {
+			uint16_t preBufferLineArray[w2 * 2];
+			uint16_t sendBufferLineArray[w2 * 2];
+			uint16_t *preBufferLine = preBufferLineArray;
+			uint16_t *sendBufferLine = sendBufferLineArray;
+
+			//set the window to the whole screen
+			setAddrWindow(0, 0, _width - 1, _height - 1);
+
+			//initiate SPI
+			SPI.beginTransaction(mySPISettings);
+			*rsport |= rspinmask;
+			*csport &= ~cspinmask;
+			bufferIndexLineDouble(preBufferLine, img._buffer, w, 0);
+			
+			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
+				uint16_t color = preBufferLine[i];
+				color = (color << 8) | (color >> 8); //change endianness
+				preBufferLine[i] = color;
+			}
+			memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
+
+			//start sending lines and processing them in parallel using DMA
+			for (uint16_t j = 1; j < h; j++) { //vertical coordinate in source image, start from the second line
+				PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
+
+				//memcpy is too slow to transfer from pre buffer to send buffer
+				//memcpy(sendBufferLine, preBufferLine, w2 * 2 * 2);
+
+				//swap buffers pointers instead
+				uint16_t *temp = preBufferLine;
+				preBufferLine = sendBufferLine;
+				sendBufferLine = temp;
+				
+				sendBuffer(sendBufferLine, _width * 2); //start DMA send
+
+
+				//prepare the next line while the current one is being transferred
+				/*indexTo565(preBufferLine, img._buffer + ((j * w) / 4), Graphics::colorIndex, w);
+				for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
+					uint16_t color = preBufferLine[i];
+					color = (color << 8) | (color >> 8); //change endianness
+					preBufferLine[i] = color;
+				}*/
+
+				bufferIndexLineDouble(preBufferLine, img._buffer, w, j);
+
 				PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
 
+				while (!transfer_is_done); //chill
+
+				myDMA.free(); //free the DMA channel
+			}
+
+			//swap buffers
+			uint16_t *temp = preBufferLine;
+			preBufferLine = sendBufferLine;
+			sendBufferLine = temp;
+
+			//send the last line
+			sendBuffer(sendBufferLine, w); //start DMA send
 			while (!transfer_is_done); //chill
-
 			myDMA.free(); //free the DMA channel
+
+			//finish SPI
+			*csport |= cspinmask;
+			SPI.endTransaction();
+			return;
 		}
-
-		//swap buffers pointers
-		uint16_t *temp = preBufferLine;
-		preBufferLine = sendBufferLine;
-		sendBufferLine = temp;
-
-		//send the last line
-		sendBuffer(sendBufferLine, _width * 2); //start DMA send
-		while (!transfer_is_done); //chill
-		myDMA.free(); //free the DMA channel
-
-		//finish SPI
-		*csport |= cspinmask;
-		SPI.endTransaction();
-
-		return;
 	}
 
 	// fall back to most generic but slow resizing
