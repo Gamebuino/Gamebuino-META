@@ -23,7 +23,7 @@ private:
 	void writeColor(File* f, uint16_t color, uint8_t count);
 	void writeFrame(File* f);
 	bool valid;
-	uint8_t header_size;
+	uint16_t header_size;
 };
 
 } // namespace Gamebuino_Meta

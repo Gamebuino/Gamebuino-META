@@ -154,7 +154,13 @@ public:
 
 	static void indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length, bool skipFirst);
 
-	static uint16_t transparentColor;
+	union {
+		uint16_t transparentColor = 0;
+		struct {
+			uint8_t transparentColorIndex;
+			bool useTransparentIndex;
+		};
+	};
 	static uint8_t alpha;
 	static uint16_t tint;
 	static BlendMode blendMode;

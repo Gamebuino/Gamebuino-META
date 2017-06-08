@@ -16,6 +16,6 @@ void loop() {
 	if (gb.update()) {
 		gb.display.drawImage(0, 0, img);
 		gb.display.setColor(WHITE, BLACK);
-		gb.display.println(img.frames);
+		gb.display.println(sizeof (Image));
 	}
 }

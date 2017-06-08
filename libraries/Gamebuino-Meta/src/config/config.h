@@ -5,9 +5,20 @@
 #define SAVETYPE_INT 0
 #define SAVETYPE_BLOB 1
 
+#define DISPLAY_MODE_RGB565 0
+#define DISPLAY_MODE_INDEX 1
 
 // let's first include our config. First one can be overriden inside the sketch, config.h contains the default configs
 #include <sketch/config-gamebuino.h>
 #include "config-default.h"
+
+#ifndef DISPLAY_CONSTRUCTOR
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+#define DISPLAY_CONSTRUCTOR Image(80, 64, ColorMode::rgb565)
+#endif
+#if DISPLAY_MODE == DISPLAY_MODE_INDEX
+#define DISPLAY_CONSTRUCTOR Image(160, 128, ColorMode::index)
+#endif
+#endif // DISPLAY_CONSTRUCTOR
 
 #endif // _CONFIG_GAMEBUINO_META_

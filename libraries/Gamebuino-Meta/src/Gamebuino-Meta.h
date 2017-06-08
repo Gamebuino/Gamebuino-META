@@ -74,7 +74,7 @@ class Gamebuino {
 public:
 	Buttons buttons;
 	Sound sound;
-	Image display = Image(80, 64, ColorMode::rgb565);
+	Image display = DISPLAY_CONSTRUCTOR;
 	Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 

@@ -38,7 +38,7 @@ GMV::GMV(Image* _img, char* filename) {
 		_filename[name_len] = '\0';
 		
 		uint32_t creatorBits = bmp.getCreatorBits();
-		if ((creatorBits & CONERT_MASK) != CONVERT_MAGIC) {
+		if ((creatorBits & CONERT_MASK) != CONVERT_MAGIC || !SD.exists(_filename)) {
 			// we still need to convert...
 			convertFromBMP(bmp, _filename);
 		}
@@ -54,7 +54,8 @@ GMV::GMV(Image* _img, char* filename) {
 		// invalid header!
 		return;
 	}
-	header_size = file.read();
+	header_size = f_read16(&file);
+	file.seekCur(1); // trash version byte
 	img->_width = f_read16(&file);
 	img->_height = f_read16(&file);
 	img->frames = f_read16(&file);
@@ -81,7 +82,8 @@ void GMV::convertFromBMP(BMP& bmp, char* newname) {
 		return;
 	}
 	f_write16(0x5647, &f); // header "GV"
-	f.write(10); // header size
+	f_write16(12, &f); // header size
+	f.write((uint8_t)0); // version
 	f_write16(img->_width, &f); // image width
 	f_write16(img->_height, &f); // image height
 	f_write16(img->frames, &f); // number of frames

@@ -45,7 +45,7 @@ extern const uint8_t font3x5[];
 namespace Gamebuino_Meta {
 
 //default values of static members
-uint16_t Graphics::transparentColor = 0xF81F; //magenta is the default transparent color
+//uint16_t Graphics::transparentColor = 0xF81F; //magenta is the default transparent color
 uint16_t Graphics::tint = 0xFFFF;
 uint8_t Graphics::alpha = 255;
 Color _colorIndex[16] = {

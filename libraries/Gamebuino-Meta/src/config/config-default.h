@@ -56,6 +56,14 @@
 
 
 ///////////////
+// display defines
+///////////////
+
+#ifndef DISPLAY_MODE
+#define DISPLAY_MODE DISPLAY_MODE_RGB565
+#endif
+
+///////////////
 // recording defines
 ///////////////
 

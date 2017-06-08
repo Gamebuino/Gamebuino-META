@@ -86,20 +86,25 @@ void Gamebuino::begin() {
 	//tft
 	tft.initR(INITR_BLACKTAB);
 	tft.setRotation(3);
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
 	display.fillScreen(tft.Color565(127, 127, 127));
+#else
+	display.setColor(ColorIndex::darkgray);
+	display.fillRect(0, 0, display._width, display._height);
+#endif
 
 	tft.drawImage(0, 0, display, tft.width(), tft.height());
-	tft.setColor(WHITE, BLACK);
+	tft.setColor(Color::white, Color::black);
 	tft.print("SD INIT... ");
 	if (!SD.begin(SD_CS)) {
-		tft.setColor(RED, BLACK);
+		tft.setColor(Color::red, Color::black);
 		tft.println("FAILED");
 		delay(1000);
 	} else {
-		tft.setColor(GREEN, BLACK);
+		tft.setColor(Color::green, Color::black);
 		tft.println("OK");
 	}
-	tft.setColor(WHITE, BLACK);
+	tft.setColor(Color::white, Color::black);
 	
 	// SD is initialized, let's switch to the folder!
 	if (!SD.exists(folder_name)) {
@@ -125,7 +130,11 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 	display.textWrap = false;
 	//display.persistence = false;
 	//battery.show = false;
-	display.setColor(BLACK);
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+	display.setColor(Color::black);
+#else
+	display.setColor(ColorIndex::black);
+#endif
 	while(1){
 		if(update()){
 			uint8_t logoOffset = name[0]?display.fontHeight:0; //add an offset the logo when there is a name to display
@@ -151,21 +160,23 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 			display.print(name);
 			
 			//A button
-			display.cursorX = LCDWIDTH - display.fontWidth*3 -1;
-			display.cursorY = LCDHEIGHT - display.fontHeight*3 - 3;
-			if((frameCount/16)%2)
-			  display.println("\25 \20");
-			else
-			  display.println("\25\20 ");
+			display.cursorX = display.width() - display.fontWidth*3 -1;
+			display.cursorY = display.height() - display.fontHeight*3 - 3;
+			if((frameCount/16)%2) {
+				display.println("\25 \20");
+			} else {
+				display.println("\25\20 ");
+			}
 			//B button
-			display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
+			display.cursorX = display.width() - display.fontWidth*3 - 1;
 			display.cursorY++;
-			if(sound.getVolume())
+			if(sound.getVolume()) {
 				display.println("\26\23\24");
-			else
+			} else {
 				display.println("\26\23x");
+			}
 			//C button
-			display.cursorX = LCDWIDTH - display.fontWidth*3 - 1;
+			display.cursorX = display.width() - display.fontWidth*3 - 1;
 			display.cursorY++;
 			display.println("\27SD");
 			
@@ -182,8 +193,9 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 				break;
 			}
 			//flash the loader
-			if(buttons.pressed(Button::c))
+			if(buttons.pressed(Button::c)) {
 				changeGame();
+			}
 		}
 	}
 	//battery.show = true;
@@ -229,9 +241,17 @@ bool Gamebuino::update() {
 				display.setFont(font3x5);
 				display.cursorX = display.width() - display.fontWidth + 1;
 				display.cursorY = 0;
-				display.setColor(BLACK);
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+				display.setColor(Color::black);
+#else
+				display.setColor(ColorIndex::black);
+#endif
 				display.fillRect(display.cursorX - 1, 0, display.fontWidth, display.fontHeight);
-				display.setColor(RED);
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+				display.setColor(Color::red);
+#else
+				display.setColor(ColorIndex::red);
+#endif
 				if ((frameCount % 20) < 10) {
 					//draw the empty battery character
 					display.print("\7");
@@ -301,9 +321,15 @@ bool Gamebuino::update() {
 
 
 			//if(!display.persistence)
-			display.fillScreen(WHITE); //clear the buffer
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+			display.fillScreen(Color::white); //clear the buffer
+			display.setColor(Color::black);
+#else
+			display.setColor(ColorIndex::white);
+			display.fillRect(0, 0, display._width, display._height);
+			display.setColor(ColorIndex::black);
+#endif
 			display.setCursor(0, 0);
-			display.setColor(BLACK);
 
 			//neoPixels update
 			neoPixels.show();
@@ -353,7 +379,7 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 #if (ENABLE_GUI > 0)
 	//display.persistence = false;
 	int8_t activeItem = 0;
-	int8_t currentY = LCDHEIGHT;
+	int8_t currentY = display.height();
 	int8_t targetY = 0;
 	bool exit = false;
 	int8_t answer = -1;
@@ -402,10 +428,18 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 			}
 
 			//display.fillRect(0, currentY + 3 + 8 * activeItem, 2, 2, BLACK);
-			display.setColor(WHITE);
-			display.drawFastHLine(0, currentY + display.fontHeight * activeItem - 1, LCDWIDTH);
-			display.setColor(BLACK);
-			display.drawRoundRect(0, currentY + display.fontHeight * activeItem - 2, LCDWIDTH, (display.fontHeight+3), 3);
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+			display.setColor(Color::white);
+#else
+			display.setColor(ColorIndex::white);
+#endif
+			display.drawFastHLine(0, currentY + display.fontHeight * activeItem - 1, display.width());
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+			display.setColor(Color::black);
+#else
+			display.setColor(ColorIndex::black);
+#endif
+			display.drawRoundRect(0, currentY + display.fontHeight * activeItem - 2, display.width(), (display.fontHeight+3), 3);
 		}
 	}
 #else
@@ -424,8 +458,8 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 	int8_t activeX = 0;
 	int8_t activeY = 2;
 	//position of the keyboard on the screen
-	int8_t currentX = LCDWIDTH;
-	int8_t currentY = LCDHEIGHT;
+	int8_t currentX = display.width();
+	int8_t currentY = display.height();
 	int8_t targetX = 0;
 	int8_t targetY = 0;
 
@@ -454,8 +488,8 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 			if (activeY == KEYBOARD_H) activeY = 0;
 			if (activeY < 0) activeY = KEYBOARD_H - 1;
 			//set the keyboard position on screen
-			targetX = -(display.fontWidth+1) * activeX + LCDWIDTH / 2 - 3;
-			targetY = -(display.fontHeight+1) * activeY + LCDHEIGHT / 2 - 4 - display.fontHeight;
+			targetX = -(display.fontWidth+1) * activeX + display.width() / 2 - 3;
+			targetY = -(display.fontHeight+1) * activeY + display.height() / 2 - 4 - display.fontHeight;
 			//smooth the keyboard displacement
 			currentX = (targetX + currentX) / 2;
 			currentY = (targetY + currentY) / 2;
@@ -522,25 +556,42 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 			display.print("\27save");
 			
 			//erase some pixels around the selected character
-			display.setColor(WHITE);
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+			display.setColor(Color::white);
+#else
+			display.setColor(ColorIndex::white);
+#endif
 			display.drawFastHLine(currentX + activeX * (display.fontWidth+1) - 1, currentY + activeY * (display.fontHeight+1) - 2, 7);
 			//draw the selection rectangle
-			display.setColor(BLACK);
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+			display.setColor(Color::black);
+#else
+			display.setColor(ColorIndex::black);
+#endif
 			display.drawRoundRect(currentX + activeX * (display.fontWidth+1) - 2, currentY + activeY * (display.fontHeight+1) - 3, (display.fontWidth+2)+(display.fontWidth-1)%2, (display.fontHeight+5), 3);
 			//draw keyboard outline
 			//display.drawRoundRect(currentX - 6, currentY - 6, KEYBOARD_W * (display.fontWidth+1) + 12, KEYBOARD_H * (display.fontHeight+1) + 12, 8, BLACK);
 			//text field
-			display.drawFastHLine(0, LCDHEIGHT-display.fontHeight-2, LCDWIDTH);
-			display.setColor(WHITE);
-			display.fillRect(0, LCDHEIGHT-display.fontHeight-1, LCDWIDTH, display.fontHeight+1);
+			display.drawFastHLine(0, display.height()-display.fontHeight-2, display.width());
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+			display.setColor(Color::white);
+#else
+			display.setColor(ColorIndex::white);
+#endif
+			display.fillRect(0, display.height()-display.fontHeight-1, display.width(), display.fontHeight+1);
 			//typed text
 			display.cursorX = 0;
-			display.cursorY = LCDHEIGHT-display.fontHeight;
-			display.setColor(BLACK);
+			display.cursorY = display.height()-display.fontHeight;
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+			display.setColor(Color::black);
+#else
+			display.setColor(ColorIndex::black);
+#endif
 			display.print(text);
 			//blinking cursor
-			if (((frameCount % 8) < 4) && (activeChar < (length-1)))
-			display.drawChar(display.fontWidth * activeChar, LCDHEIGHT-display.fontHeight, '_',1);
+			if (((frameCount % 8) < 4) && (activeChar < (length-1))) {
+				display.drawChar(display.fontWidth * activeChar, display.height()-display.fontHeight, '_',1);
+			}
 		}
 	}
 #endif
@@ -561,12 +612,20 @@ void Gamebuino::updatePopup(){
 			yOffset = 12-popupTimeLeft;
 		}
 		display.fontSize = 1;
-		display.setColor(WHITE);
-		display.fillRoundRect(0,LCDHEIGHT-display.fontHeight+yOffset-3,LCDWIDTH,display.fontHeight+3,3);
-		display.setColor(BLACK);
-		display.drawRoundRect(0,LCDHEIGHT-display.fontHeight+yOffset-3,LCDWIDTH,display.fontHeight+3,3);
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+		display.setColor(Color::white);
+#else
+		display.setColor(ColorIndex::white);
+#endif
+		display.fillRoundRect(0,display.height()-display.fontHeight+yOffset-3,display.width(),display.fontHeight+3,3);
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+		display.setColor(Color::black);
+#else
+		display.setColor(ColorIndex::black);
+#endif
+		display.drawRoundRect(0,display.height()-display.fontHeight+yOffset-3,display.width(),display.fontHeight+3,3);
 		display.cursorX = 4;
-		display.cursorY = LCDHEIGHT-display.fontHeight+yOffset-1;
+		display.cursorY = display.height()-display.fontHeight+yOffset-1;
 		display.print(popupText);
 		popupTimeLeft--;
 	}

@@ -13,11 +13,11 @@ public:
 	Frame_Handler(Image* _img);
 	virtual void next() = 0;
 	virtual void set(uint16_t frame) = 0;
-	void first();
-	uint32_t getBufferSizeWithFrames();
-//protected:
-	void deallocateBuffer();
+	virtual void first();
+	virtual uint32_t getBufferSizeWithFrames();
 	void allocateBuffer();
+protected:
+	void deallocateBuffer();
 	Image* img;
 	uint16_t* buf;
 };
