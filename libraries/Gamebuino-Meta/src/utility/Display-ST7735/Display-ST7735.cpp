@@ -630,10 +630,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 		for (uint16_t j = 1; j < h; j++) { //vertical coordinate in source image, start from the second line
 			PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
 
-			//memcpy is too slow to transfer from pre buffer to send buffer
-			//memcpy(sendBufferLine, preBufferLine, w2 * 2 * 2);
-
-			//swap buffers pointers instead
+			//swap buffers pointers
 			uint16_t *temp = preBufferLine;
 			preBufferLine = sendBufferLine;
 			sendBufferLine = temp;
@@ -642,12 +639,6 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 
 
 			//prepare the next line while the current one is being transferred
-			/*indexTo565(preBufferLine, img._buffer + ((j * w) / 4), Graphics::colorIndex, w);
-			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
-				uint16_t color = preBufferLine[i];
-				color = (color << 8) | (color >> 8); //change endianness
-				preBufferLine[i] = color;
-			}*/
 
 			//length is the number of destination pixels
 			uint16_t *dest = preBufferLine;
@@ -679,13 +670,8 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 			myDMA.free(); //free the DMA channel
 		}
 
-		//swap buffers
-		uint16_t *temp = preBufferLine;
-		preBufferLine = sendBufferLine;
-		sendBufferLine = temp;
-
 		//send the last line
-		sendBuffer(sendBufferLine, w); //start DMA send
+		sendBuffer(preBufferLine, w); //start DMA send
 		while (!transfer_is_done); //chill
 		myDMA.free(); //free the DMA channel
 
@@ -770,10 +756,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 			//start sending lines and processing them in parallel using DMA
 			for (uint16_t j = 1; j < h; j ++) { //vertical coordinate in source image, start from the second line
 
-				//memcpy is too slow to transfer from pre buffer to send buffer
-				//memcpy(sendBufferLine, preBufferLine, w2 * 2 * 2);
-
-				//swap buffers pointers instead
+				//swap buffers pointers
 				uint16_t *temp = preBufferLine;
 				preBufferLine = sendBufferLine;
 				sendBufferLine = temp;
@@ -797,13 +780,8 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 				myDMA.free(); //free the DMA channel
 			}
 
-			//swap buffers pointers
-			uint16_t *temp = preBufferLine;
-			preBufferLine = sendBufferLine;
-			sendBufferLine = temp;
-
 			//send the last line
-			sendBuffer(sendBufferLine, _width * 2); //start DMA send
+			sendBuffer(preBufferLine, _width * 2); //start DMA send
 			while (!transfer_is_done); //chill
 			myDMA.free(); //free the DMA channel
 
@@ -839,24 +817,12 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 			for (uint16_t j = 1; j < h; j++) { //vertical coordinate in source image, start from the second line
 				PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
 
-				//memcpy is too slow to transfer from pre buffer to send buffer
-				//memcpy(sendBufferLine, preBufferLine, w2 * 2 * 2);
-
-				//swap buffers pointers instead
+				//swap buffers pointers
 				uint16_t *temp = preBufferLine;
 				preBufferLine = sendBufferLine;
 				sendBufferLine = temp;
 				
 				sendBuffer(sendBufferLine, _width * 2); //start DMA send
-
-
-				//prepare the next line while the current one is being transferred
-				/*indexTo565(preBufferLine, img._buffer + ((j * w) / 4), Graphics::colorIndex, w);
-				for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
-					uint16_t color = preBufferLine[i];
-					color = (color << 8) | (color >> 8); //change endianness
-					preBufferLine[i] = color;
-				}*/
 
 				bufferIndexLineDouble(preBufferLine, img._buffer, w, j);
 
@@ -867,13 +833,8 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 				myDMA.free(); //free the DMA channel
 			}
 
-			//swap buffers
-			uint16_t *temp = preBufferLine;
-			preBufferLine = sendBufferLine;
-			sendBufferLine = temp;
-
 			//send the last line
-			sendBuffer(sendBufferLine, w); //start DMA send
+			sendBuffer(preBufferLine, _width * 2); //start DMA send
 			while (!transfer_is_done); //chill
 			myDMA.free(); //free the DMA channel
 
