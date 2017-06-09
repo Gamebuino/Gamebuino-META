@@ -145,12 +145,15 @@ void Graphics_SD::stopRecording(Image* img, bool output) {
 }
 
 bool Graphics_SD::save(Image* img, char* filename) {
+	bool convert_bmp = true;
+	if (convert_bmp && SD.exists(filename) && !SD.remove(filename)) {
+		return false;
+	}
 	GMV gmv = GMV(img);
 	if (!gmv.initSave(filename)) {
 		return false;
 	}
 	Recording_Image rec = Recording_Image(gmv);
-	bool convert_bmp = true;
 	if (convert_bmp && !SD.exists(filename)) {
 		rec.setBmpFilename(filename);
 	}

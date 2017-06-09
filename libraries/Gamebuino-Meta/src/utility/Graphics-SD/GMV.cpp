@@ -64,8 +64,15 @@ GMV::GMV(Image* _img, char* filename) {
 	img->_width = f_read16(&file);
 	img->_height = f_read16(&file);
 	img->frames = f_read16(&file);
-	file.seekCur(1); // trash indexed checking for now
-	img->transparentColor = f_read16(&file);
+	uint8_t flags = file.read();
+	img->colorMode = flags & 0x01 ? (ColorMode::index) : (ColorMode::rgb565);
+
+	if (img->colorMode == ColorMode::index) {
+		img->transparentColorIndex = file.read();
+		img->useTransparentIndex = (bool)file.read();
+	} else {
+		img->transparentColor = f_read16(&file);
+	}
 	file.seekSet(header_size);
 	
 	if (!img->_buffer) {
@@ -160,7 +167,7 @@ void GMV::writeHeader(File* f) {
 	// write the transparent color!
 	if (indexed) {
 		f->write(img->transparentColorIndex);
-		f->write(img->useTransparentIndex ? 1 : 0);
+		f->write((uint8_t)img->useTransparentIndex);
 	} else {
 		f_write16(img->transparentColor, f);
 	}
@@ -171,61 +178,97 @@ void GMV::writeHeader(File* f) {
 }
 
 void GMV::writeFrame(File* f) {
-	uint16_t pixels = (img->getBufferSize() + 1) / 2; 
-	uint16_t i = 1;
-	uint16_t* buf = img->_buffer;
-	uint16_t color = buf[0];
-	uint16_t count = 1;
-	for (; i < pixels; i++) {
-		if (buf[i] == color && count < 0x7F) {
-			count++;
-			continue;
+	if (img->colorMode == ColorMode::index) {
+		uint8_t* buf = (uint8_t*)img->_buffer;
+		uint16_t bytes = img->getBufferSize();
+		uint16_t i = 1;
+		uint8_t b = buf[0];
+		uint16_t count = 1;
+		for (; i < bytes; i++) {
+			if (buf[i] == b && count < 0xFF) {
+				count++;
+				continue;
+			}
+			f->write(count);
+			f->write(b);
+			count = 1;
+			b = buf[i];
 		}
-		// ok we need to write stuff
+		f->write(count);
+		f->write(b);
+	} else {
+		uint16_t* buf = img->_buffer;
+		uint16_t pixels = (img->getBufferSize() + 1) / 2; 
+		uint16_t i = 1;
+		uint16_t color = buf[0];
+		uint16_t count = 1;
+		for (; i < pixels; i++) {
+			if (buf[i] == color && count < 0x7F) {
+				count++;
+				continue;
+			}
+			// ok we need to write stuff
+			writeColor(f, color, count);
+			count = 1;
+			color = buf[i];
+		}
 		writeColor(f, color, count);
-		count = 1;
-		color = buf[i];
 	}
-	writeColor(f, color, count);
 }
 
 void GMV::readFrame() {
-	uint16_t* buf = img->_buffer;
-	uint16_t pixels = (img->getBufferSize() + 1) / 2; 
-	uint16_t pixels_current = 0;
-	
-	uint16_t* index = (uint16_t*)img->colorIndex;
-	
-	uint8_t count = 0;
-	uint8_t i;
-	uint16_t color = 0;
-	while (pixels_current < pixels) {
-		count = file.read();
-		if (count == 0x80) {
-			// we have a single, un-altered pixel
-			file.read(&color, 2);
-			buf[pixels_current] = color;
-			pixels_current++;
-			continue;
-		}
-		if (!(count & 0x80)) {
-			// single indexed color
-			buf[pixels_current] = index[count];
-			pixels_current++;
-			continue;
-		}
-		// ok we actually have multiple pixels
-		count &= 0x7F;
-		i = file.read();
-		if (i == 0x80) {
-			file.read(&color, 2);
-		} else {
-			color = index[i];
-		}
-		for (i = 0; i < count; i++) {
-			buf[pixels_current] = color;
-			pixels_current++;
-		}
+	if (img->colorMode == ColorMode::index) {
+		uint8_t* buf = (uint8_t*)img->_buffer;
+		uint16_t bytes = img->getBufferSize();
+		uint16_t bytes_current = 0;
+		uint8_t count;
+		uint8_t b;
+		do {
+			count = file.read();
+			b = file.read();
+			for (uint8_t i = 0; i < count; i++) {
+				buf[bytes_current] = b;
+				bytes_current++;
+			}
+		} while (bytes_current < bytes);
+	} else {
+		uint16_t* buf = img->_buffer;
+		uint16_t pixels = (img->getBufferSize() + 1) / 2; 
+		uint16_t pixels_current = 0;
+		
+		uint16_t* index = (uint16_t*)img->colorIndex;
+		
+		uint8_t count;
+		uint8_t i;
+		uint16_t color = 0;
+		do {
+			count = file.read();
+			if (count == 0x80) {
+				// we have a single, un-altered pixel
+				file.read(&color, 2);
+				buf[pixels_current] = color;
+				pixels_current++;
+				continue;
+			}
+			if (!(count & 0x80)) {
+				// single indexed color
+				buf[pixels_current] = index[count];
+				pixels_current++;
+				continue;
+			}
+			// ok we actually have multiple pixels
+			count &= 0x7F;
+			i = file.read();
+			if (i == 0x80) {
+				file.read(&color, 2);
+			} else {
+				color = index[i];
+			}
+			for (i = 0; i < count; i++) {
+				buf[pixels_current] = color;
+				pixels_current++;
+			}
+		} while (pixels_current < pixels);
 	}
 }
 

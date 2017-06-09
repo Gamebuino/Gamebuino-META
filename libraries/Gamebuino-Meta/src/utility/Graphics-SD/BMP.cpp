@@ -120,7 +120,7 @@ uint32_t BMP::writeHeader(File* file) {
 	f_write32(header_size, file);
 	f_write32(width, file);;
 	f_write32(pixel_height, file);
-	f_write16(1, file); // nu7mber of panes must be 1
+	f_write16(1, file); // number of panes must be 1
 	f_write16(depth, file);
 	f_write32(0, file); // no compression
 	f_write32(image_size, file);
@@ -131,6 +131,7 @@ uint32_t BMP::writeHeader(File* file) {
 		f_write32(color_table, file); // important colors
 		for (uint8_t i = 0; i < color_table; i++) {
 			writeAsRGB((uint16_t)Graphics::colorIndex[i], file);
+			file->write((uint8_t)0);
 		}
 	} else {
 		f_write32(0, file); // no important colors
@@ -194,7 +195,7 @@ void BMP::readFrame(uint16_t frame, uint16_t* buf, File* file) {
 void BMP::writeBuffer(uint16_t* buffer, File* file) {
 	if (depth == 4) {
 		uint8_t halfwidth = (width + 1) / 2;
-		uint8_t j = width - halfwidth;
+		uint8_t j = getRowSize() - halfwidth;
 		for (int8_t y = height - 1; y >= 0; y--) {
 			uint8_t* buf = (uint8_t*)buffer + y*halfwidth;
 			for (uint8_t x = 0; x < halfwidth; x++) {
