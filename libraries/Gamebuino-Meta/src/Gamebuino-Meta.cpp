@@ -18,6 +18,7 @@
  */
 
 #include "Gamebuino-Meta.h"
+#include "utility/Graphics-SD.h"
 SdFat SD;
 
 // a 3x5 font table
@@ -111,6 +112,8 @@ void Gamebuino::begin() {
 		SD.mkdir(folder_name);
 	}
 	SD.chdir(folder_name);
+	
+	Graphics_SD::setTft(&tft);
 }
 
 void Gamebuino::titleScreen(const char* name){
@@ -286,38 +289,38 @@ bool Gamebuino::update() {
 
 			//record screenshot
 			if (buttons.pressed(Button::d)) {
-				tft.setColor(RED,BLACK);
+				/*
+				tft.setColor(Color::red, Color::black);
 				tft.drawRect(0, 0, tft._width, tft._height);
 				tft.drawRect(1, 1, tft._width - 2, tft._height - 2);
 				if (recording_screen) {
 					// stop the recording
-					tft.setColor(WHITE, BLACK);
+					tft.setColor(Color::white, Color::black);
 					tft.cursorX = 0;
 					tft.cursorY = 2;
 					
 					tft.println("Processing screencapture...");
-					//sd_gfx.stopRecordImage(display, tft);
+					display.stopRecording(true);
 					recording_screen = false;
 				} else {
-					/*if (!sd_gfx.startRecordImage(display, "RECORD.BMP")) {
+					if (!display.startRecording("RECORD.BMP")) {
+						tft.cursorX = 0;
+						tft.cursorY = 2;
 						tft.println("Couldn't start screen recording");
-						while(1);
-					}*/
-					recording_screen = true;
+						delay(3000);
+					} else {
+						recording_screen = true;
+					}
 				}
+				*/
 				
-				/*
-				tft.setColor(RED,BLACK);
+				tft.setColor(Color::red, Color::black);
 				tft.drawRect(0, 0, tft._width, tft._height);
 				tft.drawRect(1, 1, tft._width - 2, tft._height - 2);
-				tft.cursorX = 0;
-				tft.cursorY = 2;
-				tft.setColor(WHITE, BLACK);
-				sd_gfx.writeImage(display, "SCREEN.BMP");
-				*/
+				display.save("SCREEN.BMP");
 			}
 
-			//sd_gfx.update(); // update screen recordings
+			Graphics_SD::update(); // update screen recordings
 
 
 			//if(!display.persistence)

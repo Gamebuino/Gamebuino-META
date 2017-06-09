@@ -11,31 +11,26 @@ namespace Gamebuino_Meta {
 class BMP {
 public:
 	BMP();
+	BMP(Image* img, uint16_t frames);
 	BMP(File* file, Image* img);
 	bool isValid();
 	uint32_t getCreatorBits();
-	void setCreatorBits(File* file, uint32_t bits);
-//	void writeHeader(File& file);
-//	void writeBuffer(File& file);
-//	void writeFrame(uint32_t frame, File& file);
-	void readBuffer(File* file, uint16_t* buf, uint16_t height, uint32_t offset);
-	void readFrame(uint16_t frame, uint16_t frames, uint16_t height, File* file, uint16_t* buf);
-//	void setFrames(uint32_t frames);
+	void setCreatorBits(uint32_t bits, File* file);
+	void readBuffer(uint16_t* buf, uint32_t offset, File* file);
+	void readFrame(uint16_t frame, uint16_t* buf, File* file);
 	uint32_t getRowSize();
-//	uint16_t frames;
+	
+	uint32_t writeHeader(File* file);
+	void writeBuffer(uint16_t* buffer, File* file);
+	void writeFrame(uint16_t frame, uint16_t* buffer, File* file);
 	uint8_t depth;
 private:
 	bool valid;
 	uint8_t image_offset;
 	uint32_t creatorBits;
 	uint16_t width;
-	
-//	uint8_t depth;
-//	uint32_t colorTable;
-//	uint16_t* rambuffer;
-//	uint32_t imageOffset;
-//	uint32_t fileSize;
-//	uint32_t pixel_height;
+	uint16_t height;
+	uint16_t frames;
 };
 
 } // namespace Gamebuino_Meta

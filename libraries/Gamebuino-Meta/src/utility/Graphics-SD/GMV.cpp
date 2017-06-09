@@ -10,6 +10,10 @@ GMV::GMV() {
 	valid = false;
 }
 
+GMV::GMV(Image* _img) {
+	img = _img;
+}
+
 GMV::GMV(Image* _img, char* filename) {
 	valid = false;
 	img = _img;
@@ -32,6 +36,7 @@ GMV::GMV(Image* _img, char* filename) {
 		char _filename[name_len + 1];
 		strcpy(_filename, filename);
 		
+		_filename[name_len - 4] = '.';
 		_filename[name_len - 3] = 'G';
 		_filename[name_len - 2] = 'M';
 		_filename[name_len - 1] = 'V';
@@ -74,6 +79,32 @@ bool GMV::isValid() {
 	return valid;
 }
 
+bool GMV::is(Image* _img) {
+	return img == _img;
+}
+
+bool GMV::initSave(char* filename) {
+	// make sure our file ends in .GMV
+	uint16_t name_len = strlen(filename);
+	char _filename[name_len + 1];
+	strcpy(_filename, filename);
+	
+	_filename[name_len - 4] = '.';
+	_filename[name_len - 3] = 'G';
+	_filename[name_len - 2] = 'M';
+	_filename[name_len - 1] = 'V';
+	_filename[name_len] = '\0';
+	if (SD.exists(_filename) && !SD.remove(_filename)) {
+		return false;
+	}
+	file = SD.open(_filename, FILE_WRITE);
+	if (!file) {
+		return false;
+	}
+	writeHeader();
+	return true;
+}
+
 void GMV::convertFromBMP(BMP& bmp, char* newname) {
 	img->allocateBuffer();
 	if (SD.exists(newname) && !SD.remove(newname)) {
@@ -83,20 +114,17 @@ void GMV::convertFromBMP(BMP& bmp, char* newname) {
 	if (!f) {
 		return;
 	}
-	f_write16(0x5647, &f); // header "GV"
-	f_write16(14, &f); // header size
-	f.write((uint8_t)0); // version
-	f_write16(img->_width, &f); // image width
-	f_write16(img->_height, &f); // image height
-	f_write16(img->frames, &f); // number of frames
-	f.write(bmp.depth == 4 ? 1 : 0);
-	f_write16(0, &f); // TODO: transaprent color
+	writeHeader(&f);
 	for (uint16_t frame = 0; frame < img->frames; frame++) {
-		bmp.readFrame(frame, img->frames, img->_height, &file, img->_buffer);
+		bmp.readFrame(frame, img->_buffer, &file);
 		writeFrame(&f);
 	}
-	bmp.setCreatorBits(&file, CONVERT_MAGIC);
+	bmp.setCreatorBits(CONVERT_MAGIC, &file);
 	f.close();
+}
+
+void GMV::writeHeader() {
+	writeHeader(&file);
 }
 
 void GMV::writeFrame() {
@@ -117,6 +145,29 @@ void GMV::writeColor(File* f, uint16_t color, uint8_t count) {
 	}
 	f->write(0x80);
 	f_write16(color, f);
+}
+
+void GMV::writeHeader(File* f) {
+	f->rewind();
+	f_write16(0x5647, f); // header "GV"
+	f_write16(0, f); // header size, fill in later
+	f->write((uint8_t)0); // version
+	f_write16(img->_width, f); // image width
+	f_write16(img->_height, f); // image height
+	f_write16(img->frames, f); // number of frames
+	bool indexed = img->colorMode == ColorMode::index;
+	f->write(indexed ? 1 : 0); // indexed?
+	// write the transparent color!
+	if (indexed) {
+		f->write(img->transparentColorIndex);
+		f->write(img->useTransparentIndex ? 1 : 0);
+	} else {
+		f_write16(img->transparentColor, f);
+	}
+	header_size = 14; // currently it is still all static
+	f->seekSet(2);
+	f_write16(header_size, f); // fill in header size!
+	f->seekSet(header_size);
 }
 
 void GMV::writeFrame(File* f) {
@@ -186,6 +237,64 @@ void GMV::setFrame(uint16_t frame) {
 	for (uint16_t f = 0; f < frame; f++) {
 		readFrame(); // unfortunatelly we don't have a better way
 	}
+}
+
+void GMV::finishSave(char* filename, uint16_t frames, bool output, Display_ST7735* tft) {
+	file.seekSet(9);
+	f_write16(frames, &file); // fill in the number of frames!
+	if (!filename) {
+		file.close();
+		return;
+	}
+	file.flush();
+	File f = SD.open(filename, FILE_WRITE);
+	if (!f) {
+		if (output) {
+			tft->println("Couldn't create BMP!");
+		}
+		return;
+	}
+	BMP bmp = BMP(img, frames);
+	uint32_t image_size = bmp.writeHeader(&f);
+	uint8_t x, y;
+	if (output) {
+		tft->print("Total frames: ");
+		tft->println(frames);
+		tft->print("Creating file (");
+		tft->print(image_size / 1024);
+		tft->print(") ");
+		x = tft->cursorX;
+		y = tft->cursorY;
+	}
+	for (uint32_t i = 0; i < image_size; i+=4) {
+		f_write32(0, &f);
+		if ((i % 65536) == 0) {
+			tft->cursorX = x;
+			tft->cursorY = y;
+			tft->print(i / 1024);
+		}
+	}
+	if (output) {
+		tft->cursorX = x;
+		tft->cursorY = y;
+		tft->println("done!!!");
+		tft->print("Frame: ");
+		x = tft->cursorX;
+		y = tft->cursorY;
+	}
+	setFrame(0);
+	for (uint16_t i = 0; i < frames; i++) {
+		if (output) {
+			tft->cursorX = x;
+			tft->cursorY = y;
+			tft->print(i+1); // +1 for human-readability
+		}
+		readFrame();
+		bmp.writeFrame(i, img->_buffer, &f);
+	}
+	bmp.setCreatorBits(CONVERT_MAGIC, &f); // ok we know that we have the GMV so why not?
+	f.close();
+	file.close();
 }
 
 }

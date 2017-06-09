@@ -72,25 +72,11 @@ Image::Image() : Graphics(0, 0){
 }
 
 // ram constructors
-Image::Image(uint16_t w, uint16_t h) : Graphics(w, h) {
-	init(w, h);
-}
-void Image::init(uint16_t w, uint16_t h) {
-	init(w, h, ColorMode::rgb565);
-}
-
 Image::Image(uint16_t w, uint16_t h, ColorMode col) : Graphics(w, h) {
 	init(w, h, col);
 }
 void Image::init(uint16_t w, uint16_t h, ColorMode col) {
 	init(w, h, 1, col);
-}
-
-Image::Image(uint16_t w, uint16_t h, uint16_t frames) : Graphics(w, h) {
-	init(w, h, frames);
-}
-void Image::init(uint16_t w, uint16_t h, uint16_t frames) {
-	init(w, h, frames, ColorMode::rgb565);
 }
 
 Image::Image(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col) : Graphics(0, 0) {
@@ -110,25 +96,11 @@ void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col) {
 }
 
 // flash constructors
-Image::Image(const uint16_t* buffer) : Graphics(0, 0) {
-	init(buffer);
-}
-void Image::init(const uint16_t* buffer) {
-	init(buffer, ColorMode::rgb565);
-}
-
 Image::Image(const uint16_t* buffer, ColorMode col) : Graphics(0, 0) {
 	init(buffer, col);
 }
 void Image::init(const uint16_t* buffer, ColorMode col) {
 	init(buffer, 1, col);
-}
-
-Image::Image(const uint16_t* buffer, uint16_t frames) : Graphics(0, 0) {
-	init(buffer, frames);
-}
-void Image::init(const uint16_t* buffer, uint16_t frames) {
-	init(buffer, frames, ColorMode::rgb565);
 }
 
 Image::Image(const uint16_t* buffer, uint16_t frames, ColorMode col) : Graphics(0, 0) {
@@ -160,7 +132,7 @@ void Image::init(char* filename) {
 	init(0, 0, filename);
 }
 
-Image::Image(uint16_t w, uint16_t h, char* filename) : Graphics(0, 0) {
+Image::Image(uint16_t w, uint16_t h, char* filename) : Graphics(w, h) {
 	init(w, h, filename);
 }
 void Image::init(uint16_t w, uint16_t h, char* filename) {
@@ -187,6 +159,18 @@ uint16_t Image::getBufferSize() {
 		bytes = _width * _height * 2; //16 bits per pixel = 2 bytes
 	}
 	return bytes;
+}
+
+bool Image::startRecording(char* filename) {
+	return Graphics_SD::startRecording(this, filename);
+}
+
+void Image::stopRecording(bool output) {
+	Graphics_SD::stopRecording(this, output);
+}
+
+bool Image::save(char* filename) {
+	return Graphics_SD::save(this, filename);
 }
 
 void Image::allocateBuffer() {

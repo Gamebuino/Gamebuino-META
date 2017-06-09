@@ -42,37 +42,35 @@ public:
 	~Image();
 
 	// ram constructors
-	Image(uint16_t w, uint16_t h);
-	void init(uint16_t w, uint16_t h);
 	Image(uint16_t w, uint16_t h, ColorMode col);
 	void init(uint16_t w, uint16_t h, ColorMode col);
-	Image(uint16_t w, uint16_t h, uint16_t frames);
-	void init(uint16_t w, uint16_t h, uint16_t frames);
-	Image(uint16_t w, uint16_t h, uint16_t frames, ColorMode col);
-	void init(uint16_t w, uint16_t h, uint16_t frames, ColorMode col);
+	Image(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565);
+	void init(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565);
 
 	// flash constructors
-	Image(const uint16_t* buffer);
-	void init(const uint16_t* buffer);
 	Image(const uint16_t* buffer, ColorMode col);
 	void init(const uint16_t* buffer, ColorMode col);
-	Image(const uint16_t* buffer, uint16_t frames);
-	void init(const uint16_t* buffer, uint16_t frames);
-	Image(const uint16_t* buffer, uint16_t frames, ColorMode col);
-	void init(const uint16_t* buffer, uint16_t frames, ColorMode col);
+	Image(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565);
+	void init(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565);
 
 	// SD constructors
 	Image(char* filename);
 	void init(char* filename);
 	Image(uint16_t w, uint16_t h, char* filename);
 	void init(uint16_t w, uint16_t h, char* filename);
+	
+	
 	void nextFrame();
 	void setFrame(uint16_t frame);
-	void freeBuffer(),
-		drawPixel(int16_t x, int16_t y),
-		fillScreen(Color color),
-		drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img),
-		allocateBuffer();
+	void freeBuffer();
+	void drawPixel(int16_t x, int16_t y);
+	void fillScreen(Color color);
+	void drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img);
+	void allocateBuffer();
+	
+	bool startRecording(char* filename);
+	void stopRecording(bool output = false);
+	bool save(char* filename);
 
 	uint16_t getBufferSize();
 
