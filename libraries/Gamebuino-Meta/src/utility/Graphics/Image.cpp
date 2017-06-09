@@ -214,17 +214,18 @@ void Image::drawPixel(int16_t x, int16_t y) {
 		return;
 	}
 	if (colorMode == ColorMode::rgb565) {
-		_buffer[x + y * WIDTH] = (uint16_t)color;
+		_buffer[x + y * _width] = (uint16_t)color;
 		return;
 	}
 	if (colorMode == ColorMode::index) {
-		uint16_t addr = ((WIDTH + 1) / 2) * y + x / 2;
+		uint16_t addr = ((_width + 1) / 2) * y + x / 2;
+		uint8_t* buf = (uint8_t*)_buffer;
 		if (!(x % 2)) { //odd pixels
-			((uint8_t*)_buffer)[addr] &= 0x0F; //clear
-			((uint8_t*)_buffer)[addr] |= ((uint16_t)color << 4); //set
+			buf[addr] &= 0x0F; //clear
+			buf[addr] |= ((uint8_t)color << 4); //set
 		} else { //even pixels
-			((uint8_t*)_buffer)[addr] &= 0xF0; //clear
-			((uint8_t*)_buffer)[addr] |= (uint16_t)color; //set
+			buf[addr] &= 0xF0; //clear
+			buf[addr] |= ((uint8_t)color & 0x0F); //set
 		}
 		return;
 	}

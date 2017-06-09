@@ -598,6 +598,10 @@ void Display_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 	myDMA.start_transfer_job();
 }
 
+uint16_t swap_endians_16(uint16_t b) {
+	return (b << 8) | (b >> 8);
+}
+
 void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 	img.nextFrame();
 	int16_t w = img.width();
@@ -622,19 +626,18 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 		indexTo565(preBufferLine, (uint8_t*)img._buffer, Graphics::colorIndex, w, false);
 		for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
 			uint16_t color = preBufferLine[i];
-			color = (color << 8) | (color >> 8); //change endianness
-			preBufferLine[i] = color;
+			preBufferLine[i] = swap_endians_16(color);
 		}
 
 		//start sending lines and processing them in parallel using DMA
 		for (uint16_t j = 1; j < h; j++) { //vertical coordinate in source image, start from the second line
-			PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
 
 			//swap buffers pointers
 			uint16_t *temp = preBufferLine;
 			preBufferLine = sendBufferLine;
 			sendBufferLine = temp;
 			
+			PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
 			sendBuffer(sendBufferLine, w); //start DMA send
 
 
@@ -651,16 +654,10 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 				uint16_t index3 = (src[i] >> 12) & 0x000F;
 				uint16_t index4 = (src[i] >> 8) & 0x000F;
 				//change pixel order (because of words endianness) at the same time
-				dest[i * 4] = (uint16_t)index[index1];
-				dest[(i * 4) + 1] = (uint16_t)index[index2];
-				dest[(i * 4) + 2] = (uint16_t)index[index3];
-				dest[(i * 4) + 3] = (uint16_t)index[index4];
-			}
-			//change RGB565 color endiannes (bacause of SPI sending byte by byte instead of word by word)
-			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
-				uint16_t color = preBufferLine[i];
-				color = (color << 8) | (color >> 8); //change endianness
-				preBufferLine[i] = color;
+				dest[i * 4] = swap_endians_16((uint16_t)index[index1]);
+				dest[(i * 4) + 1] = swap_endians_16((uint16_t)index[index2]);
+				dest[(i * 4) + 2] = swap_endians_16((uint16_t)index[index3]);
+				dest[(i * 4) + 3] = swap_endians_16((uint16_t)index[index4]);
 			}
 
 			PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
@@ -697,21 +694,17 @@ void bufferIndexLineDouble(uint16_t* preBufferLine, uint16_t* img_buffer, int16_
 		uint16_t index3 = (src[i] >> 12) & 0x000F;
 		uint16_t index4 = (src[i] >> 8) & 0x000F;
 		//change pixel order (because of words endianness) at the same time
-		*(dest++) = (uint16_t)index[index1];
-		*(dest++) = (uint16_t)index[index1];
-		*(dest++) = (uint16_t)index[index2];
-		*(dest++) = (uint16_t)index[index2];
-		*(dest++) = (uint16_t)index[index3];
-		*(dest++) = (uint16_t)index[index3];
-		*(dest++) = (uint16_t)index[index4];
-		*(dest++) = (uint16_t)index[index4];
+		// endians are swapped because SPI sends byte-by-byte instead of word-by-word
+		*(dest++) = swap_endians_16((uint16_t)index[index1]);
+		*(dest++) = swap_endians_16((uint16_t)index[index1]);
+		*(dest++) = swap_endians_16((uint16_t)index[index2]);
+		*(dest++) = swap_endians_16((uint16_t)index[index2]);
+		*(dest++) = swap_endians_16((uint16_t)index[index3]);
+		*(dest++) = swap_endians_16((uint16_t)index[index3]);
+		*(dest++) = swap_endians_16((uint16_t)index[index4]);
+		*(dest++) = swap_endians_16((uint16_t)index[index4]);
 	}
-	//change RGB565 color endiannes (bacause of SPI sending byte by byte instead of word by word)
-	for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
-		uint16_t color = preBufferLine[i];
-		color = (color << 8) | (color >> 8); //change endianness
-		preBufferLine[i] = color;
-	}
+	
 	memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
 }
 
@@ -748,8 +741,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 			//prepare the first line
 			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
 				uint16_t color = img._buffer[i];
-				color = (color << 8) | (color >> 8); //change endianness
-				preBufferLine[i * 2] = preBufferLine[(i * 2) + 1] = color;
+				preBufferLine[i * 2] = preBufferLine[(i * 2) + 1] = swap_endians_16(color);
 			}
 			memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
 
@@ -761,19 +753,18 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 				preBufferLine = sendBufferLine;
 				sendBufferLine = temp;
 
-				sendBuffer(sendBufferLine, _width * 2); //start DMA send
-
 				PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
+
+				sendBuffer(sendBufferLine, _width * 2); //start DMA send
 
 				//prepare the next line while the current one is being transferred
 				for (uint16_t i = 0; i < w; i ++) { //horizontal coordinate in source image
 					uint16_t color = img._buffer[(j * w) + i];
-					color = (color << 8) | (color >> 8); //change endianness
-					preBufferLine[i * 2] = preBufferLine[(i * 2) + 1] = color;
+					preBufferLine[i * 2] = preBufferLine[(i * 2) + 1] = swap_endians_16(color);
 				}
 				memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
 
-					PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
+				PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
 
 				while (!transfer_is_done); //chill
 
@@ -805,25 +796,20 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 			*rsport |= rspinmask;
 			*csport &= ~cspinmask;
 			bufferIndexLineDouble(preBufferLine, img._buffer, w, 0);
-			
-			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
-				uint16_t color = preBufferLine[i];
-				color = (color << 8) | (color >> 8); //change endianness
-				preBufferLine[i] = color;
-			}
-			memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
 
 			//start sending lines and processing them in parallel using DMA
 			for (uint16_t j = 1; j < h; j++) { //vertical coordinate in source image, start from the second line
-				PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
 
 				//swap buffers pointers
 				uint16_t *temp = preBufferLine;
 				preBufferLine = sendBufferLine;
 				sendBufferLine = temp;
 				
+				PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
+
 				sendBuffer(sendBufferLine, _width * 2); //start DMA send
 
+				// prepare the next line while we'r at it
 				bufferIndexLineDouble(preBufferLine, img._buffer, w, j);
 
 				PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"

@@ -31,6 +31,7 @@ private:
 	uint16_t width;
 	uint16_t height;
 	uint16_t frames;
+	uint8_t indexMap[16];
 };
 
 } // namespace Gamebuino_Meta

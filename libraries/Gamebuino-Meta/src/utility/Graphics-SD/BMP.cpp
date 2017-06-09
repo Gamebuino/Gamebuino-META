@@ -48,7 +48,7 @@ BMP::BMP(File* file, Image* img) {
 	file->seekCur(4); // skip file size
 	creatorBits = f_read32(file);
 	image_offset = f_read32(file);
-	file->seekCur(4); // skip header size
+	uint32_t header_size = f_read32(file);
 	width = img->_width = f_read32(file);
 	uint32_t pixel_height = f_read32(file);
 	if (img->_height) {
@@ -70,19 +70,34 @@ BMP::BMP(File* file, Image* img) {
 		// we can only load uncompressed BMPs
 		return;
 	}
-	//file->seekCur(12); // we ignore image size, x pixels and y pixels per meter
-	//colorTable = f_read32(file);
+	
 	// we assume our color table so just ignore the one specified in the BMP
-	file->seekSet(image_offset);
+	
 	
 	if (depth == 4) {
+		file->seekCur(12); // we ignore image size, x pixels and y pixels per meter
+		uint8_t num_colors = f_read32(file);
+		if (num_colors > 16) {
+			num_colors = 16;
+		}
+		file->seekSet(header_size + 14);
+		for (uint8_t i = 0; i < num_colors; i++) {
+			uint8_t b = file->read();
+			uint8_t g = file->read();
+			uint8_t r = file->read();
+			file->read(); // trash transparency
+			indexMap[i] = (uint8_t)Graphics::rgb565ToIndex((Color)convertTo565(r, g, b));
+		}
+		
+		
 		img->colorMode = ColorMode::index;
 		img->useTransparentIndex = false; // TODO: transparency detection
 	} else {
 		img->colorMode = ColorMode::rgb565;
 		img->transparentColor = 0; // TODO: transparency detection
 	}
-	//img->allocateBuffer();
+	
+	file->seekSet(image_offset);
 	valid = true;
 }
 
@@ -118,7 +133,7 @@ uint32_t BMP::writeHeader(File* file) {
 	f_write32(0, file); // creator bits
 	f_write32(image_offset, file);
 	f_write32(header_size, file);
-	f_write32(width, file);;
+	f_write32(width, file);
 	f_write32(pixel_height, file);
 	f_write16(1, file); // number of panes must be 1
 	f_write16(depth, file);
@@ -161,7 +176,12 @@ void BMP::readBuffer(uint16_t* buf, uint32_t offset, File* file) {
 			
 			
 			for (uint16_t j = 0; j < (width + 1)/2; j++) {
-				rambuffer[j] = file->read();
+				uint8_t b = file->read();
+				uint8_t u = b >> 4;
+				uint8_t l = b & 0x0F;
+				u = indexMap[u];
+				l = indexMap[l];
+				rambuffer[j] = (u << 4) | l;
 			}
 			file->seekCur(dif);
 		}

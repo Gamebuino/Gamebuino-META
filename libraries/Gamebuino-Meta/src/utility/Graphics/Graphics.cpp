@@ -84,16 +84,37 @@ void Graphics::indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t l
 		}
 		skipFirst = !skipFirst;
 	}
-	/*
-	for (uint16_t i = 0; i < (length + 1)/2; i++) {
-		uint8_t b = src[i];
-		if (!skipFirst || i) {
-			*(dest++) = (uint16_t)index[b>>4];
-		}
-		*(dest++) = (uint16_t)index[b&0x0F];
-	}
-	*/
 }
+
+ColorIndex Graphics::rgb565ToIndex(Color rgb) {
+	for (uint8_t i = 0; i < 16; i++) {
+		if (rgb == colorIndex[i]) {
+			return (ColorIndex)i;
+		}
+	}
+	// ok not part of the index, let's try to find the closest match!
+	uint16_t max_diff = 0xFFFF;
+	uint8_t b = (uint8_t)((uint16_t)rgb << 3);
+	uint8_t g = (uint8_t)(((uint16_t)rgb >> 3) & 0xFC);
+	uint8_t r = (uint8_t)(((uint16_t)rgb >> 8) & 0xF8);
+	
+	uint8_t min_index = 0;
+	uint16_t min_diff = 0xFFFF;
+	uint8_t i = 0;
+	for (; i < 16; i++) {
+		uint16_t rgb2 = (uint16_t)colorIndex[i];
+		uint8_t b2 = (uint8_t)(rgb2 << 3);
+		uint8_t g2 = (uint8_t)((rgb2 >> 3) & 0xFC);
+		uint8_t r2 = (uint8_t)((rgb2 >> 8) & 0xF8);
+		
+		uint16_t diff = abs(b - b2) + abs(g - g2) + abs(r - r2);
+		if (diff < min_diff) {
+			min_diff = diff;
+			min_index = i;
+		}
+	}
+	return (ColorIndex)min_index;
+} 
 
 // Many (but maybe not all) non-AVR board installs define macros
 // for compatibility with existing PROGMEM-reading AVR code.
@@ -966,6 +987,7 @@ void Graphics::setColor(Color c) {
 	// For 'transparent' background, we'll set the bg
 	// to the same as fg instead of using a flag
 	if (colorMode == ColorMode::index) {
+		color = bgcolor = (Color)rgb565ToIndex(c);
 		return;
 	}
 	color = bgcolor = c;
@@ -973,6 +995,8 @@ void Graphics::setColor(Color c) {
 
 void Graphics::setColor(Color c, Color b) {
 	if (colorMode == ColorMode::index) {
+		color = (Color)rgb565ToIndex(c);
+		bgcolor = (Color)rgb565ToIndex(b);
 		return;
 	}
 	color   = c;

@@ -153,6 +153,7 @@ public:
 
 
 	static void indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length, bool skipFirst);
+	static ColorIndex rgb565ToIndex(Color rgb);
 
 	union {
 		uint16_t transparentColor;
