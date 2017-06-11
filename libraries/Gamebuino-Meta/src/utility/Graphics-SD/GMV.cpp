@@ -122,9 +122,34 @@ void GMV::convertFromBMP(BMP& bmp, char* newname) {
 		return;
 	}
 	writeHeader(&f);
-	for (uint16_t frame = 0; frame < img->frames; frame++) {
-		bmp.readFrame(frame, img->_buffer, &file);
-		writeFrame(&f);
+	uint16_t transparentColor = 0;
+	transparentColor = 0;
+	
+	bool success;
+	do {
+		success = true;
+		f.seekSet(header_size);
+		for (uint16_t frame = 0; frame < img->frames; frame++) {
+			uint32_t t = bmp.readFrame(frame, img->_buffer, transparentColor, &file);
+			if (t != transparentColor) {
+				if (t) {
+					transparentColor = t;
+					success = false;
+					// trigger a restart
+					break;
+				}
+			}
+			writeFrame(&f);
+		}
+	} while(!success);
+	if (img->colorMode == ColorMode::rgb565) {
+		if (transparentColor != 0xFFFF) {
+			img->transparentColor = transparentColor;
+		} else {
+			img->transparentColor = 0;
+		}
+		f.seekSet(12);
+		f_write16(img->transparentColor, &f);
 	}
 	bmp.setCreatorBits(CONVERT_MAGIC, &file);
 	f.close();

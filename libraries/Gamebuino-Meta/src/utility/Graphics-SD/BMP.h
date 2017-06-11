@@ -16,8 +16,8 @@ public:
 	bool isValid();
 	uint32_t getCreatorBits();
 	void setCreatorBits(uint32_t bits, File* file);
-	void readBuffer(uint16_t* buf, uint32_t offset, File* file);
-	void readFrame(uint16_t frame, uint16_t* buf, File* file);
+	uint16_t readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentColor, File* file);
+	uint16_t readFrame(uint16_t frame, uint16_t* buf, uint16_t transparentColor, File* file);
 	uint32_t getRowSize();
 	
 	uint32_t writeHeader(File* file);

@@ -66,7 +66,12 @@ BMP::BMP(File* file, Image* img) {
 		// we can only load BMPs of depth 4 or 24 or 32
 		return;
 	}
-	if (f_read32(file) != 0) {
+	uint32_t compression = f_read32(file);
+	bool createRGBAmasks = false;
+	if (depth == 32) {
+		createRGBAmasks = compression == 3;
+	}
+	if (compression != 0 && !createRGBAmasks) {
 		// we can only load uncompressed BMPs
 		return;
 	}
@@ -93,8 +98,25 @@ BMP::BMP(File* file, Image* img) {
 		img->colorMode = ColorMode::index;
 		img->useTransparentIndex = false; // TODO: transparency detection
 	} else {
+		if (createRGBAmasks) {
+			file->seekCur(20); // we ignore mage size, x pixels per meter, y pixels per meter, colors and important colors
+			for (uint8_t i = 0; i < 4; i++) {
+				uint32_t mask = f_read32(file);
+				for (uint8_t j = 0; j < 4; j++) {
+					if ((0xFF << (j*8)) & mask) {
+						indexMap[i] = j;
+						break;
+					}
+				}
+			}
+		} else {
+			indexMap[0] = 2;
+			indexMap[1] = 1;
+			indexMap[2] = 0;
+			indexMap[3] = 3;
+		}
 		img->colorMode = ColorMode::rgb565;
-		img->transparentColor = 0; // TODO: transparency detection
+		img->transparentColor = 0; // transparent color is detected during frame analysis
 	}
 	
 	file->seekSet(image_offset);
@@ -164,7 +186,7 @@ uint32_t BMP::getRowSize() {
 	return width * 4;
 }
 
-void BMP::readBuffer(uint16_t* buf, uint32_t offset, File* file) {
+uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentColor, File* file) {
 	
 	uint32_t rowSize = getRowSize();
 	file->seekSet(offset);
@@ -191,25 +213,44 @@ void BMP::readBuffer(uint16_t* buf, uint32_t offset, File* file) {
 			uint16_t* rambuffer = buf + (height - 1 - i) * width;
 			
 			for (uint16_t j = 0; j < width; j++) {
-				uint8_t b = file->read();
-				uint8_t g = file->read();
-				uint8_t r = file->read();
-				if (depth == 32) {
-					file->read(); // trash alpha chanel
+				uint8_t c[4];
+				if (depth == 24) {
+					c[2] = file->read();
+					c[1] = file->read();
+					c[0] = file->read();
+					c[3] = 0xFF; // assume no transparency
+				} else {
+					for (uint8_t k = 0; k < 4; k++) {
+						c[indexMap[k]] = file->read();
+					}
 				}
-				rambuffer[j] = convertTo565(r, g, b);
+				
+				if (c[3] > 0x80) {
+					uint16_t col = convertTo565(c[0], c[1], c[2]);
+					if (transparentColor && col == transparentColor) {
+						return transparentColor + 1;
+					}
+					rambuffer[j] = col;
+				} else {
+					// ok we have a transparent pixel
+					rambuffer[j] = transparentColor;
+				}
 			}
 			if (depth != 32) { // 32-bit always has dif 0
 				file->seekCur(dif);
 			}
 		}
 	}
+	return transparentColor;
 }
 
-void BMP::readFrame(uint16_t frame, uint16_t* buf, File* file) {
+uint16_t BMP::readFrame(uint16_t frame, uint16_t* buf, uint16_t transparentColor, File* file) {
+	if (depth == 32 && !transparentColor) {
+		return 1;
+	}
 	uint32_t size = getRowSize() * height;
 	uint32_t offset = size * (frames - frame - 1);
-	readBuffer(buf, image_offset + offset, file);
+	return readBuffer(buf, image_offset + offset, transparentColor, file);
 }
 
 void BMP::writeBuffer(uint16_t* buffer, File* file) {
