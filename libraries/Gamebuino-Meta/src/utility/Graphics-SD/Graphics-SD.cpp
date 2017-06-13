@@ -145,7 +145,7 @@ void Graphics_SD::stopRecording(Image* img, bool output) {
 }
 
 bool Graphics_SD::save(Image* img, char* filename) {
-	bool convert_bmp = true;
+	bool convert_bmp = true; // for saving single frames we always convert
 	if (convert_bmp && SD.exists(filename) && !SD.remove(filename)) {
 		return false;
 	}

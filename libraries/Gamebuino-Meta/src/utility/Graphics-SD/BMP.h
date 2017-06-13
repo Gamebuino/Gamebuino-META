@@ -21,8 +21,8 @@ public:
 	uint32_t getRowSize();
 	
 	uint32_t writeHeader(File* file);
-	void writeBuffer(uint16_t* buffer, File* file);
-	void writeFrame(uint16_t frame, uint16_t* buffer, File* file);
+	void writeBuffer(uint16_t* buffer, uint16_t transparentColor, File* file);
+	void writeFrame(uint16_t frame, uint16_t* buffer, uint16_t transparentColor, File* file);
 	uint8_t depth;
 private:
 	bool valid;

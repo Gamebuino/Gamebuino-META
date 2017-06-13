@@ -123,7 +123,6 @@ void GMV::convertFromBMP(BMP& bmp, char* newname) {
 	}
 	writeHeader(&f);
 	uint16_t transparentColor = 0;
-	transparentColor = 0;
 	
 	bool success;
 	do {
@@ -139,15 +138,18 @@ void GMV::convertFromBMP(BMP& bmp, char* newname) {
 					break;
 				}
 			}
+			if (img->colorMode == ColorMode::rgb565) {
+				if (transparentColor != 0xFFFF) {
+					img->transparentColor = transparentColor;
+				} else {
+					img->transparentColor = 0;
+				}
+			}
 			writeFrame(&f);
 		}
 	} while(!success);
+	
 	if (img->colorMode == ColorMode::rgb565) {
-		if (transparentColor != 0xFFFF) {
-			img->transparentColor = transparentColor;
-		} else {
-			img->transparentColor = 0;
-		}
 		f.seekSet(12);
 		f_write16(img->transparentColor, &f);
 	}
@@ -167,6 +169,10 @@ void GMV::writeColor(File* f, uint16_t color, uint8_t count) {
 	if (count > 1) {
 		count |= 0x80;
 		f->write(count);
+	}
+	if (color == img->transparentColor) {
+		f->write((uint8_t)0x7F);
+		return;
 	}
 	uint16_t* index = (uint16_t*)img->colorIndex;
 	for (uint8_t i = 0; i < 16; i++) {
@@ -277,7 +283,11 @@ void GMV::readFrame() {
 			}
 			if (!(count & 0x80)) {
 				// single indexed color
-				buf[pixels_current] = index[count];
+				if (count == 0x7F) {
+					buf[pixels_current] = img->transparentColor;
+				} else {
+					buf[pixels_current] = index[count];
+				}
 				pixels_current++;
 				continue;
 			}
@@ -286,6 +296,8 @@ void GMV::readFrame() {
 			i = file.read();
 			if (i == 0x80) {
 				file.read(&color, 2);
+			} else if (i == 0x7F) {
+				color = img->transparentColor;
 			} else {
 				color = index[i];
 			}
@@ -358,7 +370,7 @@ void GMV::finishSave(char* filename, uint16_t frames, bool output, Display_ST773
 			tft->print(i+1); // +1 for human-readability
 		}
 		readFrame();
-		bmp.writeFrame(i, img->_buffer, &f);
+		bmp.writeFrame(i, img->_buffer, img->transparentColor, &f);
 	}
 	bmp.setCreatorBits(CONVERT_MAGIC, &f); // ok we know that we have the GMV so why not?
 	f.close();

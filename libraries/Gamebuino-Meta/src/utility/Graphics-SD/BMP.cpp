@@ -30,8 +30,10 @@ BMP::BMP() {
 BMP::BMP(Image* img, uint16_t _frames) {
 	if (img->colorMode == ColorMode::index) {
 		depth = 4;
+	} else if (!img->transparentColor) {
+		depth = 24;
 	} else {
-		depth = 24; // TODO: 32-bit depth with transparency
+		depth = 32;
 	}
 	width = img->_width;
 	height = img->_height;
@@ -144,6 +146,9 @@ uint32_t BMP::writeHeader(File* file) {
 	if (depth == 4) {
 		color_table = 16;
 	}
+	if (depth == 32) {
+		header_size = 124;
+	}
 	image_offset = 14 + header_size + color_table * 4;
 	uint32_t image_size = getRowSize() * pixel_height;
 	uint32_t file_size = image_offset + image_size;
@@ -159,7 +164,11 @@ uint32_t BMP::writeHeader(File* file) {
 	f_write32(pixel_height, file);
 	f_write16(1, file); // number of panes must be 1
 	f_write16(depth, file);
-	f_write32(0, file); // no compression
+	if (depth == 32) {
+		f_write32(3, file); // bitmask
+	} else {
+		f_write32(0, file); // no compression
+	}
 	f_write32(image_size, file);
 	f_write32(0, file); // x pixels per meter horizontal
 	f_write32(0, file); // y pixels per meter vertically
@@ -172,6 +181,16 @@ uint32_t BMP::writeHeader(File* file) {
 		}
 	} else {
 		f_write32(0, file); // no important colors
+	}
+	if (depth == 32) {
+		f_write32(0x00FF0000, file); // R bitmask
+		f_write32(0x0000FF00, file); // G bitmask
+		f_write32(0x000000FF, file); // B bitmask
+		f_write32(0xFF000000, file); // alpha bitmask
+		f_write32(0x73524742, file); // color space sRGB
+		for (uint8_t i = 0; i < ((0x24 / 4) + 3 + 4); i++) {
+			f_write32(0, file); // unused stuff
+		}
 	}
 	return image_size;
 }
@@ -233,6 +252,9 @@ uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentCol
 					rambuffer[j] = col;
 				} else {
 					// ok we have a transparent pixel
+					if (!transparentColor) {
+						return 1;
+					}
 					rambuffer[j] = transparentColor;
 				}
 			}
@@ -245,15 +267,12 @@ uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentCol
 }
 
 uint16_t BMP::readFrame(uint16_t frame, uint16_t* buf, uint16_t transparentColor, File* file) {
-	if (depth == 32 && !transparentColor) {
-		return 1;
-	}
 	uint32_t size = getRowSize() * height;
 	uint32_t offset = size * (frames - frame - 1);
 	return readBuffer(buf, image_offset + offset, transparentColor, file);
 }
 
-void BMP::writeBuffer(uint16_t* buffer, File* file) {
+void BMP::writeBuffer(uint16_t* buffer, uint16_t transparentColor, File* file) {
 	if (depth == 4) {
 		uint8_t halfwidth = (width + 1) / 2;
 		uint8_t j = getRowSize() - halfwidth;
@@ -273,22 +292,32 @@ void BMP::writeBuffer(uint16_t* buffer, File* file) {
 		for (int8_t y = height - 1; y >= 0; y--) {
 			uint16_t* buf = buffer + (y*width);
 			for (uint8_t x = 0; x < width; x++) {
-				writeAsRGB(buf[x], file);
+				uint16_t b = buf[x];
+				if (depth == 24) {
+					writeAsRGB(b, file);
+				} else if (b == transparentColor) {
+					f_write32(0x00000000, file);
+				} else {
+					writeAsRGB(b, file);
+					file->write((uint8_t)0xFF);
+				}
 			}
-			uint8_t i = j;
-			while (i--) {
-				// time to add padding
-				file->write((uint8_t)0);
+			if (depth == 24) {
+				uint8_t i = j;
+				while (i--) {
+					// time to add padding
+					file->write((uint8_t)0);
+				}
 			}
 		}
 	}
 }
 
-void BMP::writeFrame(uint16_t frame, uint16_t* buf, File* file) {
+void BMP::writeFrame(uint16_t frame, uint16_t* buf, uint16_t transparentColor, File* file) {
 	uint32_t size = getRowSize() * height;
 	uint32_t offset = size * (frames - frame - 1);
 	file->seekSet(image_offset + offset);
-	writeBuffer(buf, file);
+	writeBuffer(buf, transparentColor, file);
 }
 
 } // namespace Gamebuino_Meta
