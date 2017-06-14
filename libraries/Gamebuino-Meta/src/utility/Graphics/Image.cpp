@@ -72,17 +72,17 @@ Image::Image() : Graphics(0, 0){
 }
 
 // ram constructors
-Image::Image(uint16_t w, uint16_t h, ColorMode col) : Graphics(w, h) {
-	init(w, h, col);
+Image::Image(uint16_t w, uint16_t h, ColorMode col, uint8_t fl) : Graphics(w, h) {
+	init(w, h, col, fl);
 }
-void Image::init(uint16_t w, uint16_t h, ColorMode col) {
-	init(w, h, 1, col);
+void Image::init(uint16_t w, uint16_t h, ColorMode col, uint8_t fl) {
+	init(w, h, 1, col, fl);
 }
 
-Image::Image(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col) : Graphics(0, 0) {
-	init(w, h, frames, col);
+Image::Image(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col, uint8_t fl) : Graphics(0, 0) {
+	init(w, h, frames, col, fl);
 }
-void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col) {
+void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col, uint8_t fl) {
 	if (frame_handler) {
 		delete frame_handler;
 	}
@@ -91,22 +91,24 @@ void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col) {
 	colorMode = col;
 	_width = w;
 	_height = h;
+	frame_looping = fl;
+	frame_loopcounter = 0;
 	frame_handler = new Frame_Handler_RAM(this);
 	setFrame(0);
 }
 
 // flash constructors
-Image::Image(const uint16_t* buffer, ColorMode col) : Graphics(0, 0) {
-	init(buffer, col);
+Image::Image(const uint16_t* buffer, ColorMode col, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, col, fl);
 }
-void Image::init(const uint16_t* buffer, ColorMode col) {
-	init(buffer, 1, col);
+void Image::init(const uint16_t* buffer, ColorMode col, uint8_t fl) {
+	init(buffer, 1, col, fl);
 }
 
-Image::Image(const uint16_t* buffer, uint16_t frames, ColorMode col) : Graphics(0, 0) {
-	init(buffer, frames, col);
+Image::Image(const uint16_t* buffer, uint16_t frames, ColorMode col, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, frames, col, fl);
 }
-void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col) {
+void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col, uint8_t fl) {
 	if (frame_handler) {
 		delete frame_handler;
 	}
@@ -117,29 +119,33 @@ void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col) {
 	_width = *(buf++);
 	_height = *(buf++);
 	_buffer = buf;
+	frame_looping = fl;
+	frame_loopcounter = 0;
 	frame_handler = new Frame_Handler_Mem(this);
 	setFrame(0);
 }
 
 // SD constructors
-Image::Image(char* filename) : Graphics(0, 0) {
-	init(filename);
+Image::Image(char* filename, uint8_t fl) : Graphics(0, 0) {
+	init(filename, fl);
 }
-void Image::init(char* filename) {
+void Image::init(char* filename, uint8_t fl) {
+	init(0, 0, filename, fl);
+}
+
+Image::Image(uint16_t w, uint16_t h, char* filename, uint8_t fl) : Graphics(w, h) {
+	init(w, h, filename, fl);
+}
+void Image::init(uint16_t w, uint16_t h, char* filename, uint8_t fl) {
 	if (frame_handler) {
 		delete frame_handler;
 	}
-	init(0, 0, filename);
-}
-
-Image::Image(uint16_t w, uint16_t h, char* filename) : Graphics(w, h) {
-	init(w, h, filename);
-}
-void Image::init(uint16_t w, uint16_t h, char* filename) {
 	transparentColor = 0;
 	_width = w;
 	_height = h;
 	last_frame = (gb.frameCount & 0xFF) - 1;
+	frame_looping = fl;
+	frame_loopcounter = 0;
 	frame_handler = new Frame_Handler_SD(this);
 	((Frame_Handler_SD*)frame_handler)->init(filename);
 }
@@ -178,13 +184,15 @@ void Image::allocateBuffer() {
 }
 
 void Image::nextFrame() {
-	if (frames == 1) {
-		return;
-	}
-	if (last_frame == gb.frameCount & 0xFF) {
+	if (frames == 1 || !frame_looping || last_frame == gb.frameCount & 0xFF) {
 		return;
 	}
 	last_frame = gb.frameCount & 0xFF;
+	frame_loopcounter++;
+	if (frame_loopcounter < frame_looping) {
+		return;
+	}
+	frame_loopcounter = 0;
 	if ((frame + 1) >= frames) {
 		frame = 0;
 		frame_handler->first();
@@ -198,12 +206,13 @@ void Image::setFrame(uint16_t _frame) {
 	if (frames == 1) {
 		return;
 	}
-	if (frames >= _frame) {
+	if (_frame >= frames) {
 		_frame = frames - 1;
 	}
 	frame = _frame;
 	frame_handler->set(frame);
 	last_frame = gb.frameCount & 0xFF; // we already loaded this frame!
+	frame_loopcounter = 0;
 }
 
 void Image::drawPixel(int16_t x, int16_t y) {

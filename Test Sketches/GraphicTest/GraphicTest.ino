@@ -103,7 +103,7 @@ const uint16_t favicon16[] = {
 	0x4208,0xDEFB,0xDEFB,0xDEFB,0xDEFB,0xDEFB,0xDEFB,0x9471,0xDEFB,0xDEFB,0x069E,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F, // row 11, 192 pixels
 };
 Image favicon = Image(favicon16);
-Image favicon_animate = Image(favicon16, 4);
+Image favicon_animate = Image(favicon16, 4, ColorMode::rgb565, 1);
 
 //Indexed color image sample
 uint16_t textImgIndexBuffer[] = {
@@ -149,13 +149,17 @@ void loop()
 	drawImage(imgRGB, 1);
 	
 	gb.setFrameRate(1);
-	gb.frameCount = 0;
+	uint32_t fc = gb.frameCount;
 	while (1) {
 		if (gb.update()) {
-			if (gb.frameCount == 10) {
+			if (gb.frameCount - fc >= 10) {
 				break;
 			}
 			gb.display.drawImage(16, 16, favicon_animate);
+			gb.display.drawImage(32,  0, favicon_animate);
+			gb.display.drawImage(32, 16, favicon_animate);
+			gb.display.drawImage(32, 32, favicon_animate);
+			gb.display.drawImage(32, 48, favicon_animate);
 		}
 	}
 

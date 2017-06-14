@@ -42,22 +42,22 @@ public:
 	~Image();
 
 	// ram constructors
-	Image(uint16_t w, uint16_t h, ColorMode col);
-	void init(uint16_t w, uint16_t h, ColorMode col);
-	Image(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565);
-	void init(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565);
+	Image(uint16_t w, uint16_t h, ColorMode col, uint8_t fl = 0);
+	void init(uint16_t w, uint16_t h, ColorMode col, uint8_t fl = 0);
+	Image(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = 0);
+	void init(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = 0);
 
 	// flash constructors
-	Image(const uint16_t* buffer, ColorMode col);
-	void init(const uint16_t* buffer, ColorMode col);
-	Image(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565);
-	void init(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565);
+	Image(const uint16_t* buffer, ColorMode col, uint8_t fl = 0);
+	void init(const uint16_t* buffer, ColorMode col, uint8_t fl = 0);
+	Image(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = 0);
+	void init(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = 0);
 
 	// SD constructors
-	Image(char* filename);
-	void init(char* filename);
-	Image(uint16_t w, uint16_t h, char* filename);
-	void init(uint16_t w, uint16_t h, char* filename);
+	Image(char* filename, uint8_t fl = 0);
+	void init(char* filename, uint8_t fl = 0);
+	Image(uint16_t w, uint16_t h, char* filename, uint8_t fl = 0);
+	void init(uint16_t w, uint16_t h, char* filename, uint8_t fl = 0);
 	
 	
 	void nextFrame();
@@ -80,6 +80,8 @@ public:
 	Frame_Handler* frame_handler;
 private:
 	uint8_t last_frame;
+	uint8_t frame_looping;
+	uint8_t frame_loopcounter;
 };
 
 } // namespace Gamebuino_Meta
