@@ -137,10 +137,13 @@ public:
 		setColor(ColorIndex c, ColorIndex bg),
 		setColor(uint8_t c),
 		setColor(uint8_t c, uint8_t bg),
+		setCursorX(int16_t x),
+		setCursorY(int16_t y),
+		setCursors(int16_t x, int16_t y),
 		setFontSize(uint8_t s),
-		setTextWrap(boolean w),
+		setTextWrap(bool w),
 		setRotation(uint8_t r),
-		cp437(boolean x=true),
+		cp437(bool x=true),
 		setFont(const GFXfont *f = NULL), //adafruit custom font
 		setFont(const uint8_t* f), //gamebuino legacy font
 		getTextBounds(char *string, int16_t x, int16_t y,
@@ -182,25 +185,27 @@ public:
 	// get current cursor position (get rotation safe maximum values, using: width() for x, height() for y)
 	int16_t getCursorX(void) const;
 	int16_t getCursorY(void) const;
+	uint8_t getFontWidth(void) const;
+	uint8_t getFontHeight(void) const;
 
  //protected:
 	const int16_t
 		WIDTH, HEIGHT;   // This is the 'raw' display w/h - never changes
 	int16_t
-		_width, _height, // Display w/h as modified by current rotation
-		cursorX, cursorY;
+		_width, _height; // Display w/h as modified by current rotation
+	static int16_t cursorX, cursorY;
 	static Color
 		color, bgcolor;
-	uint8_t
+	static uint8_t
 		fontSize,
 		rotation;
-	boolean
+	static bool
 		textWrap,   // If set, 'wrap' text at right edge of display
 		_cp437; // If set, use correct CP437 charset (default is off)
-	GFXfont *gfxFont; //adafruit custom font
+	static GFXfont* gfxFont; //adafruit custom font
 
-	uint8_t *font; //gamebuino legacy font
-	uint8_t fontWidth, fontHeight; //gamebuino legacy font size
+	static uint8_t* font; //gamebuino legacy font
+	static uint8_t fontWidth, fontHeight; //gamebuino legacy font size
 };
 
 } // namespace Gamebuino_Meta

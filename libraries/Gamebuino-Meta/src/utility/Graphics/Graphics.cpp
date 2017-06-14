@@ -70,6 +70,16 @@ Color* Graphics::colorIndex = _colorIndex;
 BlendMode Graphics::blendMode = BlendMode::blend;
 Color Graphics::color = Color::black;
 Color Graphics::bgcolor = Color::white;
+int16_t Graphics::cursorX = 0;
+int16_t Graphics::cursorY = 0;
+uint8_t Graphics::fontSize = 0;
+uint8_t Graphics::rotation = NOROT;
+bool Graphics::textWrap = true;
+bool Graphics::_cp437 = false;
+GFXfont* Graphics::gfxFont = 0;
+uint8_t* Graphics::font = 0;
+uint8_t Graphics::fontWidth = 0;
+uint8_t Graphics::fontHeight = 0;
 
 void Graphics::indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length, bool skipFirst) {
 	// length is the number of destination pixels
@@ -979,6 +989,14 @@ int16_t Graphics::getCursorY(void) const {
 	return cursorY;
 }
 
+uint8_t Graphics::getFontWidth(void) const {
+	return fontWidth;
+}
+
+uint8_t Graphics::getFontHeight(void) const {
+	return fontHeight;
+}
+
 void Graphics::setFontSize(uint8_t s) {
 	fontSize = (s > 0) ? s : 1;
 }
@@ -1022,11 +1040,25 @@ void Graphics::setColor(ColorIndex c, ColorIndex bg) {
 void Graphics::setColor(uint8_t c) {
 	setColor((ColorIndex)c);
 }
+
 void Graphics::setColor(uint8_t c, uint8_t bg) {
 	setColor((ColorIndex)c, (ColorIndex)bg);
 }
 
-void Graphics::setTextWrap(boolean w) {
+void Graphics::setCursorX(int16_t x) {
+	cursorX = x;
+}
+
+void Graphics::setCursorY(int16_t y) {
+	cursorY = y;
+}
+
+void Graphics::setCursors(int16_t x, int16_t y) {
+	cursorX = x;
+	cursorY = y;
+}
+
+void Graphics::setTextWrap(bool w) {
 	textWrap = w;
 }
 
@@ -1057,7 +1089,7 @@ void Graphics::setRotation(uint8_t x) {
 // with the erroneous character indices.  By default, the library uses the
 // original 'wrong' behavior and old sketches will still work.  Pass 'true'
 // to this function to use correct CP437 character values in your code.
-void Graphics::cp437(boolean x) {
+void Graphics::cp437(bool x) {
 	_cp437 = x;
 }
 

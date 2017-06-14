@@ -242,14 +242,16 @@ bool Gamebuino::update() {
 			//actually draw the low battery indicator
 			if (lowBattery) {
 				display.setFont(font3x5);
-				display.cursorX = display.width() - display.fontWidth + 1;
-				display.cursorY = 0;
+				display.setCursors(
+					display.width() - display.getFontWidth() + 1,
+					0
+				);
 #if DISPLAY_MODE == DISPLAY_MODE_RGB565
 				display.setColor(Color::black);
 #else
 				display.setColor(ColorIndex::black);
 #endif
-				display.fillRect(display.cursorX - 1, 0, display.fontWidth, display.fontHeight);
+				display.fillRect(display.getCursorX() - 1, 0, display.getFontWidth(), display.getFontHeight());
 #if DISPLAY_MODE == DISPLAY_MODE_RGB565
 				display.setColor(Color::red);
 #else
@@ -614,21 +616,23 @@ void Gamebuino::updatePopup(){
 		if(popupTimeLeft<12){
 			yOffset = 12-popupTimeLeft;
 		}
-		display.fontSize = 1;
+		display.setFontSize(1);
 #if DISPLAY_MODE == DISPLAY_MODE_RGB565
 		display.setColor(Color::white);
 #else
 		display.setColor(ColorIndex::white);
 #endif
-		display.fillRoundRect(0,display.height()-display.fontHeight+yOffset-3,display.width(),display.fontHeight+3,3);
+		display.fillRoundRect(0,display.height()-display.getFontHeight()+yOffset-3,display.width(),display.getFontHeight()+3,3);
 #if DISPLAY_MODE == DISPLAY_MODE_RGB565
 		display.setColor(Color::black);
 #else
 		display.setColor(ColorIndex::black);
 #endif
-		display.drawRoundRect(0,display.height()-display.fontHeight+yOffset-3,display.width(),display.fontHeight+3,3);
-		display.cursorX = 4;
-		display.cursorY = display.height()-display.fontHeight+yOffset-1;
+		display.drawRoundRect(0,display.height()-display.getFontHeight()+yOffset-3,display.width(),display.getFontHeight()+3,3);
+		display.setCursors(
+			4,
+			display.height()-display.getFontHeight()+yOffset-1
+		);
 		display.print(popupText);
 		popupTimeLeft--;
 	}
