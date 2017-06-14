@@ -431,15 +431,15 @@ class World {
               gb.display.setColor(BLACK);
             }
           }
-          if (gb.buttons.pressed(BTN_A) && (thisMap <= unlockedMaps)) {
+          if (gb.buttons.pressed(BUTTON_A) && (thisMap <= unlockedMaps)) {
             initGame();
             return;
           }
-          if (gb.buttons.pressed(BTN_RIGHT))
+          if (gb.buttons.pressed(BUTTON_RIGHT))
             thisMap = (thisMap + 1) % NUMMAPS;
-          if (gb.buttons.pressed(BTN_LEFT))
+          if (gb.buttons.pressed(BUTTON_LEFT))
             thisMap = (thisMap - 1 + NUMMAPS) % NUMMAPS;
-          if (gb.buttons.pressed(BTN_C) || gb.buttons.pressed(BTN_B)) {
+          if (gb.buttons.pressed(BUTTON_C) || gb.buttons.pressed(BUTTON_B)) {
             mainMenu();
           }
         }
@@ -1099,12 +1099,12 @@ class Weapon {
       }
       else {
         if (isAutomatic()) {
-          if (gb.buttons.repeat(BTN_A, 1)) {
+          if (gb.buttons.repeat(BUTTON_A, 1)) {
             shoot();
           }
         }
         else {
-          if (gb.buttons.pressed(BTN_A)) {
+          if (gb.buttons.pressed(BUTTON_A)) {
             shoot();
           }
         }
@@ -1297,21 +1297,21 @@ class Player :
     void update() {
       if (!dead) {
         //player input
-        if (gb.buttons.repeat(BTN_LEFT, 1)) {
+        if (gb.buttons.repeat(BUTTON_LEFT, 1)) {
           dir = -1;
           vx -= 16;
         }
-        if (gb.buttons.repeat(BTN_RIGHT, 1)) {
+        if (gb.buttons.repeat(BUTTON_RIGHT, 1)) {
           dir = 1;
           vx += 16;
         }
-        if (gb.buttons.repeat(BTN_UP, 10) && (gb.buttons.timeHeld(BTN_DOWN) > 10)) {
+        if (gb.buttons.repeat(BUTTON_UP, 10) && (gb.buttons.timeHeld(BUTTON_DOWN) > 10)) {
           weapon.subtype ++;
           weapon.subtype %= NUMWEAPONS;
           score = 0;
           popup("WEAPON CHEAT");
         }
-        if (gb.buttons.repeat(BTN_LEFT, 10) && (gb.buttons.timeHeld(BTN_RIGHT) > 10)) {
+        if (gb.buttons.repeat(BUTTON_LEFT, 10) && (gb.buttons.timeHeld(BUTTON_RIGHT) > 10)) {
           unlockedMaps = NUMMAPS - 1;
           unlockedWeapons = NUMWEAPONS - 1;
           score = 0;
@@ -1326,7 +1326,7 @@ class Player :
         if (world.solidCollisionAtPosition(x, y + 1, getWidth(), getHeight())) {
           doubleJumped = false;
         }
-        if (gb.buttons.pressed(BTN_B)) {
+        if (gb.buttons.pressed(BUTTON_B)) {
           if (world.solidCollisionAtPosition(x, y + 1, getWidth(), getHeight())) {
             vy = -32;
             jumping = true;
@@ -1343,7 +1343,7 @@ class Player :
             }
           }
         }
-        if ((gb.buttons.timeHeld(BTN_B) > 0) && (gb.buttons.timeHeld(BTN_B) < 5) && (vy < 0) && jumping) {
+        if ((gb.buttons.timeHeld(BUTTON_B) > 0) && (gb.buttons.timeHeld(BUTTON_B) < 5) && (vy < 0) && jumping) {
           if (doubleJumped) {
             vy -= 6;
           }
@@ -1851,7 +1851,7 @@ void setup() {
 ///////////////////////////////////////////// LOOP
 void loop() {
   if (gb.update()) {
-    if (gb.buttons.pressed(BTN_C)) {
+    if (gb.buttons.pressed(BUTTON_C)) {
       gamePaused();
     }
 
@@ -1926,7 +1926,7 @@ void loop() {
           if (!count) {
             break;
           }
-          if (gb.buttons.pressed(BTN_C)) {
+          if (gb.buttons.pressed(BUTTON_C)) {
             break;
           }
         }
@@ -1953,10 +1953,10 @@ void gamePaused() {
       gb.display.println("B: SAVE & QUIT");
       gb.display.println("C: RESUME");
 
-      if (gb.buttons.pressed(BTN_C)) {
+      if (gb.buttons.pressed(BUTTON_C)) {
         return;
       }
-      if (gb.buttons.pressed(BTN_B)) {
+      if (gb.buttons.pressed(BUTTON_B)) {
         world.addScore(player.score);
         saveEEPROM();
         world.chooseMap();
@@ -2111,18 +2111,18 @@ void drawCompass() {
   byte contrast = gb.display.contrast;
   while(1){
     if(gb.update()){
-      if(gb.buttons.repeat(BTN_UP,2)){
+      if(gb.buttons.repeat(BUTTON_UP,2)){
         contrast ++;
         gb.display.setContrast(contrast);
       }
-      if(gb.buttons.repeat(BTN_DOWN,2)){
+      if(gb.buttons.repeat(BUTTON_DOWN,2)){
         contrast --;
         gb.display.setContrast(contrast);
       }
-      if(gb.buttons.pressed(BTN_A)){
+      if(gb.buttons.pressed(BUTTON_A)){
         break;
       }
-      if(gb.buttons.pressed(BTN_B)){
+      if(gb.buttons.pressed(BUTTON_B)){
         break;
       }
 
