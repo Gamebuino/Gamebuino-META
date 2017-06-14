@@ -184,13 +184,17 @@ void Image::allocateBuffer() {
 }
 
 void Image::nextFrame() {
-	if (frames == 1 || !frame_looping || last_frame == gb.frameCount & 0xFF) {
-		return;
+	if (frames) {
+		if (frames == 1 || !frame_looping || last_frame == gb.frameCount & 0xFF) {
+			return;
+		}
 	}
 	last_frame = gb.frameCount & 0xFF;
-	frame_loopcounter++;
-	if (frame_loopcounter < frame_looping) {
-		return;
+	if (frames)  {
+		frame_loopcounter++;
+		if (frame_loopcounter < frame_looping) {
+			return;
+		}
 	}
 	frame_loopcounter = 0;
 	if ((frame + 1) >= frames) {

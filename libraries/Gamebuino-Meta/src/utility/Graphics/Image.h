@@ -36,28 +36,30 @@ public:
 	uint32_t getBufferSizeWithFrames();
 };
 
+#define DEFAULT_FRAME_LOOP 1
+
 class Image : public Graphics {
 public:
 	Image();
 	~Image();
 
 	// ram constructors
-	Image(uint16_t w, uint16_t h, ColorMode col, uint8_t fl = 0);
-	void init(uint16_t w, uint16_t h, ColorMode col, uint8_t fl = 0);
-	Image(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = 0);
-	void init(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = 0);
+	Image(uint16_t w, uint16_t h, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(uint16_t w, uint16_t h, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
+	Image(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = DEFAULT_FRAME_LOOP);
 
 	// flash constructors
-	Image(const uint16_t* buffer, ColorMode col, uint8_t fl = 0);
-	void init(const uint16_t* buffer, ColorMode col, uint8_t fl = 0);
-	Image(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = 0);
-	void init(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = 0);
+	Image(const uint16_t* buffer, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(const uint16_t* buffer, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
+	Image(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = DEFAULT_FRAME_LOOP);
 
 	// SD constructors
-	Image(char* filename, uint8_t fl = 0);
-	void init(char* filename, uint8_t fl = 0);
-	Image(uint16_t w, uint16_t h, char* filename, uint8_t fl = 0);
-	void init(uint16_t w, uint16_t h, char* filename, uint8_t fl = 0);
+	Image(char* filename, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(char* filename, uint8_t fl = DEFAULT_FRAME_LOOP);
+	Image(uint16_t w, uint16_t h, char* filename, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(uint16_t w, uint16_t h, char* filename, uint8_t fl = DEFAULT_FRAME_LOOP);
 	
 	
 	void nextFrame();
