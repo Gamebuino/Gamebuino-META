@@ -236,9 +236,9 @@ bool Gamebuino::update() {
 			//   Y(N) = ( 7 * Y(N-1) + Y(N) ) / 8
 			battery = ((7 * battery) + ((1024 * 1000 * 1.2) / analogRead(A5))) / 8;
 			//if VCC drops under 3.1V, start showing the low battery indicator
-			if (battery < 3100) lowBattery = true;
+			if (battery < 2900) lowBattery = true;
 			//if VCC raises above 3.2V, stop showing the battery indicator
-			if (battery > 3200) lowBattery = false;
+			if (battery > 3000) lowBattery = false;
 			//actually draw the low battery indicator
 			if (lowBattery) {
 				display.setFont(font3x5);
