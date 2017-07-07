@@ -53,6 +53,7 @@
 
 #ifndef SAVEFILE_NAME
 #define SAVEFILE_NAME "save.sav"
+#endif
 
 
 ///////////////
