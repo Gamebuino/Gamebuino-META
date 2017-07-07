@@ -26,6 +26,9 @@
 
 void setup()
 {
+  // first we disable the watchdog timer so that we tell the bootloader everything is fine!
+  WDT->CTRL.bit.ENABLE = 0;
+  
   // debug output at 115200 baud
   Serial.begin(115200);
 

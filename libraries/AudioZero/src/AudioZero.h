@@ -15,9 +15,10 @@
 #ifndef GAMEBUINO_META_AUDIOZERO_H
 #define GAMEBUINO_META_AUDIOZERO_H
 
-#include "../../SdFat.h"
+#include <SD.h>
+#include <SPI.h>
 
-namespace Gamebuino_Meta {
+
 
 class AudioZeroClass{
 public:
@@ -40,6 +41,5 @@ private:
 
 extern AudioZeroClass AudioZero;
 
-} // Gamebuino_Meta
 
 #endif // GAMEBUINO_META_AUDIOZERO_H

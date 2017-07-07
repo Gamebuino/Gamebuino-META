@@ -12,13 +12,12 @@
  * published by the Free Software Foundation.
  */
 
-#include "Gamebuino-Meta-AudioZero.h"
+#include "AudioZero.h"
 
 #include <Arduino.h>
 #include <Print.h>
 #include <SPI.h>
 
-namespace Gamebuino_Meta {
 
 /*Global variables*/
 bool __StartFlag;
@@ -187,4 +186,3 @@ void TC5_Handler (void) __attribute__ ((weak, alias("Audio_Handler")));
 }
 #endif
 
-} // namespace Gamebuino_Meta
