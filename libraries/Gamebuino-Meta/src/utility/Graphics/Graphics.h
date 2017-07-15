@@ -210,4 +210,44 @@ public:
 
 } // namespace Gamebuino_Meta
 
+using Gamebuino_Meta::Image;
+using Gamebuino_Meta::BlendMode;
+using Gamebuino_Meta::ColorMode;
+using Gamebuino_Meta::Color;
+using Gamebuino_Meta::ColorIndex;
+
+const Color WHITE = Color::white;
+const Color GRAY = Color::gray;
+const Color DARKGRAY = Color::darkgray;
+const Color BLACK = Color::black;
+const Color PURPLE = Color::purple;
+const Color PINK = Color::pink;
+const Color RED = Color::red;
+const Color ORANGE = Color::orange;
+const Color BROWN = Color::brown;
+const Color BEIGE = Color::beige;
+const Color YELLOW = Color::yellow;
+const Color LIGHTGREEN = Color::lightgreen;
+const Color GREEN = Color::green;
+const Color DARKBLUE = Color::darkblue;
+const Color BLUE = Color::blue;
+const Color LIGHTBLUE = Color::lightblue;
+
+const ColorIndex INDEX_WHITE = ColorIndex::white;
+const ColorIndex INDEX_GRAY = ColorIndex::gray;
+const ColorIndex INDEX_DARKGRAY = ColorIndex::darkgray;
+const ColorIndex INDEX_BLACK = ColorIndex::black;
+const ColorIndex INDEX_PURPLE = ColorIndex::purple;
+const ColorIndex INDEX_PINK = ColorIndex::pink;
+const ColorIndex INDEX_RED = ColorIndex::red;
+const ColorIndex INDEX_ORANGE = ColorIndex::orange;
+const ColorIndex INDEX_BROWN = ColorIndex::brown;
+const ColorIndex INDEX_BEIGE = ColorIndex::beige;
+const ColorIndex INDEX_YELLOW = ColorIndex::yellow;
+const ColorIndex INDEX_LIGHTGREEN = ColorIndex::lightgreen;
+const ColorIndex INDEX_GREEN = ColorIndex::green;
+const ColorIndex INDEX_DARKBLUE = ColorIndex::darkblue;
+const ColorIndex INDEX_BLUE = ColorIndex::blue;
+const ColorIndex INDEX_LIGHTBLUE = ColorIndex::lightblue;
+
 #endif // _GAMEBUINO_META_GRAPHICS_H_

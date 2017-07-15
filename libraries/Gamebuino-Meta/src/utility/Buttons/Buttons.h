@@ -64,4 +64,15 @@ public:
 
 } // namespace Gamebuino_Meta
 
+using Gamebuino_Meta::Button;
+
+const Button BUTTON_DOWN = Button::down;
+const Button BUTTON_LEFT = Button::left;
+const Button BUTTON_RIGHT = Button::right;
+const Button BUTTON_UP = Button::up;
+const Button BUTTON_A = Button::a;
+const Button BUTTON_B = Button::b;
+const Button BUTTON_C = Button::c;
+const Button BUTTON_D = Button::d;
+
 #endif	// _GAMEBUINO_META_BUTTONS_H_
