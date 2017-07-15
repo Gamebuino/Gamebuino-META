@@ -352,12 +352,8 @@ void Display_ST7735::commonInit(const uint8_t *cmdList) {
 #if defined (SPI_HAS_TRANSACTION)
 		SPI.begin();
 	
-	#if defined(SAMD_DMA)
-		//full speed 24Mhz SPI
 		mySPISettings = SPISettings(24000000, MSBFIRST, SPI_MODE0);
-	#else
-		mySPISettings = SPISettings(8000000, MSBFIRST, SPI_MODE0);
-	#endif
+
 #elif defined (__AVR__)
 		SPCRbackup = SPCR;
 		SPI.begin();
