@@ -67,10 +67,6 @@ void Gamebuino::begin() {
 	frameEndMicros = 1;
 	startMenuTimer = 255;
 
-	//battery
-	battery = 3300;
-	lowBattery = false;
-
 	//neoPixels
 	neoPixels.begin();
 	neoPixels.clear();
@@ -132,7 +128,6 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 	display.fontSize = 1;
 	display.textWrap = false;
 	//display.persistence = false;
-	//battery.show = false;
 #if DISPLAY_MODE == DISPLAY_MODE_RGB565
 	display.setColor(Color::black);
 #else
@@ -201,7 +196,6 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 			}
 		}
 	}
-	//battery.show = true;
 }
 
 bool recording_screen = false;
@@ -223,68 +217,6 @@ bool Gamebuino::update() {
 		
 			//draw and update popups
 			updatePopup();
-
-			//battery monitor
-			analogReadResolution(10);
-			//indirectly read VCC value, convert it to millivolts and smooth it out
-			// - 1.2V: VDDCORE used as voltage reference, connected to A5 pin
-			// - 1024: 10-bit analog resolution
-			// - 1000: convert to millivolts to avoid the use of float
-			// - low pass filter: weighted floating average
-			//   averaging the previous value Y(N-1) with a weight of 7
-			//   and the new value Y(N) with a weight of 1
-			//   Y(N) = ( 7 * Y(N-1) + Y(N) ) / 8
-			battery = ((7 * battery) + ((1024 * 1000 * 1.2) / analogRead(A5))) / 8;
-			//if VCC drops under 3.1V, start showing the low battery indicator
-			if (battery < 2900) lowBattery = true;
-			//if VCC raises above 3.2V, stop showing the battery indicator
-			if (battery > 3000) lowBattery = false;
-			//actually draw the low battery indicator
-			if (lowBattery) {
-				display.setFont(font3x5);
-				display.setCursors(
-					display.width() - display.getFontWidth() + 1,
-					0
-				);
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-				display.setColor(Color::black);
-#else
-				display.setColor(ColorIndex::black);
-#endif
-				display.fillRect(display.getCursorX() - 1, 0, display.getFontWidth(), display.getFontHeight());
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-				display.setColor(Color::red);
-#else
-				display.setColor(ColorIndex::red);
-#endif
-				if ((frameCount % 20) < 10) {
-					//draw the empty battery character
-					display.print("\7");
-				}
-				else {
-					//draw the full battery character
-					display.print("\11");
-				}
-				//disable light effects
-				neoPixels.clear();
-				//disable sound
-				sound.setVolume(0);
-			}
-			
-			//battery debug display
-			/*
-			display.setColor(GREEN, BLACK);
-			if (battery < 3200) {
-				tft.setColor(RED, BLACK);
-			}
-			//draw a  bar showing the voltage
-			uint8_t barHeight = map(battery, 2500, 3300, 0, display.height() - display.fontHeight );
-				display.drawFastVLine(display.width() - 1, display.height() - display.fontHeight  - barHeight, barHeight);
-			display.cursorX = 0;
-			display.cursorY = 6;
-			display.print(battery);
-			display.print("mV");
-			*/
 
 			//send buffer to the screen
 			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
@@ -366,7 +298,7 @@ void Gamebuino::setFrameRate(uint8_t fps) {
 }
 
 void Gamebuino::pickRandomSeed(){
-	//randomSeed(~battery.voltage * ~micros() * ~micros() + backlight.ambientLight + micros());
+	//randomSeed(~micros() * ~micros() + backlight.ambientLight + micros());
 }
 
 uint8_t Gamebuino::getCpuLoad(){

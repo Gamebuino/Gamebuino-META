@@ -110,8 +110,6 @@ private:
 	void updatePopup();
 	const char* popupText;
 	uint8_t popupTimeLeft;
-	bool lowBattery;
-	uint16_t battery;
 #ifdef FOLDER_NAME
 	const char folder_name[sizeof FOLDER_NAME] = FOLDER_NAME;
 #else
