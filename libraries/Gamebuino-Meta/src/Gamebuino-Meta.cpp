@@ -217,10 +217,7 @@ bool Gamebuino::update() {
 		
 			//draw and update popups
 			updatePopup();
-
-			//send buffer to the screen
-			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
-
+			
 			//record screenshot
 			if (buttons.pressed(Button::d)) {
 				
@@ -246,13 +243,24 @@ bool Gamebuino::update() {
 						recording_screen = true;
 					}
 				}
-				/*
-				
-				tft.setColor(Color::red, Color::black);
-				tft.drawRect(0, 0, tft._width, tft._height);
-				tft.drawRect(1, 1, tft._width - 2, tft._height - 2);
-				display.save("SCREEN.BMP");*/
+				// display.save("SCREEN.BMP");
 			}
+			
+			
+			//show a red contour when screen is recording
+			if(recording_screen){
+#if DISPLAY_MODE == DISPLAY_MODE_RGB565
+				display.setColor(Color::red, Color::black);
+				display.drawRect(0, 0, tft._width-1, tft._height-1);
+#else
+				display.setColor(ColorIndex::red, Color::black);
+				display.drawRect(0, 0, tft._width-1, tft._height-1);
+#endif
+			}
+
+			//send buffer to the screen
+			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
+			
 
 			Graphics_SD::update(); // update screen recordings
 
