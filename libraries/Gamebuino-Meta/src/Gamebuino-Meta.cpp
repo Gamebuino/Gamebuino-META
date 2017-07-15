@@ -246,24 +246,21 @@ bool Gamebuino::update() {
 				// display.save("SCREEN.BMP");
 			}
 			
+			Graphics_SD::update(); // update screen recordings
 			
 			//show a red contour when screen is recording
 			if(recording_screen){
 #if DISPLAY_MODE == DISPLAY_MODE_RGB565
-				display.setColor(Color::red, Color::black);
-				display.drawRect(0, 0, tft._width-1, tft._height-1);
+				display.setColor(RED, BLACK);
+				display.drawRect(0, 0, display._width, display._height);
 #else
-				display.setColor(ColorIndex::red, Color::black);
-				display.drawRect(0, 0, tft._width-1, tft._height-1);
+				display.setColor(INDEX_RED, INDEX_BLACK);
+				display.drawRect(0, 0, display._width, display._height);
 #endif
 			}
 
 			//send buffer to the screen
 			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
-			
-
-			Graphics_SD::update(); // update screen recordings
-
 
 			//if(!display.persistence)
 #if DISPLAY_MODE == DISPLAY_MODE_RGB565
