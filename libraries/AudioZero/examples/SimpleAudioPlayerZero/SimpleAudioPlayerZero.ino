@@ -24,6 +24,10 @@
 #include <SPI.h>
 #include <AudioZero.h>
 
+inline void load_loader(void) {
+  ((void(*)(void))(*((uint32_t*)0x3FF4)))();
+}
+
 void setup()
 {
   // first we disable the watchdog timer so that we tell the bootloader everything is fine!
@@ -36,6 +40,8 @@ void setup()
   Serial.print("Initializing SD card...");
   if (!SD.begin(PIN_LED_TXL)) {
     Serial.println(" failed!");
+
+    load_loader();
     while(true);
   }
   Serial.println(" done.");
@@ -63,5 +69,7 @@ void loop()
 
   Serial.println("End of file. Thank you for listening!");
   AudioZero.end();
-  delay(1000);
+  delay(500);
+
+  load_loader();
 }
