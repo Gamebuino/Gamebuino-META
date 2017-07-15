@@ -26,6 +26,5 @@ void loop()
 void initGame(){
   gb.titleScreen("Circle\ncollision\nphysics");
   gb.pickRandomSeed(); //pick a different random seed each time for games to be different
-  gb.battery.show = false; //hide the battery indicator
   initCircles();
 }

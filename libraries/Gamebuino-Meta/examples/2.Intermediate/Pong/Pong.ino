@@ -126,10 +126,10 @@ void loop() {
   gb.display.print(oponent_score);
   
   //draw the ball
-  gb.display.fillRect(ball_x, ball_y, ball_size, ball_size, 0xFFFF);
+  gb.display.fillRect(ball_x, ball_y, ball_size, ball_size);
   //draw the player
-  gb.display.fillRect(player_x, player_y, player_w, player_h, 0xFFFF);
+  gb.display.fillRect(player_x, player_y, player_w, player_h);
   //draw the oponent
-  gb.display.fillRect(oponent_x,oponent_y, oponent_w, oponent_h, 0xFFFF);
+  gb.display.fillRect(oponent_x,oponent_y, oponent_w, oponent_h);
   }
 }
