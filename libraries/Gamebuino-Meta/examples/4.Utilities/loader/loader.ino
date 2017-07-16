@@ -143,7 +143,8 @@ void handlePress() {
   SerialUSB.println("Loading file...");
   SerialUSB.println(path);
 
-  gb.display.fillScreen(BLACK);
+  gb.display.setColor(BLACK);
+  gb.display.fillScreen();
   gb.display.setColor(WHITE);
   gb.display.println("\n\n\nLOADING");
   uint16_t i = 0;
@@ -201,7 +202,8 @@ void loop() {
     }
 
     // draw the screen
-    gb.display.fillScreen(BLACK);
+    gb.display.setColor(BLACK);
+    gb.display.fillScreen();
     gb.display.setColor(WHITE);
     gb.display.textWrap = false;
     for (uint8_t i = 0; i < cursorPos_max; i++) {
