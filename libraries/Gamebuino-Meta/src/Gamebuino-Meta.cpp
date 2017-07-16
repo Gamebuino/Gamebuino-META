@@ -61,7 +61,7 @@ void Gamebuino::begin() {
 #endif
 	
 	
-	timePerFrame = 40;
+	timePerFrame = 40; //25 FPS
 	//nextFrameMillis = 0;
 	//frameCount = 0;
 	frameEndMicros = 1;
@@ -84,9 +84,9 @@ void Gamebuino::begin() {
 	tft.initR(INITR_BLACKTAB);
 	tft.setRotation(3);
 #if DISPLAY_MODE == DISPLAY_MODE_RGB565
-	display.fillScreen(tft.Color565(127, 127, 127));
+	display.fillScreen(Color::black);
 #else
-	display.setColor(ColorIndex::darkgray);
+	display.setColor(ColorIndex::black);
 	display.fillRect(0, 0, display._width, display._height);
 #endif
 
@@ -96,7 +96,7 @@ void Gamebuino::begin() {
 	if (!SD.begin(SD_CS)) {
 		tft.setColor(Color::red, Color::black);
 		tft.println("FAILED");
-		delay(1000);
+		delay(200);
 	} else {
 		tft.setColor(Color::green, Color::black);
 		tft.println("OK");
@@ -218,8 +218,8 @@ bool Gamebuino::update() {
 			//draw and update popups
 			updatePopup();
 			
-			//record screenshot
-			if (buttons.pressed(Button::d)) {
+			//TODO replace with a complete menu
+			if (buttons.released(Button::d)) {
 				
 				tft.setColor(Color::red, Color::black);
 				tft.drawRect(0, 0, tft._width, tft._height);
@@ -264,12 +264,11 @@ bool Gamebuino::update() {
 
 			//if(!display.persistence)
 #if DISPLAY_MODE == DISPLAY_MODE_RGB565
-			display.fillScreen(Color::white); //clear the buffer
-			display.setColor(Color::black);
 #else
 			display.setColor(ColorIndex::white);
 			display.fillRect(0, 0, display._width, display._height);
 			display.setColor(ColorIndex::black);
+			display.setColor(ColorIndex::white);
 #endif
 			display.setCursor(0, 0);
 
@@ -280,8 +279,6 @@ bool Gamebuino::update() {
 			frameEndMicros = micros(); //measure the frame's end time
 			frameDurationMicros = frameEndMicros - frameStartMicros;
 
-			//            display.setTextColor(BLACK);
-			//            display.setCursor(0, 40);
 			//            display.print(frameDurationMicros / timePerFrame);
 			//            display.print(" ");
 			//            display.print(2048 - freeRam());
@@ -589,7 +586,7 @@ void Gamebuino::changeGame(){
 	tft.drawImage(0, 0, display, tft.width(), tft.height());
 	*/
 	//flash loader.bin
-	load_loader();
+	//load_loader();
 }
 
 void Gamebuino::getDefaultName(char* string){
