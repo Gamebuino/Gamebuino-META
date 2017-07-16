@@ -415,6 +415,7 @@ void Gamebuino::homeMenu(){
 				lineCounter += 4;
 			}
 			
+            gb.display.setFont(font3x5);
 			tft.cursorX = 0;
 			tft.cursorY = yOffset;
 			tft.setColor(WHITE, BROWN);
