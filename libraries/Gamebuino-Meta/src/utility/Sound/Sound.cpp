@@ -23,7 +23,8 @@ namespace Gamebuino_Meta {
 
 void Sound::begin() {
 	volumeMax = 1;
-	globalVolume = 1;
+	//mute by default as tone() randomly crashed the console
+	globalVolume = 0;
 }
 
 void Sound::playOK() {
