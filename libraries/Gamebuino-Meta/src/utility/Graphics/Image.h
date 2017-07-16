@@ -66,7 +66,8 @@ public:
 	void setFrame(uint16_t frame);
 	void freeBuffer();
 	void drawPixel(int16_t x, int16_t y);
-	void fillScreen(Color color);
+	//void fillScreen(Color color);
+	void fillScreen();
 	void drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img);
 	void allocateBuffer();
 	

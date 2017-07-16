@@ -244,15 +244,22 @@ void Image::drawPixel(int16_t x, int16_t y) {
 	}
 }
 
-void Image::fillScreen(Color color) {
+void Image::fillScreen() {
 	if (_buffer) {
-		uint8_t hi = (uint16_t)color >> 8, lo = (uint16_t)color & 0xFF;
-		if (hi == lo) {
-			memset(_buffer, lo, WIDTH * HEIGHT * 2);
+		if (colorMode == ColorMode::rgb565) {
+			uint8_t hi = (uint16_t)color >> 8, lo = (uint16_t)color & 0xFF;
+			if (hi == lo) {
+				memset(_buffer, lo, WIDTH * HEIGHT * 2);
+			}
+			else {
+				uint16_t i, pixels = WIDTH * HEIGHT;
+				for (i = 0; i<pixels; i++) _buffer[i] = (uint16_t)color;
+			}
 		}
-		else {
-			uint16_t i, pixels = WIDTH * HEIGHT;
-			for (i = 0; i<pixels; i++) _buffer[i] = (uint16_t)color;
+		
+		if (colorMode == ColorMode::index) {
+			uint8_t pack = ((uint8_t)color) + ((uint8_t)color << 4);
+			memset(_buffer, pack, WIDTH * HEIGHT / 2);
 		}
 	}
 }

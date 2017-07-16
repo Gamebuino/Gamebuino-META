@@ -84,12 +84,8 @@ void Gamebuino::begin() {
 	//tft
 	tft.initR(INITR_BLACKTAB);
 	tft.setRotation(3);
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-	display.fillScreen(Color::black);
-#else
-	display.setColor(ColorIndex::black);
-	display.fillRect(0, 0, display._width, display._height);
-#endif
+	display.setColor(Color::black);
+	display.fillScreen();
 
 	tft.drawImage(0, 0, display, tft.width(), tft.height());
 	tft.fontSize = 2;
@@ -241,26 +237,18 @@ bool Gamebuino::update() {
 			
 			//show a red contour when screen is recording
 			if(recording_screen){
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-				display.setColor(RED, BLACK);
+				display.setColor(Color::red, Color::black);
 				display.drawRect(0, 0, display._width, display._height);
-#else
-				display.setColor(INDEX_RED, INDEX_BLACK);
-				display.drawRect(0, 0, display._width, display._height);
-#endif
 			}
 
 			//send buffer to the screen
 			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
 
 			//if(!display.persistence)
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-#else
-			display.setColor(ColorIndex::white);
-			display.fillRect(0, 0, display._width, display._height);
-			display.setColor(ColorIndex::black);
-			display.setColor(ColorIndex::white);
-#endif
+			display.setColor(Color::black);
+			display.fillScreen(); //clear the buffer
+			display.setColor(Color::white);
+			
 			display.setCursor(0, 0);
 			display.fontSize = 1;
 			display.textWrap = true;
