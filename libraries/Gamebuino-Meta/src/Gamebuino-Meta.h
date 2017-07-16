@@ -91,7 +91,10 @@ public:
 	uint16_t frameDurationMicros;
 	uint32_t frameStartMicros, frameEndMicros;
 	
+	int16_t neoPixelsIntensity;
+	
 	int8_t menu(const char* const* items, uint8_t length);
+	void homeMenu();
 	void keyboard(char* text, uint8_t length);
 	void popup(const char* text, uint8_t duration);
 	//void adjustVolume();

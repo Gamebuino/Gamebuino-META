@@ -19,6 +19,7 @@
 
 #include "Gamebuino-Meta.h"
 #include "utility/Graphics-SD.h"
+#include "utility/Misc.h"
 SdFat SD;
 
 // a 3x5 font table
@@ -60,12 +61,12 @@ void Gamebuino::begin() {
 	folder_name[sizeof __SKETCH_NAME__ - 4] = '\0';
 #endif
 	
-	
 	timePerFrame = 40; //25 FPS
 	//nextFrameMillis = 0;
 	//frameCount = 0;
 	frameEndMicros = 1;
 	startMenuTimer = 255;
+	neoPixelsIntensity = 255;
 
 	//neoPixels
 	neoPixels.begin();
@@ -91,11 +92,12 @@ void Gamebuino::begin() {
 #endif
 
 	tft.drawImage(0, 0, display, tft.width(), tft.height());
-	tft.setColor(Color::white, Color::black);
+	tft.fontSize = 2;
+	tft.setColor(Color::brown, Color::black);
 	tft.print("SD INIT... ");
 	if (!SD.begin(SD_CS)) {
 		tft.setColor(Color::red, Color::black);
-		tft.println("FAILED");
+		tft.println("FAILED!");
 		delay(200);
 	} else {
 		tft.setColor(Color::green, Color::black);
@@ -218,32 +220,21 @@ bool Gamebuino::update() {
 			//draw and update popups
 			updatePopup();
 			
-			//TODO replace with a complete menu
+			//TODO : include recording into the home menu
+			
+			//get back to game list when "HOME is held
+			if (buttons.held(Button::d, 25)){
+				changeGame();
+			}
+			//Home menu
 			if (buttons.released(Button::d)) {
-				
-				tft.setColor(Color::red, Color::black);
-				tft.drawRect(0, 0, tft._width, tft._height);
-				tft.drawRect(1, 1, tft._width - 2, tft._height - 2);
 				if (recording_screen) {
 					// stop the recording
-					tft.setColor(Color::white, Color::black);
-					tft.cursorX = 0;
-					tft.cursorY = 2;
-					
-					tft.println("Processing screencapture...");
 					display.stopRecording(true);
 					recording_screen = false;
 				} else {
-					if (!display.startRecording("RECORD.BMP")) {
-						tft.cursorX = 0;
-						tft.cursorY = 2;
-						tft.println("Couldn't start screen recording");
-						delay(3000);
-					} else {
-						recording_screen = true;
-					}
+					homeMenu();
 				}
-				// display.save("SCREEN.BMP");
 			}
 			
 			Graphics_SD::update(); // update screen recordings
@@ -271,25 +262,19 @@ bool Gamebuino::update() {
 			display.setColor(ColorIndex::white);
 #endif
 			display.setCursor(0, 0);
+			display.fontSize = 1;
+			display.textWrap = true;
 
 			//neoPixels update
+			if(neoPixelsIntensity == 0){
+				//TODO add progressive dimming
+				neoPixels.clear();
+			}
 			neoPixels.show();
 			neoPixels.clear();
 
 			frameEndMicros = micros(); //measure the frame's end time
 			frameDurationMicros = frameEndMicros - frameStartMicros;
-
-			//            display.print(frameDurationMicros / timePerFrame);
-			//            display.print(" ");
-			//            display.print(2048 - freeRam());
-
-			//            display.setCursor(0, 32);
-			//            display.print("CPU:");
-			//            display.print(frameDurationMicros / timePerFrame);
-			//            display.println("/1000");
-			//            display.print("RAM:");
-			//            display.print(2048 - freeRam());
-			//            display.println("/2048");
 		}
 		return false;
 	}
@@ -384,6 +369,166 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 #else
 	return 0;
 #endif
+}
+
+void Gamebuino::homeMenu(){
+	//here we don't use gb.update and gb.display not to interfere with the game
+	//the only things we use are gb.tft and gb.buttons
+	int currentItem = 0;
+	int numItems = 5;
+	unsigned long lastMillis = 0;
+	int yOffset = 34;
+	boolean changed = true;
+	
+	tft.setColor(BROWN);
+	tft.fillRect(0, yOffset-4, tft.width(), 18);
+	
+	int lineCounter = 0;
+		
+	while(1){
+		//Ensure constant framerate using millis (40ms = 25FPS)
+		if((millis() - lastMillis) > 40){
+			lastMillis = millis();
+			buttons.update();
+			
+			neoPixels.clear();
+			neoPixels.show();
+			
+			if(gb.buttons.released(Button::d) || gb.buttons.released(Button::b) || gb.buttons.released(Button::c)){
+				return;
+			}
+			if(gb.buttons.held(Button::d, 25)){
+				load_loader();
+			}
+			
+			if(gb.buttons.repeat(Button::right, 8)){
+				currentItem++;
+				if(currentItem >= numItems){
+					currentItem = 0;
+				}
+				changed = true;
+			}
+			
+			if(gb.buttons.repeat(Button::left, 8)){
+				currentItem--;
+				if(currentItem < 0){
+					currentItem = numItems - 1;
+				}
+				changed = true;
+			}
+			
+			if(lineCounter < tft.height()){
+				if(!((lineCounter >= (yOffset-2)) && (lineCounter <= (yOffset + 12)))){
+					tft.setColor(DARKGRAY);
+					tft.fillRect(0, lineCounter, tft.width(), 2);
+				}
+				lineCounter += 4;
+			}
+			
+			tft.cursorX = 0;
+			tft.cursorY = yOffset;
+			tft.setColor(WHITE, BROWN);
+			tft.fontSize = 2;
+			tft.textWrap = false;
+			
+			switch(currentItem){
+				case 0:
+					if (gb.buttons.released(Button::a)){
+						changeGame();
+					}
+					if (changed == true){
+						tft.print("<   CHANGE GAME    >");
+					}
+				break;
+				case 1:
+					if (gb.buttons.released(Button::a)){
+						sound.setVolume(sound.getVolume() + 1);
+						sound.playTick();
+						changed = true;
+					}
+					if (changed == true){
+						if(sound.getVolume()) {
+							tft.print("<     VOLUME \23\24    >");
+						} else {
+							tft.print("<     VOLUME \23x    >");
+						}
+					}
+				break;
+				case 2:
+					if (gb.buttons.released(Button::a)){
+						neoPixelsIntensity += 63;
+						if(neoPixelsIntensity >= 255){
+							neoPixelsIntensity = 0;
+						}
+						changed = true;
+					}
+					
+					for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
+						gb.neoPixels.setPixelColor(i, neoPixelsIntensity, neoPixelsIntensity, neoPixelsIntensity/2);
+					}
+					neoPixels.show();
+					
+					if (changed == true){
+						if(neoPixelsIntensity) {
+							tft.print("<     LIGHT FX\24    >");
+						} else {
+							tft.print("<     LIGHT FX     >");
+						}
+					}
+				break;
+				case 3:
+					if (gb.buttons.released(Button::a)){
+						tft.print("<      TAKING...   >");
+						tft.cursorX = 0;
+						char name[] = "SCREEN0000.BMP";
+						// now `name` will be a unique thing
+						// 6 because "SCREEN" is 6 long, 4 because "0000" is 4 chars
+						if(sd_path_no_duplicate(name, 6, 4) && display.save(name)){
+							tft.setColor(WHITE, BROWN);
+							tft.print("<      TAKEN!      >");
+							delay(250);
+							changed = true;
+						} else {
+							tft.setColor(RED, BROWN);
+							tft.print("<      ERROR       >");
+							delay(250);
+							changed = true;
+						}
+					}
+					if (changed == true){
+						tft.cursorX = 0;
+						tft.setColor(WHITE, BROWN);
+						tft.print("<    SCREENSHOT    >");
+					}
+				break;
+				case 4:
+					if (gb.buttons.released(Button::a)){
+						tft.print("       READY?       ");
+						tft.cursorX = 0;
+						char name[] = "RECORD0000.BMP";
+							if (sd_path_no_duplicate(name, 6, 4) && display.startRecording(name)) {
+								recording_screen = true;
+								delay(250);
+								tft.print("        GO!         ");
+								delay(250);
+								return;
+							} else {
+								tft.setColor(RED, BROWN);
+								tft.print("<      ERROR       >");
+								delay(250);
+								changed = true;
+							}
+					}
+					if (changed == true){
+						tft.cursorX = 0;
+						tft.setColor(WHITE, BROWN);
+						tft.print("< SCREEN RECORDING >");
+					}
+				break;
+			}
+			changed = false;
+		}
+	}
 }
 
 void Gamebuino::keyboard(char* text, uint8_t length) {

@@ -80,10 +80,7 @@ boolean skip() {
 
 
   drawBottomLine();
-  //get back to the games list
-  if (gb.buttons.pressed(BUTTON_D)) {
-    gb.changeGame();
-  }
+
   //pause/unpause when B is pressed
   if (gb.buttons.pressed(BUTTON_B)) {
     paused = !paused;
