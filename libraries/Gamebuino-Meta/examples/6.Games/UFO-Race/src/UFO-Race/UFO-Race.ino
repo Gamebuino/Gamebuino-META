@@ -14,7 +14,7 @@ void setup()
 }
 
 void loop(){
-  drawTitleScreen();
+  //drawTitleScreen();
   drawMenu();
 }
 
@@ -36,6 +36,9 @@ void play(){
       updatePlayer();
       updateTime();
 
+      gb.display.setColor(WHITE);
+      gb.display.fillScreen();
+      gb.display.setColor(BLACK, WHITE);
       drawWorld();
       drawMap();
       drawTime();
