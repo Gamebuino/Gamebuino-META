@@ -19,7 +19,7 @@ bool loadPage(uint32_t offset) {
   File entry;
   uint32_t i = 0;
   if (strlen(path) != 0) {
-      i++; // we have the sneaky ".."-path
+    i++; // we have the sneaky ".."-path
   }
   while (i < offset) {
     if (!file.openNextFile()) {
@@ -51,18 +51,18 @@ bool loadPage(uint32_t offset) {
     Color color = WHITE;
     //gray out system entry
     if (entry.isSystem()) {
-      color = BROWN;
+      color = GRAY;
     } else if (entry.isDirectory()) {
-      color = GREEN;
+      color = BROWN;
       //dirty way to add a slash in front of directories names
       entry.getName(pageFiles[i] + 1, MAX_NAME_LEN - 1);
       pageFiles[i][0] = '/';
     } else if (!(strstr(pageFiles[i], ".BIN") || strstr(pageFiles[i], ".bin"))) {
       //gray out non .bin files
-      color = BROWN;
-    } else if ((strstr(pageFiles[i], "loader.bin"))){
+      color = GRAY;
+    } else if ((strstr(pageFiles[i], "loader.bin"))) {
       //gray out LOADER.BIN
-      color = BROWN;
+      color = GRAY;
     }
     pageFileColors[i] = color;
     entry.close();
@@ -76,7 +76,7 @@ bool loadPage(uint32_t offset) {
 
 File getEntry(uint32_t offset) {
   if (strlen(path) != 0) {
-      offset--; // we have the sneaky ".." path
+    offset--; // we have the sneaky ".." path
   }
   file.rewindDirectory();
   uint32_t i = 0;
@@ -90,11 +90,11 @@ File getEntry(uint32_t offset) {
 void handlePress() {
   if (strlen(path) != 0 && page_offset == 0 && cursorPos == 0) {
     uint16_t i = strlen(path) - 1;
-    while(i > 0) {
+    while (i > 0) {
       path[i] = '\0';
       i--;
       if (path[i] == '/') {
-          break;
+        break;
       }
     }
     if (i == 0) {
@@ -114,30 +114,35 @@ void handlePress() {
     return;
   }
   if (entry.isDirectory()) {
-    
+
     // we need to add on to the path
     uint16_t l = strlen(path);
     entry.getName(path + l, 512 - l);
     l = strlen(path);
     path[l] = '/';
-    path[l+1] = '\0';
-    
+    path[l + 1] = '\0';
+
     file = SD.open(path);
-    
+
     page_offset = 0;
     cursorPos = 0;
     loadPage(0);
     return;
   }
-  if (entry.isSystem()){
+  if (entry.isSystem()) {
     return;
   }
   uint16_t l = strlen(path);
   entry.getName(path + l, 512 - l);
-  
+
+  //do not try to flash non-bin files
+  if (!(strstr(path, ".BIN") || strstr(path, ".bin"))) {
+    return;
+  }
+
   SerialUSB.println("Loading file...");
   SerialUSB.println(path);
-  
+
   gb.display.fillScreen(BLACK);
   gb.display.setColor(WHITE);
   gb.display.println("\n\n\nLOADING");
@@ -149,7 +154,7 @@ void handlePress() {
   gb.display.println(path + i);
   // update the screen
   gb.tft.drawImage(0, 0, gb.display, gb.tft.width(), gb.tft.height());
-  
+
   Gamebuino_Meta::load_game(path);
 }
 
@@ -165,7 +170,7 @@ void setup() {
 void loop() {
   if (gb.update()) {
     // first check for button presses
-    if (gb.buttons.pressed(BUTTON_UP)) {
+    if (gb.buttons.repeat(BUTTON_UP, 8)) {
       cursorPos--;
       if (cursorPos < 0) {
         if (page_offset > 0) {
@@ -177,7 +182,7 @@ void loop() {
         }
       }
     }
-    if (gb.buttons.pressed(BUTTON_DOWN)) {
+    if (gb.buttons.repeat(BUTTON_DOWN, 8)) {
       cursorPos++;
       if (cursorPos >= cursorPos_max) {
         page_offset += FILES_PER_PAGE;
