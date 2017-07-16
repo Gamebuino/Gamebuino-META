@@ -5,6 +5,7 @@
 #include "../Image.h"
 #include "../SdFat.h"
 #include "../Display-ST7735.h"
+#include "../Graphics.h"
 
 namespace Gamebuino_Meta {
 

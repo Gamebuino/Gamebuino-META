@@ -320,6 +320,19 @@ void GMV::setFrame(uint16_t frame) {
 }
 
 void GMV::finishSave(char* filename, uint16_t frames, bool output, Display_ST7735* tft) {
+	if(output){
+		tft->setColor(Color::brown);
+		tft->drawRect(0, 0, tft->width(), tft->height());
+		tft->drawRect(1, 1, tft->width()-2, tft->height()-2);
+		//white on brown, large font
+		tft->setColor(Color::white, Color::brown);
+		tft->cursorX = 0;
+		tft->cursorY = 1;
+		tft->fontSize = 2;
+		tft->println(" SCREEN RECORD ");
+	}
+	
+	
 	file.seekSet(9);
 	f_write16(frames, &file); // fill in the number of frames!
 	if (!filename) {
@@ -338,29 +351,38 @@ void GMV::finishSave(char* filename, uint16_t frames, bool output, Display_ST773
 	uint32_t image_size = bmp.writeHeader(&f);
 	uint8_t x, y;
 	if (output) {
-		tft->print("Total frames: ");
-		tft->println(frames);
-		tft->print("Creating file (");
-		tft->print(image_size / 1024);
-		tft->print(") ");
+		tft->print(" Creating file:\n ");
 		x = tft->cursorX;
 		y = tft->cursorY;
+		tft->print("      /");
+		tft->print(image_size / 1024);
+		tft->println("KB");
 	}
 	for (uint32_t i = 0; i < image_size; i+=4) {
 		f_write32(0, &f);
-		if ((i % 65536) == 0) {
+		if (((i % 65536) == 0) && output) {
 			tft->cursorX = x;
 			tft->cursorY = y;
-			tft->print(i / 1024);
+			tft->setColor(Color::white, Color::brown);
+			tft->println(i / 1024);
+			tft->setColor(Color::brown);
+			tft->fillRect(0, tft->height() - 10, (i * tft->width()) / image_size, 8);
 		}
 	}
+	if(output){
+		tft->fillRect(0, tft->height() - 10, tft->width(), 8);
+		tft->setColor(Color::white, Color::brown);
+	}
+	
 	if (output) {
 		tft->cursorX = x;
 		tft->cursorY = y;
-		tft->println("done!!!");
-		tft->print("Frame: ");
+		tft->println(image_size / 1024);
+		tft->print(" Converting frames:\n ");
 		x = tft->cursorX;
 		y = tft->cursorY;
+		tft->print("      /");
+		tft->print(frames);
 	}
 	setFrame(0);
 	for (uint16_t i = 0; i < frames; i++) {
@@ -368,9 +390,13 @@ void GMV::finishSave(char* filename, uint16_t frames, bool output, Display_ST773
 			tft->cursorX = x;
 			tft->cursorY = y;
 			tft->print(i+1); // +1 for human-readability
+			tft->fillRect(0, tft->height() - 8, (i * tft->width()) / frames, 8);
 		}
 		readFrame();
 		bmp.writeFrame(i, img->_buffer, img->transparentColor, &f);
+	}
+	if (output) {
+		tft->fillRect(0, tft->height() - 8, tft->width(), 8);
 	}
 	bmp.setCreatorBits(CONVERT_MAGIC, &f); // ok we know that we have the GMV so why not?
 	f.close();
