@@ -297,6 +297,9 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 	int8_t answer = -1;
 	while (1) {
 		if (update()) {
+			gb.display.setColor(WHITE);
+			gb.display.fillScreen();
+			gb.display.setColor(BLACK, WHITE);
 			if (buttons.pressed(Button::a) || buttons.pressed(Button::b) || buttons.pressed(Button::c)) {
 				exit = true; //time to exit menu !
 				targetY = - display.fontHeight * length - 2; //send the menu out of the screen
@@ -537,6 +540,9 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 
 	while (1) {
 		if (update()) {
+			gb.display.setColor(WHITE);
+			gb.display.fillScreen();
+			gb.display.setColor(BLACK, WHITE);
 			//move the character selector
 			if (buttons.repeat(Button::down, 4)) {
 				activeY++;
