@@ -357,6 +357,9 @@ class World {
       int thisMap = mapNumber;
       while (1) {
         if (gb.update()) {
+          gb.display.setColor(WHITE);
+          gb.display.fillScreen();
+          gb.display.setColor(BLACK, WHITE);
 
           //assign the selected map
           tiles = maps[thisMap];
@@ -1937,7 +1940,7 @@ void loop() {
 }
 
 void mainMenu() {
-  gb.titleScreen(logo);
+  //gb.titleScreen(logo);
   gb.pickRandomSeed();
   //gb.battery.show = false;
 }
@@ -1945,6 +1948,9 @@ void mainMenu() {
 void gamePaused() {
   while (1) {
     if (gb.update()) {
+      gb.display.setColor(WHITE);
+      gb.display.fillScreen();
+      gb.display.setColor(BLUE, WHITE);
       drawAll();
       gb.display.setColor(WHITE, BLACK);
       gb.display.cursorX = 0;
@@ -1975,6 +1981,9 @@ void initGame() {
 }
 
 void drawAll() {
+  gb.display.setColor(WHITE);
+  gb.display.fillScreen();
+  gb.display.setColor(BLACK, WHITE);
   world.draw();
   crate.draw();
   enemiesEngine.draw();
