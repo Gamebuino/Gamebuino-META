@@ -23,7 +23,7 @@ namespace Gamebuino_Meta {
 
 void Sound::begin() {
 	volumeMax = 1;
-	globalVolume = 0;
+	globalVolume = 1;
 }
 
 void Sound::playOK() {
