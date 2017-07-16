@@ -71,7 +71,6 @@ void Gamebuino::begin() {
 	//neoPixels
 	neoPixels.begin();
 	neoPixels.clear();
-	neoPixels.show();
 
 	//buttons
 	buttons.begin();
