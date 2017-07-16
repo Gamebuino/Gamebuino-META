@@ -29,7 +29,7 @@ void updateTime(){
 
 void drawTime(){
   gb.display.cursorX = 0;
-  gb.display.cursorY = LCDHEIGHT - gb.display.fontHeight;
+  gb.display.cursorY = gb.display.height() - gb.display.fontHeight;
   gb.display.setColor(BLACK,WHITE);
   gb.display.print(time);
 }

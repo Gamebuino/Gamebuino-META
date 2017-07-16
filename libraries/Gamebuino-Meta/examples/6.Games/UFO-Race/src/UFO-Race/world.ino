@@ -85,8 +85,8 @@ byte getTile(byte x, byte y){
 }
 
 void drawWorld(){
-  for(byte y = max(0, (camera_y)/16); y < min(WORLD_W, (camera_y+LCDHEIGHT)/16+1); y++){
-    for(byte x = max(0, (camera_x)/16); x < min(WORLD_H, (camera_x+LCDWIDTH)/16+1); x++){
+  for(byte y = max(0, (camera_y)/16); y < min(WORLD_W, (camera_y+gb.display.height())/16+1); y++){
+    for(byte x = max(0, (camera_x)/16); x < min(WORLD_H, (camera_x+gb.display.width())/16+1); x++){
       byte spriteID = getTile(x,y);
       //coordinates on the screen depending on the camera position
       int x_screen = x*16 - camera_x;

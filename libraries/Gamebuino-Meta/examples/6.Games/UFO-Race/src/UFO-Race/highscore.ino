@@ -47,19 +47,20 @@ void saveHighscore(unsigned int score){
 void drawHighScores(){
   while(true){
     if(gb.update()){
+      gb.display.setFont(font5x7);
       gb.display.cursorX = 9+random(0,2);
       gb.display.cursorY = 0+random(0,2);
       gb.display.println("BEST TIMES");
       gb.display.textWrap = false;
       gb.display.cursorX = 0;
-      gb.display.cursorY = gb.display.fontHeight;
+      gb.display.cursorY = gb.display.fontHeight*2;
       for(byte thisScore=0; thisScore<NUM_HIGHSCORE; thisScore++){
         if(highscore[thisScore]==0)
           gb.display.print('-');
         else
           gb.display.print(name[thisScore]);
-        gb.display.cursorX = LCDWIDTH-4*gb.display.fontWidth;
-        gb.display.cursorY = gb.display.fontHeight+gb.display.fontHeight*thisScore;
+        gb.display.cursorX = gb.display.width()-4*gb.display.fontWidth;
+        gb.display.cursorY = gb.display.fontHeight*2 + gb.display.fontHeight*thisScore;
         gb.display.println(highscore[thisScore]);
       }
       if(gb.buttons.pressed(BUTTON_A) || gb.buttons.pressed(BUTTON_B) || gb.buttons.pressed(BUTTON_C)){
@@ -75,16 +76,16 @@ boolean drawNewHighscore(unsigned int score){
   gb.sound.playOK();
   while(1){
     if(gb.update()){
-      gb.display.cursorX = 2+random(0,2);
+      gb.display.cursorX = 0+random(0,2);
       gb.display.cursorY = 0+random(0,2);
       gb.display.print("NEW HIGHSCORE");
       gb.display.cursorX = 0;
       gb.display.cursorY = 12;
-      gb.display.print("Your time ");
+      gb.display.print("You      ");
       gb.display.print(score);
-      gb.display.print("\nBest      ");
+      gb.display.print("\nBest     ");
       gb.display.print(highscore[0]);
-      gb.display.print("\nWorst     ");
+      gb.display.print("\nWorst    ");
       gb.display.print(highscore[NUM_HIGHSCORE-1]);
       gb.display.cursorX = 0;
       gb.display.cursorY = 40;

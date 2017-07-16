@@ -155,8 +155,8 @@ void updatePlayer() {
   }
 
   //target position of the camera for the cursor to be centered
-  int camera_x_target = player.x + cos(player.angle) * player.v * 64 - LCDWIDTH / 2;
-  int camera_y_target = player.y + sin(player.angle) * player.v * 64 - LCDHEIGHT / 2;
+  int camera_x_target = player.x + cos(player.angle) * player.v * 64 - gb.display.width() / 2;
+  int camera_y_target = player.y + sin(player.angle) * player.v * 64 - gb.display.height() / 2;
   //apply the target coordinate to the current coordinates with some smoothing
   camera_x = (camera_x * 3 + camera_x_target) / 4;
   camera_y = (camera_y * 3 + camera_y_target) / 4;
@@ -166,7 +166,7 @@ void updatePlayer() {
 void drawPlayer() {
   int x_screen = (int)player.x - camera_x;
   int y_screen = (int)player.y - camera_y;
-  if (!(x_screen < -16 || x_screen > LCDWIDTH || y_screen < -16 || y_screen > LCDHEIGHT)) {
+  if (!(x_screen < -16 || x_screen > gb.display.width() || y_screen < -16 || y_screen > gb.display.height())) {
     gb.display.fillCircle(x_screen, y_screen, player.radius);
     gb.display.setColor(WHITE);
     gb.display.drawLine(x_screen, y_screen, x_screen + cos(player.angle) * 4, y_screen + sin(player.angle) * 4);
