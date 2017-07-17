@@ -219,8 +219,6 @@ bool Gamebuino::update() {
 			//draw and update popups
 			updatePopup();
 			
-			//TODO : include recording into the home menu
-			
 			//get back to game list when "HOME is held
 			if (buttons.held(Button::d, 25)){
 				changeGame();
@@ -230,6 +228,8 @@ bool Gamebuino::update() {
 				if (recording_screen) {
 					// stop the recording
 					display.setFont(font3x5);
+					neoPixels.clear();
+					neoPixels.show();
 					display.stopRecording(true);
 					recording_screen = false;
 					//refresh screen to erase log messages
@@ -477,7 +477,7 @@ void Gamebuino::homeMenu(){
 			switch(currentItem){
 				////EXIT
 				case 0:
-					if (gb.buttons.released(Button::a)){
+					if (gb.buttons.pressed(Button::a)){
 						changeGame();
 					}
 				break;
