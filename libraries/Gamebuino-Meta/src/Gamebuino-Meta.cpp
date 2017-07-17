@@ -503,8 +503,8 @@ void Gamebuino::homeMenu(){
 						}
 						char name[] = "REC/IMAGE0000.BMP";
 						// now `name` will be a unique thing
-						// 6 because "SCREEN" is 6 long, 4 because "0000" is 4 chars
-						if(sd_path_no_duplicate(name, 6, 4) && display.save(name)){
+						// 6 because "REC/IMAGE" is 9 long, 4 because "0000" is 4 chars
+						if(sd_path_no_duplicate(name, 9, 4) && display.save(name)){
 							tft.setColor(LIGHTGREEN, BROWN);
 							tft.cursorX = xOffset;
 							tft.print("SAVED!    ");
@@ -527,7 +527,7 @@ void Gamebuino::homeMenu(){
 							SD.mkdir("REC");
 						}
 						char name[] = "REC/VIDEO0000.BMP";
-							if (sd_path_no_duplicate(name, 6, 4) && display.startRecording(name)) {
+							if (sd_path_no_duplicate(name, 9, 4) && display.startRecording(name)) {
 								recording_screen = true;
 								delay(250);
 								tft.cursorX = xOffset;
