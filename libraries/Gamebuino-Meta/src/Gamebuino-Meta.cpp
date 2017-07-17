@@ -66,7 +66,7 @@ void Gamebuino::begin() {
 	//frameCount = 0;
 	frameEndMicros = 1;
 	startMenuTimer = 255;
-	neoPixelsIntensity = 255;
+	neoPixelsIntensity = 252;
 
 	//neoPixels
 	neoPixels.begin();
@@ -229,6 +229,7 @@ bool Gamebuino::update() {
 			if (buttons.released(Button::d)) {
 				if (recording_screen) {
 					// stop the recording
+					display.setFont(font3x5);
 					display.stopRecording(true);
 					recording_screen = false;
 					//refresh screen to erase log messages
@@ -370,11 +371,23 @@ void Gamebuino::homeMenu(){
 	//here we don't use gb.update and gb.display not to interfere with the game
 	//the only things we use are gb.tft and gb.buttons
 	int currentItem = 0;
-	int numItems = 5;
+	const int numItems = 5;
 	unsigned long lastMillis = 0;
-	int yOffset = 34;
+	//3 text lines vertical coordinates
+	const int yOffset1 = 34;
+	const int yOffset2 = 34+16;
+	const int yOffset3 = 34+16+16;
+	//main text offset
+	const int xOffset = 40;
 	boolean changed = true;
 	int frameCounter = 0;
+	
+	const char menuText[numItems][11] {
+		"EXIT      ",
+		"VOLUME    ",
+		"SAVE IMAGE",
+		"SAVE VIDEO",
+		"LIGHT     "};
 	
 	neoPixels.clear();
 	neoPixels.show();
@@ -389,9 +402,17 @@ void Gamebuino::homeMenu(){
 	for (int i = 0; i < tft.height(); i+=4){
 		tft.fillRect(0, i, tft.width(), 2);
 	}
-	//text background
+	//text background first to feel snappy because it's where user focus is
+	tft.setColor(DARKGRAY);
+	//first row
+	tft.fillRect(xOffset-8, yOffset1 - 2, tft.width() - 2*(xOffset-8), 14);
+	//main text
+	tft.fillRect(xOffset-18, yOffset2 - 4, tft.width()- 2*(xOffset-18), 18);
 	tft.setColor(BROWN);
-	tft.fillRect(0, yOffset-4, tft.width(), 18);
+	tft.fillRect(xOffset-16, yOffset2 - 4, tft.width()- 2*(xOffset-16), 18);
+	//last row
+	tft.setColor(DARKGRAY);
+	tft.fillRect(xOffset-8, yOffset3 - 2, tft.width() - 2*(xOffset-8), 14);
 	//bottom button indicator
 	tft.cursorY = tft.height() - 10;
 	tft.cursorX = 0;
@@ -421,7 +442,7 @@ void Gamebuino::homeMenu(){
 				load_loader();
 			}
 			
-			if(gb.buttons.repeat(Button::right, 8)){
+			if(gb.buttons.repeat(Button::down, 8)){
 				currentItem++;
 				if(currentItem >= numItems){
 					currentItem = 0;
@@ -429,7 +450,7 @@ void Gamebuino::homeMenu(){
 				changed = true;
 			}
 			
-			if(gb.buttons.repeat(Button::left, 8)){
+			if(gb.buttons.repeat(Button::up, 8)){
 				currentItem--;
 				if(currentItem < 0){
 					currentItem = numItems - 1;
@@ -438,22 +459,19 @@ void Gamebuino::homeMenu(){
 			}
 			
 			
-			
-			tft.cursorX = 0;
-			tft.cursorY = yOffset;
-			tft.setColor(WHITE, BROWN);
-			
-			//blinking arrows
-			if((frameCounter%20) < 10){
+			//blinking arrow
+			if((frameCounter%10) < 5){
 				tft.setColor(BROWN);
 			} else {
 				tft.setColor(WHITE, BROWN);
 			}
-			tft.cursorX = 2;
-			tft.print("<");
-			tft.cursorX = tft.width() - 8;
+			tft.cursorX = xOffset - 12;
+			tft.cursorY = yOffset2;
 			tft.print(">");
-			tft.cursorX = 0;
+			
+			tft.cursorX = xOffset;
+			tft.cursorY = yOffset2;
+			tft.setColor(WHITE, BROWN);
 			
 			tft.setColor(WHITE, BROWN);
 			switch(currentItem){
@@ -462,92 +480,85 @@ void Gamebuino::homeMenu(){
 					if (gb.buttons.released(Button::a)){
 						changeGame();
 					}
-					if (changed == true){
-						tft.print("        EXIT        ");
-					}
 				break;
 				////VOLUME
 				case 1:
-					if (gb.buttons.released(Button::a)){
+					if (gb.buttons.released(Button::a) || buttons.released(Button::right)){
 						sound.setVolume(sound.getVolume() + 1);
 						sound.playTick();
 						changed = true;
 					}
-					if (changed == true){
-						if(sound.getVolume()) {
-							tft.print("      VOLUME \23\24     ");
-						} else {
-							tft.print("      VOLUME \23x     ");
-						}
+					if (buttons.released(Button::left)){
+						sound.setVolume(sound.getVolume() - 1);
+						sound.playTick();
+						changed = true;
 					}
 				break;
 				////SCREENSHOT
 				case 2:
 					if (gb.buttons.released(Button::a)){
-						tft.print("       SAVING...    ");
-						tft.cursorX = 0;
+						tft.print("SAVING... ");
 						char name[] = "SCREEN0000.BMP";
 						// now `name` will be a unique thing
 						// 6 because "SCREEN" is 6 long, 4 because "0000" is 4 chars
 						if(sd_path_no_duplicate(name, 6, 4) && display.save(name)){
 							tft.setColor(LIGHTGREEN, BROWN);
-							tft.print("       SAVED!       ");
+							tft.cursorX = xOffset;
+							tft.print("SAVED!    ");
 							delay(250);
 							changed = true;
 						} else {
 							tft.setColor(RED, BROWN);
-							tft.print("       ERROR        ");
+							tft.cursorX = xOffset;
+							tft.print("ERROR     ");
 							delay(250);
 							changed = true;
 						}
-					}
-					if (changed == true){
-						tft.cursorX = 0;
-						tft.setColor(WHITE, BROWN);
-						tft.print("    SAVE SCREEN     ");
 					}
 				break;
 				////RECORD SCREEN
 				case 3:
 					if (gb.buttons.released(Button::a)){
-						tft.print("       READY?       ");
-						tft.cursorX = 0;
+						tft.print("READY?    ");
 						char name[] = "RECORD0000.BMP";
 							if (sd_path_no_duplicate(name, 6, 4) && display.startRecording(name)) {
 								recording_screen = true;
 								delay(250);
-								tft.print("        GO!         ");
+								tft.cursorX = xOffset;
+								tft.print("GO!       ");
 								delay(250);
 								return;
 							} else {
 								tft.setColor(RED, BROWN);
-								tft.print("       ERROR        ");
+								tft.cursorX = xOffset;
+								tft.print("ERROR     ");
 								delay(250);
 								changed = true;
 							}
 					}
-					if (changed == true){
-						tft.cursorX = 0;
-						tft.setColor(WHITE, BROWN);
-						tft.print("    RECORD VIDEO    ");
-					}
 				break;
 				//// NEOPIXELS
 				case 4:
-					if (gb.buttons.released(Button::a)){
+					if (buttons.released(Button::a)){
 						neoPixelsIntensity += 63;
 						if(neoPixelsIntensity >= 255){
 							neoPixelsIntensity = 0;
 						}
 						changed = true;
 					}
-					if (changed == true){
-						
-						if(neoPixelsIntensity) {
-							tft.print("      LIGHT FX\24     ");
-						} else {
-							tft.print("      LIGHT FX      ");
+					if (buttons.repeat(Button::right, 4)){
+						neoPixelsIntensity += 63;
+						if(neoPixelsIntensity >= 255){
+							neoPixelsIntensity = 252;
 						}
+						changed = true;
+					}
+					if (buttons.repeat(Button::left, 4)){
+						neoPixelsIntensity -= 63;
+						if(neoPixelsIntensity < 0){
+							neoPixelsIntensity = 0;
+						}
+						changed = true;
 					}
 					//light up neopixels according to intensity
 					for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
@@ -555,6 +566,54 @@ void Gamebuino::homeMenu(){
 					}
 				break;
 			}
+			
+			if(changed == true){
+				//bottom text first to feel snappy when you are seeking down
+				tft.cursorX = xOffset;
+				tft.cursorY = yOffset3;
+				tft.setColor(BROWN, DARKGRAY);
+				tft.print(menuText[wrap(currentItem+1, numItems)]);
+				//primary text
+				tft.cursorX = xOffset;
+				tft.cursorY = yOffset2;
+				tft.setColor(WHITE, BROWN);
+				tft.print(menuText[currentItem]);
+				//complementary text if needed
+				tft.setColor(WHITE, BROWN);
+				tft.cursorY = yOffset2;
+				switch(currentItem){
+					////VOLUME
+					case 1:
+					tft.cursorX -= 4*2*2;
+					if(sound.getVolume()) {
+						tft.setColor(WHITE, BROWN);
+						tft.print("\23\24");
+					} else {
+						tft.setColor(DARKGRAY, BROWN);
+						tft.print("\23x");
+					}
+					break;
+					////NEOPIXELS
+					case 4:
+					tft.cursorX -= 4*2*4;
+					for(int i = 0; i < 252; i+=63){
+						if(neoPixelsIntensity <= i){
+							tft.setColor(DARKGRAY, BROWN);
+						} else {
+							tft.setColor(WHITE, BROWN);
+						}
+						tft.print("*");
+					}
+					break;
+					
+				}
+				//upper text
+				tft.cursorX = xOffset;
+				tft.cursorY = yOffset1;
+				tft.setColor(BROWN, DARKGRAY);
+				tft.print(menuText[wrap(currentItem-1, numItems)]);
+			}
+			
 			//updated nopixels
 			neoPixels.show();
 			

@@ -67,6 +67,8 @@ inline void enter_bootloader(void) {
 	((void(*)(void))(*((uint32_t*)0x3FEC)))();
 }
 
+#define wrap(i, imax) ((imax+i)%(imax))
+
 class Gamebuino {
 public:
 	Buttons buttons;
