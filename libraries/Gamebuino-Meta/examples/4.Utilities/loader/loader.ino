@@ -12,6 +12,22 @@ int8_t cursorPos = 0;
 int8_t cursorPos_max = 0;
 uint32_t page_offset = 0;
 
+void clearEmptyFolders() {
+  File dir_walk = SD.open("/");
+  File entry;
+  while (entry = dir_walk.openNextFile()) {
+    if (entry.isDirectory()) {
+      path[0] = '/';
+      entry.getName(path+1, 512-1);
+      if (!strstr(path, "loader")) {
+        SD.rmdir(path); // this already checks if the folder is empty
+      }
+    }
+  }
+  entry.close();
+  dir_walk.close();
+}
+
 bool loadPage(uint32_t offset) {
   SerialUSB.print("Loading page ");
   SerialUSB.println(offset);
@@ -97,13 +113,7 @@ void handlePress() {
         break;
       }
     }
-    if (i == 0) {
-      // we are back at root which is kinda a special case...
-      path[0] = '\0';
-      file = SD.open("/");
-    } else {
-      file = SD.open(path);
-    }
+    file = SD.open(path);
     page_offset = 0;
     cursorPos = 0;
     loadPage(0);
@@ -121,7 +131,6 @@ void handlePress() {
     l = strlen(path);
     path[l] = '/';
     path[l + 1] = '\0';
-
     file = SD.open(path);
 
     page_offset = 0;
@@ -163,7 +172,9 @@ void setup() {
   gb.begin();
   SerialUSB.begin(9600);
   //	while(!SerialUSB);
-  path[0] = '\0';
+  clearEmptyFolders();
+  path[0] = '/';
+  path[1] = '\0';
   file = SD.open("/");
   loadPage(0);
 }
