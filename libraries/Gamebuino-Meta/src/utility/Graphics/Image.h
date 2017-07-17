@@ -77,6 +77,14 @@ public:
 
 	uint16_t getBufferSize();
 
+	//`frame_looping` holds every how many frames it should get updated
+	//`frame_loopcounter` is the counter for that.
+	//Typically `frame_looping` is 1 if you want to update every frame.
+	//You set that manually to zero in your thing meaning that you'd have to manually swap frames
+    //`frames` is the total number of frames and `frame` is the current one
+	//`frame_handler` is an internal object thing, there are three different kinds of frame handlers: ram buffer, flash buffer and sd card
+	//`last_frame` is used to checking that, if you draw the image multiple times within a frame, it'll only advance the animation on the first one
+	
 	uint16_t *_buffer;
 	uint16_t frames;
 	uint16_t frame = 0;

@@ -146,7 +146,9 @@ void Image::init(uint16_t w, uint16_t h, char* filename, uint8_t fl) {
 	last_frame = (gb.frameCount & 0xFF) - 1;
 	frame_looping = fl;
 	frame_loopcounter = 0;
+	frame = 0;
 	frame_handler = new Frame_Handler_SD(this);
+	setFrame(0);
 	((Frame_Handler_SD*)frame_handler)->init(filename);
 }
 
