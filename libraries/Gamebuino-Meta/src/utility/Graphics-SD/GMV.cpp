@@ -329,7 +329,7 @@ void GMV::finishSave(char* filename, uint16_t frames, bool output, Display_ST773
 		tft->cursorX = 0;
 		tft->cursorY = 1;
 		tft->fontSize = 2;
-		tft->println(" SCREEN RECORD ");
+		tft->println(" SAVE VIDEO    ");
 	}
 	
 	
