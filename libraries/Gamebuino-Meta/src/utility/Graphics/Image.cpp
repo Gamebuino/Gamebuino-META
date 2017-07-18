@@ -148,7 +148,10 @@ void Image::init(uint16_t w, uint16_t h, char* filename, uint8_t fl) {
 	frame_loopcounter = 0;
 	frame = 0;
 	frame_handler = new Frame_Handler_SD(this);
-	setFrame(0);
+	// for the SD handler we do NOT set frame to zero
+	// unlike the other handlers the SD handler must be lazy-inited
+	// and calling setFrame(0) here would trigger the lazy init already
+	//setFrame(0);
 	((Frame_Handler_SD*)frame_handler)->init(filename);
 }
 
