@@ -819,19 +819,10 @@ void Gamebuino::updatePopup(){
 }
 
 void Gamebuino::changeGame(){
-	//display a "loading" message
-	// unneeded as the bootloader does that when flashing loader.bin
-	/*
-	display.fontSize = 1;
-	display.cursorX = 0;
-	display.cursorY = 0;
-	display.fillScreen(BLACK);
-	display.setColor(WHITE);
-	display.print("LOADING...");
-	tft.drawImage(0, 0, display, tft.width(), tft.height());
-	*/
+	//clear the screen
+	tft.fillScreen(BLACK);
 	//flash loader.bin
-	//load_loader();
+	load_loader();
 }
 
 void Gamebuino::getDefaultName(char* string){
