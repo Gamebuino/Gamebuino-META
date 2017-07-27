@@ -36,13 +36,13 @@ void Sound_SD::begin(uint32_t sampleRate) {
 	
 	__StartFlag = false;
 	__SampleIndex = 0;					//in order to start from the beginning
-	__NumberOfSamples = 1024*4;	//samples to read to have a buffer
+	__NumberOfSamples = 1024*2;	//samples to read to have a buffer
 	
 	/*Allocate the buffer where the samples are stored*/
 	__WavSamples = (uint8_t *) malloc(__NumberOfSamples * sizeof(uint8_t));
 	
 	/*Modules configuration */
-		dacConfigure();
+	dacConfigure();
 	tcConfigure(sampleRate);
 }
 
@@ -202,6 +202,7 @@ Sound_SD AudioZero;
 #ifdef __cplusplus
 extern "C" {
 #endif
+void Audio_Handler (void) __attribute__((optimize("-O3")));
 
 void Audio_Handler (void) {
 	if (__SampleIndex < __NumberOfSamples - 1) {

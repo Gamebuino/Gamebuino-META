@@ -205,7 +205,8 @@ const uint8_t SPI_SCK_INIT_DIVISOR = 128;
   || defined(__STM32F1__)\
   || defined(PLATFORM_ID)\
   || defined(ESP8266)\
-  || defined(DOXYGEN)
+  || defined(DOXYGEN)\
+  || true // gamebuino config!
 // Use custom fast implementation.
 #define SD_HAS_CUSTOM_SPI 1
 #else  // SD_HAS_CUSTOM_SPI
