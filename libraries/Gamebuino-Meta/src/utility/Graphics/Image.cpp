@@ -269,6 +269,13 @@ void Image::fillScreen() {
 	}
 }
 
+void Image::fillScreen(Color c) {
+	Color tempColor = color;
+	color = c;
+	fillScreen();
+	color = tempColor;
+}
+
 void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img) {
 	if (colorMode == ColorMode::index) {
 		// TODO: transparent index color
