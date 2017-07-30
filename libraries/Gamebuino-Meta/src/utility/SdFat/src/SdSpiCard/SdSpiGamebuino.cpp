@@ -26,12 +26,11 @@ static SPISettings mySPISettings;
 uint8_t chipSelectPin;
 
 void SdSpi::begin(uint8_t _chipSelectPin) {
-//	while(1);
 	chipSelectPin = _chipSelectPin;
 	pinMode(chipSelectPin, OUTPUT);
 	digitalWrite(chipSelectPin, HIGH);
 	SPI.begin();
-	mySPISettings = SPISettings(24000000, MSBFIRST, SPI_MODE0);
+	mySPISettings = SPISettings(12000000, MSBFIRST, SPI_MODE0);
 }
 
 void SdSpi::beginTransaction(uint8_t divisor) {
@@ -73,11 +72,6 @@ uint8_t SdSpi::receive() {
 }
 
 uint8_t SdSpi::receive(uint8_t* buf, size_t n) {
-//	for (size_t i = 0; i < n; i++) {
-//		buf[i] = SPI.transfer(0XFF);
-//	}
-//	return 0;
-//	digitalWrite(chipSelectPin, LOW);
 	myDMA.configure_peripheraltrigger(SERCOM4_DMAC_ID_TX);
 	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
 	myDMA.allocate();
@@ -113,11 +107,9 @@ uint8_t SdSpi::receive(uint8_t* buf, size_t n) {
 	transfer_tx_done = transfer_rx_done = false;
 	myDMA2.start_transfer_job();
 	myDMA.start_transfer_job();
-//	myDMA.trigger_transfer();
 	while (!(transfer_tx_done && transfer_rx_done)); // chill
 	myDMA.free();
 	myDMA2.free();
-//	digitalWrite(chipSelectPin, HIGH);
 	return 0; // we just assume this worked.... (probably not too good an idea)
 	// TODO: check for stuff
 }
@@ -127,12 +119,6 @@ void SdSpi::send(uint8_t b) {
 }
 
 void SdSpi::send(const uint8_t* buf, size_t n) {
-//	for (size_t i = 0; i < n; i++) {
-//		SPI.transfer(buf[i]);
-//	};
-//	return;
-//	digitalWrite(chipSelectPin, LOW);
-//	SPI.beginTransaction(mySPISettings);
 	myDMA.configure_peripheraltrigger(SERCOM4_DMAC_ID_TX);
 	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
 	myDMA.allocate();
@@ -151,6 +137,4 @@ void SdSpi::send(const uint8_t* buf, size_t n) {
 	myDMA.start_transfer_job();
 	while (!transfer_tx_done); // chill
 	myDMA.free();
-//	SPI.endTransaction();
-	//digitalWrite(chipSelectPin, HIGH);
 }
