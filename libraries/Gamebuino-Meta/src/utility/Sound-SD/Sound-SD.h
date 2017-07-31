@@ -15,28 +15,23 @@
 #ifndef _GAMEBUINO_META_SOUND_SD_H_
 #define _GAMEBUINO_META_SOUND_SD_H_
 
-#include <Arduino.h>
+#include "../Sound.h"
+#include "../SdFat.h"
 
 namespace Gamebuino_Meta {
 
-class Sound_SD {
+class Sound_Handler_Wav : public Sound_Handler {
 public:
-
-	Sound_SD() {};
-	void begin(uint32_t sampleRate);
-//	void prepare(int volume); //not implemented yet
-	void play(char* filename) ;
-	void end();
+	Sound_Handler_Wav(Sound_Channel* chan);
+	~Sound_Handler_Wav();
+	bool init(const char* filename);
 	void update();
-
+	void rewind();
 private:
-	void dacConfigure(void);
-	void tcConfigure(uint32_t sampleRate);
-	bool tcIsSyncing(void);
-	void tcStartCounter(void);
-	void tcReset(void);
-	void tcEnable(void);
-	void tcDisable(void);
+	File file;
+	uint16_t head_index;
+	uint32_t wav_offset;
+	bool rewind_flag;
 };
 
 } // namespace Gamebuino_Meta

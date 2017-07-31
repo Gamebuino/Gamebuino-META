@@ -24,12 +24,38 @@
 
 namespace Gamebuino_Meta {
 
+class Sound_Handler;
+struct Sound_Channel {
+	uint16_t index;
+	uint16_t total;
+	uint8_t* buffer;
+	bool loop;
+	bool last;
+	bool use = false;
+	Sound_Handler* handler = 0;
+};
+
+class Sound_Handler {
+public:
+	Sound_Handler(Sound_Channel* chan);
+	virtual void update() = 0;
+	virtual void rewind() = 0;
+protected:
+	Sound_Channel* channel;
+};
+
 class Sound {
 public:
 	void begin();
+	int8_t play(const char* filename);
+	int8_t play(char* filename);
 	void playOK();
 	void playCancel();
 	void playTick();
+	
+	void update();
+	
+	void stop(int8_t i);
 	
 	void setVolume(int8_t volume);
 	uint8_t getVolume();

@@ -71,3 +71,11 @@
 #ifndef MAX_IMAGE_RECORDING
 #define MAX_IMAGE_RECORDING 5
 #endif
+
+///////////////
+// sound defines
+///////////////
+
+#ifndef SOUND_CHANNELS
+#define SOUND_CHANNELS 1
+#endif
