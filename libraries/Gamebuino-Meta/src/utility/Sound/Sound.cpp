@@ -18,10 +18,15 @@
  */
 
 #include "Sound.h"
+#include "Pattern.h"
 #include "../Sound-SD.h"
 #include "../../config/config.h"
 
 namespace Gamebuino_Meta {
+
+const uint16_t playOKPattern[] = {0x0005,0x138,0x168,0x0000};
+const uint16_t playCancelPattern[] = {0x0005,0x168,0x138,0x0000};
+const uint16_t playTickP[] = {0x0045,0x168,0x0000};
 
 #if SOUND_CHANNELS > 0
 Sound_Channel channels[SOUND_CHANNELS];
@@ -103,11 +108,14 @@ Sound_Handler::Sound_Handler(Sound_Channel* _channel) {
 	channel = _channel;
 }
 
+Sound_Handler::~Sound_Handler() {
+	
+}
 
 void Sound::begin() {
 	volumeMax = 1;
-	//mute by default as tone() randomly crashed the console
-	globalVolume = 0;
+	
+	globalVolume = 1;
 #if SOUND_CHANNELS > 0
 	dacConfigure();
 	tcConfigure(44100);
@@ -115,12 +123,13 @@ void Sound::begin() {
 #endif
 }
 
-int8_t Sound::play(const char* filename) {
+int8_t Sound::play(const char* filename, bool loop) {
 #if SOUND_CHANNELS > 0
 	int8_t i = findEmptyChannel();
 	if (i < 0 || i >= SOUND_CHANNELS) {
 		return -1; // no free channels atm
 	}
+	channels[i].loop = loop;
 	handlers[i] = new Sound_Handler_Wav(&(channels[i]));
 	if (!((Sound_Handler_Wav*)handlers[i])->init(filename)) {
 		delete handlers[i];
@@ -128,12 +137,31 @@ int8_t Sound::play(const char* filename) {
 		return -1;
 	}
 	return i;
-#endif // SOUND_CHANNELS
+#else // SOUND_CHANNELS
 	return -1;
+#endif // SOUND_CHANNELS
 }
 
-int8_t Sound::play(char* filename) {
-	return play((const char*)filename);
+int8_t Sound::play(char* filename, bool loop) {
+	return play((const char*)filename, loop);
+}
+
+int8_t Sound::play(const uint16_t* buffer, bool loop) {
+#if SOUND_CHANNELS > 0
+	int8_t i = findEmptyChannel();
+	if (i < 0 || i >= SOUND_CHANNELS) {
+		return -1; // no free channels atm
+	}
+	channels[i].loop = loop;
+	handlers[i] = new Sound_Handler_Pattern(&(channels[i]), (uint8_t*)buffer);
+	return i;
+#else // SOUND_CHANNELS
+	return -1;
+#endif // SOUND_CHANNELS
+}
+
+int8_t Sound::play(uint16_t* buffer, bool loop) {
+	return play((const uint16_t*)buffer, loop);
 }
 
 void Sound::stop(int8_t i) {
@@ -147,22 +175,16 @@ void Sound::stop(int8_t i) {
 	}
 }
 
-void Sound::playOK() {
-	if (globalVolume) {
-//		tone(A0,1000,50);
-	}
+int8_t Sound::playOK() {
+	return play(playOKPattern);
 }
 
-void Sound::playCancel() {
-	if (globalVolume) {
-//		tone(A0,500,50);
-	}
+int8_t Sound::playCancel() {
+	return play(playCancelPattern);
 }
 
-void Sound::playTick() {
-	if (globalVolume) {
-//		tone(A0,1000,5);
-	}
+int8_t Sound::playTick() {
+	return play(playTickP);
 }
 
 void Sound::update() {
@@ -176,6 +198,13 @@ void Sound::update() {
 		}
 	}
 #endif // SOUND_CHANNELS
+}
+
+bool Sound::isPlaying(int8_t i) {
+	if (i < 0 || i >= SOUND_CHANNELS) {
+		return false;
+	}
+	return channels[i].use;
 }
 
 void Sound::setVolume(int8_t volume) {
@@ -197,14 +226,29 @@ void Audio_Handler (void) {
 	int16_t output = 0;
 	for (uint8_t i = 0; i < SOUND_CHANNELS; i++) {
 		if (channels[i].use) {
-			if (channels[i].index < channels[i].total - 1) {
-				output += (channels[i].buffer[channels[i].index++] - 0x80);
-			} else if (!channels[i].last) {
-				channels[i].index = 0;
-			} else if (channels[i].loop) {
-				handlers[i]->rewind();
-			} else {
-				channels[i].use = false;
+			switch (channels[i].type) {
+			case Sound_Channel_Type::raw:
+				if (channels[i].index < channels[i].total - 1) {
+					output += (channels[i].buffer[channels[i].index++] - 0x80);
+				} else if (!channels[i].last) {
+					channels[i].index = 0;
+				} else if (channels[i].loop) {
+					handlers[i]->rewind();
+				} else {
+					channels[i].use = false;
+				}
+				break;
+			case Sound_Channel_Type::pattern:
+				if (channels[i].index++ >= channels[i].total) {
+					channels[i].last = !channels[i].last;
+					channels[i].index = 0;
+				}
+				if (channels[i].last) {
+					output -= 0x80;
+				} else {
+					output += 0x7F;
+				}
+				break;
 			}
 		}
 	}

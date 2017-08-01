@@ -78,7 +78,7 @@ void Gamebuino::begin() {
 	
 	//sound
 	sound.begin();
-	sound.playTick();
+	sound.play(startupSound);
 	
 	//tft
 	
@@ -239,6 +239,8 @@ bool Gamebuino::update() {
 			}
 			
 			Graphics_SD::update(); // update screen recordings
+			
+			sound.update(); // update sound stuff once per frame
 			
 			//show a red contour when screen is recording
 			if(recording_screen){

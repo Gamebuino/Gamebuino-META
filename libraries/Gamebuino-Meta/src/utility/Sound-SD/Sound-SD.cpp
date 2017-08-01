@@ -21,6 +21,12 @@ extern SdFat SD;
 
 namespace Gamebuino_Meta {
 
+struct Buffers {
+	uint8_t* buf = 0;
+	bool use = false;
+};
+Buffers buffers[SOUND_CHANNELS];
+
 const uint16_t NUM_SAMPLES = 1024*2;
 
 Sound_Handler_Wav::Sound_Handler_Wav(Sound_Channel* chan) : Sound_Handler(chan) {
@@ -30,6 +36,13 @@ Sound_Handler_Wav::Sound_Handler_Wav(Sound_Channel* chan) : Sound_Handler(chan) 
 Sound_Handler_Wav::~Sound_Handler_Wav() {
 	if (file) {
 		file.close();
+	}
+	if (channel->buffer) {
+		for (uint8_t i = 0; i < SOUND_CHANNELS; i++) {
+			if (buffers[i].buf == channel->buffer) {
+				buffers[i].use = false;
+			}
+		}
 	}
 }
 
@@ -63,11 +76,24 @@ bool Sound_Handler_Wav::init(const char* filename) {
 	// ok stuff is OK, let's set things
 	channel->index = 0;
 	channel->total = NUM_SAMPLES;
-	channel->buffer = (uint8_t*)malloc(NUM_SAMPLES);
+	channel->buffer = 0;
+	for (uint8_t i = 0; i < SOUND_CHANNELS; i++) {
+		if (!buffers[i].use) {
+			if (!buffers[i].buf) {
+				buffers[i].buf = (uint8_t*)malloc(NUM_SAMPLES);
+			}
+			buffers[i].use = true;
+			channel->buffer = buffers[i].buf;
+			break;
+		}
+	}
+	if (!channel->buffer) {
+		return false;
+	}
 	channel->total = NUM_SAMPLES;
-	channel->loop = true;
 	channel->last = false;
 	channel->use = true;
+	channel->type = Sound_Channel_Type::raw;
 	head_index = 0;
 	rewind_flag = false;
 	

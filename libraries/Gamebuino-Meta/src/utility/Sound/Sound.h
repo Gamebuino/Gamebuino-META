@@ -24,6 +24,11 @@
 
 namespace Gamebuino_Meta {
 
+enum class Sound_Channel_Type : uint8_t {
+	raw,
+	pattern,
+};
+
 class Sound_Handler;
 struct Sound_Channel {
 	uint16_t index;
@@ -33,11 +38,13 @@ struct Sound_Channel {
 	bool last;
 	bool use = false;
 	Sound_Handler* handler = 0;
+	Sound_Channel_Type type;
 };
 
 class Sound_Handler {
 public:
 	Sound_Handler(Sound_Channel* chan);
+	virtual ~Sound_Handler();
 	virtual void update() = 0;
 	virtual void rewind() = 0;
 protected:
@@ -47,11 +54,17 @@ protected:
 class Sound {
 public:
 	void begin();
-	int8_t play(const char* filename);
-	int8_t play(char* filename);
-	void playOK();
-	void playCancel();
-	void playTick();
+	int8_t play(const char* filename, bool loop = false);
+	int8_t play(char* filename, bool loop = false);
+	int8_t play(const uint16_t* buf, bool loop = false);
+	int8_t play(uint16_t* buf, bool loop = false);
+	int8_t play(const uint16_t** buf, bool loop = false);
+	int8_t play(uint16_t** buf, bool loop = false);
+	int8_t playOK();
+	int8_t playCancel();
+	int8_t playTick();
+	
+	bool isPlaying(int8_t i);
 	
 	void update();
 	
