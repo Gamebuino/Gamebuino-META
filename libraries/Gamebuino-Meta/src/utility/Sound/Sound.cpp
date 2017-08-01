@@ -194,23 +194,22 @@ extern "C" {
 void Audio_Handler (void) __attribute__((optimize("-O3")));
 
 void Audio_Handler (void) {
-	uint16_t output = 0;
+	int16_t output = 0;
 	for (uint8_t i = 0; i < SOUND_CHANNELS; i++) {
 		if (channels[i].use) {
 			if (channels[i].index < channels[i].total - 1) {
-				output += channels[i].buffer[channels[i].index++];
+				output += (channels[i].buffer[channels[i].index++] - 0x80);
 			} else if (!channels[i].last) {
 				channels[i].index = 0;
 			} else if (channels[i].loop) {
 				handlers[i]->rewind();
 			} else {
 				channels[i].use = false;
-				continue;
 			}
 		}
 	}
 	if (output) {
-		analogWrite(A0, output);
+		analogWrite(A0, (output + 0x100));
 	}
 	TC5->COUNT16.INTFLAG.bit.MC0 = 1;
 }
