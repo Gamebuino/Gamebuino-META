@@ -67,15 +67,17 @@ public:
 	bool isPlaying(int8_t i);
 	
 	void update();
+	void mute();
+	void unmute();
+	bool isMute();
+	
+	void startEfxOnly();
+	void stopEfxOnly();
 	
 	void stop(int8_t i);
 	
-	void setVolume(int8_t volume);
+	void setVolume(uint8_t volume);
 	uint8_t getVolume();
-	
-	uint8_t volumeMax;
-private:
-	uint8_t globalVolume;
 };
 
 } // namespace Gamebuino_Meta

@@ -169,7 +169,7 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 			//B button
 			display.cursorX = display.width() - display.fontWidth*3 - 1;
 			display.cursorY++;
-			if(sound.getVolume()) {
+			if(!sound.isMute()) {
 				display.println("\26\23\24");
 			} else {
 				display.println("\26\23x");
@@ -181,8 +181,12 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 			
 			//toggle volume when B is pressed
 			if(buttons.pressed(Button::b)){
-				sound.setVolume(sound.getVolume() + 1);
-				sound.playTick();
+				if (sound.isMute()) {
+					sound.unmute();
+					sound.playTick();
+				} else {
+					sound.mute();
+				}
 			}
 			//leave the menu
 			if(buttons.pressed(Button::a)){
@@ -227,6 +231,7 @@ bool Gamebuino::update() {
 			if (buttons.released(Button::d)) {
 				if (recording_screen) {
 					// stop the recording
+					sound.startEfxOnly();
 					display.setFont(font3x5);
 					neoPixels.clear();
 					neoPixels.show();
@@ -234,6 +239,7 @@ bool Gamebuino::update() {
 					recording_screen = false;
 					//refresh screen to erase log messages
 					tft.drawImage(0,0, display, tft.width(), tft.height());
+					sound.stopEfxOnly();
 				}
 				homeMenu();
 			}
@@ -372,6 +378,7 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 void Gamebuino::homeMenu(){
 	//here we don't use gb.update and gb.display not to interfere with the game
 	//the only things we use are gb.tft and gb.buttons
+	sound.startEfxOnly();
 	int currentItem = 0;
 	const int numItems = 5;
 	unsigned long lastMillis = 0;
@@ -430,6 +437,7 @@ void Gamebuino::homeMenu(){
 	while(1){
 		//Ensure constant framerate using millis (40ms = 25FPS)
 		if((millis() - lastMillis) > 40){
+			sound.update(); // we still need sound...
 			lastMillis = millis();
 			buttons.update();
 			frameCounter++;
@@ -438,6 +446,7 @@ void Gamebuino::homeMenu(){
 			neoPixels.clear();
 			
 			if(gb.buttons.released(Button::d) || gb.buttons.released(Button::b) || gb.buttons.released(Button::c)){
+				sound.stopEfxOnly();
 				return;
 			}
 			if(gb.buttons.held(Button::d, 25)){
@@ -479,26 +488,35 @@ void Gamebuino::homeMenu(){
 			switch(currentItem){
 				////EXIT
 				case 0:
-					if (gb.buttons.pressed(Button::a)){
+					if (buttons.pressed(Button::a)){
 						changeGame();
 					}
 				break;
 				////VOLUME
 				case 1:
-					if (gb.buttons.released(Button::a) || buttons.released(Button::right)){
-						sound.setVolume(sound.getVolume() + 1);
+					if (buttons.released(Button::a)) {
+						if (sound.isMute()) {
+							sound.unmute();
+							sound.playTick();
+						} else {
+							sound.mute();
+						}
+						changed = true;
+					}
+					if (buttons.released(Button::right)){
+						sound.setVolume(sound.getVolume() + 0x10);
 						sound.playTick();
 						changed = true;
 					}
 					if (buttons.released(Button::left)){
-						sound.setVolume(sound.getVolume() - 1);
+						sound.setVolume(sound.getVolume() - 0x10);
 						sound.playTick();
 						changed = true;
 					}
 				break;
 				////SCREENSHOT
 				case 2:
-					if (gb.buttons.released(Button::a)){
+					if (buttons.released(Button::a)){
 						tft.print("SAVING... ");
 						if(!SD.exists("REC")) {
 							SD.mkdir("REC");
@@ -523,7 +541,7 @@ void Gamebuino::homeMenu(){
 				break;
 				////RECORD SCREEN
 				case 3:
-					if (gb.buttons.released(Button::a)){
+					if (buttons.released(Button::a)){
 						tft.print("READY?    ");
 						if(!SD.exists("REC")) {
 							SD.mkdir("REC");
@@ -535,6 +553,7 @@ void Gamebuino::homeMenu(){
 								tft.cursorX = xOffset;
 								tft.print("GO!       ");
 								delay(250);
+								sound.stopEfxOnly();
 								return;
 							} else {
 								tft.setColor(RED, BROWN);
@@ -593,7 +612,7 @@ void Gamebuino::homeMenu(){
 					////VOLUME
 					case 1:
 					tft.cursorX -= 4*2*2;
-					if(sound.getVolume()) {
+					if(!sound.isMute()) {
 						tft.setColor(WHITE, BROWN);
 						tft.print("\23\24");
 					} else {

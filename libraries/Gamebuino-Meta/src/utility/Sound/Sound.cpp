@@ -28,6 +28,9 @@ const uint16_t playOKPattern[] = {0x0005,0x138,0x168,0x0000};
 const uint16_t playCancelPattern[] = {0x0005,0x168,0x138,0x0000};
 const uint16_t playTickP[] = {0x0045,0x168,0x0000};
 
+uint8_t globalVolume = 0xFF;
+bool muted = false;
+
 #if SOUND_CHANNELS > 0
 Sound_Channel channels[SOUND_CHANNELS];
 Sound_Handler* handlers[SOUND_CHANNELS];
@@ -113,9 +116,6 @@ Sound_Handler::~Sound_Handler() {
 }
 
 void Sound::begin() {
-	volumeMax = 1;
-	
-	globalVolume = 1;
 #if SOUND_CHANNELS > 0
 	dacConfigure();
 	tcConfigure(44100);
@@ -187,17 +187,41 @@ int8_t Sound::playTick() {
 	return play(playTickP);
 }
 
+bool efx_only = false;
+
 void Sound::update() {
 #if SOUND_CHANNELS > 0
 	for (uint8_t i = 0; i < SOUND_CHANNELS; i++) {
 		if (channels[i].use) {
-			handlers[i]->update();
+			if (!efx_only || (!channels[i].loop && channels[i].type == Sound_Channel_Type::pattern)) {
+				handlers[i]->update();
+			}
 		} else if (handlers[i]) {
 			delete handlers[i];
 			handlers[i] = 0;
 		}
 	}
 #endif // SOUND_CHANNELS
+}
+
+void Sound::mute() {
+	muted = true;
+}
+
+void Sound::unmute() {
+	muted = false;
+}
+
+bool Sound::isMute() {
+	return muted;
+}
+
+void Sound::startEfxOnly() {
+	efx_only = true;
+}
+
+void Sound::stopEfxOnly() {
+	efx_only = false;
 }
 
 bool Sound::isPlaying(int8_t i) {
@@ -207,8 +231,8 @@ bool Sound::isPlaying(int8_t i) {
 	return channels[i].use;
 }
 
-void Sound::setVolume(int8_t volume) {
-	globalVolume = (volume < 0) ? volumeMax : volume % (volumeMax+1); //wrap volume value
+void Sound::setVolume(uint8_t volume) {
+	globalVolume = volume;
 }
 
 uint8_t Sound::getVolume() {
@@ -223,11 +247,18 @@ extern "C" {
 void Audio_Handler (void) __attribute__((optimize("-O3")));
 
 void Audio_Handler (void) {
+	if (!globalVolume || muted) {
+		TC5->COUNT16.INTFLAG.bit.MC0 = 1;
+		return;
+	}
 	int16_t output = 0;
 	for (uint8_t i = 0; i < SOUND_CHANNELS; i++) {
 		if (channels[i].use) {
 			switch (channels[i].type) {
 			case Sound_Channel_Type::raw:
+				if (efx_only) {
+					break;
+				}
 				if (channels[i].index < channels[i].total - 1) {
 					output += (channels[i].buffer[channels[i].index++] - 0x80);
 				} else if (!channels[i].last) {
@@ -239,21 +270,26 @@ void Audio_Handler (void) {
 				}
 				break;
 			case Sound_Channel_Type::pattern:
+				if (efx_only && channels[i].loop) {
+					break;
+				} 
 				if (channels[i].index++ >= channels[i].total) {
 					channels[i].last = !channels[i].last;
 					channels[i].index = 0;
 				}
 				if (channels[i].last) {
-					output -= 0x80;
+					output -= 0x30;
 				} else {
-					output += 0x7F;
+					output += 0x30;
 				}
 				break;
 			}
 		}
 	}
 	if (output) {
-		analogWrite(A0, (output + 0x100));
+		uint32_t tmp = output + 0x100;
+		tmp = (tmp * (globalVolume + 1)) / 0x100;
+		analogWrite(A0, tmp);
 	}
 	TC5->COUNT16.INTFLAG.bit.MC0 = 1;
 }

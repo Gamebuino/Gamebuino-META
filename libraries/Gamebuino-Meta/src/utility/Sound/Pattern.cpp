@@ -2,11 +2,12 @@
 
 namespace Gamebuino_Meta {
 
-const uint8_t _halfPeriods[] = {189,179,169,159,150,142,134,126,119,112,106,100,95,89,84,80,75,71,67,63,60,56,53,50,47,45,42,40,38,35,33,32,30,28,27,25,24,22,21,20,19,18,17,16,15,14,13,13,12,11,11,10,9,9,8,8,7,7,7,6,6,6,5,5,5,4};
+const uint8_t _halfPeriods[] = {95,89,84,80,75,71,67,63,60,56,53,50,47,45,42,40,38,35,33,32,30,28,27,25,24,22,21,20,19,18,17,16,15,14,13,13,12,11,11,10,9,9,8,8,7,7,7,6,6,6,5,5,5,4,4,4,4,4,3,3,3,3,3,2,2,2};
 
 Sound_Handler_Pattern::Sound_Handler_Pattern(Sound_Channel* chan, uint8_t* _buffer) : Sound_Handler(chan) {
 	channel->buffer = _buffer;
 	channel->use = true;
+	channel->type = Sound_Channel_Type::pattern;
 	rewind();
 }
 
