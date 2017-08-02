@@ -20,6 +20,7 @@ protected:
 	void deallocateBuffer();
 	Image* img;
 	uint16_t* buf;
+	uint16_t bufferSize;
 };
 
 class Frame_Handler_Mem : public Frame_Handler {

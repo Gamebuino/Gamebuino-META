@@ -11,6 +11,7 @@ namespace Gamebuino_Meta {
 Frame_Handler::Frame_Handler(Image* _img) {
 	img = _img;
 	buf = img->_buffer;
+	bufferSize = 0;
 }
 
 void Frame_Handler::first() {
@@ -30,8 +31,11 @@ void Frame_Handler::deallocateBuffer() {
 }
 
 void Frame_Handler::allocateBuffer() {
-	deallocateBuffer();
 	uint32_t bytes = getBufferSizeWithFrames();
+	if (buf && (bytes <= bufferSize)) {
+		return;
+	}
+	deallocateBuffer();
 	if ((buf = (uint16_t *)malloc(bytes))) {
 		memset(buf, 0, bytes);
 	}
