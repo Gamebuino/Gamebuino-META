@@ -125,6 +125,34 @@ void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col, uint8_
 	setFrame(0);
 }
 
+// flash indexed constructors
+Image::Image(const uint8_t* buffer, ColorMode col, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, col, fl);
+}
+void Image::init(const uint8_t* buffer, ColorMode col, uint8_t fl) {
+	init(buffer, 1, col, fl);
+}
+
+Image::Image(const uint8_t* buffer, uint16_t frames, ColorMode col, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, frames, col, fl);
+}
+void Image::init(const uint8_t* buffer, uint16_t _frames, ColorMode col, uint8_t fl) {
+	if (frame_handler) {
+		delete frame_handler;
+	}
+	useTransparentIndex = false;
+	frames = _frames;
+	colorMode = col;
+	uint8_t* buf = (uint8_t*)buffer;
+	_width = *(buf++);
+	_height = *(buf++);
+	_buffer = (uint16_t*)buf;
+	frame_looping = fl;
+	frame_loopcounter = 0;
+	frame_handler = new Frame_Handler_Mem(this);
+	setFrame(0);
+}
+
 // SD constructors
 Image::Image(char* filename, uint8_t fl) : Graphics(0, 0) {
 	init(filename, fl);
@@ -281,20 +309,52 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w,
 		// TODO: transparent index color
 		uint8_t *src = (uint8_t*)buffer;
 		uint8_t *dst = (uint8_t*)_buffer + y*((_width + 1) / 2) + x/2;
-		if (x % 2) {
-			*dst = (*dst & 0xF0) | (*(src++) & 0x0F);
-			dst++;
-			w--;
-		}
-		memcpy(dst, src, w / 2);
-		if (w % 2) {
-			dst += (w/2);
-			*dst = (*dst & 0x0F) | (src[w/2] & 0xF0);
+		if (!img.useTransparentIndex) {
+			if (x % 2) {
+				*dst = (*dst & 0xF0) | (*(src++) & 0x0F);
+				dst++;
+				w--;
+			}
+			memcpy(dst, src, w / 2);
+			if (w % 2) {
+				dst += (w/2);
+				*dst = (*dst & 0x0F) | (src[w/2] & 0xF0);
+			}
+		} else {
+			if (x % 2) {
+				uint8_t p = *(src++) & 0x0F;
+				if (p != img.transparentColorIndex) {
+					*dst = (*dst & 0xF0) | p;
+				}
+				dst++;
+				w--;
+			}
+			for (uint16_t i = 0; i < (w / 2); i++) {
+				uint8_t px = *(src++);
+				uint8_t hi = px >> 4;
+				uint8_t lo = px & 0x0F;
+				if (hi == img.transparentColorIndex && lo == img.transparentColorIndex) {
+					// both are transparent, nothing to do
+				} else if (hi == img.transparentColorIndex) {
+					*dst = (*dst & 0xF0) | lo;
+				} else if (lo == img.transparentColorIndex) {
+					*dst = (*dst & 0x0F) | (hi << 4);
+				} else {
+					*dst = px;
+				}
+				dst++;
+			}
+			if (w % 2) {
+				uint8_t hi = *src >> 4;
+				if (hi != img.transparentColorIndex) {
+					*dst = (*dst & 0x0F) | (*src & 0xF0);
+				}
+			}
 		}
 		return;
 	}
 	if ((alpha == 255) && (tint == 0xFFFF)) { //no alpha blending and not tinting
-		if (!img.transparentColor) { //no transparent color set
+		if ((!img.transparentColor && img.colorMode == ColorMode::rgb565) || (img.transparentColor == 1 && img.colorMode == ColorMode::index)) { //no transparent color set
 			memcpy(&_buffer[x + y * _width], buffer, w * 2); //fastest copy possible
 			return;
 		} else {

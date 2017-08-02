@@ -171,6 +171,10 @@ Graphics::Graphics(int16_t w, int16_t h) : WIDTH(w), HEIGHT(h) {
 	setFont(font3x5);
 }
 
+Graphics::~Graphics() {
+	
+}
+
 // Draw a circle outline
 void Graphics::drawCircle(int16_t x0, int16_t y0, int16_t r) {
 	int16_t f = 1 - r;
@@ -636,6 +640,12 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 
 	//draw INDEX => RGB
 	if ((img.colorMode == ColorMode::index) && (colorMode == ColorMode::rgb565)) {
+		uint16_t transparent_backup = img.transparentColor;
+		if (img.useTransparentIndex) {
+			img.transparentColor = (uint16_t)colorIndex[img.transparentColorIndex];
+		} else {
+			img.transparentColor = 1;
+		}
 		for (int j2 = 0; j2 < h2cropped; j2++) {
 			uint16_t destLineArray[w2cropped];
 			uint16_t *destLine = destLineArray;
@@ -662,6 +672,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 				img
 			);
 		}
+		img.transparentColor = transparent_backup;
 		return;
 	}
 
@@ -764,6 +775,15 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h
 	
 	if (colorMode == ColorMode::rgb565) {
 		uint16_t bufferLine[w2];
+		uint16_t transparent_backup = img.transparentColor;
+		if (img.colorMode == ColorMode::index) {
+			if (img.useTransparentIndex) {
+				img.transparentColor = (uint16_t)colorIndex[img.transparentColorIndex];
+			} else {
+				img.transparentColor = 1;
+			}
+			
+		}
 		for (int16_t j2 = 0; j2 < h2cropped; j2++) { //j2: offseted vertical coordinate in destination
 			uint16_t j = h * (j2 + j2offset) / h2; //j: vertical coordinate in source image
 			j = invertY ? h - 1 - j : j;
@@ -784,6 +804,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h
 			}
 			drawBufferedLine(x + i2offset, y + j2 + j2offset, bufferLine, w2cropped, img);
 		}
+		img.transparentColor = transparent_backup;
 		return;
 	}
 	if (colorMode == ColorMode::index) {
@@ -1043,6 +1064,32 @@ void Graphics::setColor(uint8_t c) {
 
 void Graphics::setColor(uint8_t c, uint8_t bg) {
 	setColor((ColorIndex)c, (ColorIndex)bg);
+}
+
+void Graphics::setTransparentColor(Color c) {
+	if (colorMode == ColorMode::index) {
+		useTransparentIndex = true;
+		transparentColorIndex = (uint8_t)rgb565ToIndex(c);
+	} else {
+		transparentColor = (uint16_t)c;
+	}
+}
+
+void Graphics::setTransparentColor(ColorIndex c) {
+	if (colorMode == ColorMode::index) {
+		useTransparentIndex = true;
+		transparentColorIndex = (uint8_t)c;
+	} else {
+		setTransparentColor(colorIndex[(uint8_t)c]);
+	}
+}
+
+void Graphics::clearTransparentColor() {
+	if (colorMode == ColorMode::index) {
+		useTransparentIndex = false;
+	} else {
+		transparentColor = 0;
+	}
 }
 
 void Graphics::setCursorX(int16_t x) {

@@ -54,6 +54,12 @@ public:
 	void init(const uint16_t* buffer, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
 	Image(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = DEFAULT_FRAME_LOOP);
 	void init(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = DEFAULT_FRAME_LOOP);
+	
+	// flash indexed constructors
+	Image(const uint8_t* buffer, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(const uint8_t* buffer, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
+	Image(const uint8_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::index, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(const uint8_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::index, uint8_t fl = DEFAULT_FRAME_LOOP);
 
 	// SD constructors
 	Image(char* filename, uint8_t fl = DEFAULT_FRAME_LOOP);

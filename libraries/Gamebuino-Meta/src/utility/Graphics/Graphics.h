@@ -82,6 +82,7 @@ class Graphics : public Print {
 public:
 
 	Graphics(int16_t w, int16_t h); // Constructor
+	virtual ~Graphics();
 
 	// This MUST be defined by the subclass:
 	virtual void drawPixel(int16_t x, int16_t y) = 0;
@@ -121,6 +122,9 @@ public:
 	void setColor(ColorIndex c, ColorIndex bg);
 	void setColor(uint8_t c);
 	void setColor(uint8_t c, uint8_t bg);
+	void setTransparentColor(Color c);
+	void setTransparentColor(ColorIndex c);
+	void clearTransparentColor();
 	void setCursorX(int16_t x);
 	void setCursorY(int16_t y);
 	void setCursors(int16_t x, int16_t y);
