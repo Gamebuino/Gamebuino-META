@@ -28,7 +28,7 @@ const uint16_t playOKPattern[] = {0x0005,0x138,0x168,0x0000};
 const uint16_t playCancelPattern[] = {0x0005,0x168,0x138,0x0000};
 const uint16_t playTickP[] = {0x0045,0x168,0x0000};
 
-uint8_t globalVolume = 0xFF;
+uint8_t globalVolume = 6;
 bool muted = false;
 
 #if SOUND_CHANNELS > 0
@@ -232,7 +232,7 @@ bool Sound::isPlaying(int8_t i) {
 }
 
 void Sound::setVolume(uint8_t volume) {
-	globalVolume = volume;
+	globalVolume = constrain(volume, 0, 8);
 }
 
 uint8_t Sound::getVolume() {
@@ -287,8 +287,20 @@ void Audio_Handler (void) {
 		}
 	}
 	if (output) {
-		uint32_t tmp = output + 0x100;
-		tmp = (tmp * (globalVolume + 1)) / 0x100;
+		//we multiply by 4 to use the whole 0..1024 DAC range even with 8-bit 0..255 waves
+		//then we attenuate the signal. The attenuation is not linear because human ear's response isn't ;)
+		//we use a >> instead of division for better performances as this interrupt runs quite often
+		//RAW VALUE		VOLUME		OUTPUT
+		//255			8			1024	//amplify sound to use full DAC range
+											//might cause clipping if several sounds are played simultaneously
+		//255			7			512
+		//255			6			255		//keep sound as original
+		//255			5			127		//reduced volume
+		
+		output = (output * 4) >> (8 - globalVolume);
+		//offset the signed value to be centered around 512
+		//as the 10-bit DAC output is between 0 and 1024
+		uint32_t tmp = output + 512;
 		analogWrite(A0, tmp);
 	}
 	TC5->COUNT16.INTFLAG.bit.MC0 = 1;

@@ -503,13 +503,13 @@ void Gamebuino::homeMenu(){
 						}
 						changed = true;
 					}
-					if (buttons.released(Button::right)){
-						sound.setVolume(sound.getVolume() + 0x10);
+					if ((buttons.repeat(Button::right, 4) && (sound.getVolume() < 8))){
+						sound.setVolume(sound.getVolume() + 1);
 						sound.playTick();
 						changed = true;
 					}
-					if (buttons.released(Button::left)){
-						sound.setVolume(sound.getVolume() - 0x10);
+					if (buttons.repeat(Button::left, 4) && sound.getVolume() && !sound.isMute()){
+						sound.setVolume(sound.getVolume() - 1);
 						sound.playTick();
 						changed = true;
 					}
@@ -611,10 +611,14 @@ void Gamebuino::homeMenu(){
 				switch(currentItem){
 					////VOLUME
 					case 1:
-					tft.cursorX -= 4*2*2;
-					if(!sound.isMute()) {
+					tft.cursorX -= 4*2*3;
+					if(!sound.isMute() && sound.getVolume()) {
 						tft.setColor(WHITE, BROWN);
 						tft.print("\23\24");
+						if(sound.getVolume() > 6){
+							tft.setColor(RED, BROWN);
+						}
+						tft.print(sound.getVolume());
 					} else {
 						tft.setColor(DARKGRAY, BROWN);
 						tft.print("\23x");
