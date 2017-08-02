@@ -47,7 +47,8 @@ struct SaveDefault {
 
 class Save {
 public:
-	Save(Display_ST7735 *_tft, const char* _checkbytes);
+	Save(){};
+	Save(Display_ST7735 *_tft, const char* _savefile, const SaveDefault* _defaults, uint16_t _num_defaults, uint16_t _blocks, const char* _checkbytes);
 	int32_t get(uint16_t i);
 	bool get(uint16_t i, void* buf, uint8_t bufsize);
 	bool set(uint16_t i, int32_t num);
@@ -62,9 +63,11 @@ private:
 	bool open = false;
 	bool readOnly = false;
 	const char* checkbytes;
-	uint16_t blocks = 0;
+	const char* savefile;
+	uint16_t num_defaults;
+	uint16_t blocks;
 	uint32_t payload_size = 0;
-	SaveDefault defaults[SAVECONF_SIZE] = SAVECONF;
+	const SaveDefault* defaults;
 	void _set(uint16_t i, uint32_t b);
 	uint32_t _get(uint16_t i);
 	void newBlob(uint16_t i, uint8_t size);

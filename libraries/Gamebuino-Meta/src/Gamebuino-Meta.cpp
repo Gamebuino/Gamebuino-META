@@ -46,6 +46,8 @@ const uint8_t gamebuinoLogo[] =
 	0b00001111, 0b10110000, 0b01111000, 0b11000110, 0b11111111, 0b01111110, 0b00011111, 0b00011011, 0b00000110, 0b00011110, 0b00001111, 
 };
 
+const SaveDefault savefileDefaults[SAVECONF_SIZE] = SAVECONF;
+
 void Gamebuino::begin() {
 	// first we disable the watchdog timer so that we tell the bootloader everything is fine!
 	WDT->CTRL.bit.ENABLE = 0;
@@ -109,6 +111,8 @@ void Gamebuino::begin() {
 		SD.mkdir(folder_name);
 	}
 	SD.chdir(folder_name);
+	
+	save = Save(&tft, SAVEFILE_NAME, savefileDefaults, SAVECONF_SIZE, SAVEBLOCK_NUM, folder_name);
 	
 	Graphics_SD::setTft(&tft);
 }
