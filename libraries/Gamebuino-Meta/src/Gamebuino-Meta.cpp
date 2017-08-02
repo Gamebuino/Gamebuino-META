@@ -48,6 +48,13 @@ const uint8_t gamebuinoLogo[] =
 
 const SaveDefault savefileDefaults[SAVECONF_SIZE] = SAVECONF;
 
+#define SETTINGSCONF_SIZE 3
+const SaveDefault settingsDefaults [SETTINGSCONF_SIZE] = {
+	SaveDefault(SETTING_VOLUME, SAVETYPE_INT, 6),
+	SaveDefault(SETTING_VOLUME_MUTE, SAVETYPE_INT, 0),
+	SaveDefault(SETTING_DEFAULTNAME, SAVETYPE_BLOB, "gamebuinian", 13),
+};
+
 void Gamebuino::begin() {
 	// first we disable the watchdog timer so that we tell the bootloader everything is fine!
 	WDT->CTRL.bit.ENABLE = 0;
@@ -77,10 +84,6 @@ void Gamebuino::begin() {
 	//buttons
 	buttons.begin();
 	buttons.update();
-	
-	//sound
-	sound.begin();
-	sound.play(startupSound);
 	
 	//tft
 	
@@ -113,6 +116,16 @@ void Gamebuino::begin() {
 	SD.chdir(folder_name);
 	
 	save = Save(&tft, SAVEFILE_NAME, savefileDefaults, SAVECONF_SIZE, SAVEBLOCK_NUM, folder_name);
+	
+	settings = Save(&tft, "/settings.sav", settingsDefaults, SETTINGSCONF_SIZE, SETTINGSCONF_SIZE, "GBMS");
+	
+	//sound
+	sound.begin();
+	if (settings.get(SETTING_VOLUME_MUTE)) {
+		sound.mute();
+	}
+	sound.setVolume(settings.get(SETTING_VOLUME));
+	sound.play(startupSound);
 	
 	Graphics_SD::setTft(&tft);
 }
@@ -188,8 +201,10 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 				if (sound.isMute()) {
 					sound.unmute();
 					sound.playTick();
+					settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
 				} else {
 					sound.mute();
+					settings.set(SETTING_VOLUME_MUTE, 1);
 				}
 			}
 			//leave the menu
@@ -502,18 +517,22 @@ void Gamebuino::homeMenu(){
 						if (sound.isMute()) {
 							sound.unmute();
 							sound.playTick();
+							settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
 						} else {
 							sound.mute();
+							settings.set(SETTING_VOLUME_MUTE, 1);
 						}
 						changed = true;
 					}
 					if ((buttons.repeat(Button::right, 4) && (sound.getVolume() < 8))){
 						sound.setVolume(sound.getVolume() + 1);
+						settings.set(SETTING_VOLUME, sound.getVolume());
 						sound.playTick();
 						changed = true;
 					}
 					if (buttons.repeat(Button::left, 4) && sound.getVolume() && !sound.isMute()){
 						sound.setVolume(sound.getVolume() - 1);
+						settings.set(SETTING_VOLUME, sound.getVolume());
 						sound.playTick();
 						changed = true;
 					}
@@ -855,7 +874,7 @@ void Gamebuino::changeGame(){
 }
 
 void Gamebuino::getDefaultName(char* string){
-	return;
+	settings.get(SETTING_DEFAULTNAME, string, 13);
 }
 
 bool Gamebuino::collidePointRect(int16_t x1, int16_t y1 ,int16_t x2 ,int16_t y2, int16_t w, int16_t h){

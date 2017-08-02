@@ -77,6 +77,7 @@ public:
 	Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 	Save save;
+	Save settings;
 
 	void begin();
 	void titleScreen(const char* name, const uint8_t *logo);
