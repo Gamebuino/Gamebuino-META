@@ -14,6 +14,10 @@ Frame_Handler::Frame_Handler(Image* _img) {
 	bufferSize = 0;
 }
 
+Frame_Handler::~Frame_Handler() {
+	
+}
+
 void Frame_Handler::first() {
 	set(0);
 }
@@ -43,6 +47,10 @@ void Frame_Handler::allocateBuffer() {
 }
 
 Frame_Handler_Mem::Frame_Handler_Mem(Image* _img) : Frame_Handler(_img) {
+	
+}
+
+Frame_Handler_Mem::~Frame_Handler_Mem() {
 	
 }
 

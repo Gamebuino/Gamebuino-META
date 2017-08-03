@@ -11,6 +11,7 @@ namespace Gamebuino_Meta {
 class Frame_Handler {
 public:
 	Frame_Handler(Image* _img);
+	virtual ~Frame_Handler();
 	virtual void next() = 0;
 	virtual void set(uint16_t frame) = 0;
 	virtual void first();
@@ -26,6 +27,7 @@ protected:
 class Frame_Handler_Mem : public Frame_Handler {
 public:
 	Frame_Handler_Mem(Image* _img);
+	virtual ~Frame_Handler_Mem();
 	void next();
 	void set(uint16_t frame);
 };
