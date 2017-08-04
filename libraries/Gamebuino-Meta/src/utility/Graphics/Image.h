@@ -11,14 +11,13 @@ namespace Gamebuino_Meta {
 class Frame_Handler {
 public:
 	Frame_Handler(Image* _img);
-	virtual ~Frame_Handler();
+	~Frame_Handler();
 	virtual void next() = 0;
 	virtual void set(uint16_t frame) = 0;
 	virtual void first();
 	virtual uint32_t getBufferSizeWithFrames();
 	void allocateBuffer();
 protected:
-	void deallocateBuffer();
 	Image* img;
 	uint16_t* buf;
 	uint16_t bufferSize;
@@ -27,7 +26,6 @@ protected:
 class Frame_Handler_Mem : public Frame_Handler {
 public:
 	Frame_Handler_Mem(Image* _img);
-	virtual ~Frame_Handler_Mem();
 	void next();
 	void set(uint16_t frame);
 };
@@ -35,7 +33,6 @@ public:
 class Frame_Handler_RAM : public Frame_Handler_Mem {
 public:
 	Frame_Handler_RAM(Image* _img);
-	~Frame_Handler_RAM();
 	uint32_t getBufferSizeWithFrames();
 };
 
@@ -45,6 +42,7 @@ class Image : public Graphics {
 public:
 	Image();
 	~Image();
+	Image(const Image&);
 
 	// ram constructors
 	Image(uint16_t w, uint16_t h, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
@@ -98,10 +96,16 @@ public:
 	uint16_t frames;
 	uint16_t frame = 0;
 	Frame_Handler* frame_handler;
-private:
-	uint8_t last_frame;
 	uint8_t frame_looping;
-	uint8_t frame_loopcounter;
+	union {
+		struct {
+			uint8_t last_frame;
+			uint8_t frame_loopcounter;
+		};
+		uint16_t bufferSize;
+	};
+private:
+	bool isObjectCopy;
 };
 
 } // namespace Gamebuino_Meta

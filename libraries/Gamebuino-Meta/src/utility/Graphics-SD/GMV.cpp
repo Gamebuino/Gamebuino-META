@@ -1,6 +1,5 @@
 #include "GMV.h"
 #include "../Misc.h"
-
 #define CONERT_MASK 0xFF000000
 #define CONVERT_MAGIC 0xA1000000
 
@@ -30,6 +29,7 @@ GMV::GMV(Image* _img, char* filename) {
 		// we got a BMP image!
 		BMP bmp = BMP(&file, img);
 		if (!bmp.isValid()) {
+			file.close();
 			return;
 		}
 		uint16_t name_len = strlen(filename);
@@ -170,7 +170,7 @@ void GMV::writeColor(File* f, uint16_t color, uint8_t count) {
 		count |= 0x80;
 		f->write(count);
 	}
-	if (color == img->transparentColor) {
+	if (img->transparentColor && color == img->transparentColor) {
 		f->write((uint8_t)0x7F);
 		return;
 	}
@@ -273,7 +273,11 @@ void GMV::readFrame() {
 		uint8_t i;
 		uint16_t color = 0;
 		do {
-			count = file.read();
+			int16_t read = file.read();
+			if (read == -1) {
+				break;
+			}
+			count = read;
 			if (count == 0x80) {
 				// we have a single, un-altered pixel
 				file.read(&color, 2);

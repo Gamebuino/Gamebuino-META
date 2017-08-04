@@ -10,7 +10,7 @@ Recording_Image* recording_images[MAX_IMAGE_RECORDING];
 Display_ST7735* tft;
 
 Frame_Handler_SD::Frame_Handler_SD(Image* img) : Frame_Handler(img) {
-	
+	gmv = 0;
 }
 
 void Frame_Handler_SD::init(char* filename) {
@@ -30,7 +30,6 @@ void Frame_Handler_SD::init(char* filename) {
 }
 
 Frame_Handler_SD::~Frame_Handler_SD() {
-	deallocateBuffer();
 	if (gmv) {
 		delete gmv;
 	}

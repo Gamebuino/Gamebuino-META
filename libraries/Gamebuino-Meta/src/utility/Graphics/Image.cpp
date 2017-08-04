@@ -11,11 +11,14 @@ namespace Gamebuino_Meta {
 Frame_Handler::Frame_Handler(Image* _img) {
 	img = _img;
 	buf = img->_buffer;
-	bufferSize = 0;
+	bufferSize = img->bufferSize;
 }
 
 Frame_Handler::~Frame_Handler() {
-	
+	if (buf) {
+		img->_buffer = buf;
+		img->bufferSize = bufferSize;
+	}
 }
 
 void Frame_Handler::first() {
@@ -26,20 +29,14 @@ uint32_t Frame_Handler::getBufferSizeWithFrames() {
 	return img->getBufferSize();
 }
 
-void Frame_Handler::deallocateBuffer() {
-	if (!buf || (uint32_t)buf < 0x20000000) {
-		return;
-	}
-	free(buf);
-	buf = 0;
-}
-
 void Frame_Handler::allocateBuffer() {
 	uint32_t bytes = getBufferSizeWithFrames();
 	if (buf && (bytes <= bufferSize)) {
 		return;
 	}
-	deallocateBuffer();
+	if (buf && (uint32_t)buf >= 0x20000000) {
+		free(buf);
+	}
 	if ((buf = (uint16_t *)malloc(bytes))) {
 		memset(buf, 0, bytes);
 	}
@@ -47,10 +44,6 @@ void Frame_Handler::allocateBuffer() {
 }
 
 Frame_Handler_Mem::Frame_Handler_Mem(Image* _img) : Frame_Handler(_img) {
-	
-}
-
-Frame_Handler_Mem::~Frame_Handler_Mem() {
 	
 }
 
@@ -67,10 +60,6 @@ Frame_Handler_RAM::Frame_Handler_RAM(Image* _img) : Frame_Handler_Mem(_img) {
 	allocateBuffer();
 }
 
-Frame_Handler_RAM::~Frame_Handler_RAM() {
-	deallocateBuffer();
-}
-
 uint32_t Frame_Handler_RAM::getBufferSizeWithFrames() {
 	return img->getBufferSize() * img->frames;
 }
@@ -80,8 +69,22 @@ uint32_t Frame_Handler_RAM::getBufferSizeWithFrames() {
  * start of actual image class
  ********/
 
-Image::Image() : Graphics(0, 0){
+Image::Image() : Graphics(0, 0) {
+	_buffer = 0;
+	frame_handler = 0;
 }
+
+Image::Image(const Image& img) : Graphics(0, 0) { // copy constructor!
+	// copy over the thing
+	if (!frame_handler) {
+		memcpy(this, &img, sizeof(Image));
+		isObjectCopy = false;
+	} else {
+		memcpy(this, &img, sizeof(Image));
+		isObjectCopy = true;
+	}
+}
+
 
 // ram constructors
 Image::Image(uint16_t w, uint16_t h, ColorMode col, uint8_t fl) : Graphics(w, h) {
@@ -95,8 +98,14 @@ Image::Image(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col, uint8_t fl
 	init(w, h, frames, col, fl);
 }
 void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col, uint8_t fl) {
+	if (isObjectCopy) {
+		return;
+	}
 	if (frame_handler) {
 		delete frame_handler;
+	} else {
+		bufferSize = 0;
+		_buffer = 0;
 	}
 	transparentColor = 0xF81F;
 	frames = _frames;
@@ -104,8 +113,9 @@ void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col, uint8_
 	_width = w;
 	_height = h;
 	frame_looping = fl;
-	frame_loopcounter = 0;
 	frame_handler = new Frame_Handler_RAM(this);
+	frame_loopcounter = 0;
+	last_frame = (gb.frameCount & 0xFF) - 1;
 	setFrame(0);
 }
 
@@ -121,8 +131,15 @@ Image::Image(const uint16_t* buffer, uint16_t frames, ColorMode col, uint8_t fl)
 	init(buffer, frames, col, fl);
 }
 void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col, uint8_t fl) {
+	if (isObjectCopy) {
+		return;
+	}
 	if (frame_handler) {
 		delete frame_handler;
+	}
+	bufferSize = 0;
+	if (_buffer && (uint32_t)_buffer >= 0x20000000) {
+		free(_buffer);
 	}
 	transparentColor = 0xF81F;
 	frames = _frames;
@@ -130,10 +147,12 @@ void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col, uint8_
 	uint16_t* buf = (uint16_t*)buffer;
 	_width = *(buf++);
 	_height = *(buf++);
+	
 	_buffer = buf;
 	frame_looping = fl;
-	frame_loopcounter = 0;
 	frame_handler = new Frame_Handler_Mem(this);
+	frame_loopcounter = 0;
+	last_frame = (gb.frameCount & 0xFF) - 1;
 	setFrame(0);
 }
 
@@ -149,8 +168,15 @@ Image::Image(const uint8_t* buffer, uint16_t frames, ColorMode col, uint8_t fl) 
 	init(buffer, frames, col, fl);
 }
 void Image::init(const uint8_t* buffer, uint16_t _frames, ColorMode col, uint8_t fl) {
+	if (isObjectCopy) {
+		return;
+	}
 	if (frame_handler) {
 		delete frame_handler;
+	}
+	bufferSize = 0;
+	if (_buffer && (uint32_t)_buffer >= 0x20000000) {
+		free(_buffer);
 	}
 	useTransparentIndex = false;
 	frames = _frames;
@@ -160,8 +186,9 @@ void Image::init(const uint8_t* buffer, uint16_t _frames, ColorMode col, uint8_t
 	_height = *(buf++);
 	_buffer = (uint16_t*)buf;
 	frame_looping = fl;
-	frame_loopcounter = 0;
 	frame_handler = new Frame_Handler_Mem(this);
+	frame_loopcounter = 0;
+	last_frame = (gb.frameCount & 0xFF) - 1;
 	setFrame(0);
 }
 
@@ -177,15 +204,19 @@ Image::Image(uint16_t w, uint16_t h, char* filename, uint8_t fl) : Graphics(w, h
 	init(w, h, filename, fl);
 }
 void Image::init(uint16_t w, uint16_t h, char* filename, uint8_t fl) {
+	if (isObjectCopy) {
+		return;
+	}
 	if (frame_handler) {
 		delete frame_handler;
+	} else {
+		bufferSize = 0;
+		_buffer = 0;
 	}
 	transparentColor = 0;
 	_width = w;
 	_height = h;
-	last_frame = (gb.frameCount & 0xFF) - 1;
 	frame_looping = fl;
-	frame_loopcounter = 0;
 	frame = 0;
 	frame_handler = new Frame_Handler_SD(this);
 	// for the SD handler we do NOT set frame to zero
@@ -193,11 +224,20 @@ void Image::init(uint16_t w, uint16_t h, char* filename, uint8_t fl) {
 	// and calling setFrame(0) here would trigger the lazy init already
 	//setFrame(0);
 	((Frame_Handler_SD*)frame_handler)->init(filename);
+	frame_loopcounter = 0;
+	last_frame = (gb.frameCount & 0xFF) - 1;
 }
 
 
 Image::~Image() {
+	if (isObjectCopy) {
+		return;
+	}
 	delete frame_handler;
+	if (_buffer && (uint32_t)_buffer >= 0x20000000) {
+		free(_buffer);
+		_buffer = 0;
+	}
 }
 
 uint16_t Image::getBufferSize() {
@@ -213,24 +253,28 @@ uint16_t Image::getBufferSize() {
 }
 
 bool Image::startRecording(char* filename) {
-	return Graphics_SD::startRecording(this, filename);
+	return !isObjectCopy && Graphics_SD::startRecording(this, filename);
 }
 
 void Image::stopRecording(bool output) {
-	Graphics_SD::stopRecording(this, output);
+	if (!isObjectCopy) {
+		Graphics_SD::stopRecording(this, output);
+	}
 }
 
 bool Image::save(char* filename) {
-	return Graphics_SD::save(this, filename);
+	return !isObjectCopy && Graphics_SD::save(this, filename);
 }
 
 void Image::allocateBuffer() {
-	frame_handler->allocateBuffer();
+	if (!isObjectCopy) {
+		frame_handler->allocateBuffer();
+	}
 }
 
 void Image::nextFrame() {
 	if (frames) {
-		if (frames == 1 || !frame_looping || last_frame == gb.frameCount & 0xFF) {
+		if (frames == 1 || !frame_looping || last_frame == (gb.frameCount & 0xFF)) {
 			return;
 		}
 	}
