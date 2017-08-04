@@ -1,5 +1,6 @@
 #include "BMP.h"
 #include "../Misc.h"
+#include "../../config/config.h"
 
 namespace Gamebuino_Meta {
 
@@ -51,7 +52,13 @@ BMP::BMP(File* file, Image* img) {
 	creatorBits = f_read32(file);
 	image_offset = f_read32(file);
 	uint32_t header_size = f_read32(file);
-	width = img->_width = f_read32(file);
+	width = f_read32(file);
+#ifdef STRICT_IMAGES
+	if (img->_width && width > img->_width) {
+		// BMP too large
+		return;
+	}
+#endif
 	uint32_t pixel_height = f_read32(file);
 	if (img->_height) {
 		height = img->_height;
