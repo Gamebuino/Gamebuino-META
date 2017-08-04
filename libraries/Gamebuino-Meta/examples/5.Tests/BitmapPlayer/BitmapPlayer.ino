@@ -13,7 +13,7 @@ Image img;
 void setup() {
   gb.begin();
 
-  root = SD.open("/BitmapPlayer");
+  root = SD.open("SAMPLES");
   if (!loadNextBitmap()) {
     while (1) {
       if (gb.update()) {
