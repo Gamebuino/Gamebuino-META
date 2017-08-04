@@ -100,7 +100,32 @@ void loadDetailedView() {
 	strcpy(nameBuffer, gameFolders[currentGameInBlock]);
 	strcpy(nameBuffer + strlen(nameBuffer), "/TITLESCREEN.BMP");
 	titleScreenImageExists = SD.exists(nameBuffer);
+	if (!titleScreenImageExists) {
+		// try to display the first BMP in the rec folder
+		strcpy(nameBuffer, gameFolders[currentGameInBlock]);
+		strcpy(nameBuffer + strlen(nameBuffer), "/REC/");
+		uint16_t i = strlen(nameBuffer);
+		if (SD.exists(nameBuffer)) {
+			File dir_walk = SD.open(nameBuffer);
+			File entry;
+			while (entry = dir_walk.openNextFile()) {
+				if (!entry.isFile()) {
+					continue;
+				}
+				entry.getName(nameBuffer + i, 512 - i);
+				if (!strstr(nameBuffer, ".BMP") && !strstr(nameBuffer, ".bmp")) {
+					continue;
+				}
+				titleScreenImageExists = true;
+				break;
+			}
+		}
+	}
 	if (titleScreenImageExists) {
+		gb.display.setColor(WHITE, BLACK);
+		gb.display.setCursors(0, 0);
+		gb.display.println("Loading...");
+		gb.tft.drawImage(0, 0, gb.display, gb.tft.width(), gb.tft.height());
 		titleScreenImage.init(80, 64, nameBuffer);
 	}
 }
@@ -136,9 +161,9 @@ void detailedView() {
 		}
 		
 		// center bar
-		gb.display.setColor(ORANGE);
-		gb.display.fillRect(0, 15, 80, 9);
 		gb.display.setColor(BROWN);
+		gb.display.fillRect(0, 15, 80, 9);
+		gb.display.setColor(DARKGRAY);
 		gb.display.drawFastHLine(0, 14, 80);
 		gb.display.drawFastHLine(0, 24, 80);
 		
@@ -148,7 +173,7 @@ void detailedView() {
 		gb.display.println(gameFolders[currentGameInBlock] + 1);
 		
 		// lower bar
-		gb.display.setColor(BROWN);
+		gb.display.setColor(DARKGRAY);
 		gb.display.fillRect(0, 57, 80, 7);
 		
 		// A SELECT
@@ -156,7 +181,7 @@ void detailedView() {
 		gb.display.setCursors(2, 58);
 		gb.display.print("A");
 		gb.display.setCursorX(8);
-		gb.display.setColor(ORANGE);
+		gb.display.setColor(BROWN);
 		gb.display.print("SELECT");
 		
 		// < > BROWSE
@@ -166,7 +191,7 @@ void detailedView() {
 		gb.display.setCursorX(49);
 		gb.display.print(">");
 		gb.display.setCursorX(55);
-		gb.display.setColor(ORANGE);
+		gb.display.setColor(BROWN);
 		gb.display.print("BROWSE");
 		
 		if (gb.buttons.pressed(BUTTON_LEFT)) {
