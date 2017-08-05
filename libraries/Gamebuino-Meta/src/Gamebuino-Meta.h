@@ -52,7 +52,8 @@ namespace Gamebuino_Meta {
 
 // implement the bootloader functions as inlines
 inline void load_game(const char* filename) {
-	((void(*)(const char*))(*((uint32_t*)0x3FF8)))(filename);
+	memmove((void*)0x20000000, filename, 512);
+	((void(*)(const char*))(*((uint32_t*)0x3FF8)))((const char*)0x20000000);
 }
 
 inline void load_game(char* filename) {

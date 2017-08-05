@@ -24,6 +24,8 @@ void setup() {
 }
 
 boolean loadNextBitmap() {
+  strcpy(path, "SAMPLES/");
+  uint8_t i = strlen(path);
   do {
     File entry = root.openNextFile();
     if (!entry) {
@@ -31,7 +33,7 @@ boolean loadNextBitmap() {
       root.rewindDirectory();
       return false;
     }
-    entry.getName(path, 50);
+    entry.getName(path + i, 50 - i);
     entry.close();
     gb.display.println(path);
   } while (!(strstr(path, ".BMP") || strstr(path, ".bmp")));
