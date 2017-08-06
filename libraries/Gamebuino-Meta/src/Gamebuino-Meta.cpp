@@ -27,10 +27,6 @@ extern const uint8_t font3x5[];
 
 namespace Gamebuino_Meta {
 
-
-const uint16_t startupSound[] = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
-
-
 const uint8_t gamebuinoLogo[] =
 {
 	84,10, //width and height
@@ -89,25 +85,30 @@ void Gamebuino::begin() {
 	
 	tft.initR(INITR_BLACKTAB);
 	tft.setRotation(3);
-	display.setColor(Color::black);
-	display.fillScreen();
+	display.fillScreen(Color::black);
 
-	tft.drawImage(0, 0, display, tft.width(), tft.height());
-	tft.fontSize = 2;
-	tft.setColor(Color::brown, Color::black);
+	updateDisplay();
+#if DISPLAY_MODE == DISPLAY_MODE_INDEX
+	display.fontSize = 2;
+#endif
+	display.setColor(Color::brown, Color::black);
 	
 	
-	tft.print("SD INIT... ");
+	display.print("SD INIT... ");
+	updateDisplay();
 	if (!SD.begin(SD_CS)) {
-		tft.setColor(Color::red, Color::black);
-		tft.println("FAILED!");
-		delay(250);
+		display.setColor(Color::red, Color::black);
+		display.println("FAILED!");
+		updateDisplay();
+		delay(1000);
 	} else {
-		tft.setColor(Color::lightgreen, Color::black);
-		tft.println("OK!");
-		delay(250);
+		display.setColor(Color::lightgreen, Color::black);
+		display.println("OK!");
+		updateDisplay();
 	}
-	tft.setColor(Color::white, Color::black);
+
+	display.setColor(Color::white, Color::black);
+	display.fillScreen(Color::black);
 	
 	// SD is initialized, let's switch to the folder!
 	if (!SD.exists(folder_name)) {
@@ -125,7 +126,6 @@ void Gamebuino::begin() {
 		sound.mute();
 	}
 	sound.setVolume(settings.get(SETTING_VOLUME));
-	sound.play(startupSound);
 	
 	Graphics_SD::setTft(&tft);
 }
@@ -257,7 +257,7 @@ bool Gamebuino::update() {
 					display.stopRecording(true);
 					recording_screen = false;
 					//refresh screen to erase log messages
-					tft.drawImage(0,0, display, tft.width(), tft.height());
+					updateDisplay();
 					sound.stopEfxOnly();
 				}
 				homeMenu();
@@ -274,7 +274,7 @@ bool Gamebuino::update() {
 			}
 
 			//send buffer to the screen
-			tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
+			updateDisplay();
 
 			//if(!display.persistence)
 			display.setColor(Color::black);
@@ -298,6 +298,10 @@ bool Gamebuino::update() {
 		}
 		return false;
 	}
+}
+
+void Gamebuino::updateDisplay() {
+	tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
 }
 
 void Gamebuino::setFrameRate(uint8_t fps) {

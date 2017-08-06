@@ -52,8 +52,12 @@ namespace Gamebuino_Meta {
 
 // implement the bootloader functions as inlines
 inline void load_game(const char* filename) {
-	memmove((void*)0x20000000, filename, 512);
-	((void(*)(const char*))(*((uint32_t*)0x3FF8)))((const char*)0x20000000);
+	if ((uint32_t)filename >= 0x20000000) {
+		// fix for bootloader version 1.0.0
+		memmove((void*)0x20000000 + 1024*4, filename, 512);
+		((void(*)(const char*))(*((uint32_t*)0x3FF8)))((const char*)0x20000000 + 1024*4);
+	}
+	((void(*)(const char*))(*((uint32_t*)0x3FF8)))(filename);
 }
 
 inline void load_game(char* filename) {
@@ -86,6 +90,7 @@ public:
 	void titleScreen(const uint8_t* logo);
 	void titleScreen();
 	bool update();
+	void updateDisplay();
 	uint8_t startMenuTimer;
 	uint32_t frameCount;
 	void setFrameRate(uint8_t fps);
