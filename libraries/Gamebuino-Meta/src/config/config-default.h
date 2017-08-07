@@ -77,5 +77,5 @@
 ///////////////
 
 #ifndef SOUND_CHANNELS
-#define SOUND_CHANNELS 2
+#define SOUND_CHANNELS 4
 #endif
