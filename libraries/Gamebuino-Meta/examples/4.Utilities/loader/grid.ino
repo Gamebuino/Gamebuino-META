@@ -61,8 +61,8 @@ void gridView() {
 			uint8_t blockOffset = pageInBlock*PAGE_SIZE;
 			uint32_t gameOffset = gameFolderBlock*BLOCK_LENGTH + blockOffset;
 			
-			for (uint8_t j = 0; j < 2; j++) {
-				for (uint8_t i = 0; i < 4; i ++) {
+			for (uint8_t j = 0; j < GRID_HEIGHT; j++) {
+				for (uint8_t i = 0; i < GRID_WIDTH; i ++) {
 					gb.display.setColor(DARKGRAY);
 					gb.display.drawRect(i*19 + 1, j*22 + 8, 20, 23);
 					if (gridViewEntries[gridCounter].mode == GridMode::icon) {
@@ -80,7 +80,7 @@ void gridView() {
 				}
 			}
 			if (gb.buttons.repeat(BUTTON_RIGHT, 4)) {
-				if (x >= 3) {
+				if (x >= (GRID_WIDTH - 1)) {
 					if (currentPage == totalPages) {
 						// do nothing
 					} else if (pageInBlock >= PAGES_PER_BLOCK - 1) {
@@ -96,12 +96,12 @@ void gridView() {
 					}
 					if (x == 0) {
 						// we switched page
-						if (filesInBlock <= (pageInBlock*PAGE_SIZE + 4)) {
-							y = 0;
+						if (filesInBlock <= (pageInBlock*PAGE_SIZE + (GRID_WIDTH)*y)) {
+							y--;
 						}
 						gb.sound.playTick();
 					}
-				} else if (gameOffset + y*4 + x + 1 < totalGames) {
+				} else if (gameOffset + y*GRID_WIDTH + x + 1 < totalGames) {
 					x++;
 					gb.sound.playTick();
 				}
@@ -116,11 +116,11 @@ void gridView() {
 						loadGameFolderBlock();
 						loadGridView();
 						gb.sound.playTick();
-						x = 3;
+						x = GRID_WIDTH - 1;
 					} else {
 						pageInBlock--;
 						loadGridView();
-						x = 3;
+						x = GRID_WIDTH - 1;
 						gb.sound.playTick();
 					}
 				} else {
@@ -135,22 +135,22 @@ void gridView() {
 				}
 			}
 			if (gb.buttons.repeat(BUTTON_DOWN, 4)) {
-				if (y < 1 && gameOffset + y*4 + x + 4 < totalGames) {
+				if (y < (GRID_HEIGHT - 1) && gameOffset + y*GRID_WIDTH + x + GRID_WIDTH < totalGames) {
 					y++;
 					gb.sound.playTick();
 				}
 			}
 			gb.display.setCursors(2, 55);
 			gb.display.setColor(WHITE);
-			gb.display.print(gameFolders[blockOffset + x + 4*y] + 1);
+			gb.display.print(gameFolders[blockOffset + x + GRID_WIDTH*y] + 1);
 			if (gb.buttons.pressed(BUTTON_A)) {
 				gb.sound.playOK();
-				currentGame = gameFolderBlock*BLOCK_LENGTH + pageInBlock*PAGE_SIZE + x + y*4;
+				currentGame = gameFolderBlock*BLOCK_LENGTH + pageInBlock*PAGE_SIZE + x + y*GRID_WIDTH;
 				detailedView();
 				pageInBlock = (currentGame % BLOCK_LENGTH) / PAGE_SIZE;
 				loadGridView();
-				x = (currentGame % PAGE_SIZE) % 4;
-				y = (currentGame % PAGE_SIZE) / 4;
+				x = (currentGame % PAGE_SIZE) % GRID_WIDTH;
+				y = (currentGame % PAGE_SIZE) / GRID_WIDTH;
 			}
 			if ((gb.frameCount % 8) >= 4) {
 				gb.display.setColor(BROWN);

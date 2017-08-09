@@ -30,7 +30,7 @@ void Frame_Handler_SD::init(char* filename) {
 }
 
 Frame_Handler_SD::~Frame_Handler_SD() {
-	if (gmv) {
+	if (img->frames && gmv) {
 		delete gmv;
 	}
 }

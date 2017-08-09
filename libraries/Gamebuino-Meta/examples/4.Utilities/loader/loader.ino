@@ -1,7 +1,9 @@
 #include <Gamebuino-Meta.h>
 
 #define MAX_FOLDER_NAME_LENGTH 40
-#define PAGE_SIZE 8
+#define GRID_WIDTH 4
+#define GRID_HEIGHT 2
+#define PAGE_SIZE (GRID_WIDTH * GRID_HEIGHT)
 #define PAGES_PER_BLOCK 8
 #define BLOCK_LENGTH (PAGE_SIZE * PAGES_PER_BLOCK)
 char gameFolders[BLOCK_LENGTH][MAX_FOLDER_NAME_LENGTH];
@@ -119,6 +121,7 @@ void loadGameFolderBlock() {
 
 void setup() {
 	gb.begin();
+//	SerialUSB.begin(115200)
 	gb.sound.play(startupSound);
 	gb.display.setCursors(0, 0);
 	gb.display.println("Loading...");

@@ -3,6 +3,8 @@
 #define CONERT_MASK 0xFF000000
 #define CONVERT_MAGIC 0xA1000000
 
+#include <Gamebuino-Meta.h>
+
 namespace Gamebuino_Meta {
 
 GMV::GMV() {
@@ -290,6 +292,9 @@ void GMV::readFrame() {
 				if (count == 0x7F) {
 					buf[pixels_current] = img->transparentColor;
 				} else {
+					if (count >= 16) { // sanity check
+						count = 15;
+					}
 					buf[pixels_current] = index[count];
 				}
 				pixels_current++;
@@ -303,7 +308,14 @@ void GMV::readFrame() {
 			} else if (i == 0x7F) {
 				color = img->transparentColor;
 			} else {
+				if (i >= 16) {
+					i = 15; // sanity check
+				}
 				color = index[i];
+			}
+			if ((pixels_current + count) > pixels) {
+				// sanity check...
+				break;
 			}
 			for (i = 0; i < count; i++) {
 				buf[pixels_current] = color;
