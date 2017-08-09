@@ -246,6 +246,8 @@ extern "C" {
 #endif
 void Audio_Handler (void) __attribute__((optimize("-O3")));
 
+uint16_t flowdown = 0;
+
 void Audio_Handler (void) {
 	if (!globalVolume || muted) {
 		TC5->COUNT16.INTFLAG.bit.MC0 = 1;
@@ -302,6 +304,15 @@ void Audio_Handler (void) {
 		//as the 10-bit DAC output is between 0 and 1024
 		uint32_t tmp = output + 512;
 		analogWrite(A0, tmp);
+		flowdown = 512;
+	} else {
+		// we need to output 0 when not in use to not have weird sound effects with the neoLeds as the interrupt isn't 100% constant there.
+		// however, jumping down from 512 (zero-positin) to 0 would give a plop
+		// so instead we gradually decrease instead
+		analogWrite(A0, flowdown); // zero-position
+		if (flowdown > 0) {
+			flowdown--;
+		}
 	}
 	TC5->COUNT16.INTFLAG.bit.MC0 = 1;
 }
