@@ -313,11 +313,11 @@ void Save::newBlob(uint16_t i, uint8_t size) {
 }
 
 bool Save::set(uint16_t i, char* buf) {
-	return set(i, (void*)buf, strlen(buf));
+	return set(i, (void*)buf, strlen(buf) + 1);
 }
 
 bool Save::set(uint16_t i, const char* buf) {
-	return set(i, (void*)buf, strlen(buf));
+	return set(i, (void*)buf, strlen(buf) + 1);
 }
 
 bool Save::set(uint16_t i, const void* buf, uint8_t bufsize) {
