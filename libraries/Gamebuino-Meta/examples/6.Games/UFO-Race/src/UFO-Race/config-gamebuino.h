@@ -1,7 +1,5 @@
-#define FOLDER_NAME "uforace"
-
 #define NUM_HIGHSCORE 5
-#define NAMELENGTH 10
+#define NAMELENGTH 12
 
 
 
