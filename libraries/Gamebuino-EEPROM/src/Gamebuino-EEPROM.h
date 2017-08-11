@@ -1,10 +1,9 @@
-#ifndef _GAMEBUINO_COMPAT_EEPROM_H_
-#define _GAMEBUINO_COMPAT_EEPROM_H_
+#ifndef _GAMEBUINO_EEPROM_H_
+#define _GAMEBUINO_EEPROM_H_
 
 #include <Arduino.h>
 
-namespace Gamebuino_Compat {
-
+namespace Gamebuino_EEPROM {
 
 class EEPROM_Class {
 private:
@@ -22,9 +21,8 @@ public:
 	template< typename T > T& put(uint32_t address, T& var);
 };
 
-}; // namespace Gamebuino_Compat
+};
 
-using Gamebuino_Compat::EEPROM_Class;
-extern EEPROM_Class EEPROM;
+extern Gamebuino_EEPROM::EEPROM_Class EEPROM;
 
-#endif // _GAMEBUINO_COMPAT_EEPROM_H_
+#endif // _GAMEBUINO_EEPROM_H_

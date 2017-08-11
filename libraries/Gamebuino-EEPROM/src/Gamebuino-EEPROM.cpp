@@ -1,8 +1,7 @@
-#include "EEPROM_Compat.h"
+#include "Gamebuino-EEPROM.h"
+#include <Gamebuino-Meta.h>
 
-#include "../Gamebuino-Compat.h"
-
-namespace Gamebuino_Compat {
+namespace Gamebuino_EEPROM {
 
 void EEPROM_Class::begin(uint32_t _size) {
 	size = _size;
@@ -71,4 +70,4 @@ template< typename T > T& EEPROM_Class::put(uint32_t address, T& var) {
 
 }; // namespace Gamebuino_Compat
 
-EEPROM_Class EEPROM;
+Gamebuino_EEPROM::EEPROM_Class EEPROM;

@@ -4,8 +4,6 @@
 
 #include <Gamebuino-Meta.h>
 
-#include "utility/EEPROM_Compat.h"
-
 #include "utility/Display_Compat.h"
 #include "utility/Battery_Compat.h"
 #include "utility/Sound_Compat.h"
@@ -38,5 +36,7 @@ extern Gamebuino_Compat::Gamebuino gb;
 
 #define LCDHEIGHT gb.display.height()
 #define LCDWIDTH gb.display.width()
+
+#include <Gamebuino-EEPROM.h>
 
 #endif // _GAMEBUINO_COMPAT_H_
