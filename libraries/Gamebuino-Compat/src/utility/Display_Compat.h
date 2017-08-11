@@ -10,6 +10,7 @@ class Display : public Gamebuino_Meta::Image {
 public:
 	Display();
 	void clear();
+	bool persistence;
 };
 
 }; // namespace Gamebuino_Compat

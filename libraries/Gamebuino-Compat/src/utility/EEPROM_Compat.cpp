@@ -1,4 +1,4 @@
-#include "EEPROM.h"
+#include "EEPROM_Compat.h"
 
 #include "../Gamebuino-Compat.h"
 

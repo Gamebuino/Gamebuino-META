@@ -4,10 +4,11 @@
 
 #include <Gamebuino-Meta.h>
 
-#include "utility/EEPROM.h"
-#include "utility/Display.h"
+#include "utility/EEPROM_Compat.h"
 
-#include "utility/Battery.h"
+#include "utility/Display_Compat.h"
+#include "utility/Battery_Compat.h"
+#include "utility/Sound_Compat.h"
 
 
 namespace Gamebuino_Compat {
@@ -16,6 +17,7 @@ class Gamebuino : public Gamebuino_Meta::Gamebuino {
 public:
 	void begin();
 	Battery battery;
+	void getDefaultName(char* string);
 };
 
 } // namespace Gamebuino_Compat

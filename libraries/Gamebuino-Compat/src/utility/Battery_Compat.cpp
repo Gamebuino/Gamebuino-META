@@ -1,4 +1,4 @@
-#include "Battery.h"
+#include "Battery_Compat.h"
 
 namespace Gamebuino_Compat {
 

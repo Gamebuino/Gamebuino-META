@@ -271,8 +271,13 @@ bool Gamebuino::update() {
 			//send buffer to the screen
 			updateDisplay();
 
-			//if(!display.persistence)
+#ifdef GAMEBUINO_COMPAT_MODE
+			if (!display.persistence) {
+				display.fillScreen(DISPLAY_DEFAULT_BACKGROUND_COLOR);
+			}
+#else
 			display.fillScreen(DISPLAY_DEFAULT_BACKGROUND_COLOR); //clear the buffer
+#endif
 			display.setColor(DISPLAY_DEFAULT_COLOR);
 			
 			display.setCursor(0, 0);
