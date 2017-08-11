@@ -26,15 +26,6 @@
 #define KEYBOARD_H 8
 #endif
 
-#ifndef LCDHEIGHT
-#define LCDHEIGHT 64
-#endif
-
-#ifndef LCDWIDTH
-#define LCDWIDTH 80
-#endif
-
-
 ///////////////
 // save defines
 ///////////////
@@ -55,6 +46,9 @@
 #define SAVEFILE_NAME "save.sav"
 #endif
 
+#ifndef SAVECONF_DEFAULT_BLOBSIZE
+#define SAVECONF_DEFAULT_BLOBSIZE 32
+#endif
 
 ///////////////
 // display defines
@@ -62,6 +56,14 @@
 
 #ifndef DISPLAY_MODE
 #define DISPLAY_MODE DISPLAY_MODE_RGB565
+#endif
+
+#ifndef DISPLAY_DEFAULT_BACKGROUND_COLOR
+#define DISPLAY_DEFAULT_BACKGROUND_COLOR Color::black
+#endif
+
+#ifndef DISPLAY_DEFAULT_COLOR
+#define DISPLAY_DEFAULT_COLOR Color::white
 #endif
 
 ///////////////

@@ -41,6 +41,13 @@ extern SdFat SD;
 #define F(x) x
 #define PROGMEM  
 
+#ifdef GAMEBUINO_COMPAT_MODE
+// we need the display definition from the compat lib....
+// we need to do it here as the arduino IDE doesn't add all include paths from the start
+// and thus Gamebuino_Compat::Display will not find Gamebuino_Meta::Image yet
+#include <utility/Display.h>
+#endif
+
 namespace Gamebuino_Meta {
 #define TFT_CS		(30u)
 #define TFT_RST		(0u)
@@ -74,7 +81,11 @@ class Gamebuino {
 public:
 	Buttons buttons;
 	Sound sound;
+#ifdef GAMEBUINO_COMPAT_MODE
+	Gamebuino_Compat::Display display;
+#else
 	Image display = DISPLAY_CONSTRUCTOR;
+#endif
 	Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 	Save save;
@@ -128,7 +139,11 @@ private:
 
 } // namespace Gamebuino_Meta
 
+#ifdef GAMEBUINO_COMPAT_MODE
+#include <Gamebuino-Compat.h>
+#else
 using Gamebuino_Meta::Gamebuino;
 extern Gamebuino gb;
+#endif
 
 #endif	// _GAMEBUINO_META_H_

@@ -21,22 +21,10 @@
 #define	_GAMEBUINO_META_BUTTONS_H_
 
 #include <Arduino.h>
-#include <SPI.h>
-
-#define NUM_BTN		8
-#define BTN_CS		PIN_LED_RXL
-
-#define BTN_DOWN	(0)
-#define BTN_LEFT	(1)
-#define BTN_RIGHT	(2)
-#define BTN_UP		(3)
-
-#define BTN_A		(4)
-#define BTN_B		(5)
-#define BTN_C		(6)
-#define BTN_D		(7)
 
 namespace Gamebuino_Meta {
+const uint8_t NUM_BTN = 8;
+const uint8_t BTN_CS = PIN_LED_RXL;
 
 enum class Button : uint8_t {
 	down,

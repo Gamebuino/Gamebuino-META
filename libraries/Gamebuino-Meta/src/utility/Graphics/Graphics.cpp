@@ -857,7 +857,7 @@ void Graphics::write(uint8_t c) {
 		} else if(c == '\r') {
 			// skip em
 		} else {
-			if(textWrap && ((cursorX + fontSize * fontWidth) >= _width)) { // Heading off right edge?
+			if(textWrap && ((cursorX + fontSize * fontWidth) > _width)) { // Heading off right edge?
 				cursorX  = 0;            // Reset x to zero
 				cursorY += fontSize * fontHeight; // Advance y one line
 			}

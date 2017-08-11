@@ -23,7 +23,6 @@
 namespace Gamebuino_Meta {
 
 #define SAVEHEADER_SIZE 10
-#define SAVECONF_DEFAULT_BLOBSIZE 32
 #define SAVEFILE_PAYLOAD_START (SAVEHEADER_SIZE + (blocks * 5))
 
 #define MIN(x, y) ((x < y) ? x : y)

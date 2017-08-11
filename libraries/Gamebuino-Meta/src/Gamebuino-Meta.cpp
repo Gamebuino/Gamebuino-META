@@ -146,11 +146,7 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 	display.fontSize = 1;
 	display.textWrap = false;
 	//display.persistence = false;
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-	display.setColor(Color::black);
-#else
-	display.setColor(ColorIndex::black);
-#endif
+	
 	while(1){
 		if(update()){
 			uint8_t logoOffset = name[0]?display.fontHeight:0; //add an offset the logo when there is a name to display
@@ -160,8 +156,7 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 			if(logo){
 				display.drawBitmap(0, 12+logoOffset, logo);
 			}
-			display.cursorX = 0;
-			display.cursorY = 12;
+			display.setCursors(0, 12);
 			/*#else
 			display.drawBitmap(7,0, gamebuinoLogo);
 			display.drawBitmap(-41,12,gamebuinoLogo);
@@ -171,7 +166,7 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 			display.cursorX = 0;
 			display.cursorY = 24;
 			#endif*/
-			display.cursorY = 12;
+			display.setCursorY(12);
 			
 			display.print(name);
 			
@@ -277,9 +272,8 @@ bool Gamebuino::update() {
 			updateDisplay();
 
 			//if(!display.persistence)
-			display.setColor(Color::black);
-			display.fillScreen(); //clear the buffer
-			display.setColor(Color::white);
+			display.fillScreen(DISPLAY_DEFAULT_BACKGROUND_COLOR); //clear the buffer
+			display.setColor(DISPLAY_DEFAULT_COLOR);
 			
 			display.setCursor(0, 0);
 			display.fontSize = 1;
@@ -333,9 +327,9 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 	int8_t answer = -1;
 	while (1) {
 		if (update()) {
-			gb.display.setColor(WHITE);
-			gb.display.fillScreen();
-			gb.display.setColor(BLACK, WHITE);
+			display.setColor(WHITE);
+			display.fillScreen();
+			display.setColor(BLACK, WHITE);
 			if (buttons.pressed(Button::a) || buttons.pressed(Button::b) || buttons.pressed(Button::c)) {
 				exit = true; //time to exit menu !
 				targetY = - display.fontHeight * length - 2; //send the menu out of the screen
@@ -399,7 +393,7 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 }
 
 void Gamebuino::homeMenu(){
-	//here we don't use gb.update and gb.display not to interfere with the game
+	//here we don't use gb.update and display.not to interfere with the game
 	//the only things we use are gb.tft and gb.buttons
 	sound.startEfxOnly();
 	int currentItem = 0;
@@ -468,15 +462,15 @@ void Gamebuino::homeMenu(){
 			//clear noPixels
 			neoPixels.clear();
 			
-			if(gb.buttons.released(Button::d) || gb.buttons.released(Button::b) || gb.buttons.released(Button::c)){
+			if(buttons.released(Button::d) || buttons.released(Button::b) || buttons.released(Button::c)){
 				sound.stopEfxOnly();
 				return;
 			}
-			if(gb.buttons.held(Button::d, 25)){
+			if(buttons.held(Button::d, 25)){
 				load_loader();
 			}
 			
-			if(gb.buttons.repeat(Button::down, 8)){
+			if(buttons.repeat(Button::down, 8)){
 				currentItem++;
 				if(currentItem >= numItems){
 					currentItem = 0;
@@ -484,7 +478,7 @@ void Gamebuino::homeMenu(){
 				changed = true;
 			}
 			
-			if(gb.buttons.repeat(Button::up, 8)){
+			if(buttons.repeat(Button::up, 8)){
 				currentItem--;
 				if(currentItem < 0){
 					currentItem = numItems - 1;
@@ -615,8 +609,8 @@ void Gamebuino::homeMenu(){
 						changed = true;
 					}
 					//light up neopixels according to intensity
-					for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
-						gb.neoPixels.setPixelColor(i, neoPixelsIntensity, neoPixelsIntensity, neoPixelsIntensity/2);
+					for(uint8_t i = 0; i < neoPixels.numPixels(); i++){
+						neoPixels.setPixelColor(i, neoPixelsIntensity, neoPixelsIntensity, neoPixelsIntensity/2);
 					}
 				break;
 			}
@@ -698,9 +692,8 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 
 	while (1) {
 		if (update()) {
-			gb.display.setColor(WHITE);
-			gb.display.fillScreen();
-			gb.display.setColor(BLACK, WHITE);
+			display.fillScreen(WHITE);
+			display.setColor(BLACK, WHITE);
 			//move the character selector
 			if (buttons.repeat(Button::down, 4)) {
 				activeY++;
@@ -924,4 +917,6 @@ bool Gamebuino::collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, i
 
 } // namespace Gamebuino_Meta
 
+#ifndef GAMEBUINO_COMPAT_MODE
 Gamebuino gb;
+#endif
