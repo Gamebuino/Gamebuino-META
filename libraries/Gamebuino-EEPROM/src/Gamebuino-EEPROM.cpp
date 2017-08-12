@@ -49,22 +49,8 @@ void EEPROM_Class::update(uint32_t address, uint8_t value) {
 	write(address, value);
 }
 
-template< typename T > T& EEPROM_Class::get(uint32_t address, T& var) {
-	if (address >= (size + sizeof(T) - 1)) {
-		return var;
-	}
-	uint8_t *ptr = (uint8_t*) &var;
-	memcpy(ptr, &buffer[address], sizeof(T));
-	return var;
-}
-
-template< typename T > T& EEPROM_Class::put(uint32_t address, T& var) {
-	if (address >= (size + sizeof(T) - 1)) {
-		return var;
-	}
-	uint8_t *ptr = (uint8_t*) &var;
-	memcpy(&buffer[address], ptr, sizeof(T));
-	flush();
+uint8_t EEPROM_Class::put(uint32_t address, uint8_t var) {
+	update(address, var);
 	return var;
 }
 

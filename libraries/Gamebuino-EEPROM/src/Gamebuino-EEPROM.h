@@ -17,8 +17,29 @@ public:
 	void write(uint32_t address, uint8_t value);
 	void update(uint32_t address, uint8_t value);
 	
-	template< typename T > T& get(uint32_t address, T& var);
-	template< typename T > T& put(uint32_t address, T& var);
+	// for some reason the template ones need to be defined in here
+	template< typename T > T& get(uint32_t address, T& var) {
+		if (address >= (size + sizeof(T) - 1)) {
+			return var;
+		}
+		uint8_t *ptr = (uint8_t*) &var;
+		memcpy(ptr, &buffer[address], sizeof(T));
+		return var;
+	}
+	
+	template< typename T > T& put(uint32_t address, T& var) {
+		if (address >= (size + sizeof(T) - 1)) {
+			return var;
+		}
+		uint8_t *ptr = (uint8_t*) &var;
+		if (memcmp(&buffer[address], ptr, sizeof(T))) {
+			memcpy(&buffer[address], ptr, sizeof(T));
+			flush();
+		}
+		return var;
+	}
+	
+	uint8_t put(uint32_t address, uint8_t var);
 };
 
 };
