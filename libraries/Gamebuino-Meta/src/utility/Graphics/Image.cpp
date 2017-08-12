@@ -355,7 +355,22 @@ void Image::fillScreen() {
 
 void Image::fillScreen(Color c) {
 	Color tempColor = color;
-	color = c;
+	if (colorMode == ColorMode::index) {
+		color = (Color)rgb565ToIndex(c);
+	} else {
+		color = c;
+	}
+	fillScreen();
+	color = tempColor;
+}
+
+void Image::fillScreen(ColorIndex c) {
+	Color tempColor = color;
+	if (colorMode == ColorMode::index) {
+		color = (Color)c;
+	} else {
+		color = (Color)colorIndex[(uint8_t)c];
+	}
 	fillScreen();
 	color = tempColor;
 }

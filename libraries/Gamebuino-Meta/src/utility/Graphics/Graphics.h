@@ -98,6 +98,7 @@ public:
 	virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h);
 	virtual void fillScreen();
 	virtual void fillScreen(Color color);
+	virtual void fillScreen(ColorIndex color);
 	virtual void invertDisplay(boolean i);
 	virtual void drawImage(int16_t x, int16_t y, Image& img);
 	virtual void drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);

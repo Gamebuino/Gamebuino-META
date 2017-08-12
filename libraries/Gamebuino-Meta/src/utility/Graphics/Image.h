@@ -75,6 +75,7 @@ public:
 	void drawPixel(int16_t x, int16_t y);
 	void fillScreen();
 	void fillScreen(Color color);
+	void fillScreen(ColorIndex color);
 	void drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img);
 	void allocateBuffer();
 	
