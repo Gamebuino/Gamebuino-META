@@ -7,7 +7,9 @@ File root;
 File entry;
 char path[50];
 int popupTimer = 0;
+int slideShowTimer = 0;
 int nextTimer = 0;
+bool slideShow = true;
 
 Image img;
 void setup() {
@@ -60,14 +62,18 @@ void loop() {
       //if single frame, load after a while
     } else {
       nextTimer--;
-      if (nextTimer <= 0) {
-      loadNextBitmap();
+      if ((nextTimer <= 0 && slideShow)) {
+        loadNextBitmap();
       }
     }
-
     if (gb.buttons.repeat(BUTTON_A, 10)) {
       loadNextBitmap();
     }
+    if (gb.buttons.pressed(BUTTON_B)) {
+      slideShow = 1 - slideShow;
+      slideShowTimer = 20;  
+    }
+
     gb.display.drawImage(0, 0, img);
     if (popupTimer > 0) {
       popupTimer--;
@@ -76,6 +82,19 @@ void loop() {
       gb.display.cursorX = 0;
       gb.display.cursorY = 0;
       gb.display.println(path);
+
+    }
+    if (slideShowTimer > 0) {
+      slideShowTimer--;
+      gb.display.setColor(WHITE, BLACK);
+      gb.display.cursorX = 0;
+      gb.display.cursorY = 58;
+      if (slideShow) {
+        gb.display.println(" Slide show enabled ");
+      } else {
+        gb.display.println("Slide show disabled ");
+      }      
     }
   }
 }
+
