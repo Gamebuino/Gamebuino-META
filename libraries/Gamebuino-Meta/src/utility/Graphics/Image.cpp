@@ -161,7 +161,7 @@ Image::Image(const uint8_t* buffer, uint16_t frames, uint8_t fl) : Graphics(0, 0
 	init(buffer, frames, fl);
 }
 void Image::init(const uint8_t* buffer, uint16_t frames, uint8_t fl) {
-	init(buffer, ColorMode::rgb565, frames, fl);
+	init(buffer, ColorMode::index, frames, fl);
 }
 
 Image::Image(const uint8_t* buffer, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
