@@ -87,17 +87,17 @@ Image::Image(const Image& img) : Graphics(0, 0) { // copy constructor!
 
 
 // ram constructors
-Image::Image(uint16_t w, uint16_t h, ColorMode col, uint8_t fl) : Graphics(w, h) {
-	init(w, h, col, fl);
+Image::Image(uint16_t w, uint16_t h, uint16_t frames, uint8_t fl) : Graphics(w, h) {
+	init(w, h, frames, fl);
 }
-void Image::init(uint16_t w, uint16_t h, ColorMode col, uint8_t fl) {
-	init(w, h, 1, col, fl);
+void Image::init(uint16_t w, uint16_t h, uint16_t frames, uint8_t fl) {
+	init(w, h, ColorMode::rgb565, frames, fl);
 }
 
-Image::Image(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col, uint8_t fl) : Graphics(0, 0) {
-	init(w, h, frames, col, fl);
+Image::Image(uint16_t w, uint16_t h, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	init(w, h, col, frames, fl);
 }
-void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col, uint8_t fl) {
+void Image::init(uint16_t w, uint16_t h, ColorMode col, uint16_t _frames, uint8_t fl) {
 	if (isObjectCopy) {
 		return;
 	}
@@ -120,17 +120,17 @@ void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col, uint8_
 }
 
 // flash constructors
-Image::Image(const uint16_t* buffer, ColorMode col, uint8_t fl) : Graphics(0, 0) {
-	init(buffer, col, fl);
+Image::Image(const uint16_t* buffer, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, frames, fl);
 }
-void Image::init(const uint16_t* buffer, ColorMode col, uint8_t fl) {
-	init(buffer, 1, col, fl);
+void Image::init(const uint16_t* buffer, uint16_t frames, uint8_t fl) {
+	init(buffer, ColorMode::rgb565, frames, fl);
 }
 
-Image::Image(const uint16_t* buffer, uint16_t frames, ColorMode col, uint8_t fl) : Graphics(0, 0) {
-	init(buffer, frames, col, fl);
+Image::Image(const uint16_t* buffer, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, col, frames, fl);
 }
-void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col, uint8_t fl) {
+void Image::init(const uint16_t* buffer, ColorMode col, uint16_t _frames, uint8_t fl) {
 	if (isObjectCopy) {
 		return;
 	}
@@ -157,17 +157,17 @@ void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col, uint8_
 }
 
 // flash indexed constructors
-Image::Image(const uint8_t* buffer, ColorMode col, uint8_t fl) : Graphics(0, 0) {
-	init(buffer, col, fl);
+Image::Image(const uint8_t* buffer, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, frames, fl);
 }
-void Image::init(const uint8_t* buffer, ColorMode col, uint8_t fl) {
-	init(buffer, 1, col, fl);
+void Image::init(const uint8_t* buffer, uint16_t frames, uint8_t fl) {
+	init(buffer, ColorMode::rgb565, frames, fl);
 }
 
-Image::Image(const uint8_t* buffer, uint16_t frames, ColorMode col, uint8_t fl) : Graphics(0, 0) {
-	init(buffer, frames, col, fl);
+Image::Image(const uint8_t* buffer, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, col, frames, fl);
 }
-void Image::init(const uint8_t* buffer, uint16_t _frames, ColorMode col, uint8_t fl) {
+void Image::init(const uint8_t* buffer, ColorMode col, uint16_t _frames, uint8_t fl) {
 	if (isObjectCopy) {
 		return;
 	}
