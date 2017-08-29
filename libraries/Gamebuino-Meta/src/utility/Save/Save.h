@@ -51,11 +51,17 @@ public:
 	Save(Display_ST7735 *_tft, const char* _savefile, const SaveDefault* _defaults, uint16_t _num_defaults, uint16_t _blocks, const char* _checkbytes);
 	int32_t get(uint16_t i);
 	bool get(uint16_t i, void* buf, uint8_t bufsize);
+	template< typename T > bool get(uint16_t i, T& obj) {
+		return get(i, &obj, sizeof(T));
+	};
 	bool set(uint16_t i, int32_t num);
 	bool set(uint16_t i, char* buf);
 	bool set(uint16_t i, const char* buf);
 	bool set(uint16_t i, void* buf, uint8_t bufsize);
 	bool set(uint16_t i, const void* buf, uint8_t bufsize);
+	template< typename T > bool set(uint16_t i, T& obj) {
+		return set(i, &obj, sizeof(T));
+	};
 	void del(uint16_t i);
 private:
 	Display_ST7735 *tft;
