@@ -263,7 +263,7 @@ bool Gamebuino::update() {
 			sound.update(); // update sound stuff once per frame
 			
 			//show a red contour when screen is recording
-			if(recording_screen){
+			if (recording_screen) {
 				display.setColor(Color::red, Color::black);
 				display.drawRect(0, 0, display._width, display._height);
 			}
