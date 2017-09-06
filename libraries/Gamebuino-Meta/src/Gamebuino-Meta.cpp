@@ -22,9 +22,13 @@
 #include "utility/Misc.h"
 SdFat SD;
 
+// create our custom NMI handler
+void NMI_Handler() {
+	Gamebuino_Meta::trigger_error(1);
+}
 // create our custom hard fault handler
 void HardFault_Handler() {
-	Gamebuino_Meta::trigger_error(1);
+	Gamebuino_Meta::trigger_error(2);
 }
 
 // a 3x5 font table

@@ -84,11 +84,11 @@ inline void enter_bootloader(void) {
 	((void(*)(void))(*((uint32_t*)0x3FEC)))();
 }
 
-inline void trigger_error(uint32_t e) {
+inline void trigger_error(uint16_t e) {
 	if (Gamebuino_Meta::bootloader_version() <= 0x10001) {
 		Gamebuino_Meta::load_loader();
 	} else {
-		((void(*)(uint32_t))(*((uint32_t*)0x3FE8)))(e);
+		((void(*)(uint16_t))(*((uint32_t*)0x3FE8)))(e);
 	}
 }
 

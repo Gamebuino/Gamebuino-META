@@ -2,7 +2,7 @@
 
 #define RAM_FLAG_ADDRESS (0x20007FFCul)
 #define RAM_FLAG_VALUE (*((volatile uint32_t *)RAM_FLAG_ADDRESS))
-#define LOADER_MAGIC 0x24000000
+#define LOADER_MAGIC 0x242A0000
 
 
 #define MAX_FOLDER_NAME_LENGTH 40
@@ -126,9 +126,9 @@ void loadGameFolderBlock() {
 void setup() {
 	gb.begin();
 //	SerialUSB.begin(115200)
-	if ((RAM_FLAG_VALUE & 0xFF000000) == LOADER_MAGIC) {
-		uint32_t error = RAM_FLAG_VALUE & 0x00FFFFFF;
-		if (error && error != 0x2AD87A) {
+	if ((RAM_FLAG_VALUE & 0xFFFF0000) == LOADER_MAGIC) {
+		uint16_t error = RAM_FLAG_VALUE & 0x0000FFFF;
+		if (error && error != 0xD87A) {
 			while (1) {
 				if (!gb.update()) {
 					continue;
@@ -141,12 +141,15 @@ void setup() {
 						gb.display.println("no error");
 						break;
 					case 1:
-						gb.display.println("hard fault");
+						gb.display.println("NMI fault");
 						break;
 					case 2:
-						gb.display.println("WDT reset");
+						gb.display.println("hard fault");
 						break;
 					case 3:
+						gb.display.println("WDT reset");
+						break;
+					case 4:
 						gb.display.println("Invalid program");
 						break;
 					default:
