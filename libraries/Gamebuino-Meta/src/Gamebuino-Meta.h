@@ -63,6 +63,10 @@ namespace Gamebuino_Meta {
 
 
 // implement the bootloader functions as inlines
+inline uint32_t bootloader_version(void) {
+	return *(uint32_t*)0x3FFC;
+}
+
 inline void load_game(const char* filename) {
 	noInterrupts(); // fix for bootloader 1.0.0
 	((void(*)(const char*))(*((uint32_t*)0x3FF8)))(filename);
@@ -78,6 +82,14 @@ inline void load_loader(void) {
 
 inline void enter_bootloader(void) {
 	((void(*)(void))(*((uint32_t*)0x3FEC)))();
+}
+
+inline void trigger_error(uint32_t e) {
+	if (Gamebuino_Meta::bootloader_version() <= 0x10001) {
+		Gamebuino_Meta::load_loader();
+	} else {
+		((void(*)(uint32_t))(*((uint32_t*)0x3FE8)))(e);
+	}
 }
 
 #define wrap(i, imax) ((imax+i)%(imax))

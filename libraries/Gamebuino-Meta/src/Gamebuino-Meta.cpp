@@ -22,6 +22,11 @@
 #include "utility/Misc.h"
 SdFat SD;
 
+// create our custom hard fault handler
+void HardFault_Handler() {
+	Gamebuino_Meta::trigger_error(1);
+}
+
 // a 3x5 font table
 extern const uint8_t font3x5[];
 
