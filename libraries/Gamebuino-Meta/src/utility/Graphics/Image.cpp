@@ -94,7 +94,7 @@ void Image::init(uint16_t w, uint16_t h, uint16_t frames, uint8_t fl) {
 	init(w, h, ColorMode::rgb565, frames, fl);
 }
 
-Image::Image(uint16_t w, uint16_t h, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+Image::Image(uint16_t w, uint16_t h, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(w, h) {
 	init(w, h, col, frames, fl);
 }
 void Image::init(uint16_t w, uint16_t h, ColorMode col, uint16_t _frames, uint8_t fl) {

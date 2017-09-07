@@ -855,17 +855,9 @@ void Gamebuino::updatePopup(){
 			yOffset = 12-popupTimeLeft;
 		}
 		display.setFontSize(1);
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-		display.setColor(Color::white);
-#else
-		display.setColor(ColorIndex::white);
-#endif
+		display.setColor(DISPLAY_DEFAULT_BACKGROUND_COLOR);
 		display.fillRoundRect(0,display.height()-display.getFontHeight()+yOffset-3,display.width(),display.getFontHeight()+3,3);
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-		display.setColor(Color::black);
-#else
-		display.setColor(ColorIndex::black);
-#endif
+		display.setColor(DISPLAY_DEFAULT_COLOR);
 		display.drawRoundRect(0,display.height()-display.getFontHeight()+yOffset-3,display.width(),display.getFontHeight()+3,3);
 		display.setCursors(
 			4,

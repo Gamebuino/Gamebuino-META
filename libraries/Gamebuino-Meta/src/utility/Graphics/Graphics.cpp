@@ -38,6 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 #include "Graphics.h"
 #include "Image.h"
+#include "../../config/config.h"
 
 // default 3x5 font table
 extern const uint8_t font3x5[];
@@ -1361,11 +1362,29 @@ void Graphics::getTextBounds(const __FlashStringHelper *str,
 
 // Return the size of the display (per current rotation)
 int16_t Graphics::width(void) const {
-	return _width;
+	if (_width) {
+		// we are inited
+		return _width;
+	}
+	// we aren't inited, so let's try our best guess
+#if DISPLAY_MODE == DISPLAY_MODE_INDEX
+	return 160;
+#else
+	return 80;
+#endif
 }
 
 int16_t Graphics::height(void) const {
-	return _height;
+	if (_height) {
+		// we are inited
+		return _height;
+	}
+	// we aren't inited, so let's try our best guess
+#if DISPLAY_MODE == DISPLAY_MODE_INDEX
+	return 128;
+#else
+	return 64;
+#endif
 }
 
 void Graphics::invertDisplay(boolean i) {
