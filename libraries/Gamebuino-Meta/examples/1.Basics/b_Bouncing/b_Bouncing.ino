@@ -2,8 +2,8 @@
 #include <Gamebuino-Meta.h>
 
 //declare all the variables needed for the game :
-int ball_x = LCDWIDTH/2; //set the horizontal position to the middle of the screen
-int ball_y = LCDHEIGHT/2; //vertical position
+int ball_x = gb.display.width()/2; //set the horizontal position to the middle of the screen
+int ball_y = gb.display.height()/2; //vertical position
 int ball_vx = 1; //horizontal velocity
 int ball_vy = 1; //vertical velocity
 int ball_size = 6; //the size of the ball in number of pixels
@@ -18,8 +18,8 @@ void setup(){
 
 // the loop routine runs over and over again forever
 void loop(){
-  //updates the gamebuino (the display, the sound, the auto backlight... everything)
-  //returns true when it's time to render a new frame (20 times/second)
+  //updates the gamebuino (the display, the sound... everything)
+  //returns true when it's time to render a new frame (25 times/second)
   if(gb.update()){
     
     //add the speed of the ball to its position
@@ -35,7 +35,7 @@ void loop(){
       gb.sound.playTick();
     }
     //if the ball is touching the right side
-    if((ball_x + ball_size) > LCDWIDTH){
+    if((ball_x + ball_size) > gb.display.width()){
       ball_vx = -ball_vx;
       gb.sound.playTick();
     }
@@ -45,7 +45,7 @@ void loop(){
       gb.sound.playTick();
     }
     //if the ball is touching the down side
-    if((ball_y + ball_size) > LCDHEIGHT){
+    if((ball_y + ball_size) > gb.display.height()){
       ball_vy = -ball_vy;
       gb.sound.playTick();
     }

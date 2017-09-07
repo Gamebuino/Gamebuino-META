@@ -7,13 +7,14 @@ void setup(){
   gb.begin();
   //display the main menu:
   gb.titleScreen("My first game");
+  //creates a popup that will last for 100 frames (4 seconds)
   gb.popup("Let's go!", 100);
 }
 
 // the loop routine runs over and over again forever
 void loop(){
-  //updates the gamebuino (the display, the sound, the auto backlight... everything)
-  //returns true when it's time to render a new frame (20 times/second)
+  //updates the gamebuino (the display, the sound... everything)
+  //returns true when it's time to render a new frame (25 times/second)
   if(gb.update()){
     //prints Hello World! on the screen
     gb.display.println("Hello World!");
