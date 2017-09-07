@@ -24,6 +24,8 @@
 #include "../Display-ST7735.h"
 #include "../SdFat.h"
 
+#include <type_traits>
+
 extern SdFat SD;
 
 namespace Gamebuino_Meta {
@@ -60,6 +62,9 @@ public:
 	bool set(uint16_t i, void* buf, uint8_t bufsize);
 	bool set(uint16_t i, const void* buf, uint8_t bufsize);
 	template< typename T > bool set(uint16_t i, T& obj) {
+		if (std::is_arithmetic<T>::value) {
+			return set(i, (int32_t)obj);
+		}
 		return set(i, &obj, sizeof(T));
 	};
 	void del(uint16_t i);
