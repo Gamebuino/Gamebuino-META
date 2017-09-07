@@ -706,8 +706,6 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 
 	while (1) {
 		if (update()) {
-			display.fillScreen(WHITE);
-			display.setColor(BLACK, WHITE);
 			//move the character selector
 			if (buttons.repeat(Button::down, 4)) {
 				activeY++;
@@ -799,37 +797,21 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 			display.print("\27save");
 			
 			//erase some pixels around the selected character
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-			display.setColor(Color::white);
-#else
-			display.setColor(ColorIndex::white);
-#endif
+			display.setColor(DISPLAY_DEFAULT_BACKGROUND_COLOR);
 			display.drawFastHLine(currentX + activeX * (display.fontWidth+1) - 1, currentY + activeY * (display.fontHeight+1) - 2, 7);
 			//draw the selection rectangle
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-			display.setColor(Color::black);
-#else
-			display.setColor(ColorIndex::black);
-#endif
+			display.setColor(DISPLAY_DEFAULT_COLOR);
 			display.drawRoundRect(currentX + activeX * (display.fontWidth+1) - 2, currentY + activeY * (display.fontHeight+1) - 3, (display.fontWidth+2)+(display.fontWidth-1)%2, (display.fontHeight+5), 3);
 			//draw keyboard outline
 			//display.drawRoundRect(currentX - 6, currentY - 6, KEYBOARD_W * (display.fontWidth+1) + 12, KEYBOARD_H * (display.fontHeight+1) + 12, 8, BLACK);
 			//text field
 			display.drawFastHLine(0, display.height()-display.fontHeight-2, display.width());
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-			display.setColor(Color::white);
-#else
-			display.setColor(ColorIndex::white);
-#endif
+			display.setColor(DISPLAY_DEFAULT_BACKGROUND_COLOR);
 			display.fillRect(0, display.height()-display.fontHeight-1, display.width(), display.fontHeight+1);
 			//typed text
 			display.cursorX = 0;
 			display.cursorY = display.height()-display.fontHeight;
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-			display.setColor(Color::black);
-#else
-			display.setColor(ColorIndex::black);
-#endif
+			display.setColor(DISPLAY_DEFAULT_COLOR);
 			display.print(text);
 			//blinking cursor
 			if (((frameCount % 8) < 4) && (activeChar < (length-1))) {
