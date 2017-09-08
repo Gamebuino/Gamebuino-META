@@ -81,3 +81,19 @@
 #ifndef SOUND_CHANNELS
 #define SOUND_CHANNELS 4
 #endif
+
+///////////////
+// image defines
+///////////////
+
+#ifndef STRICT_IMAGES
+#define STRICT_IMAGES 0
+#endif
+
+///////////////
+// language defines
+///////////////
+
+#ifndef LANGUAGE_DEFAULT_SIZE
+#define LANGUAGE_DEFAULT_SIZE 0
+#endif

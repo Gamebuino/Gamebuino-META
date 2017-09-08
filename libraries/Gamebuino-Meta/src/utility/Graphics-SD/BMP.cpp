@@ -53,7 +53,7 @@ BMP::BMP(File* file, Image* img) {
 	image_offset = f_read32(file);
 	uint32_t header_size = f_read32(file);
 	width = f_read32(file);
-#ifdef STRICT_IMAGES
+#if STRICT_IMAGES
 	if (img->_width && width > img->_width) {
 		// BMP too large
 		return;

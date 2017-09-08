@@ -1,4 +1,5 @@
 #include <Gamebuino-Meta.h>
+#include "language.h"
 
 #define RAM_FLAG_ADDRESS (0x20007FFCul)
 #define RAM_FLAG_VALUE (*((volatile uint32_t *)RAM_FLAG_ADDRESS))
@@ -125,6 +126,7 @@ void loadGameFolderBlock() {
 
 void setup() {
 	gb.begin();
+	gb.language.setCurrentLang(LANG_DE);
 //	SerialUSB.begin(115200)
 	if ((RAM_FLAG_VALUE & 0xFFFF0000) == LOADER_MAGIC) {
 		uint16_t error = RAM_FLAG_VALUE & 0x0000FFFF;
@@ -155,7 +157,8 @@ void setup() {
 					default:
 						gb.display.println("Unknown");
 				}
-				gb.display.println("\nPress A to continue");
+				gb.display.print("\n");
+				gb.display.print(gb.language.get(lang_press_a_continue));
 				if (gb.buttons.pressed(BUTTON_A)) {
 					break;
 				}
@@ -166,7 +169,7 @@ void setup() {
 	
 	gb.sound.play(startupSound);
 	gb.display.setCursors(0, 0);
-	gb.display.println("Loading...");
+	gb.display.println(gb.language.get(lang_loading));
 	gb.updateDisplay();
 	clearEmptyFolders();
 	loadNumberOfGames();

@@ -33,7 +33,7 @@ void loadDetailedView() {
 	if (titleScreenImageExists) {
 		gb.display.setColor(WHITE, BLACK);
 		gb.display.setCursors(0, 0);
-		gb.display.println("Loading...");
+		gb.display.println(gb.language.get(lang_loading));
 		gb.updateDisplay();
 		titleScreenImage.init(80, 64, nameBuffer);
 	}
@@ -49,7 +49,7 @@ void loadGame() {
 		gb.display.fillScreen(BLACK);
 		gb.display.setColor(WHITE, BLACK);
 		gb.display.setCursors(0, 24);
-		gb.display.println("Loading...");
+		gb.display.println(gb.language.get(lang_loading));
 		gb.display.print(nameBuffer);
 	}
 	gb.updateDisplay();

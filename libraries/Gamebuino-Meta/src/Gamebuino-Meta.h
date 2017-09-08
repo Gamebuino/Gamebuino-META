@@ -40,6 +40,7 @@ extern SdFat SD;
 #include "utility/Display-ST7735.h"
 #include "utility/Graphics.h"
 #include "utility/Image.h"
+#include "utility/Language.h"
 
 // make sure that sketches don't screw things up, the SAMD architecture has only one addressable space, thus making the PROGMEM concept unneded
 #define F(x) x
@@ -108,6 +109,7 @@ public:
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 	Save save;
 	Save settings;
+	Language language;
 
 	void begin();
 	void titleScreen(const char* name, const uint8_t *logo);

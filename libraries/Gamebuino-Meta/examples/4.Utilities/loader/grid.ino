@@ -14,7 +14,7 @@ GridView gridViewEntries[PAGE_SIZE];
 void loadGridView() {
 	gb.display.setCursors(0, 0);
 	gb.display.setColor(WHITE, BLACK);
-	gb.display.print("Loading...");
+	gb.display.println(gb.language.get(lang_loading));
 	gb.updateDisplay();
 	uint8_t blockOffset = pageInBlock*PAGE_SIZE;
 	uint32_t gameOffset = gameFolderBlock*BLOCK_LENGTH + blockOffset;
@@ -50,7 +50,7 @@ void gridView() {
 		}
 		if (!totalGames) {
 			gb.display.setColor(RED);
-			gb.display.println("No games found!");
+			gb.display.println(gb.language.get(lang_no_games));
 		} else {
 			uint16_t currentPage = pageInBlock + gameFolderBlock*PAGES_PER_BLOCK + 1;
 			sprintf(pageCounter, "< %d/%d >", currentPage, totalPages);
