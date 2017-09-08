@@ -1,3 +1,5 @@
+// This file is ISO-8859-1 encoded, or anything compatible, such as Windows-1252
+
 namespace Gamebuino_Meta {
 
 #define NUMBER_SYSTEM_LANGUAGES 2

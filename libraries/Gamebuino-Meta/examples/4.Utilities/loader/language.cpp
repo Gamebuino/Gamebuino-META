@@ -1,3 +1,6 @@
+// This file is ISO-8859-1 encoded, or anything compatible, such as Windows-1252
+
+
 #include "language.h"
 
 const MultiLang lang_press_a_continue[] = {
