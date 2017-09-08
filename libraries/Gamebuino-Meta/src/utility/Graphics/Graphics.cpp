@@ -924,6 +924,10 @@ void Graphics::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 
 		if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
 
+		if (c >= 0x80) {
+			c -= 0x20;
+		}
+
 		for (int8_t i = 0; i < fontWidth; i++) {
 			uint8_t line;
 			if (i == (fontWidth - 1))
@@ -1178,6 +1182,7 @@ void Graphics::setFont(const uint8_t *f) {
 	fontWidth = pgm_read_byte(font) + 1;
 	fontHeight = pgm_read_byte(font + 1) + 1;
 	font += 2; //offset the pointer to start after the width and height bytes
+	_cp437 = true; // disable the old compatibility mode
 }
 
 // Pass string and a cursor position, returns UL corner and W,H.

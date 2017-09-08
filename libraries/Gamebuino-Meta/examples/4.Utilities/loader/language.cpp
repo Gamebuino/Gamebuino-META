@@ -2,7 +2,7 @@
 
 const MultiLang lang_press_a_continue[] = {
 	{LANG_EN, "Press A to continue"},
-	{LANG_DE, "Druecke A um fortzufahren"},
+	{LANG_DE, "Drücke A um fortzufahren"},
 };
 
 const MultiLang lang_loading[] = {
@@ -13,4 +13,14 @@ const MultiLang lang_loading[] = {
 const MultiLang lang_no_games[] = {
 	{LANG_EN, "No games found!"},
 	{LANG_DE, "Keine Spiele gefunden!"},
+};
+
+const MultiLang lang_select[] = {
+	{LANG_EN, "SELECT"},
+	{LANG_DE, "LADE"},
+};
+
+const MultiLang lang_browse[] = {
+	{LANG_EN, "BROWSE"},
+	{LANG_DE, "WÄHLE"},
 };

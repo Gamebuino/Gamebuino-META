@@ -27,6 +27,10 @@ public:
 	const char* get(const T (&l) [N]) {
 		return get(l, N);
 	};
+	template<typename T, uint8_t N>
+	const char* _get(const T (&l) [N]) {
+		return get(l, N);
+	};
 };
 
 

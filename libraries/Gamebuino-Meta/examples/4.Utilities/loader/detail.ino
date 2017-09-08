@@ -93,7 +93,7 @@ void detailedView() {
 		gb.display.print("A");
 		gb.display.setCursorX(8);
 		gb.display.setColor(BROWN);
-		gb.display.print("SELECT");
+		gb.display.print(gb.language.get(lang_select));
 		
 		// < > BROWSE
 		gb.display.setCursorX(43);
@@ -103,7 +103,7 @@ void detailedView() {
 		gb.display.print(">");
 		gb.display.setCursorX(55);
 		gb.display.setColor(BROWN);
-		gb.display.print("BROWSE");
+		gb.display.print(gb.language.get(lang_browse));
 		
 		if (gb.buttons.repeat(BUTTON_LEFT, 4)) {
 			if (currentGameInBlock == 0 && gameFolderBlock == 0) {

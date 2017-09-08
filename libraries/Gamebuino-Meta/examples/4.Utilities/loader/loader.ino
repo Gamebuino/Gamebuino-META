@@ -126,7 +126,6 @@ void loadGameFolderBlock() {
 
 void setup() {
 	gb.begin();
-	gb.language.setCurrentLang(LANG_DE);
 //	SerialUSB.begin(115200)
 	if ((RAM_FLAG_VALUE & 0xFFFF0000) == LOADER_MAGIC) {
 		uint16_t error = RAM_FLAG_VALUE & 0x0000FFFF;

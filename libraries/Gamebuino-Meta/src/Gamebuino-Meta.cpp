@@ -20,6 +20,7 @@
 #include "Gamebuino-Meta.h"
 #include "utility/Graphics-SD.h"
 #include "utility/Misc.h"
+#include "utility/Language/SystemLanguage.h"
 SdFat SD;
 
 // create our custom NMI handler
@@ -53,11 +54,12 @@ const uint8_t gamebuinoLogo[] =
 
 const SaveDefault savefileDefaults[SAVECONF_SIZE] = SAVECONF;
 
-#define SETTINGSCONF_SIZE 3
+#define SETTINGSCONF_SIZE 4
 const SaveDefault settingsDefaults [SETTINGSCONF_SIZE] = {
 	SaveDefault(SETTING_VOLUME, SAVETYPE_INT, 6),
 	SaveDefault(SETTING_VOLUME_MUTE, SAVETYPE_INT, 0),
 	SaveDefault(SETTING_DEFAULTNAME, SAVETYPE_BLOB, "gamebuinian", 13),
+	SaveDefault(SETTING_LANGUAGE, SAVETYPE_INT, (int)LangCode::en),
 };
 
 void Gamebuino::begin() {
@@ -135,6 +137,9 @@ void Gamebuino::begin() {
 		sound.mute();
 	}
 	sound.setVolume(settings.get(SETTING_VOLUME));
+	
+	// language
+	language.setCurrentLang((LangCode)settings.get(SETTING_LANGUAGE));
 	
 	Graphics_SD::setTft(&tft);
 }
@@ -406,12 +411,18 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 #endif
 }
 
+const uint8_t numLangEntries = 2;
+const MultiLang langEntries[numLangEntries] = {
+	{LangCode::en, "en"},
+	{LangCode::de, "de"},
+};
+
 void Gamebuino::homeMenu(){
 	//here we don't use gb.update and display.not to interfere with the game
 	//the only things we use are gb.tft and gb.buttons
 	sound.startEfxOnly();
 	int currentItem = 0;
-	const int numItems = 5;
+	const int numItems = 6;
 	unsigned long lastMillis = 0;
 	//3 text lines vertical coordinates
 	const int yOffset1 = 34;
@@ -422,12 +433,15 @@ void Gamebuino::homeMenu(){
 	boolean changed = true;
 	int frameCounter = 0;
 	
-	const char menuText[numItems][11] {
-		"EXIT      ",
-		"VOLUME    ",
-		"SAVE IMAGE",
-		"SAVE VIDEO",
-		"LIGHT     "};
+	const MultiLang* menuText[numItems] = {
+		lang_homeMenu_exit,
+		lang_homeMenu_volume,
+		lang_homeMenu_save_image,
+		lang_homeMenu_save_video,
+		lang_homeMenu_light,
+		lang_homeMenu_language,
+	};
+	
 	
 	neoPixels.clear();
 	neoPixels.show();
@@ -459,11 +473,13 @@ void Gamebuino::homeMenu(){
 	tft.setColor(GREEN, DARKGRAY);
 	tft.print(" A");
 	tft.setColor(BROWN, DARKGRAY);
-	tft.print(":SELECT  ");
+	tft.print(":");
+	tft.print(language._get(lang_homeMenu_SELECT));
 	tft.setColor(RED, DARKGRAY);
 	tft.print("B");
 	tft.setColor(BROWN, DARKGRAY);
-	tft.print(":RESUME  ");
+	tft.print(":");
+	tft.print(language._get(lang_homeMenu_RESUME));
 		
 	while(1){
 		//Ensure constant framerate using millis (40ms = 25FPS)
@@ -552,7 +568,7 @@ void Gamebuino::homeMenu(){
 				////SCREENSHOT
 				case 2:
 					if (buttons.released(Button::a)){
-						tft.print("SAVING... ");
+						tft.print(language._get(lang_homeMenu_SAVING));
 						if(!SD.exists("REC")) {
 							SD.mkdir("REC");
 						}
@@ -562,13 +578,13 @@ void Gamebuino::homeMenu(){
 						if(sd_path_no_duplicate(name, 9, 4) && display.save(name)){
 							tft.setColor(LIGHTGREEN, BROWN);
 							tft.cursorX = xOffset;
-							tft.print("SAVED!    ");
+							tft.print(language._get(lang_homeMenu_SAVED));
 							delay(250);
 							changed = true;
 						} else {
 							tft.setColor(RED, BROWN);
 							tft.cursorX = xOffset;
-							tft.print("ERROR     ");
+							tft.print(language._get(lang_homeMenu_ERROR));
 							delay(250);
 							changed = true;
 						}
@@ -577,26 +593,26 @@ void Gamebuino::homeMenu(){
 				////RECORD SCREEN
 				case 3:
 					if (buttons.released(Button::a)){
-						tft.print("READY?    ");
+						tft.print(language._get(lang_homeMenu_READY));
 						if(!SD.exists("REC")) {
 							SD.mkdir("REC");
 						}
 						char name[] = "REC/VIDEO0000.BMP";
-							if (sd_path_no_duplicate(name, 9, 4) && display.startRecording(name)) {
-								recording_screen = true;
-								delay(250);
-								tft.cursorX = xOffset;
-								tft.print("GO!       ");
-								delay(250);
-								sound.stopEfxOnly();
-								return;
-							} else {
-								tft.setColor(RED, BROWN);
-								tft.cursorX = xOffset;
-								tft.print("ERROR     ");
-								delay(250);
-								changed = true;
-							}
+						if (sd_path_no_duplicate(name, 9, 4) && display.startRecording(name)) {
+							recording_screen = true;
+							delay(250);
+							tft.cursorX = xOffset;
+							tft.print(language._get(lang_homeMenu_GO));
+							delay(250);
+							sound.stopEfxOnly();
+							return;
+						} else {
+							tft.setColor(RED, BROWN);
+							tft.cursorX = xOffset;
+							tft.print(language._get(lang_homeMenu_ERROR));
+							delay(250);
+							changed = true;
+						}
 					}
 				break;
 				//// NEOPIXELS
@@ -627,6 +643,28 @@ void Gamebuino::homeMenu(){
 						neoPixels.setPixelColor(i, neoPixelsIntensity, neoPixelsIntensity, neoPixelsIntensity/2);
 					}
 				break;
+				//// LANGUAGE
+				case 5:
+					if (buttons.released(Button::a) || buttons.released(Button::left) || buttons.released(Button::right)) {
+						uint8_t curLangIndex = 0;
+						for (;(curLangIndex < numLangEntries) && (langEntries[curLangIndex].code != language.getCurrentLang()); curLangIndex++);
+						if (buttons.released(Button::left)) {
+							if (curLangIndex == 0) {
+								curLangIndex = numLangEntries - 1;
+							} else {
+								curLangIndex--;
+							}
+						} else {
+							curLangIndex++;
+							if (curLangIndex >= numLangEntries) {
+								curLangIndex = 0;
+							}
+						}
+						settings.set(SETTING_LANGUAGE, (int)langEntries[curLangIndex].code);
+						language.setCurrentLang(langEntries[curLangIndex].code);
+						changed = true;
+					}
+				break;
 			}
 			
 			if(changed == true){
@@ -634,42 +672,53 @@ void Gamebuino::homeMenu(){
 				tft.cursorX = xOffset;
 				tft.cursorY = yOffset3;
 				tft.setColor(BROWN, DARKGRAY);
-				tft.print(menuText[wrap(currentItem+1, numItems)]);
+				tft.print(language.get(menuText[wrap(currentItem+1, numItems)], NUMBER_SYSTEM_LANGUAGES));
 				//primary text
 				tft.cursorX = xOffset;
 				tft.cursorY = yOffset2;
 				tft.setColor(WHITE, BROWN);
-				tft.print(menuText[currentItem]);
+				tft.print(language.get(menuText[currentItem], NUMBER_SYSTEM_LANGUAGES));
+				tft.print("  ");
 				//complementary text if needed
 				tft.setColor(WHITE, BROWN);
 				tft.cursorY = yOffset2;
 				switch(currentItem){
 					////VOLUME
 					case 1:
-					tft.cursorX -= 4*2*3;
-					if(!sound.isMute() && sound.getVolume()) {
-						tft.setColor(WHITE, BROWN);
-						tft.print("\23\24");
-						if(sound.getVolume() > 6){
-							tft.setColor(RED, BROWN);
+						tft.cursorX -= 4*2*4;
+						if(!sound.isMute() && sound.getVolume()) {
+							tft.setColor(WHITE, BROWN);
+							tft.print("\23\24");
+							if(sound.getVolume() > 6){
+								tft.setColor(RED, BROWN);
+							}
+							tft.print(sound.getVolume());
+						} else {
+							tft.setColor(DARKGRAY, BROWN);
+							tft.print("\23x");
 						}
-						tft.print(sound.getVolume());
-					} else {
-						tft.setColor(DARKGRAY, BROWN);
-						tft.print("\23x");
-					}
 					break;
 					////NEOPIXELS
 					case 4:
-					tft.cursorX -= 4*2*4;
-					for(int i = 0; i < 252; i+=63){
-						if(neoPixelsIntensity <= i){
-							tft.setColor(DARKGRAY, BROWN);
-						} else {
-							tft.setColor(WHITE, BROWN);
+						tft.cursorX -= 4*2*6;
+						for(int i = 0; i < 252; i+=63){
+							if(neoPixelsIntensity <= i){
+								tft.setColor(DARKGRAY, BROWN);
+							} else {
+								tft.setColor(WHITE, BROWN);
+							}
+							tft.print("*");
 						}
-						tft.print("*");
-					}
+					break;
+					////LANGUAGE
+					case 5:
+						tft.cursorX -= 4*2*3;
+						for (uint8_t i = 0; i < numLangEntries; i++) {
+							if (langEntries[i].code == language.getCurrentLang()) {
+								tft.print(langEntries[i].str);
+								break;
+							}
+						}
 					break;
 					
 				}
@@ -677,7 +726,7 @@ void Gamebuino::homeMenu(){
 				tft.cursorX = xOffset;
 				tft.cursorY = yOffset1;
 				tft.setColor(BROWN, DARKGRAY);
-				tft.print(menuText[wrap(currentItem-1, numItems)]);
+				tft.print(language.get(menuText[wrap(currentItem-1, numItems)], NUMBER_SYSTEM_LANGUAGES));
 			}
 			
 			//updated nopixels
@@ -738,6 +787,9 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 			if (buttons.pressed(Button::a)) {
 				if (activeChar < (length-1)) {
 					byte thisChar = activeX + KEYBOARD_W * activeY;
+					if (thisChar >= 0x80) {
+						thisChar += 0x20;
+					}
 					if((thisChar == 0)||(thisChar == 10)||(thisChar == 13)) //avoid line feed and carriage return
 					continue;
 					text[activeChar] = thisChar;
@@ -780,21 +832,28 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 			//draw the keyboard
 			for (int8_t y = 0; y < KEYBOARD_H; y++) {
 				for (int8_t x = 0; x < KEYBOARD_W; x++) {
-					display.drawChar(currentX + x * (display.fontWidth+1), currentY + y * (display.fontHeight+1), x + y * KEYBOARD_W, 1);
+					byte c = x + y * KEYBOARD_W;
+					if (c >= 0x80) {
+						c += 0x20;
+					}
+					display.drawChar(currentX + x * (display.fontWidth+1), currentY + y * (display.fontHeight+1), c, 1);
 				}
 			}
 			//draw instruction
-			display.cursorX = currentX-display.fontWidth*6-2;
+			display.cursorX = currentX-display.fontWidth*7-2;
 			display.cursorY = currentY+1*(display.fontHeight+1);
-			display.print("\25type");
+			display.print("\25");
+			display.print(language._get(lang_keyboard_type));
 			
-			display.cursorX = currentX-display.fontWidth*6-2;
+			display.cursorX = currentX-display.fontWidth*7-2;
 			display.cursorY = currentY+2*(display.fontHeight+1);
-			display.print("\26back");
+			display.print("\26");
+			display.print(language._get(lang_keyboard_back));
 			
-			display.cursorX = currentX-display.fontWidth*6-2;
+			display.cursorX = currentX-display.fontWidth*7-2;
 			display.cursorY = currentY+3*(display.fontHeight+1);
-			display.print("\27save");
+			display.print("\27");
+			display.print(language._get(lang_keyboard_save));
 			
 			//erase some pixels around the selected character
 			display.setColor(DISPLAY_DEFAULT_BACKGROUND_COLOR);
