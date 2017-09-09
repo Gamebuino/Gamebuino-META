@@ -272,6 +272,38 @@ void Image::allocateBuffer() {
 	}
 }
 
+uint16_t Image::getPixel(int16_t x, int16_t y) {
+	if (colorMode == ColorMode::rgb565) {
+		return _buffer[x + y * _width];
+	} else {
+		uint16_t addr = ((_width + 1) / 2) * y + x / 2;
+		uint8_t* buf = (uint8_t*)_buffer;
+		if (!(x % 2)) { //odd pixels
+			return buf[addr] >> 4;
+		} else {
+			return buf[addr] & 0x0F;
+		}
+	}
+}
+
+Color Image::getPixelColor(int16_t x, int16_t y) {
+	uint16_t c = getPixel(x, y);
+	if (colorMode == ColorMode::rgb565) {
+		return (Color)c;
+	} else {
+		return colorIndex[c];
+	}
+}
+
+ColorIndex Image::getPixelIndex(int16_t x, int16_t y) {
+	uint16_t c = getPixel(x, y);
+	if (colorMode == ColorMode::rgb565) {
+		return rgb565ToIndex((Color)c);
+	} else {
+		return (ColorIndex)c;
+	}
+}
+
 void Image::nextFrame() {
 	if (frames) {
 		if (frames == 1 || !frame_looping || last_frame == (gb.frameCount & 0xFF)) {

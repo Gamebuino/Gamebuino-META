@@ -79,6 +79,10 @@ public:
 	void drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img);
 	void allocateBuffer();
 	
+	uint16_t getPixel(int16_t x, int16_t y);
+	Color getPixelColor(int16_t x, int16_t y);
+	ColorIndex getPixelIndex(int16_t x, int16_t y);
+	
 	bool startRecording(char* filename);
 	void stopRecording(bool output = false);
 	bool save(char* filename);
