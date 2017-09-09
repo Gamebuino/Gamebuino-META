@@ -775,12 +775,19 @@ class Bullet :
           uint8_t r,g,b;
           g = r = random (128,255);
           b = r / 2;
+          
+          // rodot....sorry IDK what your logic is behind this so you gotta fix it, not looking into it too deeply atm
+          // TODO: fix
+          // here, have this substitute (lighting all pixels)
+          gb.light.fillScreen(gb.createColor(r, g, b));
+          /*
           for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
             int16_t xScreen = toScreenX(x) + (getWidth() / 2 / SCALE);
             if((xScreen < 0) && (i < 4)) continue;
             if((xScreen > gb.display.width()) && (i > 3)) continue;
             gb.neoPixels.setPixelColor(i, r, g, b);
           }
+          */
         }
         Box::draw();
       }
@@ -1031,20 +1038,20 @@ class Weapon {
         r = g = b = 0;
         break;
       }
-      for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
-        switch(subtype){
+      gb.light.setColor(gb.createColor(r, g, b));
+      switch (subtype) {
         //light only in the shooting direction for these weapons
         case W_PISTOL :
         case W_RIFLE :
         case W_LASER :
-          if((shooter->dir < 0) && (i < 4)) continue;
-          if((shooter->dir > 0) && (i > 3)) continue;
-        default:
+          if (shooter->dir < 0) {
+            gb.light.fillRect(0, 0, 1, 4);
+          } else {
+            gb.light.fillRect(1, 0, 1, 4);
+          }
           break;
-        }
-        gb.neoPixels.setPixelColor(i, r, g, b);
       }
-
+      
       switch (subtype) {
         case W_ROCKET :
           //gb.sound.playPattern(rocket_sound, 0);

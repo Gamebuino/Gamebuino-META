@@ -150,9 +150,7 @@ void updatePlayer() {
     player.v *= 0.5;
   }
 
-  for (uint8_t i = 0; i < gb.neoPixels.numPixels(); i++) {
-    gb.neoPixels.setPixelColor(i, r, g, b);
-  }
+  gb.light.fillScreen(gb.createColor(r, g, b));
 
   //target position of the camera for the cursor to be centered
   int camera_x_target = player.x + cos(player.angle) * player.v * 64 - gb.display.width() / 2;

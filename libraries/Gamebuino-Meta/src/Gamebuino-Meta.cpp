@@ -986,6 +986,10 @@ bool Gamebuino::collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, i
   return false;
 }
 
+Color Gamebuino::createColor(uint8_t r, uint8_t g, uint8_t b) {
+	return (Color)rgb888Torgb565({r, g, b});
+}
+
 
 } // namespace Gamebuino_Meta
 
