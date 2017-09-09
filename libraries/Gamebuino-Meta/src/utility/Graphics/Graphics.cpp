@@ -346,11 +346,14 @@ void Graphics::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 	}
 }
 
-void Graphics::fillScreen() {
+void Graphics::_fillScreen() {
 	fillRect(0, 0, _width, _height);
 }
 
-//legacy fillScreen
+void Graphics::fillScreen() {
+	_fillScreen();
+}
+
 void Graphics::fillScreen(Color c) {
 	Color tempColor = color;
 	if (colorMode == ColorMode::index) {
@@ -1040,6 +1043,32 @@ uint8_t Graphics::getFontHeight(void) const {
 
 void Graphics::setFontSize(uint8_t s) {
 	fontSize = (s > 0) ? s : 1;
+}
+
+void Graphics::drawPixel(int16_t x, int16_t y) {
+	_drawPixel(x, y);
+}
+
+void Graphics::drawPixel(int16_t x, int16_t y, Color c) {
+	Color tempColor = color;
+	if (colorMode == ColorMode::index) {
+		color = (Color)rgb565ToIndex(c);
+	} else {
+		color = c;
+	}
+	drawPixel(x, y);
+	color = tempColor;
+}
+
+void Graphics::drawPixel(int16_t x, int16_t y, ColorIndex c) {
+	Color tempColor = color;
+	if (colorMode == ColorMode::index) {
+		color = (Color)c;
+	} else {
+		color = (Color)colorIndex[(uint8_t)c];
+	}
+	drawPixel(x, y);
+	color = tempColor;
 }
 
 void Graphics::setColor(Color c) {

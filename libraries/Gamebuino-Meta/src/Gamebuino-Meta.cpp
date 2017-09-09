@@ -54,12 +54,22 @@ const uint8_t gamebuinoLogo[] =
 
 const SaveDefault savefileDefaults[SAVECONF_SIZE] = SAVECONF;
 
-#define SETTINGSCONF_SIZE 4
+#define SETTINGSCONF_SIZE 5
+// we have more blocks for, in case we add things in the future, old games are less likely to erase our new blocks
+#define SETTINGSCONF_NUM_BLOCKS 32
 const SaveDefault settingsDefaults [SETTINGSCONF_SIZE] = {
 	SaveDefault(SETTING_VOLUME, SAVETYPE_INT, 6),
 	SaveDefault(SETTING_VOLUME_MUTE, SAVETYPE_INT, 0),
 	SaveDefault(SETTING_DEFAULTNAME, SAVETYPE_BLOB, "gamebuinian", 13),
 	SaveDefault(SETTING_LANGUAGE, SAVETYPE_INT, (int)LangCode::en),
+	SaveDefault(SETTING_NEOPIXELS_INTENSITY, SAVETYPE_INT, 4),
+};
+// neoPixel intensity is quadratic
+// 0 is min, 255 is max
+// m*x^2 fit through (0,0) (4,255) (5-steps)
+// m=15.9375
+const uint8_t neoPixelsIntensities[] = {
+	0, 16, 64, 143, 255
 };
 
 void Gamebuino::begin() {
@@ -82,7 +92,6 @@ void Gamebuino::begin() {
 	//frameCount = 0;
 	frameEndMicros = 1;
 	startMenuTimer = 255;
-	neoPixelsIntensity = 252;
 
 	//neoPixels
 	neoPixels.begin();
@@ -129,7 +138,7 @@ void Gamebuino::begin() {
 	
 	save = Save(&tft, SAVEFILE_NAME, savefileDefaults, SAVECONF_SIZE, SAVEBLOCK_NUM, folder_name);
 	
-	settings = Save(&tft, "/settings.sav", settingsDefaults, SETTINGSCONF_SIZE, SETTINGSCONF_SIZE, "GBMS");
+	settings = Save(&tft, "/settings.sav", settingsDefaults, SETTINGSCONF_SIZE, SETTINGSCONF_NUM_BLOCKS, "GBMS");
 	
 	//sound
 	sound.begin();
@@ -140,6 +149,9 @@ void Gamebuino::begin() {
 	
 	// language
 	language.setCurrentLang((LangCode)settings.get(SETTING_LANGUAGE));
+	
+	// neoPixels
+	neoPixels.setBrightness(neoPixelsIntensities[settings.get(SETTING_NEOPIXELS_INTENSITY)]);
 	
 	Graphics_SD::setTft(&tft);
 }
@@ -299,10 +311,22 @@ bool Gamebuino::update() {
 			display.textWrap = true;
 
 			//neoPixels update
-			if(neoPixelsIntensity == 0){
-				//TODO add progressive dimming
-				neoPixels.clear();
+			uint8_t px_height = light.height();
+			uint8_t px_width = light.width();
+			const uint8_t px_map[] = {
+				7, 0,
+				6, 1,
+				5, 2,
+				4, 3,
+			};
+			for (uint8_t y = 0; y < px_height; y++) {
+				for (uint8_t x = 0; x < px_width; x++) {
+					RGB888 c = rgb565Torgb888(light.getPixel(x, y));
+					// intensity is scaled directly via neoPixels.setBrightness
+					neoPixels.setPixelColor(px_map[y*px_width + x], c.r, c.g, c.b);
+				}
 			}
+			light.fillScreen(Color::black);
 			neoPixels.show();
 			neoPixels.clear();
 
@@ -445,6 +469,9 @@ void Gamebuino::homeMenu(){
 	
 	neoPixels.clear();
 	neoPixels.show();
+	// determin the neoPixel color index
+	uint8_t neoPixelsIntensity = 0;
+	for (;(neoPixelsIntensity < 5) && (neoPixels.getBrightness() > neoPixelsIntensities[neoPixelsIntensity]);neoPixelsIntensity++);
 	
 	//static screen content
 	//text settings
@@ -617,30 +644,28 @@ void Gamebuino::homeMenu(){
 				break;
 				//// NEOPIXELS
 				case 4:
-					if (buttons.released(Button::a)){
-						neoPixelsIntensity += 63;
-						if(neoPixelsIntensity >= 255){
+					if (buttons.released(Button::a) || buttons.repeat(Button::right, 4)){
+						neoPixelsIntensity ++;
+						if(neoPixelsIntensity > 4){
 							neoPixelsIntensity = 0;
 						}
 						changed = true;
-					}
-					if (buttons.repeat(Button::right, 4)){
-						neoPixelsIntensity += 63;
-						if(neoPixelsIntensity >= 255){
-							neoPixelsIntensity = 252;
-						}
-						changed = true;
+						neoPixels.setBrightness(neoPixelsIntensities[neoPixelsIntensity]);
+						settings.set(SETTING_NEOPIXELS_INTENSITY, neoPixelsIntensity);
 					}
 					if (buttons.repeat(Button::left, 4)){
-						neoPixelsIntensity -= 63;
-						if(neoPixelsIntensity < 0){
-							neoPixelsIntensity = 0;
+						if(neoPixelsIntensity == 0){
+							neoPixelsIntensity = 4;
+						} else {
+							neoPixelsIntensity--;
 						}
 						changed = true;
+						neoPixels.setBrightness(neoPixelsIntensities[neoPixelsIntensity]);
+						settings.set(SETTING_NEOPIXELS_INTENSITY, neoPixelsIntensity);
 					}
 					//light up neopixels according to intensity
 					for(uint8_t i = 0; i < neoPixels.numPixels(); i++){
-						neoPixels.setPixelColor(i, neoPixelsIntensity, neoPixelsIntensity, neoPixelsIntensity/2);
+						neoPixels.setPixelColor(i, 0xFF, 0xFF, 0xFF);
 					}
 				break;
 				//// LANGUAGE
@@ -701,7 +726,7 @@ void Gamebuino::homeMenu(){
 					////NEOPIXELS
 					case 4:
 						tft.cursorX -= 4*2*6;
-						for(int i = 0; i < 252; i+=63){
+						for(int i = 0; i < 4; i++){
 							if(neoPixelsIntensity <= i){
 								tft.setColor(DARKGRAY, BROWN);
 							} else {

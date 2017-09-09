@@ -106,7 +106,7 @@ public:
 	Sound sound;
 #endif
 	Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
-	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
+	Image light = Image(2, 4, ColorMode::rgb565);
 	Save save;
 	Save settings;
 	Language language;
@@ -128,8 +128,6 @@ public:
 	uint16_t frameDurationMicros;
 	uint32_t frameStartMicros, frameEndMicros;
 	
-	int16_t neoPixelsIntensity;
-	
 	int8_t menu(const char* const* items, uint8_t length);
 	void homeMenu();
 	void keyboard(char* text, uint8_t length);
@@ -145,6 +143,7 @@ public:
 	bool collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, int16_t x2, int16_t y2, const uint8_t* b2);
 
 private:
+	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 	uint8_t timePerFrame;
 	uint32_t nextFrameMillis;
 	void updatePopup();

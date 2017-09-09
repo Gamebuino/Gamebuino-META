@@ -849,7 +849,7 @@ void Display_ST7735::pushColor(uint16_t c) {
 #endif
 }
 
-void Display_ST7735::drawPixel(int16_t x, int16_t y) {
+void Display_ST7735::_drawPixel(int16_t x, int16_t y) {
 
 	if((x < 0) ||(x >= _width) || (y < 0) || (y >= _height)) return;
 

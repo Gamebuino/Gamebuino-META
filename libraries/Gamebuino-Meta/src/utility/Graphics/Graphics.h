@@ -85,7 +85,7 @@ public:
 	virtual ~Graphics();
 
 	// This MUST be defined by the subclass:
-	virtual void drawPixel(int16_t x, int16_t y) = 0;
+	virtual void _drawPixel(int16_t x, int16_t y) = 0;
 	virtual void drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img) = 0;
 
 
@@ -96,14 +96,19 @@ public:
 	virtual void drawFastHLine(int16_t x, int16_t y, int16_t w);
 	virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h);
 	virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h);
-	virtual void fillScreen();
-	virtual void fillScreen(Color color);
-	virtual void fillScreen(ColorIndex color);
+	virtual void _fillScreen();
 	virtual void invertDisplay(boolean i);
 	virtual void drawImage(int16_t x, int16_t y, Image& img);
 	virtual void drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);
 
 	// These exist only with Graphics (no subclass overrides)
+	void drawPixel(int16_t x, int16_t y);
+	void drawPixel(int16_t x, int16_t y, Color c);
+	void drawPixel(int16_t x, int16_t y, ColorIndex c);
+	void fillScreen();
+	void fillScreen(Color color);
+	void fillScreen(ColorIndex color);
+	
 	void drawCircle(int16_t x0, int16_t y0, int16_t r);
 	void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername);
 	void fillCircle(int16_t x0, int16_t y0, int16_t r);

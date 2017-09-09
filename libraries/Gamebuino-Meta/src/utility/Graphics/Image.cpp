@@ -340,7 +340,7 @@ void Image::setFrame(uint16_t _frame) {
 	frame_loopcounter = 0;
 }
 
-void Image::drawPixel(int16_t x, int16_t y) {
+void Image::_drawPixel(int16_t x, int16_t y) {
 	if (!_buffer) {
 		return;
 	}
@@ -365,7 +365,7 @@ void Image::drawPixel(int16_t x, int16_t y) {
 	}
 }
 
-void Image::fillScreen() {
+void Image::_fillScreen() {
 	if (_buffer) {
 		if (colorMode == ColorMode::rgb565) {
 			uint8_t hi = (uint16_t)color >> 8, lo = (uint16_t)color & 0xFF;
@@ -382,28 +382,6 @@ void Image::fillScreen() {
 			memset(_buffer, pack, _width * _height / 2);
 		}
 	}
-}
-
-void Image::fillScreen(Color c) {
-	Color tempColor = color;
-	if (colorMode == ColorMode::index) {
-		color = (Color)rgb565ToIndex(c);
-	} else {
-		color = c;
-	}
-	fillScreen();
-	color = tempColor;
-}
-
-void Image::fillScreen(ColorIndex c) {
-	Color tempColor = color;
-	if (colorMode == ColorMode::index) {
-		color = (Color)c;
-	} else {
-		color = (Color)colorIndex[(uint8_t)c];
-	}
-	fillScreen();
-	color = tempColor;
 }
 
 void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img) {
