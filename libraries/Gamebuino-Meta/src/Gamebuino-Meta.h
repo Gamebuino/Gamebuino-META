@@ -144,6 +144,7 @@ public:
 	bool collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, int16_t x2, int16_t y2, const uint8_t* b2);
 	
 	Color createColor(uint8_t r, uint8_t g, uint8_t b);
+	uint8_t getTimePerFrame();
 
 private:
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);

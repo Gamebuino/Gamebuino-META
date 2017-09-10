@@ -115,6 +115,10 @@ Sound_Handler::~Sound_Handler() {
 	
 }
 
+void Sound_Handler::setChannel(Sound_Channel* _channel) {
+	channel = _channel;
+}
+
 void Sound::begin() {
 #if SOUND_CHANNELS > 0
 	dacConfigure();
@@ -162,6 +166,21 @@ int8_t Sound::play(const uint16_t* buffer, bool loop) {
 
 int8_t Sound::play(uint16_t* buffer, bool loop) {
 	return play((const uint16_t*)buffer, loop);
+}
+
+int8_t Sound::play(Sound_Handler* handler, bool loop) {
+#if SOUND_CHANNELS > 0
+	int8_t i = findEmptyChannel();
+	if (i < 0 || i >= SOUND_CHANNELS) {
+		return -1; // no free channels atm
+	}
+	channels[i].loop = loop;
+	handlers[i] = handler;
+	handlers[i]->setChannel(&(channels[i]));
+	return i;
+#else // SOUND_CHANNELS
+	return -1;
+#endif // SOUND_CHANNELS
 }
 
 void Sound::stop(int8_t i) {
@@ -280,9 +299,9 @@ void Audio_Handler (void) {
 					channels[i].index = 0;
 				}
 				if (channels[i].last) {
-					output -= 0x30;
+					output -= channels[i].amplitude;
 				} else {
-					output += 0x30;
+					output += channels[i].amplitude;
 				}
 				break;
 			}

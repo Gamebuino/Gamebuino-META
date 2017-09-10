@@ -994,6 +994,10 @@ Color Gamebuino::createColor(uint8_t r, uint8_t g, uint8_t b) {
 	return (Color)rgb888Torgb565({r, g, b});
 }
 
+uint8_t Gamebuino::getTimePerFrame() {
+	return timePerFrame;
+}
+
 
 } // namespace Gamebuino_Meta
 
