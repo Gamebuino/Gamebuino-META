@@ -263,26 +263,8 @@ bool Gamebuino::update() {
 			//draw and update popups
 			updatePopup();
 			
-			//get back to game list when "HOME is held
-			if (buttons.held(Button::d, 25)){
-				changeGame();
-			}
 			//Home menu
-			if (buttons.released(Button::d)) {
-				if (recording_screen) {
-					// stop the recording
-					sound.startEfxOnly();
-					display.setFont(font3x5);
-					neoPixels.clear();
-					neoPixels.show();
-					display.stopRecording(true);
-					recording_screen = false;
-					//refresh screen to erase log messages
-					updateDisplay();
-					sound.stopEfxOnly();
-				}
-				homeMenu();
-			}
+			checkHomeMenu();
 			
 			Graphics_SD::update(); // update screen recordings
 			
@@ -440,6 +422,28 @@ const MultiLang langEntries[numLangEntries] = {
 	{LangCode::en, "en"},
 	{LangCode::de, "de"},
 };
+
+void Gamebuino::checkHomeMenu() {
+	//get back to game list when "HOME is held
+	if (buttons.held(Button::d, 25)){
+		changeGame();
+	}
+	if (buttons.released(Button::d)) {
+		if (recording_screen) {
+			// stop the recording
+			sound.startEfxOnly();
+			display.setFont(font3x5);
+			neoPixels.clear();
+			neoPixels.show();
+			display.stopRecording(true);
+			recording_screen = false;
+			//refresh screen to erase log messages
+			updateDisplay();
+			sound.stopEfxOnly();
+		}
+		homeMenu();
+	}
+}
 
 void Gamebuino::homeMenu(){
 	//here we don't use gb.update and display.not to interfere with the game

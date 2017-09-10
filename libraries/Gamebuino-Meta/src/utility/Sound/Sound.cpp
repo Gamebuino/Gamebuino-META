@@ -274,7 +274,7 @@ void Audio_Handler (void) {
 			case Sound_Channel_Type::pattern:
 				if (efx_only && channels[i].loop) {
 					break;
-				} 
+				}
 				if (channels[i].index++ >= channels[i].total) {
 					channels[i].last = !channels[i].last;
 					channels[i].index = 0;
