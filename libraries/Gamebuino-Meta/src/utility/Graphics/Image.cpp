@@ -546,4 +546,112 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w,
 	}
 }
 
+void Image::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
+	if(gfxFont) {
+		Graphics::drawChar(x, y, c, size);
+		return;
+	}
+	if((x >= _width)            || // Clip right
+		 (y >= _height)           || // Clip bottom
+		 ((x + fontWidth * size - 1) < 0) || // Clip left
+		 ((y + fontHeight * size - 1) < 0))   // Clip top
+		return;
+	
+	if (size == 2 && colorMode == ColorMode::index) {
+		if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
+		if (c >= 0x80) c -= 0x20;
+		if (!(x % 2)) {
+			uint8_t fg = ((uint8_t)color << 4) | (uint8_t)color;
+			uint8_t bg = ((uint8_t)bgcolor << 4) | (uint8_t)bgcolor;
+			uint8_t* buf = (uint8_t*)_buffer;
+			uint8_t img_bytewidth = (_width + 1) / 2;
+			buf += y*img_bytewidth + (x / 2);
+			uint8_t* _buf = buf;
+			uint8_t font_bytewidth = fontWidth - 1;
+			for (uint8_t i = 0; i < fontWidth; i++) {
+				uint8_t line;
+				if (i == font_bytewidth) {
+					line = 0;
+				} else {
+					line = font[c*font_bytewidth + i];
+				}
+				for (uint8_t j = 0; j < fontHeight; j++) {
+					if (line & 0x01) {
+						*buf = fg;
+						buf += img_bytewidth;
+						*buf = fg;
+						buf += img_bytewidth;
+					} else if (fg != bg) {
+						*buf = bg;
+						buf += img_bytewidth;
+						*buf = bg;
+						buf += img_bytewidth;
+					} else {
+						buf += img_bytewidth*2;
+					}
+					line >>= 1;
+				}
+				_buf++;
+				buf = _buf;
+			}
+			
+			return;
+		} else {
+			uint8_t fg1 = (uint8_t)color;
+			uint8_t fg2 = (uint8_t)color << 4;
+			uint8_t bg1 = (uint8_t)bgcolor;
+			uint8_t bg2 = (uint8_t)bgcolor << 4;
+			
+			uint8_t* buf = (uint8_t*)_buffer;
+			uint8_t img_bytewidth = (_width + 1) / 2;
+			buf += y*img_bytewidth + (x / 2);
+			img_bytewidth--;
+			uint8_t* _buf = buf;
+			uint8_t font_bytewidth = fontWidth - 1;
+			for (uint8_t i = 0; i < fontWidth; i++) {
+				uint8_t line;
+				if (i == font_bytewidth) {
+					line = 0;
+				} else {
+					line = font[c*font_bytewidth + i];
+				}
+				for (uint8_t j = 0; j < fontHeight; j++) {
+					uint8_t b1 = *buf;
+					uint8_t b2 = *(buf + 1);
+					b1 &= 0xF0;
+					b2 &= 0x0F;
+					if (line & 0x01) {
+						b1 |= fg1;
+						b2 |= fg2;
+						*(buf++) = b1;
+						*buf = b2;
+						buf += img_bytewidth;
+						*(buf++) = b1;
+						*buf = b2;
+						buf += img_bytewidth;
+					} else if (fg1 != bg1) {
+						b1 |= bg1;
+						b2 |= bg2;
+						*(buf++) = b1;
+						*buf = b2;
+						buf += img_bytewidth;
+						*(buf++) = b1;
+						*buf = b2;
+						buf += img_bytewidth;
+					} else {
+						buf += (img_bytewidth+1)*2;
+					}
+					line >>= 1;
+				}
+				_buf++;
+				buf = _buf;
+			}
+			return;
+		}
+	}
+	
+	
+	Graphics::drawChar(x, y, c, size);
+}
+
 } // namespace Gamebuino_Meta

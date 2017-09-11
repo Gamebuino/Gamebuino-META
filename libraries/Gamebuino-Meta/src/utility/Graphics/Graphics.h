@@ -120,7 +120,7 @@ public:
 
 	void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap);
 	void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip);
-	void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size);
+	virtual void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size);
 	void setCursor(int16_t x, int16_t y);
 	void setColor(Color c);
 	void setColor(Color c, Color bg);

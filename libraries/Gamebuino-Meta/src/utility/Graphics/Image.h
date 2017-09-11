@@ -86,6 +86,8 @@ public:
 	bool save(char* filename);
 
 	uint16_t getBufferSize();
+	
+	void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size);
 
 	//`frame_looping` holds every how many frames it should get updated
 	//`frame_loopcounter` is the counter for that.
