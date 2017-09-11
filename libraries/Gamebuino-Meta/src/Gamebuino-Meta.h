@@ -125,7 +125,7 @@ public:
 	
 	uint8_t getCpuLoad();
 	uint16_t getFreeRam();
-	uint16_t frameDurationMicros;
+	uint32_t frameDurationMicros;
 	uint32_t frameStartMicros, frameEndMicros;
 	
 	int8_t menu(const char* const* items, uint8_t length);
