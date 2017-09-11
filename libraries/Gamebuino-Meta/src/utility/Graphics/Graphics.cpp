@@ -346,33 +346,33 @@ void Graphics::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 	}
 }
 
-void Graphics::_fillScreen() {
+void Graphics::_fill() {
 	fillRect(0, 0, _width, _height);
 }
 
-void Graphics::fillScreen() {
-	_fillScreen();
+void Graphics::fill() {
+	_fill();
 }
 
-void Graphics::fillScreen(Color c) {
+void Graphics::fill(Color c) {
 	Color tempColor = color;
 	if (colorMode == ColorMode::index) {
 		color = (Color)rgb565ToIndex(c);
 	} else {
 		color = c;
 	}
-	fillScreen();
+	fill();
 	color = tempColor;
 }
 
-void Graphics::fillScreen(ColorIndex c) {
+void Graphics::fill(ColorIndex c) {
 	Color tempColor = color;
 	if (colorMode == ColorMode::index) {
 		color = (Color)c;
 	} else {
 		color = (Color)colorIndex[(uint8_t)c];
 	}
-	fillScreen();
+	fill();
 	color = tempColor;
 }
 

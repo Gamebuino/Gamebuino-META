@@ -105,7 +105,7 @@ void Gamebuino::begin() {
 	
 	tft.initR(INITR_BLACKTAB);
 	tft.setRotation(3);
-	display.fillScreen(Color::black);
+	display.fill(Color::black);
 
 	updateDisplay();
 #if DISPLAY_MODE == DISPLAY_MODE_INDEX
@@ -128,7 +128,7 @@ void Gamebuino::begin() {
 	}
 
 	display.setColor(Color::white, Color::black);
-	display.fillScreen(Color::black);
+	display.fill(Color::black);
 	
 	// SD is initialized, let's switch to the folder!
 	if (!SD.exists(folder_name)) {
@@ -281,10 +281,10 @@ bool Gamebuino::update() {
 
 #ifdef GAMEBUINO_COMPAT_MODE
 			if (!display.persistence) {
-				display.fillScreen(DISPLAY_DEFAULT_BACKGROUND_COLOR);
+				display.fill(DISPLAY_DEFAULT_BACKGROUND_COLOR);
 			}
 #else
-			display.fillScreen(DISPLAY_DEFAULT_BACKGROUND_COLOR); //clear the buffer
+			display.fill(DISPLAY_DEFAULT_BACKGROUND_COLOR); //clear the buffer
 #endif
 			display.setColor(DISPLAY_DEFAULT_COLOR);
 			
@@ -308,7 +308,7 @@ bool Gamebuino::update() {
 					neoPixels.setPixelColor(px_map[y*px_width + x], c.r, c.g, c.b);
 				}
 			}
-			light.fillScreen(Color::black);
+			light.fill(Color::black);
 			neoPixels.show();
 			neoPixels.clear();
 
@@ -353,7 +353,7 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 	while (1) {
 		if (update()) {
 			display.setColor(WHITE);
-			display.fillScreen();
+			display.fill();
 			display.setColor(BLACK, WHITE);
 			if (buttons.pressed(Button::a) || buttons.pressed(Button::b) || buttons.pressed(Button::c)) {
 				exit = true; //time to exit menu !
@@ -941,7 +941,7 @@ void Gamebuino::updatePopup(){
 
 void Gamebuino::changeGame(){
 	//clear the screen
-	tft.fillScreen(BLACK);
+	tft.fill(BLACK);
 	//flash loader.bin
 	load_loader();
 }

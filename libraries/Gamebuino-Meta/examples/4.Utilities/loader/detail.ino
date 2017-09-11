@@ -46,7 +46,7 @@ void loadGame() {
 	if (titleScreenImageExists) {
 		gb.display.drawImage(0, 0, titleScreenImage);
 	} else {
-		gb.display.fillScreen(BLACK);
+		gb.display.fill(BLACK);
 		gb.display.setColor(WHITE, BLACK);
 		gb.display.setCursors(0, 24);
 		gb.display.println(gb.language.get(lang_loading));
@@ -66,7 +66,7 @@ void detailedView() {
 		if (titleScreenImageExists) {
 			gb.display.drawImage(0, 0, titleScreenImage);
 		} else {
-			gb.display.fillScreen(BLACK);
+			gb.display.fill(BLACK);
 		}
 		
 		if (displayName) {

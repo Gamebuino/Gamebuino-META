@@ -365,7 +365,7 @@ void Image::_drawPixel(int16_t x, int16_t y) {
 	}
 }
 
-void Image::_fillScreen() {
+void Image::_fill() {
 	if (_buffer) {
 		if (colorMode == ColorMode::rgb565) {
 			uint8_t hi = (uint16_t)color >> 8, lo = (uint16_t)color & 0xFF;

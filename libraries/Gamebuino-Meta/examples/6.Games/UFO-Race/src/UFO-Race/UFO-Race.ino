@@ -37,7 +37,7 @@ void play(){
       updateTime();
 
       gb.display.setColor(WHITE);
-      gb.display.fillScreen();
+      gb.display.fill();
       gb.display.setColor(BLACK, WHITE);
       drawWorld();
       drawMap();

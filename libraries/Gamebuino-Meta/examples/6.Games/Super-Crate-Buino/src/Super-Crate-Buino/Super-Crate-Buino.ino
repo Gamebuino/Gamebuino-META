@@ -358,7 +358,7 @@ class World {
       while (1) {
         if (gb.update()) {
           gb.display.setColor(WHITE);
-          gb.display.fillScreen();
+          gb.display.fill();
           gb.display.setColor(BLACK, WHITE);
 
           //assign the selected map
@@ -779,7 +779,7 @@ class Bullet :
           // rodot....sorry IDK what your logic is behind this so you gotta fix it, not looking into it too deeply atm
           // TODO: fix
           // here, have this substitute (lighting all pixels)
-          gb.light.fillScreen(gb.createColor(r, g, b));
+          gb.light.fill(gb.createColor(r, g, b));
           /*
           for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
             int16_t xScreen = toScreenX(x) + (getWidth() / 2 / SCALE);
@@ -1956,7 +1956,7 @@ void gamePaused() {
   while (1) {
     if (gb.update()) {
       gb.display.setColor(WHITE);
-      gb.display.fillScreen();
+      gb.display.fill();
       gb.display.setColor(BLUE, WHITE);
       drawAll();
       gb.display.setColor(WHITE, BLACK);
@@ -1989,7 +1989,7 @@ void initGame() {
 
 void drawAll() {
   gb.display.setColor(WHITE);
-  gb.display.fillScreen();
+  gb.display.fill();
   gb.display.setColor(BLACK, WHITE);
   world.draw();
   crate.draw();

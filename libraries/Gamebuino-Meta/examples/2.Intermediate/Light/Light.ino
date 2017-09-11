@@ -16,7 +16,7 @@ void loop() {
   if (gb.update()) {
     if (lightsOn) {
       // if we want the lights to be on, let's turn all lights white!
-      gb.light.fillScreen(WHITE);
+      gb.light.fill(WHITE);
     }
     
     if (redLight) {
