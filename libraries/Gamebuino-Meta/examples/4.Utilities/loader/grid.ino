@@ -151,10 +151,15 @@ void gridView() {
 				loadGridView();
 				x = (currentGame % PAGE_SIZE) % GRID_WIDTH;
 				y = (currentGame % PAGE_SIZE) / GRID_WIDTH;
+				continue; // else the next c-button-press will trigger
 			}
 			if ((gb.frameCount % 8) >= 4) {
 				gb.display.setColor(BROWN);
 				gb.display.drawRect(x*19 + 1, y*22 + 8, 20, 23);
+			}
+			if (gb.buttons.pressed(BUTTON_C)) {
+				gb.sound.playOK();
+				settingsView();
 			}
 		}
 	}

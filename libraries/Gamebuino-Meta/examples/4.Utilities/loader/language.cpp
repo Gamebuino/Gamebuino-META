@@ -27,3 +27,38 @@ const MultiLang lang_browse[] = {
 	{LANG_EN, "BROWSE"},
 	{LANG_DE, "WÄHLE"},
 };
+
+const MultiLang lang_settings[] = {
+	{LANG_EN, "Settings"},
+	{LANG_DE, "Einstellungen"},
+};
+
+const MultiLang lang_settings_default_name[] = {
+	{LANG_EN, "Default name"},
+	{LANG_DE, "Standardname"},
+};
+
+const MultiLang lang_settings_enter_bootloader[] = {
+	{LANG_EN, "Enter bootloader"},
+	{LANG_DE, "Öffne Bootloader"},
+};
+
+const MultiLang lang_settings_back[] = {
+	{LANG_EN, "Back"},
+	{LANG_DE, "Zurück"},
+};
+
+const MultiLang lang_versions[] = {
+	{LANG_EN, "Versions"},
+	{LANG_DE, "Versionen"},
+};
+
+const MultiLang lang_loader[] = {
+	{LANG_EN, "Loader"},
+	{LANG_DE, "Loader"},
+};
+
+const MultiLang lang_bootloader[] = {
+	{LANG_EN, "Bootloader"},
+	{LANG_DE, "Bootloader"},
+};
