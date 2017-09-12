@@ -1075,9 +1075,22 @@ uint8_t Gamebuino::getTimePerFrame() {
 	return timePerFrame;
 }
 
+int8_t tone_identifier = -1;
 
 } // namespace Gamebuino_Meta
 
 #ifndef GAMEBUINO_COMPAT_MODE
 Gamebuino gb;
 #endif
+
+void tone(uint32_t outputPin, uint32_t frequency, uint32_t duration) {
+	if (Gamebuino_Meta::tone_identifier != -1) {
+		gb.sound.stop(Gamebuino_Meta::tone_identifier);
+	}
+	Gamebuino_Meta::tone_identifier = gb.sound.tone(frequency, duration);
+}
+
+void noTone(uint32_t outputPin) {
+	gb.sound.stop(Gamebuino_Meta::tone_identifier);
+	Gamebuino_Meta::tone_identifier = -1;
+}

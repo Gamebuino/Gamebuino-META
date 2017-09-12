@@ -63,6 +63,7 @@ public:
 	int8_t play(const uint16_t** buf, bool loop = false);
 	int8_t play(uint16_t** buf, bool loop = false);
 	int8_t play(Sound_Handler* handler, bool loop = false);
+	int8_t tone(uint32_t frequency, int32_t duration = 0);
 	int8_t playOK();
 	int8_t playCancel();
 	int8_t playTick();
