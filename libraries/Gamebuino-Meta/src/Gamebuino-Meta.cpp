@@ -534,6 +534,11 @@ void Gamebuino::checkHomeMenu() {
 	}
 }
 
+void Hook_ExitHomeMenu() __attribute__((weak));
+void Hook_ExitHomeMenu() {
+	
+}
+
 void Gamebuino::homeMenu(){
 	//here we don't use gb.update and display.not to interfere with the game
 	//the only things we use are gb.tft and gb.buttons
@@ -614,6 +619,7 @@ void Gamebuino::homeMenu(){
 			
 			if(buttons.released(Button::d) || buttons.released(Button::b) || buttons.released(Button::c)){
 				sound.stopEfxOnly();
+				Hook_ExitHomeMenu();
 				return;
 			}
 			if(buttons.held(Button::d, 25)){
@@ -725,6 +731,7 @@ void Gamebuino::homeMenu(){
 							tft.print(language._get(lang_homeMenu_GO));
 							delay(250);
 							sound.stopEfxOnly();
+							Hook_ExitHomeMenu();
 							return;
 						} else {
 							tft.setColor(RED, BROWN);
@@ -853,6 +860,7 @@ void Gamebuino::homeMenu(){
 			changed = false;
 		}
 	}
+	Hook_ExitHomeMenu();
 }
 
 void Gamebuino::keyboard(char* text, uint8_t length) {
