@@ -26,7 +26,7 @@ namespace Gamebuino_Meta {
 
 enum class Sound_Channel_Type : uint8_t {
 	raw,
-	pattern,
+	square,
 };
 
 class Sound_Handler;

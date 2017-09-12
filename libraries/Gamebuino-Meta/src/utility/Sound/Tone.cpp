@@ -6,7 +6,7 @@ namespace Gamebuino_Meta {
 extern int8_t tone_identifier;
 
 Sound_Handler_Tone::Sound_Handler_Tone(Sound_Channel* chan, uint32_t frequency, int32_t duration, int8_t i) : Sound_Handler(chan) {
-	channel->type = Sound_Channel_Type::pattern;
+	channel->type = Sound_Channel_Type::square;
 	channel->amplitude = 0x30;
 	channel->total = 22050 / frequency;
 	channel->index = 0;

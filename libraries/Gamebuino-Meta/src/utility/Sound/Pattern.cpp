@@ -6,7 +6,7 @@ const uint8_t _halfPeriods[] = {95,89,84,80,75,71,67,63,60,56,53,50,47,45,42,40,
 
 Sound_Handler_Pattern::Sound_Handler_Pattern(Sound_Channel* chan, uint8_t* _buffer) : Sound_Handler(chan) {
 	channel->buffer = _buffer;
-	channel->type = Sound_Channel_Type::pattern;
+	channel->type = Sound_Channel_Type::square;
 	channel->amplitude = 0x30;
 	rewind();
 	channel->use = true;

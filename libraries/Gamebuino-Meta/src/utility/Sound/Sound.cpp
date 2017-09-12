@@ -227,7 +227,7 @@ void Sound::update() {
 #if SOUND_CHANNELS > 0
 	for (uint8_t i = 0; i < SOUND_CHANNELS; i++) {
 		if (channels[i].use) {
-			if (!efx_only || (!channels[i].loop && channels[i].type == Sound_Channel_Type::pattern)) {
+			if (!efx_only || (!channels[i].loop && channels[i].type == Sound_Channel_Type::square)) {
 				handlers[i]->update();
 			}
 		} else if (handlers[i]) {
@@ -305,7 +305,7 @@ void Audio_Handler (void) {
 					channels[i].use = false;
 				}
 				break;
-			case Sound_Channel_Type::pattern:
+			case Sound_Channel_Type::square:
 				if (efx_only && channels[i].loop) {
 					break;
 				}
