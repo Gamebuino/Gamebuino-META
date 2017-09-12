@@ -322,7 +322,7 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 
 bool recording_screen = false;
 
-bool Gamebuino::update() {
+bool Gamebuino::_update(bool inpersistence) {
 	if (((nextFrameMillis - millis()) > timePerFrame) && frameEndMicros) { //if time to render a new frame is reached and the frame end has ran once
 		nextFrameMillis = millis() + timePerFrame;
 		frameCount++;
@@ -334,66 +334,78 @@ bool Gamebuino::update() {
 
 		return true;
 
-	} else {
-		if (!frameEndMicros) { //runs once at the end of the frame
-		
-			//draw and update popups
-			updatePopup();
-			
-			//Home menu
-			checkHomeMenu();
-			
-			Graphics_SD::update(); // update screen recordings
-			
-			sound.update(); // update sound stuff once per frame
-			
-			//show a red contour when screen is recording
-			if (recording_screen) {
-				display.setColor(Color::red, Color::black);
-				display.drawRect(0, 0, display._width, display._height);
-			}
-
-			//send buffer to the screen
-			updateDisplay();
-
-#ifdef GAMEBUINO_COMPAT_MODE
-			if (!display.persistence) {
-				display.fill(DISPLAY_DEFAULT_BACKGROUND_COLOR);
-			}
-#else
-			display.fill(DISPLAY_DEFAULT_BACKGROUND_COLOR); //clear the buffer
-#endif
-			display.setColor(DISPLAY_DEFAULT_COLOR);
-			
-			display.setCursor(0, 0);
-			display.fontSize = 1;
-			display.textWrap = true;
-
-			//neoPixels update
-			uint8_t px_height = light.height();
-			uint8_t px_width = light.width();
-			const uint8_t px_map[] = {
-				7, 0,
-				6, 1,
-				5, 2,
-				4, 3,
-			};
-			for (uint8_t y = 0; y < px_height; y++) {
-				for (uint8_t x = 0; x < px_width; x++) {
-					RGB888 c = rgb565Torgb888(light.getPixel(x, y));
-					// intensity is scaled directly via neoPixels.setBrightness
-					neoPixels.setPixelColor(px_map[y*px_width + x], c.r, c.g, c.b);
-				}
-			}
-			light.fill(Color::black);
-			neoPixels.show();
-			neoPixels.clear();
-
-			frameEndMicros = micros(); //measure the frame's end time
-			frameDurationMicros = frameEndMicros - frameStartMicros;
-		}
+	}
+	if (frameEndMicros) {
 		return false;
 	}
+	// ok, here is the first time after a frame, so we'll better check stuff correctly
+	
+	//Home menu
+	checkHomeMenu();
+	
+	//draw and update popups
+	updatePopup();
+	
+	Graphics_SD::update(); // update screen recordings
+	
+	sound.update(); // update sound stuff once per frame
+	
+	//show a red contour when screen is recording
+	if (recording_screen) {
+		display.setColor(Color::red, Color::black);
+		display.drawRect(0, 0, display._width, display._height);
+	}
+	
+	//send buffer to the screen
+	updateDisplay();
+	
+	//neoPixels update
+	uint8_t px_height = light.height();
+	uint8_t px_width = light.width();
+	const uint8_t px_map[] = {
+		7, 0,
+		6, 1,
+		5, 2,
+		4, 3,
+	};
+	for (uint8_t y = 0; y < px_height; y++) {
+		for (uint8_t x = 0; x < px_width; x++) {
+			RGB888 c = rgb565Torgb888(light.getPixel(x, y));
+			// intensity is scaled directly via neoPixels.setBrightness
+			neoPixels.setPixelColor(px_map[y*px_width + x], c.r, c.g, c.b);
+		}
+	}
+	neoPixels.show();
+	neoPixels.clear();
+	
+	if (inpersistence) {
+#ifdef GAMEBUINO_COMPAT_MODE
+		if (!display.persistence) {
+			display.fill(DISPLAY_DEFAULT_BACKGROUND_COLOR);
+		}
+#else
+		display.fill(DISPLAY_DEFAULT_BACKGROUND_COLOR); //clear the buffer
+#endif
+		light.fill(Color::black);
+	}
+	
+	display.setColor(DISPLAY_DEFAULT_COLOR);
+	
+	display.setCursor(0, 0);
+	display.fontSize = 1;
+	display.textWrap = true;
+
+	frameEndMicros = micros(); //measure the frame's end time
+	frameDurationMicros = frameEndMicros - frameStartMicros;
+	return false;
+}
+
+bool Gamebuino::update() {
+	return _update(true);
+}
+
+bool Gamebuino::updatePersistent() {
+	return _update(false);
 }
 
 void Gamebuino::updateDisplay() {
@@ -1093,4 +1105,10 @@ void tone(uint32_t outputPin, uint32_t frequency, uint32_t duration) {
 void noTone(uint32_t outputPin) {
 	gb.sound.stop(Gamebuino_Meta::tone_identifier);
 	Gamebuino_Meta::tone_identifier = -1;
+}
+
+void yield() {
+	if (gb.getTimePerFrame()) {
+		gb.updatePersistent();
+	}
 }

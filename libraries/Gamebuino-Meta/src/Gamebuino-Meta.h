@@ -117,6 +117,7 @@ public:
 	void titleScreen(const uint8_t* logo);
 	void titleScreen();
 	bool update();
+	bool updatePersistent();
 	void updateDisplay();
 	uint8_t startMenuTimer;
 	uint32_t frameCount;
@@ -147,6 +148,7 @@ public:
 	uint8_t getTimePerFrame();
 
 private:
+	bool _update(bool inpersistence);
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 	uint8_t timePerFrame;
 	uint32_t nextFrameMillis;
