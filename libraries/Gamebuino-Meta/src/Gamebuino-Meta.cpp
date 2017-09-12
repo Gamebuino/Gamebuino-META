@@ -1108,7 +1108,7 @@ void noTone(uint32_t outputPin) {
 }
 
 void yield() {
-	if (gb.getTimePerFrame()) {
+	if (gb.frameEndMicros || gb.frameStartMicros) {
 		gb.updatePersistent();
 	}
 }
