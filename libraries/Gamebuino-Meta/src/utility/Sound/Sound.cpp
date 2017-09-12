@@ -19,6 +19,7 @@
 
 #include "Sound.h"
 #include "Pattern.h"
+#include "Tone.h"
 #include "../Sound-SD.h"
 #include "../../config/config.h"
 
@@ -115,6 +116,10 @@ Sound_Handler::~Sound_Handler() {
 	
 }
 
+void Sound_Handler::setChannel(Sound_Channel* _channel) {
+	channel = _channel;
+}
+
 void Sound::begin() {
 #if SOUND_CHANNELS > 0
 	dacConfigure();
@@ -164,6 +169,35 @@ int8_t Sound::play(uint16_t* buffer, bool loop) {
 	return play((const uint16_t*)buffer, loop);
 }
 
+int8_t Sound::play(Sound_Handler* handler, bool loop) {
+#if SOUND_CHANNELS > 0
+	int8_t i = findEmptyChannel();
+	if (i < 0 || i >= SOUND_CHANNELS) {
+		return -1; // no free channels atm
+	}
+	channels[i].loop = loop;
+	handlers[i] = handler;
+	handlers[i]->setChannel(&(channels[i]));
+	return i;
+#else // SOUND_CHANNELS
+	return -1;
+#endif // SOUND_CHANNELS
+}
+
+int8_t Sound::tone(uint32_t frequency, int32_t duration) {
+#if SOUND_CHANNELS > 0
+	int8_t i = findEmptyChannel();
+	if (i < 0 || i >= SOUND_CHANNELS) {
+		return -1; // no free channels atm
+	}
+	channels[i].loop = duration == 0;
+	handlers[i] = new Sound_Handler_Tone(&(channels[i]), frequency, duration, i);
+	return i;
+#else // SOUND_CHANNELS
+	return -1;
+#endif // SOUND_CHANNELS
+}
+
 void Sound::stop(int8_t i) {
 	if (i >= SOUND_CHANNELS || i < 0) {
 		return;
@@ -193,7 +227,7 @@ void Sound::update() {
 #if SOUND_CHANNELS > 0
 	for (uint8_t i = 0; i < SOUND_CHANNELS; i++) {
 		if (channels[i].use) {
-			if (!efx_only || (!channels[i].loop && channels[i].type == Sound_Channel_Type::pattern)) {
+			if (!efx_only || (!channels[i].loop && channels[i].type == Sound_Channel_Type::square)) {
 				handlers[i]->update();
 			}
 		} else if (handlers[i]) {
@@ -271,18 +305,18 @@ void Audio_Handler (void) {
 					channels[i].use = false;
 				}
 				break;
-			case Sound_Channel_Type::pattern:
+			case Sound_Channel_Type::square:
 				if (efx_only && channels[i].loop) {
 					break;
-				} 
+				}
 				if (channels[i].index++ >= channels[i].total) {
 					channels[i].last = !channels[i].last;
 					channels[i].index = 0;
 				}
 				if (channels[i].last) {
-					output -= 0x30;
+					output -= channels[i].amplitude;
 				} else {
-					output += 0x30;
+					output += channels[i].amplitude;
 				}
 				break;
 			}
@@ -324,7 +358,7 @@ void Audio_Handler (void) {
 	TC5->COUNT16.INTFLAG.bit.MC0 = 1;
 }
 
-void TC5_Handler (void) __attribute__ ((weak, alias("Audio_Handler")));
+void TC5_Handler (void) __attribute__ ((alias("Audio_Handler")));
 
 #ifdef __cplusplus
 }

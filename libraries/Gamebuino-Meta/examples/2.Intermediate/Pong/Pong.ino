@@ -7,21 +7,21 @@ int player_score = 0;
 int player_h = 16;
 int player_w = 3;
 int player_x = 0;
-int player_y = (LCDHEIGHT-player_h)/2;
+int player_y = (gb.display.height()-player_h)/2;
 int player_vy = 2;
 
 //oponent variables
 int oponent_score = 0;
 int oponent_h = 16;
 int oponent_w = 3;
-int oponent_x = LCDWIDTH-oponent_w;
-int oponent_y = (LCDHEIGHT-oponent_h)/2;
+int oponent_x = gb.display.width()-oponent_w;
+int oponent_y = (gb.display.height()-oponent_h)/2;
 int oponent_vy = 2;
 
 //ball variables
 int ball_size = 6;
-int ball_x = LCDWIDTH - ball_size - oponent_w - 1;
-int ball_y = (LCDHEIGHT-ball_size)/2;
+int ball_x = gb.display.width() - ball_size - oponent_w - 1;
+int ball_y = (gb.display.height()-ball_size)/2;
 int ball_vx = 3;
 int ball_vy = 3;
 
@@ -51,7 +51,7 @@ void loop() {
       player_y = max(0, player_y - player_vy);
     }
     if(gb.buttons.repeat(BUTTON_DOWN, 1)){
-      player_y = min(LCDHEIGHT - player_h, player_y + player_vy);
+      player_y = min(gb.display.height() - player_h, player_y + player_vy);
     }
 
     //move the ball
@@ -66,8 +66,8 @@ void loop() {
       //gb.sound.playTick();
     }
     //collision with the bottom border
-    if((ball_y + ball_size) > LCDHEIGHT){
-      ball_y = LCDHEIGHT - ball_size;
+    if((ball_y + ball_size) > gb.display.height()){
+      ball_y = gb.display.height() - ball_size;
       ball_vy = -ball_vy;
       //gb.sound.playTick();
     }
@@ -87,17 +87,17 @@ void loop() {
     if(ball_x < 0){
       oponent_score = oponent_score + 1;
       //gb.sound.playCancel();
-      ball_x = LCDWIDTH - ball_size - oponent_w -1;
+      ball_x = gb.display.width() - ball_size - oponent_w -1;
       ball_vx = -abs(ball_vx);
-      ball_y = random(0,LCDHEIGHT-ball_size);
+      ball_y = random(0,gb.display.height()-ball_size);
     }
     //collision with the right side
-    if((ball_x + ball_size) > LCDWIDTH){
+    if((ball_x + ball_size) > gb.display.width()){
       player_score = player_score + 1;
       //gb.sound.playOK();
-      ball_x = LCDWIDTH - ball_size - oponent_w - 16; //place the ball on the oponent side
+      ball_x = gb.display.width() - ball_size - oponent_w - 16; //place the ball on the oponent side
       ball_vx = -abs(ball_vx);
-      ball_y = random(0,LCDHEIGHT-ball_size);
+      ball_y = random(0,gb.display.height()-ball_size);
 
     }
     //reset score when 10 is reached
@@ -109,7 +109,7 @@ void loop() {
     //move the oponent
     if((oponent_y+(oponent_h/2)) < (ball_y+(ball_size/2))){ //if the ball is below the oponent
       oponent_y = oponent_y + oponent_vy; //move down
-      oponent_y = min(LCDHEIGHT-oponent_h, oponent_y); //don't go out of the screen
+      oponent_y = min(gb.display.height()-oponent_h, oponent_y); //don't go out of the screen
     }
     else {
       oponent_y = oponent_y - oponent_vy; //move up
@@ -117,19 +117,19 @@ void loop() {
     }
 
     
-  //draw the score
-  //gb.display.fontSize = 2;
-  gb.display.setCursor(15, 16);
-  gb.display.print(player_score);
+    //draw the score
+    //gb.display.fontSize = 2;
+    gb.display.setCursor(15, 16);
+    gb.display.print(player_score);
 
-  gb.display.setCursor(57, 16);
-  gb.display.print(oponent_score);
-  
-  //draw the ball
-  gb.display.fillRect(ball_x, ball_y, ball_size, ball_size);
-  //draw the player
-  gb.display.fillRect(player_x, player_y, player_w, player_h);
-  //draw the oponent
-  gb.display.fillRect(oponent_x,oponent_y, oponent_w, oponent_h);
+    gb.display.setCursor(57, 16);
+    gb.display.print(oponent_score);
+    
+    //draw the ball
+    gb.display.fillRect(ball_x, ball_y, ball_size, ball_size);
+    //draw the player
+    gb.display.fillRect(player_x, player_y, player_w, player_h);
+    //draw the oponent
+    gb.display.fillRect(oponent_x, oponent_y, oponent_w, oponent_h);
   }
 }

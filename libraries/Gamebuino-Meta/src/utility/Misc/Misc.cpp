@@ -29,6 +29,24 @@ bool sd_path_no_duplicate(char* name, uint8_t offset, uint8_t digits) {
 	}
 }
 
+uint16_t rgb888Torgb565(RGB888 c) {
+	return ((c.r & 0xF8) << 8) | ((c.g & 0xFC) << 3) | (c.b >> 3);
+}
+
+RGB888 rgb565Torgb888(uint16_t c) {
+	RGB888 out;
+	
+	out.r = (uint8_t)((c >> 8) & 0xF8);
+	out.r |= out.b >> 5;
+	
+	out.g = (uint8_t)((c >> 3) & 0xFC);
+	out.g |= out.g >> 6;
+	
+	out.b = (uint8_t)(c << 3);
+	out.b |= out.r >> 5;
+	return out;
+}
+
 uint16_t f_read16(File* f) {
 	uint16_t result;
 	f->read(&result, 2);

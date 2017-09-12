@@ -40,6 +40,7 @@ extern SdFat SD;
 #include "utility/Display-ST7735.h"
 #include "utility/Graphics.h"
 #include "utility/Image.h"
+#include "utility/Language.h"
 
 // make sure that sketches don't screw things up, the SAMD architecture has only one addressable space, thus making the PROGMEM concept unneded
 #define F(x) x
@@ -63,6 +64,10 @@ namespace Gamebuino_Meta {
 
 
 // implement the bootloader functions as inlines
+inline uint32_t bootloader_version(void) {
+	return *(uint32_t*)0x3FFC;
+}
+
 inline void load_game(const char* filename) {
 	noInterrupts(); // fix for bootloader 1.0.0
 	((void(*)(const char*))(*((uint32_t*)0x3FF8)))(filename);
@@ -80,6 +85,14 @@ inline void enter_bootloader(void) {
 	((void(*)(void))(*((uint32_t*)0x3FEC)))();
 }
 
+inline void trigger_error(uint16_t e) {
+	if (Gamebuino_Meta::bootloader_version() <= 0x10001) {
+		Gamebuino_Meta::load_loader();
+	} else {
+		((void(*)(uint16_t))(*((uint32_t*)0x3FE8)))(e);
+	}
+}
+
 #define wrap(i, imax) ((imax+i)%(imax))
 
 class Gamebuino {
@@ -93,9 +106,10 @@ public:
 	Sound sound;
 #endif
 	Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
-	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
+	Image light = Image(2, 4, ColorMode::rgb565);
 	Save save;
 	Save settings;
+	Language language;
 
 	void begin();
 	void titleScreen(const char* name, const uint8_t *logo);
@@ -103,6 +117,7 @@ public:
 	void titleScreen(const uint8_t* logo);
 	void titleScreen();
 	bool update();
+	bool updatePersistent();
 	void updateDisplay();
 	uint8_t startMenuTimer;
 	uint32_t frameCount;
@@ -111,12 +126,11 @@ public:
 	
 	uint8_t getCpuLoad();
 	uint16_t getFreeRam();
-	uint16_t frameDurationMicros;
+	uint32_t frameDurationMicros;
 	uint32_t frameStartMicros, frameEndMicros;
 	
-	int16_t neoPixelsIntensity;
-	
 	int8_t menu(const char* const* items, uint8_t length);
+	void checkHomeMenu();
 	void homeMenu();
 	void keyboard(char* text, uint8_t length);
 	void popup(const char* text, uint8_t duration);
@@ -129,8 +143,13 @@ public:
 	bool collidePointRect(int16_t x1, int16_t y1 ,int16_t x2 ,int16_t y2, int16_t w, int16_t h);
 	bool collideRectRect(int16_t x1, int16_t y1, int16_t w1, int16_t h1 ,int16_t x2 ,int16_t y2, int16_t w2, int16_t h2);
 	bool collideBitmapBitmap(int16_t x1, int16_t y1, const uint8_t* b1, int16_t x2, int16_t y2, const uint8_t* b2);
+	
+	Color createColor(uint8_t r, uint8_t g, uint8_t b);
+	uint8_t getTimePerFrame();
 
 private:
+	bool _update(bool inpersistence);
+	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 	uint8_t timePerFrame;
 	uint32_t nextFrameMillis;
 	void updatePopup();

@@ -26,7 +26,7 @@ namespace Gamebuino_Meta {
 
 enum class Sound_Channel_Type : uint8_t {
 	raw,
-	pattern,
+	square,
 };
 
 class Sound_Handler;
@@ -34,6 +34,7 @@ struct Sound_Channel {
 	uint16_t index;
 	uint16_t total;
 	uint8_t* buffer;
+	uint8_t amplitude;
 	bool loop;
 	bool last;
 	bool use = false;
@@ -47,6 +48,7 @@ public:
 	virtual ~Sound_Handler();
 	virtual void update() = 0;
 	virtual void rewind() = 0;
+	void setChannel(Sound_Channel* chan);
 protected:
 	Sound_Channel* channel;
 };
@@ -60,6 +62,8 @@ public:
 	int8_t play(uint16_t* buf, bool loop = false);
 	int8_t play(const uint16_t** buf, bool loop = false);
 	int8_t play(uint16_t** buf, bool loop = false);
+	int8_t play(Sound_Handler* handler, bool loop = false);
+	int8_t tone(uint32_t frequency, int32_t duration = 0);
 	int8_t playOK();
 	int8_t playCancel();
 	int8_t playTick();

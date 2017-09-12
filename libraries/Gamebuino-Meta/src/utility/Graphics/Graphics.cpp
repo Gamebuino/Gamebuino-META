@@ -38,6 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 #include "Graphics.h"
 #include "Image.h"
+#include "../../config/config.h"
 
 // default 3x5 font table
 extern const uint8_t font3x5[];
@@ -345,30 +346,33 @@ void Graphics::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 	}
 }
 
-void Graphics::fillScreen() {
+void Graphics::_fill() {
 	fillRect(0, 0, _width, _height);
 }
 
-//legacy fillScreen
-void Graphics::fillScreen(Color c) {
+void Graphics::fill() {
+	_fill();
+}
+
+void Graphics::fill(Color c) {
 	Color tempColor = color;
 	if (colorMode == ColorMode::index) {
 		color = (Color)rgb565ToIndex(c);
 	} else {
 		color = c;
 	}
-	fillScreen();
+	fill();
 	color = tempColor;
 }
 
-void Graphics::fillScreen(ColorIndex c) {
+void Graphics::fill(ColorIndex c) {
 	Color tempColor = color;
 	if (colorMode == ColorMode::index) {
 		color = (Color)c;
 	} else {
 		color = (Color)colorIndex[(uint8_t)c];
 	}
-	fillScreen();
+	fill();
 	color = tempColor;
 }
 
@@ -923,6 +927,10 @@ void Graphics::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 
 		if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
 
+		if (c >= 0x80) {
+			c -= 0x20;
+		}
+
 		for (int8_t i = 0; i < fontWidth; i++) {
 			uint8_t line;
 			if (i == (fontWidth - 1))
@@ -1035,6 +1043,32 @@ uint8_t Graphics::getFontHeight(void) const {
 
 void Graphics::setFontSize(uint8_t s) {
 	fontSize = (s > 0) ? s : 1;
+}
+
+void Graphics::drawPixel(int16_t x, int16_t y) {
+	_drawPixel(x, y);
+}
+
+void Graphics::drawPixel(int16_t x, int16_t y, Color c) {
+	Color tempColor = color;
+	if (colorMode == ColorMode::index) {
+		color = (Color)rgb565ToIndex(c);
+	} else {
+		color = c;
+	}
+	drawPixel(x, y);
+	color = tempColor;
+}
+
+void Graphics::drawPixel(int16_t x, int16_t y, ColorIndex c) {
+	Color tempColor = color;
+	if (colorMode == ColorMode::index) {
+		color = (Color)c;
+	} else {
+		color = (Color)colorIndex[(uint8_t)c];
+	}
+	drawPixel(x, y);
+	color = tempColor;
 }
 
 void Graphics::setColor(Color c) {
@@ -1177,6 +1211,7 @@ void Graphics::setFont(const uint8_t *f) {
 	fontWidth = pgm_read_byte(font) + 1;
 	fontHeight = pgm_read_byte(font + 1) + 1;
 	font += 2; //offset the pointer to start after the width and height bytes
+	_cp437 = true; // disable the old compatibility mode
 }
 
 // Pass string and a cursor position, returns UL corner and W,H.
@@ -1361,11 +1396,29 @@ void Graphics::getTextBounds(const __FlashStringHelper *str,
 
 // Return the size of the display (per current rotation)
 int16_t Graphics::width(void) const {
-	return _width;
+	if (_width) {
+		// we are inited
+		return _width;
+	}
+	// we aren't inited, so let's try our best guess
+#if DISPLAY_MODE == DISPLAY_MODE_INDEX
+	return 160;
+#else
+	return 80;
+#endif
 }
 
 int16_t Graphics::height(void) const {
-	return _height;
+	if (_height) {
+		// we are inited
+		return _height;
+	}
+	// we aren't inited, so let's try our best guess
+#if DISPLAY_MODE == DISPLAY_MODE_INDEX
+	return 128;
+#else
+	return 64;
+#endif
 }
 
 void Graphics::invertDisplay(boolean i) {

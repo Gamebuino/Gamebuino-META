@@ -4,24 +4,11 @@
 
 namespace Gamebuino_Meta {
 
-uint16_t convertTo565(uint8_t r, uint8_t g, uint8_t b) {
-	return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
-}
-
 void writeAsRGB(uint16_t b, File* f) {
-	uint8_t c = (uint8_t)(b << 3);
-	c |= c >> 5;
-	f->write(c);
-	
-	// green
-	c = (uint8_t)((b >> 3) & 0xFC);
-	c |= c >> 6;
-	f->write(c);
-	
-	// blue
-	c = (uint8_t)((b >> 8) & 0xF8);
-	c |= c >> 5;
-	f->write(c);
+	RGB888 c = rgb565Torgb888(b);
+	f->write(c.b);
+	f->write(c.g);
+	f->write(c.r);
 }
 
 BMP::BMP() {
@@ -53,7 +40,7 @@ BMP::BMP(File* file, Image* img) {
 	image_offset = f_read32(file);
 	uint32_t header_size = f_read32(file);
 	width = f_read32(file);
-#ifdef STRICT_IMAGES
+#if STRICT_IMAGES
 	if (img->_width && width > img->_width) {
 		// BMP too large
 		return;
@@ -100,7 +87,7 @@ BMP::BMP(File* file, Image* img) {
 			uint8_t g = file->read();
 			uint8_t r = file->read();
 			file->read(); // trash transparency
-			indexMap[i] = (uint8_t)Graphics::rgb565ToIndex((Color)convertTo565(r, g, b));
+			indexMap[i] = (uint8_t)Graphics::rgb565ToIndex((Color)rgb888Torgb565({r, g, b}));
 		}
 		
 		
@@ -252,7 +239,7 @@ uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentCol
 				}
 				
 				if (c[3] > 0x80) {
-					uint16_t col = convertTo565(c[0], c[1], c[2]);
+					uint16_t col = rgb888Torgb565({c[0], c[1], c[2]});
 					if (transparentColor && col == transparentColor) {
 						return transparentColor + 1;
 					}

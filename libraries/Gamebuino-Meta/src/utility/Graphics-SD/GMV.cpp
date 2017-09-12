@@ -77,8 +77,12 @@ GMV::GMV(Image* _img, char* filename) {
 	}
 	file.seekSet(header_size);
 	
-	if (!img->_buffer) {
-		img->allocateBuffer();
+	img->allocateBuffer();
+	
+	if (!img->_buffer || !img->_width || !img->_height) {
+		// sorry, nope
+		img->frames = 1;
+		return;
 	}
 	
 	valid = true;

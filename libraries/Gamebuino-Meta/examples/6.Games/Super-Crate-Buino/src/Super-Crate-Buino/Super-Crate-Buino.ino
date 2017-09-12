@@ -316,9 +316,9 @@ class World {
 
     void draw() {
       int xMin = cameraX / SPRITE_SIZE;
-      int xMax = (LCDWIDTH / SPRITE_SIZE) + (cameraX / SPRITE_SIZE) + 2;
+      int xMax = (gb.display.width() / SPRITE_SIZE) + (cameraX / SPRITE_SIZE) + 2;
       int yMin = cameraY / SPRITE_SIZE;
-      int yMax = (LCDHEIGHT / SPRITE_SIZE) + (cameraY / SPRITE_SIZE) + 2;
+      int yMax = (gb.display.height() / SPRITE_SIZE) + (cameraY / SPRITE_SIZE) + 2;
 
       int w = pgm_read_byte(tiles);
       int h = pgm_read_byte(tiles + 1);
@@ -358,7 +358,7 @@ class World {
       while (1) {
         if (gb.update()) {
           gb.display.setColor(WHITE);
-          gb.display.fillScreen();
+          gb.display.fill();
           gb.display.setColor(BLACK, WHITE);
 
           //assign the selected map
@@ -386,34 +386,34 @@ class World {
 
           }
 
-          gb.display.cursorY = LCDHEIGHT - 17;
+          gb.display.cursorY = gb.display.height() - 17;
           printCentered("\21 Select map \20");
           gb.display.cursorX = 24;
-          gb.display.cursorY = LCDHEIGHT - 11;
+          gb.display.cursorY = gb.display.height() - 11;
           gb.display.print("Score: ");
           gb.display.print(score[thisMap]);
           //draw the map centered on the screen
-          gb.display.drawBitmap(LCDWIDTH / 2 - getWidth() / 2 / SCALE / SPRITE_SIZE, LCDHEIGHT / 2 - getHeight() / 2 / SCALE / SPRITE_SIZE - 5, maps[thisMap]);
+          gb.display.drawBitmap(gb.display.width() / 2 - getWidth() / 2 / SCALE / SPRITE_SIZE, gb.display.height() / 2 - getHeight() / 2 / SCALE / SPRITE_SIZE - 5, maps[thisMap]);
 
-          for (byte x = SPRITE_SIZE; x < LCDWIDTH - SPRITE_SIZE; x += SPRITE_SIZE) {
+          for (byte x = SPRITE_SIZE; x < gb.display.width() - SPRITE_SIZE; x += SPRITE_SIZE) {
             gb.display.drawBitmap(x, 0, platform);
           }
-          for (byte y = SPRITE_SIZE; y < LCDHEIGHT; y += SPRITE_SIZE) {
+          for (byte y = SPRITE_SIZE; y < gb.display.height(); y += SPRITE_SIZE) {
             gb.display.drawBitmap(0, y, wall);
-            gb.display.drawBitmap(LCDWIDTH - SPRITE_SIZE, y, wall);
+            gb.display.drawBitmap(gb.display.width() - SPRITE_SIZE, y, wall);
           }
           if (edge) { //draw the ends with the according bitmap
             gb.display.drawBitmap(0, 0, edge);
-            gb.display.drawBitmap(LCDWIDTH - SPRITE_SIZE - 2, 0, edge, NOROT, FLIPH);
+            gb.display.drawBitmap(gb.display.width() - SPRITE_SIZE - 2, 0, edge, NOROT, FLIPH);
           }
           else { //draw with end with a regular platform if there is no edge bitmap
             gb.display.drawBitmap(0, 0, platform);
-            gb.display.drawBitmap(LCDWIDTH - SPRITE_SIZE, 0, platform);
+            gb.display.drawBitmap(gb.display.width() - SPRITE_SIZE, 0, platform);
           }
           if (thisMap == unlockedMaps) {
             for (byte i = 0; i < sizeof(scoreThresholds); i++) {
               if (score[thisMap] < scoreThresholds[i]) {
-                gb.display.cursorY = LCDHEIGHT - 5;
+                gb.display.cursorY = gb.display.height() - 5;
                 gb.display.cursorX = 12;
                 if ((gb.frameCount % 10) > 3) { //make it blink !
                   gb.display.print("Next unlock: ");
@@ -541,7 +541,7 @@ class Box {
     }
 
     boolean isOffScreen() {
-      return (toScreenX(x) + toScreenX(x + getWidth()) < 0) || (toScreenX(x) > LCDWIDTH) || (toScreenY(y) + toScreenY(y + getHeight()) < 0) || (toScreenY(y) > LCDHEIGHT);
+      return (toScreenX(x) + toScreenX(x + getWidth()) < 0) || (toScreenX(x) > gb.display.width()) || (toScreenY(y) + toScreenY(y + getHeight()) < 0) || (toScreenY(y) > gb.display.height());
     }
 
     void draw() {
@@ -775,12 +775,19 @@ class Bullet :
           uint8_t r,g,b;
           g = r = random (128,255);
           b = r / 2;
+          
+          // rodot....sorry IDK what your logic is behind this so you gotta fix it, not looking into it too deeply atm
+          // TODO: fix
+          // here, have this substitute (lighting all pixels)
+          gb.light.fill(gb.createColor(r, g, b));
+          /*
           for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
             int16_t xScreen = toScreenX(x) + (getWidth() / 2 / SCALE);
             if((xScreen < 0) && (i < 4)) continue;
             if((xScreen > gb.display.width()) && (i > 3)) continue;
             gb.neoPixels.setPixelColor(i, r, g, b);
           }
+          */
         }
         Box::draw();
       }
@@ -1031,20 +1038,20 @@ class Weapon {
         r = g = b = 0;
         break;
       }
-      for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
-        switch(subtype){
+      gb.light.setColor(gb.createColor(r, g, b));
+      switch (subtype) {
         //light only in the shooting direction for these weapons
         case W_PISTOL :
         case W_RIFLE :
         case W_LASER :
-          if((shooter->dir < 0) && (i < 4)) continue;
-          if((shooter->dir > 0) && (i > 3)) continue;
-        default:
+          if (shooter->dir < 0) {
+            gb.light.fillRect(0, 0, 1, 4);
+          } else {
+            gb.light.fillRect(1, 0, 1, 4);
+          }
           break;
-        }
-        gb.neoPixels.setPixelColor(i, r, g, b);
       }
-
+      
       switch (subtype) {
         case W_ROCKET :
           //gb.sound.playPattern(rocket_sound, 0);
@@ -1864,23 +1871,23 @@ void loop() {
     saveEEPROM(); //it checks if the values have changed before writting so it won't wear out the EEPROM
 
     //camera smoothing
-    //int x = (player.x + player.getWidth()/2)/SCALE - LCDWIDTH/2;
-    //int y = (player.y + player.getHeight()/2)/SCALE - LCDHEIGHT/2;
+    //int x = (player.x + player.getWidth()/2)/SCALE - gb.display.width()/2;
+    //int y = (player.y + player.getHeight()/2)/SCALE - gb.display.height()/2;
     //cameraX = (3*cameraX + x)/4;
     //cameraY = (3*cameraY + y)/4;
 
     //update camera
-    if ((world.getWidth()/SCALE) <= LCDWIDTH) {
+    if ((world.getWidth()/SCALE) <= gb.display.width()) {
       cameraX = 0;
     } else {
-      cameraX = (player.x + player.getWidth() / 2) / SCALE - LCDWIDTH / 2;
-      cameraX = constrain(cameraX, 0, world.getWidth() / SCALE - LCDWIDTH);
+      cameraX = (player.x + player.getWidth() / 2) / SCALE - gb.display.width() / 2;
+      cameraX = constrain(cameraX, 0, world.getWidth() / SCALE - gb.display.width());
     }
-    if ((world.getHeight()/SCALE) <= LCDHEIGHT) {
+    if ((world.getHeight()/SCALE) <= gb.display.height()) {
       cameraY = 0;
     } else {
-      cameraY = (player.y + player.getHeight() / 2) / SCALE - LCDHEIGHT / 2;
-      cameraY = constrain(cameraY, 0, (world.getHeight() / SCALE) - LCDHEIGHT);
+      cameraY = (player.y + player.getHeight() / 2) / SCALE - gb.display.height() / 2;
+      cameraY = constrain(cameraY, 0, (world.getHeight() / SCALE) - gb.display.height());
     }
 
     if (shakeTimeLeft > 0) {
@@ -1949,7 +1956,7 @@ void gamePaused() {
   while (1) {
     if (gb.update()) {
       gb.display.setColor(WHITE);
-      gb.display.fillScreen();
+      gb.display.fill();
       gb.display.setColor(BLUE, WHITE);
       drawAll();
       gb.display.setColor(WHITE, BLACK);
@@ -1982,7 +1989,7 @@ void initGame() {
 
 void drawAll() {
   gb.display.setColor(WHITE);
-  gb.display.fillScreen();
+  gb.display.fill();
   gb.display.setColor(BLACK, WHITE);
   world.draw();
   crate.draw();
@@ -2059,13 +2066,13 @@ void cleanEEPROM() {
 
 
 void printCentered(const char* text) {
-  gb.display.cursorX = (LCDWIDTH / 2) - (strlen(text) * gb.display.fontSize * gb.display.fontWidth / 2);
+  gb.display.cursorX = (gb.display.width() / 2) - (strlen(text) * gb.display.fontSize * gb.display.fontWidth / 2);
   //gb.display.cursorX = 5;
   gb.display.print(text);
 }
 
 void printCentered(char* text) {
-  gb.display.cursorX = (LCDWIDTH / 2) - (strlen(text) * gb.display.fontSize * gb.display.fontWidth / 2);
+  gb.display.cursorX = (gb.display.width() / 2) - (strlen(text) * gb.display.fontSize * gb.display.fontWidth / 2);
   //gb.display.cursorX = 5;
   gb.display.print(text);
 }
@@ -2089,9 +2096,9 @@ void updatePopup() {
     //byte width = 70;
     gb.display.fontSize = 1;
     gb.display.setColor(WHITE);
-    gb.display.drawRect(LCDWIDTH / 2 - width / 2 - 2, yOffset - 1, width + 2, gb.display.fontHeight + 2);
+    gb.display.drawRect(gb.display.width() / 2 - width / 2 - 2, yOffset - 1, width + 2, gb.display.fontHeight + 2);
     gb.display.setColor(BLACK);
-    gb.display.fillRect(LCDWIDTH / 2 - width / 2 - 1, yOffset - 1, width + 1, gb.display.fontHeight + 1);
+    gb.display.fillRect(gb.display.width() / 2 - width / 2 - 1, yOffset - 1, width + 1, gb.display.fontHeight + 1);
     gb.display.setColor(WHITE);
     gb.display.cursorY = yOffset;
     printCentered(popupText);
@@ -2148,7 +2155,7 @@ void drawCompass() {
       gb.display.print(F("\37"));
       gb.display.print(contrast);
       gb.display.println(F("\36"));
-      gb.display.cursorY = LCDHEIGHT - 5;
+      gb.display.cursorY = gb.display.height() - 5;
       gb.display.print(F("  A:OK B:Default"));
     }
   }

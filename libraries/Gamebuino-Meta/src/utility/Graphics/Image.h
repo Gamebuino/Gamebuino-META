@@ -45,22 +45,22 @@ public:
 	Image(const Image&);
 
 	// ram constructors
-	Image(uint16_t w, uint16_t h, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
-	void init(uint16_t w, uint16_t h, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
-	Image(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = DEFAULT_FRAME_LOOP);
-	void init(uint16_t w, uint16_t h, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = DEFAULT_FRAME_LOOP);
+	Image(uint16_t w, uint16_t h, uint16_t frames, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(uint16_t w, uint16_t h, uint16_t frames, uint8_t fl = DEFAULT_FRAME_LOOP);
+	Image(uint16_t w, uint16_t h, ColorMode col = ColorMode::rgb565, uint16_t frames = 1, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(uint16_t w, uint16_t h, ColorMode col = ColorMode::rgb565, uint16_t frames = 1, uint8_t fl = DEFAULT_FRAME_LOOP);
 
 	// flash constructors
-	Image(const uint16_t* buffer, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
-	void init(const uint16_t* buffer, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
-	Image(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = DEFAULT_FRAME_LOOP);
-	void init(const uint16_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::rgb565, uint8_t fl = DEFAULT_FRAME_LOOP);
+	Image(const uint16_t* buffer, uint16_t frames, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(const uint16_t* buffer, uint16_t frames, uint8_t fl = DEFAULT_FRAME_LOOP);
+	Image(const uint16_t* buffer, ColorMode col = ColorMode::rgb565, uint16_t frames = 1, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(const uint16_t* buffer, ColorMode col = ColorMode::rgb565, uint16_t frames = 1, uint8_t fl = DEFAULT_FRAME_LOOP);
 	
 	// flash indexed constructors
-	Image(const uint8_t* buffer, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
-	void init(const uint8_t* buffer, ColorMode col, uint8_t fl = DEFAULT_FRAME_LOOP);
-	Image(const uint8_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::index, uint8_t fl = DEFAULT_FRAME_LOOP);
-	void init(const uint8_t* buffer, uint16_t frames = 1, ColorMode col = ColorMode::index, uint8_t fl = DEFAULT_FRAME_LOOP);
+	Image(const uint8_t* buffer, uint16_t frames, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(const uint8_t* buffer, uint16_t frames, uint8_t fl = DEFAULT_FRAME_LOOP);
+	Image(const uint8_t* buffer, ColorMode col = ColorMode::index, uint16_t frames = 1, uint8_t fl = DEFAULT_FRAME_LOOP);
+	void init(const uint8_t* buffer, ColorMode col = ColorMode::index, uint16_t frames = 1, uint8_t fl = DEFAULT_FRAME_LOOP);
 
 	// SD constructors
 	Image(char* filename, uint8_t fl = DEFAULT_FRAME_LOOP);
@@ -72,18 +72,22 @@ public:
 	void nextFrame();
 	void setFrame(uint16_t frame);
 	void freeBuffer();
-	void drawPixel(int16_t x, int16_t y);
-	void fillScreen();
-	void fillScreen(Color color);
-	void fillScreen(ColorIndex color);
+	void _drawPixel(int16_t x, int16_t y);
+	void _fill();
 	void drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img);
 	void allocateBuffer();
+	
+	uint16_t getPixel(int16_t x, int16_t y);
+	Color getPixelColor(int16_t x, int16_t y);
+	ColorIndex getPixelIndex(int16_t x, int16_t y);
 	
 	bool startRecording(char* filename);
 	void stopRecording(bool output = false);
 	bool save(char* filename);
 
 	uint16_t getBufferSize();
+	
+	void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size);
 
 	//`frame_looping` holds every how many frames it should get updated
 	//`frame_loopcounter` is the counter for that.

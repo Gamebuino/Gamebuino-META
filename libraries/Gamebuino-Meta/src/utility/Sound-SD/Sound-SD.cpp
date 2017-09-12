@@ -92,7 +92,6 @@ bool Sound_Handler_Wav::init(const char* filename) {
 	}
 	channel->total = NUM_SAMPLES;
 	channel->last = false;
-	channel->use = true;
 	channel->type = Sound_Channel_Type::raw;
 	head_index = 0;
 	rewind_flag = false;
@@ -100,6 +99,7 @@ bool Sound_Handler_Wav::init(const char* filename) {
 	// fill the initial buffer
 	
 	file.read(channel->buffer, NUM_SAMPLES);
+	channel->use = true;
 }
 
 void Sound_Handler_Wav::rewind() {

@@ -5,8 +5,8 @@ void initPlayer(){
   player.w = 4;
   player.h = 8;
   while(playerCollision()){ //pick a random player position until there is no collision
-    player.x = random(0, LCDWIDTH - player.w);
-    player.y = random(0, LCDHEIGHT - player.h);
+    player.x = random(0, gb.display.width() - player.w);
+    player.y = random(0, gb.display.height() - player.h);
   }
 }
 

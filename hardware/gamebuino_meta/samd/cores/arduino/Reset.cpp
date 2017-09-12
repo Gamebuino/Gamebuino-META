@@ -31,7 +31,7 @@ extern const uint32_t __text_start__;
 #define APP_START ((volatile uint32_t)(&__text_start__) + 4)
 
 #else
-#define APP_START 0x00002004
+#define APP_START 0x00004004
 #endif
 
 static inline bool nvmReady(void) {
@@ -46,7 +46,7 @@ static void banzai() {
 	// Avoid erasing the application if APP_START is < than the minimum bootloader size
 	// This could happen if without_bootloader linker script was chosen
 	// Minimum bootloader size in SAMD21 family is 512bytes (RM section 22.6.5)
-	if (APP_START < (0x200 + 4)) {
+	if (APP_START < (0x400 + 4)) {
 		goto reset;
 	}
 

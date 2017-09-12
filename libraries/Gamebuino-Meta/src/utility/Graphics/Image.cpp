@@ -32,6 +32,7 @@ uint32_t Frame_Handler::getBufferSizeWithFrames() {
 void Frame_Handler::allocateBuffer() {
 	uint32_t bytes = getBufferSizeWithFrames();
 	if (buf && (bytes <= bufferSize)) {
+		img->_buffer = buf;
 		return;
 	}
 	if (buf && (uint32_t)buf >= 0x20000000) {
@@ -39,6 +40,11 @@ void Frame_Handler::allocateBuffer() {
 	}
 	if ((buf = (uint16_t *)malloc(bytes))) {
 		memset(buf, 0, bytes);
+		bufferSize = bytes;
+	} else {
+		// we weren't able to allocate anything :(
+		img->_width = img->_height = 0;
+		bufferSize = 0;
 	}
 	img->_buffer = buf;
 }
@@ -87,17 +93,17 @@ Image::Image(const Image& img) : Graphics(0, 0) { // copy constructor!
 
 
 // ram constructors
-Image::Image(uint16_t w, uint16_t h, ColorMode col, uint8_t fl) : Graphics(w, h) {
-	init(w, h, col, fl);
+Image::Image(uint16_t w, uint16_t h, uint16_t frames, uint8_t fl) : Graphics(w, h) {
+	init(w, h, frames, fl);
 }
-void Image::init(uint16_t w, uint16_t h, ColorMode col, uint8_t fl) {
-	init(w, h, 1, col, fl);
+void Image::init(uint16_t w, uint16_t h, uint16_t frames, uint8_t fl) {
+	init(w, h, ColorMode::rgb565, frames, fl);
 }
 
-Image::Image(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col, uint8_t fl) : Graphics(0, 0) {
-	init(w, h, frames, col, fl);
+Image::Image(uint16_t w, uint16_t h, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(w, h) {
+	init(w, h, col, frames, fl);
 }
-void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col, uint8_t fl) {
+void Image::init(uint16_t w, uint16_t h, ColorMode col, uint16_t _frames, uint8_t fl) {
 	if (isObjectCopy) {
 		return;
 	}
@@ -120,17 +126,17 @@ void Image::init(uint16_t w, uint16_t h, uint16_t _frames, ColorMode col, uint8_
 }
 
 // flash constructors
-Image::Image(const uint16_t* buffer, ColorMode col, uint8_t fl) : Graphics(0, 0) {
-	init(buffer, col, fl);
+Image::Image(const uint16_t* buffer, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, frames, fl);
 }
-void Image::init(const uint16_t* buffer, ColorMode col, uint8_t fl) {
-	init(buffer, 1, col, fl);
+void Image::init(const uint16_t* buffer, uint16_t frames, uint8_t fl) {
+	init(buffer, ColorMode::rgb565, frames, fl);
 }
 
-Image::Image(const uint16_t* buffer, uint16_t frames, ColorMode col, uint8_t fl) : Graphics(0, 0) {
-	init(buffer, frames, col, fl);
+Image::Image(const uint16_t* buffer, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, col, frames, fl);
 }
-void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col, uint8_t fl) {
+void Image::init(const uint16_t* buffer, ColorMode col, uint16_t _frames, uint8_t fl) {
 	if (isObjectCopy) {
 		return;
 	}
@@ -157,17 +163,17 @@ void Image::init(const uint16_t* buffer, uint16_t _frames, ColorMode col, uint8_
 }
 
 // flash indexed constructors
-Image::Image(const uint8_t* buffer, ColorMode col, uint8_t fl) : Graphics(0, 0) {
-	init(buffer, col, fl);
+Image::Image(const uint8_t* buffer, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, frames, fl);
 }
-void Image::init(const uint8_t* buffer, ColorMode col, uint8_t fl) {
-	init(buffer, 1, col, fl);
+void Image::init(const uint8_t* buffer, uint16_t frames, uint8_t fl) {
+	init(buffer, ColorMode::index, frames, fl);
 }
 
-Image::Image(const uint8_t* buffer, uint16_t frames, ColorMode col, uint8_t fl) : Graphics(0, 0) {
-	init(buffer, frames, col, fl);
+Image::Image(const uint8_t* buffer, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	init(buffer, col, frames, fl);
 }
-void Image::init(const uint8_t* buffer, uint16_t _frames, ColorMode col, uint8_t fl) {
+void Image::init(const uint8_t* buffer, ColorMode col, uint16_t _frames, uint8_t fl) {
 	if (isObjectCopy) {
 		return;
 	}
@@ -272,6 +278,38 @@ void Image::allocateBuffer() {
 	}
 }
 
+uint16_t Image::getPixel(int16_t x, int16_t y) {
+	if (colorMode == ColorMode::rgb565) {
+		return _buffer[x + y * _width];
+	} else {
+		uint16_t addr = ((_width + 1) / 2) * y + x / 2;
+		uint8_t* buf = (uint8_t*)_buffer;
+		if (!(x % 2)) { //odd pixels
+			return buf[addr] >> 4;
+		} else {
+			return buf[addr] & 0x0F;
+		}
+	}
+}
+
+Color Image::getPixelColor(int16_t x, int16_t y) {
+	uint16_t c = getPixel(x, y);
+	if (colorMode == ColorMode::rgb565) {
+		return (Color)c;
+	} else {
+		return colorIndex[c];
+	}
+}
+
+ColorIndex Image::getPixelIndex(int16_t x, int16_t y) {
+	uint16_t c = getPixel(x, y);
+	if (colorMode == ColorMode::rgb565) {
+		return rgb565ToIndex((Color)c);
+	} else {
+		return (ColorIndex)c;
+	}
+}
+
 void Image::nextFrame() {
 	if (frames) {
 		if (frames == 1 || !frame_looping || last_frame == (gb.frameCount & 0xFF)) {
@@ -308,7 +346,7 @@ void Image::setFrame(uint16_t _frame) {
 	frame_loopcounter = 0;
 }
 
-void Image::drawPixel(int16_t x, int16_t y) {
+void Image::_drawPixel(int16_t x, int16_t y) {
 	if (!_buffer) {
 		return;
 	}
@@ -333,46 +371,23 @@ void Image::drawPixel(int16_t x, int16_t y) {
 	}
 }
 
-void Image::fillScreen() {
+void Image::_fill() {
 	if (_buffer) {
 		if (colorMode == ColorMode::rgb565) {
 			uint8_t hi = (uint16_t)color >> 8, lo = (uint16_t)color & 0xFF;
 			if (hi == lo) {
-				memset(_buffer, lo, WIDTH * HEIGHT * 2);
-			}
-			else {
-				uint16_t i, pixels = WIDTH * HEIGHT;
+				memset(_buffer, lo, _width * _height * 2);
+			} else {
+				uint16_t i, pixels = _width * _height;
 				for (i = 0; i<pixels; i++) _buffer[i] = (uint16_t)color;
 			}
 		}
 		
 		if (colorMode == ColorMode::index) {
 			uint8_t pack = ((uint8_t)color) + ((uint8_t)color << 4);
-			memset(_buffer, pack, WIDTH * HEIGHT / 2);
+			memset(_buffer, pack, _width * _height / 2);
 		}
 	}
-}
-
-void Image::fillScreen(Color c) {
-	Color tempColor = color;
-	if (colorMode == ColorMode::index) {
-		color = (Color)rgb565ToIndex(c);
-	} else {
-		color = c;
-	}
-	fillScreen();
-	color = tempColor;
-}
-
-void Image::fillScreen(ColorIndex c) {
-	Color tempColor = color;
-	if (colorMode == ColorMode::index) {
-		color = (Color)c;
-	} else {
-		color = (Color)colorIndex[(uint8_t)c];
-	}
-	fillScreen();
-	color = tempColor;
 }
 
 void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img) {
@@ -535,6 +550,114 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w,
 		if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 		thisLine[i] = (b1[i] << 11) + (g1[i] << 5) + r1[i];
 	}
+}
+
+void Image::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
+	if(gfxFont) {
+		Graphics::drawChar(x, y, c, size);
+		return;
+	}
+	if((x >= _width)            || // Clip right
+		 (y >= _height)           || // Clip bottom
+		 ((x + fontWidth * size - 1) < 0) || // Clip left
+		 ((y + fontHeight * size - 1) < 0))   // Clip top
+		return;
+	
+	if (size == 2 && colorMode == ColorMode::index) {
+		if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
+		if (c >= 0x80) c -= 0x20;
+		if (!(x % 2)) {
+			uint8_t fg = ((uint8_t)color << 4) | (uint8_t)color;
+			uint8_t bg = ((uint8_t)bgcolor << 4) | (uint8_t)bgcolor;
+			uint8_t* buf = (uint8_t*)_buffer;
+			uint8_t img_bytewidth = (_width + 1) / 2;
+			buf += y*img_bytewidth + (x / 2);
+			uint8_t* _buf = buf;
+			uint8_t font_bytewidth = fontWidth - 1;
+			for (uint8_t i = 0; i < fontWidth; i++) {
+				uint8_t line;
+				if (i == font_bytewidth) {
+					line = 0;
+				} else {
+					line = font[c*font_bytewidth + i];
+				}
+				for (uint8_t j = 0; j < fontHeight; j++) {
+					if (line & 0x01) {
+						*buf = fg;
+						buf += img_bytewidth;
+						*buf = fg;
+						buf += img_bytewidth;
+					} else if (fg != bg) {
+						*buf = bg;
+						buf += img_bytewidth;
+						*buf = bg;
+						buf += img_bytewidth;
+					} else {
+						buf += img_bytewidth*2;
+					}
+					line >>= 1;
+				}
+				_buf++;
+				buf = _buf;
+			}
+			
+			return;
+		} else {
+			uint8_t fg1 = (uint8_t)color;
+			uint8_t fg2 = (uint8_t)color << 4;
+			uint8_t bg1 = (uint8_t)bgcolor;
+			uint8_t bg2 = (uint8_t)bgcolor << 4;
+			
+			uint8_t* buf = (uint8_t*)_buffer;
+			uint8_t img_bytewidth = (_width + 1) / 2;
+			buf += y*img_bytewidth + (x / 2);
+			img_bytewidth--;
+			uint8_t* _buf = buf;
+			uint8_t font_bytewidth = fontWidth - 1;
+			for (uint8_t i = 0; i < fontWidth; i++) {
+				uint8_t line;
+				if (i == font_bytewidth) {
+					line = 0;
+				} else {
+					line = font[c*font_bytewidth + i];
+				}
+				for (uint8_t j = 0; j < fontHeight; j++) {
+					uint8_t b1 = *buf;
+					uint8_t b2 = *(buf + 1);
+					b1 &= 0xF0;
+					b2 &= 0x0F;
+					if (line & 0x01) {
+						b1 |= fg1;
+						b2 |= fg2;
+						*(buf++) = b1;
+						*buf = b2;
+						buf += img_bytewidth;
+						*(buf++) = b1;
+						*buf = b2;
+						buf += img_bytewidth;
+					} else if (fg1 != bg1) {
+						b1 |= bg1;
+						b2 |= bg2;
+						*(buf++) = b1;
+						*buf = b2;
+						buf += img_bytewidth;
+						*(buf++) = b1;
+						*buf = b2;
+						buf += img_bytewidth;
+					} else {
+						buf += (img_bytewidth+1)*2;
+					}
+					line >>= 1;
+				}
+				_buf++;
+				buf = _buf;
+			}
+			return;
+		}
+	}
+	
+	
+	Graphics::drawChar(x, y, c, size);
 }
 
 } // namespace Gamebuino_Meta

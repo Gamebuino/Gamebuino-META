@@ -10,6 +10,9 @@ class Display : public Gamebuino_Meta::Image {
 public:
 	Display();
 	void clear();
+	void fillScreen();
+	void fillScreen(Color color);
+	void fillScreen(ColorIndex color);
 	bool persistence;
 };
 

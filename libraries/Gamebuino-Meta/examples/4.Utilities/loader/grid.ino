@@ -14,7 +14,7 @@ GridView gridViewEntries[PAGE_SIZE];
 void loadGridView() {
 	gb.display.setCursors(0, 0);
 	gb.display.setColor(WHITE, BLACK);
-	gb.display.print("Loading...");
+	gb.display.println(gb.language.get(lang_loading));
 	gb.updateDisplay();
 	uint8_t blockOffset = pageInBlock*PAGE_SIZE;
 	uint32_t gameOffset = gameFolderBlock*BLOCK_LENGTH + blockOffset;
@@ -50,7 +50,7 @@ void gridView() {
 		}
 		if (!totalGames) {
 			gb.display.setColor(RED);
-			gb.display.println("No games found!");
+			gb.display.println(gb.language.get(lang_no_games));
 		} else {
 			uint16_t currentPage = pageInBlock + gameFolderBlock*PAGES_PER_BLOCK + 1;
 			sprintf(pageCounter, "< %d/%d >", currentPage, totalPages);
@@ -151,10 +151,15 @@ void gridView() {
 				loadGridView();
 				x = (currentGame % PAGE_SIZE) % GRID_WIDTH;
 				y = (currentGame % PAGE_SIZE) / GRID_WIDTH;
+				continue; // else the next c-button-press will trigger
 			}
 			if ((gb.frameCount % 8) >= 4) {
 				gb.display.setColor(BROWN);
 				gb.display.drawRect(x*19 + 1, y*22 + 8, 20, 23);
+			}
+			if (gb.buttons.pressed(BUTTON_C)) {
+				gb.sound.playOK();
+				settingsView();
 			}
 		}
 	}

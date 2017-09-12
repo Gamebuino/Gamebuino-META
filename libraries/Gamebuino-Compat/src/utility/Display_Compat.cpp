@@ -11,4 +11,16 @@ void Display::clear() {
 	setCursors(0, 0);
 }
 
+void Display::fillScreen() {
+	fill();
+}
+
+void Display::fillScreen(Color color) {
+	fill(color);
+}
+
+void Display::fillScreen(ColorIndex color) {
+	fill(color);
+}
+
 }; // namespace Gamebuino_Compat

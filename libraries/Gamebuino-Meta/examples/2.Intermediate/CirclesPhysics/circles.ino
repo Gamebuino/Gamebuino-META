@@ -4,8 +4,8 @@ Circle circles[NUM_CIRCLES];
 void initCircles(){
   for(byte i=0; i < NUM_CIRCLES; i++){
     circles[i].r = 2;
-    circles[i].x = i*LCDWIDTH/NUM_CIRCLES;
-    circles[i].y = random(0, LCDHEIGHT);
+    circles[i].x = i*gb.display.width()/NUM_CIRCLES;
+    circles[i].y = random(0, gb.display.height());
     circles[i].vx = random(1, 20)/10.;
     circles[i].vy = random(1, 20)/10.;
     if(i >= NUM_CIRCLES/2){ //half of the ball won't move at the beginning
@@ -72,18 +72,18 @@ void updateCircles(){
       circles[i].vx *= -1;
       circles[i].x = 0;
     }
-    if(circles[i].x > LCDWIDTH){
+    if(circles[i].x > gb.display.width()){
       circles[i].vx *= -1;
-      circles[i].x = LCDWIDTH;
+      circles[i].x = gb.display.width();
     }
 
     if(circles[i].y < 0){
       circles[i].vy *= -1;
       circles[i].y = 0;
     }
-    if(circles[i].y > LCDHEIGHT){
+    if(circles[i].y > gb.display.height()){
       circles[i].vy *= -1;
-      circles[i].y = LCDHEIGHT;
+      circles[i].y = gb.display.height();
     }
   }
 }

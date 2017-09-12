@@ -135,13 +135,12 @@ void Display_ST7735::writecommand(uint8_t c) {
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
 #endif
-	*rsport &= ~rspinmask;
-	*csport &= ~cspinmask;
+	commandMode();
 
 	//Serial.print("C ");
 	spiwrite(c);
 
-	*csport |= cspinmask;
+	idleMode();
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
 #endif
@@ -152,13 +151,12 @@ void Display_ST7735::writedata(uint8_t c) {
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
 #endif
-	*rsport |=	rspinmask;
-	*csport &= ~cspinmask;
+	dataMode();
 		
 	//Serial.print("D ");
 	spiwrite(c);
 
-	*csport |= cspinmask;
+	idleMode();
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
 #endif
@@ -492,14 +490,13 @@ void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, ui
 	// once started, we dont need to trigger it because it will autorun
 	//Serial.println("Starting transfer job");
 	SPI.beginTransaction(mySPISettings);
-	*rsport |= rspinmask;
-	*csport &= ~cspinmask;
+	dataMode();
 
 	myDMA.start_transfer_job();
 
 	while (!transfer_is_done); //chill
 
-	*csport |= cspinmask;
+	idleMode();
 	SPI.endTransaction();
 	myDMA.free(); //free the DMA channel
 
@@ -544,14 +541,13 @@ void Display_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t
 							 // once started, we dont need to trigger it because it will autorun
 							 //Serial.println("Starting transfer job");
 	SPI.beginTransaction(mySPISettings);
-	*rsport |= rspinmask;
-	*csport &= ~cspinmask;
+	dataMode();
 
 	myDMA.start_transfer_job();
 
 	while (!transfer_is_done); //chill
 
-	*csport |= cspinmask;
+	idleMode();
 	SPI.endTransaction();
 	myDMA.free(); //free the DMA channel
 }
@@ -598,10 +594,27 @@ uint16_t swap_endians_16(uint16_t b) {
 	return (b << 8) | (b >> 8);
 }
 
+void Display_ST7735::dataMode() {
+	*rsport |= rspinmask;
+	*csport &= ~cspinmask;
+}
+
+void Display_ST7735::commandMode() {
+	*rsport &= ~rspinmask;
+	*csport &= ~cspinmask;
+}
+
+void Display_ST7735::idleMode() {
+	*csport |= cspinmask;
+}
+
 void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 	img.nextFrame();
-	int16_t w = img.width();
-	int16_t h = img.height();
+	int16_t w = img._width;
+	int16_t h = img._height;
+	if (w == 0 || h == 0) {
+		return;
+	}
 
 	if ((img.colorMode == ColorMode::index) && (w == _width) && (h == _height)) {
 
@@ -615,8 +628,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 
 		//initiate SPI
 		SPI.beginTransaction(mySPISettings);
-		*rsport |= rspinmask;
-		*csport &= ~cspinmask;
+		dataMode();
 
 		//prepare the first line
 		indexTo565(preBufferLine, (uint8_t*)img._buffer, Graphics::colorIndex, w, false);
@@ -669,7 +681,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 		myDMA.free(); //free the DMA channel
 
 		//finish SPI
-		*csport |= cspinmask;
+		idleMode();
 		SPI.endTransaction();
 
 		return;
@@ -709,8 +721,11 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 	//out of screen
 	if ((x > _width) || ((x + abs(w2)) < 0) || (y > _height) || ((y + abs(h2)) < 0) || (w2 == 0) || (h2 == 0)) return;
 
-	int16_t w = img.width();
-	int16_t h = img.height();
+	int16_t w = img._width;
+	int16_t h = img._height;
+	if (w == 0 || h == 0) {
+		return;
+	}
 
 	//no scaling
 	if ((w == w2) && (h == h2)) { 
@@ -731,8 +746,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 
 			//initiate SPI
 			SPI.beginTransaction(mySPISettings);
-			*rsport |= rspinmask;
-			*csport &= ~cspinmask;
+			dataMode();
 
 			//prepare the first line
 			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
@@ -773,7 +787,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 			myDMA.free(); //free the DMA channel
 
 			//finish SPI
-			*csport |= cspinmask;
+			idleMode();
 			SPI.endTransaction();
 
 			return;
@@ -789,8 +803,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 
 			//initiate SPI
 			SPI.beginTransaction(mySPISettings);
-			*rsport |= rspinmask;
-			*csport &= ~cspinmask;
+			dataMode();
 			bufferIndexLineDouble(preBufferLine, img._buffer, w, 0);
 
 			//start sending lines and processing them in parallel using DMA
@@ -821,7 +834,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 			myDMA.free(); //free the DMA channel
 
 			//finish SPI
-			*csport |= cspinmask;
+			idleMode();
 			SPI.endTransaction();
 			return;
 		}
@@ -837,19 +850,18 @@ void Display_ST7735::pushColor(uint16_t c) {
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
 #endif
-	*rsport |=	rspinmask;
-	*csport &= ~cspinmask;
+	dataMode();
 	
 	spiwrite(c >> 8);
 	spiwrite(c);
 
-	*csport |= cspinmask;
+	idleMode();
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
 #endif
 }
 
-void Display_ST7735::drawPixel(int16_t x, int16_t y) {
+void Display_ST7735::_drawPixel(int16_t x, int16_t y) {
 
 	if((x < 0) ||(x >= _width) || (y < 0) || (y >= _height)) return;
 
@@ -858,13 +870,12 @@ void Display_ST7735::drawPixel(int16_t x, int16_t y) {
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
 #endif
-	*rsport |=	rspinmask;
-	*csport &= ~cspinmask;
+	dataMode();
 	
 	spiwrite((uint16_t)color >> 8);
 	spiwrite((uint16_t)color);
 
-	*csport |= cspinmask;
+	idleMode();
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
 #endif
@@ -882,13 +893,12 @@ void Display_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h) {
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
 #endif
-	*rsport |=	rspinmask;
-	*csport &= ~cspinmask;
+	dataMode();
 	while (h--) {
 		spiwrite(hi);
 		spiwrite(lo);
 	}
-	*csport |= cspinmask;
+	idleMode();
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
 #endif
@@ -906,13 +916,12 @@ void Display_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w) {
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
 #endif
-	*rsport |=	rspinmask;
-	*csport &= ~cspinmask;
+	dataMode();
 	while (w--) {
 		spiwrite(hi);
 		spiwrite(lo);
 	}
-	*csport |= cspinmask;
+	idleMode();
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
 #endif
@@ -932,8 +941,7 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
 #endif
-	*rsport |=	rspinmask;
-	*csport &= ~cspinmask;
+	dataMode();
 	for(y=h; y>0; y--) {
 		for(x=w; x>0; x--) {
 			spiwrite(hi);
@@ -941,7 +949,7 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 		}
 	}
 
-	*csport |= cspinmask;
+	idleMode();
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
 #endif

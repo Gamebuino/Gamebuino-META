@@ -23,7 +23,7 @@
 #endif
 
 #ifndef KEYBOARD_H
-#define KEYBOARD_H 8
+#define KEYBOARD_H 14
 #endif
 
 ///////////////
@@ -80,4 +80,28 @@
 
 #ifndef SOUND_CHANNELS
 #define SOUND_CHANNELS 4
+#endif
+
+///////////////
+// image defines
+///////////////
+
+#ifndef STRICT_IMAGES
+#define STRICT_IMAGES 0
+#endif
+
+///////////////
+// language defines
+///////////////
+
+#ifndef LANGUAGE_DEFAULT_SIZE
+#define LANGUAGE_DEFAULT_SIZE 0
+#endif
+
+///////////////
+// Fault Handler defines
+///////////////
+
+#ifndef HARDFAULT_DEBUG_HANDLER
+#define HARDFAULT_DEBUG_HANDLER 0
 #endif
