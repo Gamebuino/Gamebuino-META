@@ -1,5 +1,5 @@
 
-Image titleScreenImage;
+Image titleScreenImage{gb.display.width(), gb.display.height(), ColorMode::rgb565};
 bool titleScreenImageExists;
 bool displayName;
 void loadDetailedView() {

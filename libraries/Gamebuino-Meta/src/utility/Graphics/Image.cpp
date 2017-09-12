@@ -32,6 +32,7 @@ uint32_t Frame_Handler::getBufferSizeWithFrames() {
 void Frame_Handler::allocateBuffer() {
 	uint32_t bytes = getBufferSizeWithFrames();
 	if (buf && (bytes <= bufferSize)) {
+		img->_buffer = buf;
 		return;
 	}
 	if (buf && (uint32_t)buf >= 0x20000000) {
@@ -39,6 +40,11 @@ void Frame_Handler::allocateBuffer() {
 	}
 	if ((buf = (uint16_t *)malloc(bytes))) {
 		memset(buf, 0, bytes);
+		bufferSize = bytes;
+	} else {
+		// we weren't able to allocate anything :(
+		img->_width = img->_height = 0;
+		bufferSize = 0;
 	}
 	img->_buffer = buf;
 }

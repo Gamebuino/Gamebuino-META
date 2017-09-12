@@ -97,3 +97,11 @@
 #ifndef LANGUAGE_DEFAULT_SIZE
 #define LANGUAGE_DEFAULT_SIZE 0
 #endif
+
+///////////////
+// Fault Handler defines
+///////////////
+
+#ifndef HARDFAULT_DEBUG_HANDLER
+#define HARDFAULT_DEBUG_HANDLER 0
+#endif
