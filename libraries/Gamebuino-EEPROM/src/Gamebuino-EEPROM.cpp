@@ -28,6 +28,16 @@ void EEPROM_Class::flush() {
 	}
 }
 
+void EEPROM_Class::flush(uint32_t address, uint32_t size) {
+	uint32_t block = address / SAVECONF_DEFAULT_BLOBSIZE;
+	int32_t counter = (address % SAVECONF_DEFAULT_BLOBSIZE) + size;
+	do {
+		gb.save.set(block, &buffer[block*SAVECONF_DEFAULT_BLOBSIZE], SAVECONF_DEFAULT_BLOBSIZE);
+		block++;
+		counter -= SAVECONF_DEFAULT_BLOBSIZE;
+	} while (counter > 0);
+}
+
 uint8_t EEPROM_Class::read(uint32_t address) {
 	if (address >= size) {
 		return 0;
@@ -41,7 +51,7 @@ void EEPROM_Class::write(uint32_t address, uint8_t value) {
 	}
 	if (buffer[address] != value) {
 		buffer[address] = value;
-		flush();
+		flush(address, 1);
 	}
 }
 
