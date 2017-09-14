@@ -29,6 +29,10 @@ void loop() {
     if (!gb.sound.isPlaying(fx)) {
       fx = -1;
     }
+    // we will not be checking if the music identifier is still playing,
+    // because we will start it as an infinite loop so we'll know that it
+    // won't stop suddenly, as opposed to the sound effect
+    
     // and now, only print that an effect is playing
     if (fx != -1) {
       gb.display.println("Playing Effect");
@@ -50,6 +54,7 @@ void loop() {
     if (gb.buttons.pressed(BUTTON_A)) {
       if (music == -1) {
         // time to start music!
+        // we are starting the file "test.wav" in our sketch folder
         // gb.sound.play() will return the track identifier, which we will store into our music variable for later use
         music = gb.sound.play("test.wav", true); // true for infinite looping
       } else {
