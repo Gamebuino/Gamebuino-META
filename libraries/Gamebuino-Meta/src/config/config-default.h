@@ -5,28 +5,6 @@
 #endif
 
 ///////////////
-// GUI settings
-///////////////
-
-//enable menu, keyboard, pop-up, volume adjust functions
-#ifndef ENABLE_GUI
-#define ENABLE_GUI 1
-#endif
-
-//40 = 40 frames (2sec) before start menu is skipped, 0 = no start menu, 255 = start menu until you press A
-#ifndef START_MENU_TIMER
-#define START_MENU_TIMER 255
-#endif
-
-#ifndef KEYBOARD_W
-#define KEYBOARD_W 16
-#endif
-
-#ifndef KEYBOARD_H
-#define KEYBOARD_H 14
-#endif
-
-///////////////
 // save defines
 ///////////////
 
@@ -79,7 +57,7 @@
 ///////////////
 
 #ifndef MAX_IMAGE_RECORDING
-#define MAX_IMAGE_RECORDING 5
+#define MAX_IMAGE_RECORDING 2
 #endif
 
 ///////////////

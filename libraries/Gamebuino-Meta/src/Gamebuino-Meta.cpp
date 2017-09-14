@@ -401,7 +401,6 @@ uint16_t Gamebuino::getFreeRam() {
 }
 
 int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
-#if (ENABLE_GUI > 0)
 	//display.persistence = false;
 	int8_t activeItem = 0;
 	int8_t currentY = display.height();
@@ -470,9 +469,6 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 			display.drawRoundRect(0, currentY + display.fontHeight * activeItem - 2, display.width(), (display.fontHeight+3), 3);
 		}
 	}
-#else
-	return 0;
-#endif
 }
 
 const uint8_t numLangEntries = 2;
@@ -858,8 +854,9 @@ void Gamebuino::homeMenu(){
 	}
 }
 
+#define KEYBOARD_W 16
+#define KEYBOARD_H 14
 void Gamebuino::keyboard(char* text, uint8_t length) {
-#if (ENABLE_GUI > 0)
 	//display.persistence = false;
 	//memset(text, 0, length); //clear the text
 	text[length-1] = '\0';
@@ -999,18 +996,14 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 			}
 		}
 	}
-#endif
 }
 
 void Gamebuino::popup(const char* text, uint8_t duration){
-#if (ENABLE_GUI > 0)
 	popupText = text;
 	popupTimeLeft = duration+12;
-#endif
 }
 
 void Gamebuino::updatePopup(){
-#if (ENABLE_GUI > 0)
 	if (popupTimeLeft){
 		uint8_t yOffset = 0;
 		if(popupTimeLeft<12){
@@ -1028,7 +1021,6 @@ void Gamebuino::updatePopup(){
 		display.print(popupText);
 		popupTimeLeft--;
 	}
-#endif
 }
 
 void Gamebuino::changeGame(){
