@@ -50,7 +50,18 @@ struct SaveDefault {
 class Save {
 public:
 	Save(){};
-	Save(Display_ST7735 *_tft, const char* _savefile, const SaveDefault* _defaults, uint16_t _num_defaults, uint16_t _blocks, const char* _checkbytes);
+	Save(Display_ST7735 *_tft, const char* _savefile, const char* _checkbytes);
+	void config(const SaveDefault* _defaults, uint16_t _num_defaults);
+	void config(uint16_t _blocks, const SaveDefault* _defaults, uint16_t _num_defaults);
+	template<uint8_t N>
+	void config(const SaveDefault (&_defaults)[N]) {
+		config(_defaults, N);
+	}
+	template<uint8_t N>
+	void config(uint16_t _blocks, const SaveDefault (&_defaults)[N]) {
+		config(_blocks, _defaults, N);
+	}
+	
 	int32_t get(uint16_t i);
 	bool get(uint16_t i, void* buf, uint8_t bufsize);
 	template< typename T > bool get(uint16_t i, T& obj) {
@@ -88,5 +99,8 @@ private:
 };
 
 } // namsepace Gamebuino_Meta
+
+using Gamebuino_Meta::SaveVar;
+using Gamebuino_Meta::SaveDefault;
 
 #endif // _GAMEBUINO_META_SAVE_H_

@@ -47,6 +47,7 @@ void saveHighscore(unsigned int score){
 void drawHighScores(){
   while(true){
     if(gb.update()){
+      gb.display.clear();
       gb.display.setFont(font5x7);
       gb.display.cursorX = 9+random(0,2);
       gb.display.cursorY = 0+random(0,2);

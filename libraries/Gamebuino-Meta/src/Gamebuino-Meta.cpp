@@ -129,12 +129,9 @@ const uint8_t gamebuinoLogo[] =
 	0b00001111, 0b10110000, 0b01111000, 0b11000110, 0b11111111, 0b01111110, 0b00011111, 0b00011011, 0b00000110, 0b00011110, 0b00001111, 
 };
 
-const SaveDefault savefileDefaults[SAVECONF_SIZE] = SAVECONF;
-
-#define SETTINGSCONF_SIZE 5
 // we have more blocks for, in case we add things in the future, old games are less likely to erase our new blocks
-#define SETTINGSCONF_NUM_BLOCKS 32
-const SaveDefault settingsDefaults [SETTINGSCONF_SIZE] = {
+const uint8_t SETTINGSCONF_NUM_BLOCKS = 32;
+const SaveDefault settingsDefaults [] = {
 	SaveDefault(SETTING_VOLUME, SAVETYPE_INT, 6),
 	SaveDefault(SETTING_VOLUME_MUTE, SAVETYPE_INT, 0),
 	SaveDefault(SETTING_DEFAULTNAME, SAVETYPE_BLOB, "gamebuinian", 13),
@@ -208,9 +205,10 @@ void Gamebuino::begin() {
 	}
 	SD.chdir(folder_name);
 	
-	save = Save(&tft, SAVEFILE_NAME, savefileDefaults, SAVECONF_SIZE, SAVEBLOCK_NUM, folder_name);
+	save = Save(&tft, SAVEFILE_NAME, folder_name);
 	
-	settings = Save(&tft, "/settings.sav", settingsDefaults, SETTINGSCONF_SIZE, SETTINGSCONF_NUM_BLOCKS, "GBMS");
+	settings = Save(&tft, "/settings.sav", "GBMS");
+	settings.config(SETTINGSCONF_NUM_BLOCKS, settingsDefaults);
 	
 	//sound
 	sound.begin();
@@ -873,6 +871,7 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 
 	while (1) {
 		if (update()) {
+			display.clear();
 			//move the character selector
 			if (buttons.repeat(Button::down, 4)) {
 				activeY++;
@@ -932,6 +931,7 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 				sound.playOK();
 				while (1) {
 					if (update()) {
+						display.clear();
 						//display.setCursor(0,0);
 						display.println("You entered\n");
 						display.print(text);
