@@ -108,6 +108,10 @@ public:
 	void fill();
 	void fill(Color color);
 	void fill(ColorIndex color);
+	void clearTextVars();
+	void clear();
+	void clear(Color bgcolor);
+	void clear(ColorIndex bgcolor);
 	
 	void drawCircle(int16_t x0, int16_t y0, int16_t r);
 	void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername);

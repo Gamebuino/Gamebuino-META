@@ -15,6 +15,9 @@ void setup() {
 
 void loop() {
   if (gb.update()) {
+    // clear the previous screen
+    gb.display.clear();
+    
     // here we get the pointer ot our string, depending on the users language setting
     const char* lang_fox = gb.language.get(fox);
     // aaaaand print it to the screen

@@ -66,6 +66,14 @@
 #define DISPLAY_DEFAULT_COLOR Color::white
 #endif
 
+#ifndef DEFAULT_FONT_SIZE
+#if DISPLAY_MODE == DISPLAY_MODE_INDEX
+#define DEFAULT_FONT_SIZE 2
+#else
+#define DEFAULT_FONT_SIZE 1
+#endif
+#endif
+
 ///////////////
 // recording defines
 ///////////////

@@ -101,6 +101,8 @@ boolean skip() {
 void donothing() {
   while (1) {
     if (gb.update()) {
+      // clear the previous screen
+      gb.display.clear();
       if (skip()) {
         return;
       }
@@ -113,6 +115,9 @@ void screenBenchmark() {
   unsigned long timeBenchmark = 20;
   while (1) {
     if (gb.update()) {
+      // clear the previous screen
+      gb.display.clear();
+      
       gb.display.setColor(WHITE);
       gb.display.print(1000 / (timeBenchmark));
       gb.display.print(" FPS");
@@ -144,6 +149,9 @@ void colors() {
   //Colors test 1/2
   while (1) {
     if (gb.update()) {
+      // clear the previous screen
+      gb.display.clear();
+      
       //first column
       gb.display.setColor(WHITE);
       gb.display.println("WHITE");

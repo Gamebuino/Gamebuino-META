@@ -183,16 +183,11 @@ void Gamebuino::begin() {
 	tft.initR(INITR_BLACKTAB);
 	tft.setRotation(3);
 	display.fill(Color::black);
-
-	updateDisplay();
-#if DISPLAY_MODE == DISPLAY_MODE_INDEX
-	display.fontSize = 2;
-#endif
+	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
 	display.setColor(Color::brown, Color::black);
-	
-	
 	display.print("SD INIT... ");
 	updateDisplay();
+	
 	if (!SD.begin(SD_CS)) {
 		display.setColor(Color::red, Color::black);
 		display.println("FAILED!");
@@ -246,9 +241,8 @@ void Gamebuino::titleScreen(){
 }
 
 void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
-	display.fontSize = 1;
+	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
 	display.textWrap = false;
-	//display.persistence = false;
 	
 	while(1){
 		if(update()){
@@ -322,7 +316,7 @@ void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
 
 bool recording_screen = false;
 
-bool Gamebuino::_update(bool inpersistence) {
+bool Gamebuino::update() {
 	if (((nextFrameMillis - millis()) > timePerFrame) && frameEndMicros) { //if time to render a new frame is reached and the frame end has ran once
 		nextFrameMillis = millis() + timePerFrame;
 		frameCount++;
@@ -377,35 +371,10 @@ bool Gamebuino::_update(bool inpersistence) {
 	}
 	neoPixels.show();
 	neoPixels.clear();
-	
-	if (inpersistence) {
-#ifdef GAMEBUINO_COMPAT_MODE
-		if (!display.persistence) {
-			display.fill(DISPLAY_DEFAULT_BACKGROUND_COLOR);
-		}
-#else
-		display.fill(DISPLAY_DEFAULT_BACKGROUND_COLOR); //clear the buffer
-#endif
-		light.fill(Color::black);
-	}
-	
-	display.setColor(DISPLAY_DEFAULT_COLOR);
-	
-	display.setCursor(0, 0);
-	display.fontSize = 1;
-	display.textWrap = true;
 
 	frameEndMicros = micros(); //measure the frame's end time
 	frameDurationMicros = frameEndMicros - frameStartMicros;
 	return false;
-}
-
-bool Gamebuino::update() {
-	return _update(true);
-}
-
-bool Gamebuino::updatePersistent() {
-	return _update(false);
 }
 
 void Gamebuino::updateDisplay() {
@@ -476,7 +445,7 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 			currentY = (currentY + targetY) / 2;
 			display.cursorX = 0;
 			display.cursorY = currentY;
-			display.fontSize = 1;
+			display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
 			display.textWrap = false;
 			for (byte i = 0; i < length; i++) {
 				if (i == activeItem){
@@ -539,10 +508,35 @@ void Hook_ExitHomeMenu() {
 	
 }
 
+#define HOME_MENU_SAVE_STATE \
+	int16_t hm_save_cursorX = display.cursorX; \
+	int16_t hm_save_cursorY = display.cursorY; \
+	Color hm_save_color = display.color; \
+	Color hm_save_bgcolor = display.bgcolor; \
+	uint8_t hm_save_fontSize = display.fontSize; \
+	bool hm_save_textWrap = display.textWrap; \
+	uint8_t* hm_save_font = display.font; \
+	uint8_t hm_save_fontWidth = display.fontWidth; \
+	uint8_t hm_save_fontHeight = display.fontHeight;
+
+#define HOME_MENU_RESTORE_STATE \
+	display.cursorX = hm_save_cursorX; \
+	display.cursorY = hm_save_cursorY; \
+	display.color = hm_save_color; \
+	display.bgcolor = hm_save_bgcolor; \
+	display.fontSize = hm_save_fontSize; \
+	display.textWrap = hm_save_textWrap; \
+	display.font = hm_save_font; \
+	display.fontWidth = hm_save_fontWidth; \
+	display.fontHeight = hm_save_fontHeight;
+
 void Gamebuino::homeMenu(){
 	//here we don't use gb.update and display.not to interfere with the game
 	//the only things we use are gb.tft and gb.buttons
 	sound.startEfxOnly();
+	
+	HOME_MENU_SAVE_STATE;
+	
 	int currentItem = 0;
 	const int numItems = 6;
 	unsigned long lastMillis = 0;
@@ -619,6 +613,7 @@ void Gamebuino::homeMenu(){
 			
 			if(buttons.released(Button::d) || buttons.released(Button::b) || buttons.released(Button::c)){
 				sound.stopEfxOnly();
+				HOME_MENU_RESTORE_STATE;
 				Hook_ExitHomeMenu();
 				return;
 			}
@@ -731,6 +726,7 @@ void Gamebuino::homeMenu(){
 							tft.print(language._get(lang_homeMenu_GO));
 							delay(250);
 							sound.stopEfxOnly();
+							HOME_MENU_RESTORE_STATE;
 							Hook_ExitHomeMenu();
 							return;
 						} else {
@@ -860,7 +856,6 @@ void Gamebuino::homeMenu(){
 			changed = false;
 		}
 	}
-	Hook_ExitHomeMenu();
 }
 
 void Gamebuino::keyboard(char* text, uint8_t length) {
@@ -1117,6 +1112,6 @@ void noTone(uint32_t outputPin) {
 
 void yield() {
 	if (gb.frameEndMicros || gb.frameStartMicros) {
-		gb.updatePersistent();
+		gb.update();
 	}
 }

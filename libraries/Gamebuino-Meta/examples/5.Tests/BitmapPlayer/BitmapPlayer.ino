@@ -51,6 +51,9 @@ boolean loadNextBitmap() {
 
 void loop() {
   if (gb.update()) {
+    // clear the previous screen
+    gb.display.clear();
+    
     //if multiple frames
     if (img.frames > 1) { 
       //load after the last one

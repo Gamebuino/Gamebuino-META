@@ -14,6 +14,12 @@ bool redLight = false;
 
 void loop() {
   if (gb.update()) {
+    // clear the previous screen
+    gb.display.clear();
+    
+    // clear the previous state of the lights
+    gb.light.clear();
+    
     if (lightsOn) {
       // if we want the lights to be on, let's turn all lights white!
       gb.light.fill(WHITE);

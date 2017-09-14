@@ -365,6 +365,55 @@ void Graphics::fill(Color c) {
 	color = tempColor;
 }
 
+void Graphics::clearTextVars() {
+	setCursor(0, 0);
+	setFont(font3x5);
+	fontSize = DEFAULT_FONT_SIZE;
+	textWrap = true;
+}
+
+void Graphics::clear() {
+	clear(Color::black);
+}
+
+void Graphics::clear(Color c) {
+	if (colorMode == ColorMode::index) {
+		clear(rgb565ToIndex(c));
+		return;
+	}
+	fill(c);
+	setColor((Color)(0xFFFF ^ (uint16_t)c));
+	clearTextVars();
+}
+
+void Graphics::clear(ColorIndex c) {
+	const ColorIndex complimentary[] = {
+		ColorIndex::white, // black
+		ColorIndex::yellow, // darkblue
+		ColorIndex::lightgreen, // purple
+		ColorIndex::orange, // green
+		ColorIndex::darkgray, // brown
+		ColorIndex::brown, // darkgray
+		ColorIndex::red, // gray
+		ColorIndex::black, // white
+		ColorIndex::gray, // red
+		ColorIndex::green, // orange
+		ColorIndex::darkblue, // yellow
+		ColorIndex::purple, // lightgreen
+		ColorIndex::pink, // lightblue
+		ColorIndex::beige, // blue
+		ColorIndex::lightblue, // pink
+		ColorIndex::blue, // beige
+	};
+	if (colorMode == ColorMode::rgb565) {
+		clear(colorIndex[(uint8_t)c]);
+		return;
+	}
+	fill(c);
+	setColor(complimentary[(uint8_t)c]);
+	clearTextVars();
+}
+
 void Graphics::fill(ColorIndex c) {
 	Color tempColor = color;
 	if (colorMode == ColorMode::index) {

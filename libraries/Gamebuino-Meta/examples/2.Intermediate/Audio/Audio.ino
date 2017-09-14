@@ -12,6 +12,9 @@ int8_t fx = -1;
 
 void loop() {
   if (gb.update()) {
+    // clear the previous screen
+    gb.display.clear();
+    
     // let's just print some information on free ram and CPU first
     gb.display.print("RAM:");
     gb.display.println(gb.getFreeRam());

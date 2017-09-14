@@ -25,6 +25,9 @@ void setup() {
 
 void loop() {
   if (gb.update()) {
+    // clear the previous screen
+    gb.display.clear();
+    
     // let's first output our cached stuff
     gb.display.println("Number:");
     gb.display.println(number);

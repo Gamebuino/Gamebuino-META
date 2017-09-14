@@ -357,8 +357,8 @@ class World {
       int thisMap = mapNumber;
       while (1) {
         if (gb.update()) {
-          gb.display.setColor(WHITE);
-          gb.display.fill();
+          gb.display.clear(WHITE);
+          gb.light.clear();
           gb.display.setColor(BLACK, WHITE);
 
           //assign the selected map
@@ -1861,6 +1861,8 @@ void setup() {
 ///////////////////////////////////////////// LOOP
 void loop() {
   if (gb.update()) {
+    gb.display.setCursors(0, 0);
+    gb.light.clear();
     if (gb.buttons.pressed(BUTTON_C)) {
       gamePaused();
     }
@@ -1929,6 +1931,8 @@ void loop() {
       }
       while (1) {
         if (gb.update()) {
+          gb.display.setCursors(0, 0);
+          gb.light.clear();
           player.update();
           enemiesEngine.update();
           drawAll();
@@ -1955,8 +1959,8 @@ void mainMenu() {
 void gamePaused() {
   while (1) {
     if (gb.update()) {
-      gb.display.setColor(WHITE);
-      gb.display.fill();
+      gb.display.clear(WHITE);
+      gb.light.clear();
       gb.display.setColor(BLUE, WHITE);
       drawAll();
       gb.display.setColor(WHITE, BLACK);

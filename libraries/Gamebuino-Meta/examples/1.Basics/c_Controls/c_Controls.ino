@@ -21,6 +21,8 @@ void loop(){
   //updates the gamebuino (the display, the sound... everything)
   //returns true when it's time to render a new frame (25 times/second)
   if(gb.update()){
+    // clear the previous screen
+    gb.display.clear();
     
     //move the ball using the buttons
     if(gb.buttons.repeat(BUTTON_RIGHT,2)){ //every 2 frames when the right button is held down
