@@ -25,10 +25,11 @@ void setup()
   gb.save.config(savefileDefaults);
   
   initHighscore();
+  
+  gb.titleScreen("REC/UFO-RACE-01.BMP");
 }
 
 void loop(){
-  //drawTitleScreen();
   drawMenu();
 }
 

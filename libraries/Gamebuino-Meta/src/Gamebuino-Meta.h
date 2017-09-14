@@ -112,9 +112,8 @@ public:
 	Language language;
 
 	void begin();
-	void titleScreen(const char* name, const uint8_t *logo);
-	void titleScreen(const char* name);
-	void titleScreen(const uint8_t* logo);
+	void titleScreen(const char* filename, Image* img = 0);
+	void titleScreen(Image& img);
 	void titleScreen();
 	bool update();
 	void updateDisplay();

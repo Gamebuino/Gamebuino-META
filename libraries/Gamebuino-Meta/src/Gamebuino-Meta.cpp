@@ -60,23 +60,24 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress ) {
 
 	/* When the following line is hit, the variables contain the register values. */
 	gb.tft.setCursors(0, 0);
+	gb.tft.setColor(Color::white, Color::black);
 	gb.tft.println("Hard Fault");
-	gb.tft.print("r0:");
-	gb.tft.println(r0);
-	gb.tft.print("r1:");
-	gb.tft.println(r1);
-	gb.tft.print("r2:");
-	gb.tft.println(r2);
-	gb.tft.print("r3:");
-	gb.tft.println(r3);
-	gb.tft.print("r12:");
-	gb.tft.println(r12);
-	gb.tft.print("lr:");
-	gb.tft.println(lr);
-	gb.tft.print("pc:");
-	gb.tft.println(pc);
-	gb.tft.print("psr:");
-	gb.tft.println(psr);
+	gb.tft.print("r0: 0x");
+	gb.tft.println(r0, HEX);
+	gb.tft.print("r1: 0x");
+	gb.tft.println(r1, HEX);
+	gb.tft.print("r2: 0x");
+	gb.tft.println(r2, HEX);
+	gb.tft.print("r3: 0x");
+	gb.tft.println(r3, HEX);
+	gb.tft.print("r12: 0x");
+	gb.tft.println(r12, HEX);
+	gb.tft.print("lr: 0x");
+	gb.tft.println(lr, HEX);
+	gb.tft.print("pc: 0x");
+	gb.tft.println(pc, HEX);
+	gb.tft.print("psr: 0x");
+	gb.tft.println(psr, HEX);
 	__asm("BKPT #0\n") ; // Break into the debugger
 	while(1);
 }
@@ -226,90 +227,68 @@ void Gamebuino::begin() {
 	Graphics_SD::setTft(&tft);
 }
 
-void Gamebuino::titleScreen(const char* name){
-	titleScreen(name, 0);
+void Gamebuino::titleScreen(const char* filename, Image* img) {
+	ColorMode ts_backup_colorMode = display.colorMode;
+	uint16_t ts_backup_width = display._width;
+	uint16_t ts_backup_height = display._height;
+	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
+	bool foundFile = false;
+	bool useImage = false;
+	if (filename && SD.exists(filename)) {
+		foundFile = true;
+		display.init(ts_backup_width, ts_backup_height, (char*)filename);
+	} else if (img) {
+		useImage = true;
+	} else {
+		display.setCursors(0, 0);
+		display.println("Gamebuino game");
+		display.println(folder_name);
+	}
+	
+	bool first = false;
+	while(1) {
+		if(!update()) {
+			continue;
+		}
+		if (useImage) {
+			display.drawImage(0, 0, *img);
+		} else {
+			display.nextFrame();
+		}
+		if ((frameCount % 32) < 20) {
+			const char* msg = language._get(lang_titlescreen_a_start);
+			uint8_t w = display.fontWidth*strlen(msg)*display.fontSize;
+			uint8_t h = display.fontHeight*display.fontSize;
+			uint8_t x = (display.width() - w) / 2;
+			uint8_t y = (display.height() / 5) * 3 + h;
+			
+			display.setColor(Color::gray);
+			display.drawRect(x - display.fontSize*2, y - display.fontSize*2, w + display.fontSize*4, h + display.fontSize*3);
+			
+			display.setColor(Color::brown);
+			display.fillRect(x - display.fontSize, y - display.fontSize, w + display.fontSize*2, h + display.fontSize);
+			display.setColor(Color::white);
+			display.setCursors(x, y);
+			display.print(msg);
+			first = true;
+		} else if (display.frames == 1 && foundFile && first) {
+			display.init(ts_backup_width, ts_backup_height, (char*)filename);
+			first = false;
+		}
+		if (gb.buttons.pressed(Button::a)) {
+			sound.playOK();
+			break;
+		}
+	}
+	display.init(ts_backup_width, ts_backup_height, ts_backup_colorMode);
 }
 
-void Gamebuino::titleScreen(const uint8_t* logo){
-	titleScreen("", logo);
+void Gamebuino::titleScreen(Image& img) {
+	titleScreen(0, &img);
 }
 
 void Gamebuino::titleScreen(){
-	titleScreen("", 0);
-}
-
-void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
-	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
-	display.textWrap = false;
-	
-	while(1){
-		if(update()){
-			uint8_t logoOffset = name[0]?display.fontHeight:0; //add an offset the logo when there is a name to display
-			//draw graphics
-			//#if LCDWIDTH == LCDWIDTH_NOROT
-			display.drawBitmap(-1,1, gamebuinoLogo);
-			if(logo){
-				display.drawBitmap(0, 12+logoOffset, logo);
-			}
-			display.setCursors(0, 12);
-			/*#else
-			display.drawBitmap(7,0, gamebuinoLogo);
-			display.drawBitmap(-41,12,gamebuinoLogo);
-			if(logo){
-				display.drawBitmap(0, 24+logoOffset, logo);
-			}
-			display.cursorX = 0;
-			display.cursorY = 24;
-			#endif*/
-			display.setCursorY(12);
-			
-			display.print(name);
-			
-			//A button
-			display.cursorX = display.width() - display.fontWidth*3 -1;
-			display.cursorY = display.height() - display.fontHeight*3 - 3;
-			if((frameCount/16)%2) {
-				display.println("\25 \20");
-			} else {
-				display.println("\25\20 ");
-			}
-			//B button
-			display.cursorX = display.width() - display.fontWidth*3 - 1;
-			display.cursorY++;
-			if(!sound.isMute()) {
-				display.println("\26\23\24");
-			} else {
-				display.println("\26\23x");
-			}
-			//C button
-			display.cursorX = display.width() - display.fontWidth*3 - 1;
-			display.cursorY++;
-			display.println("\27SD");
-			
-			//toggle volume when B is pressed
-			if(buttons.pressed(Button::b)){
-				if (sound.isMute()) {
-					sound.unmute();
-					sound.playTick();
-					settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
-				} else {
-					sound.mute();
-					settings.set(SETTING_VOLUME_MUTE, 1);
-				}
-			}
-			//leave the menu
-			if(buttons.pressed(Button::a)){
-				//startMenuTimer = 255; //don't automatically skip the title screen next time it's displayed
-				//sound.stopPattern(0);
-				sound.playOK();
-				break;
-			}
-			//flash the loader
-			if(buttons.pressed(Button::c)) {
-				changeGame();
-			}
-		}
-	}
+	titleScreen("TITLESCREEN.BMP");
 }
 
 bool recording_screen = false;
