@@ -160,7 +160,7 @@ void setup() {
 						gb.display.println("Unknown");
 				}
 				gb.display.print("\n");
-				gb.display.print(gb.language.get(lang_press_a_continue));
+				gb.language.print(lang_press_a_continue);
 				if (gb.buttons.pressed(BUTTON_A)) {
 					break;
 				}
@@ -171,7 +171,7 @@ void setup() {
 	
 	gb.sound.play(startupSound);
 	gb.display.setCursors(0, 0);
-	gb.display.println(gb.language.get(lang_loading));
+	gb.language.println(lang_loading);
 	gb.updateDisplay();
 	clearEmptyFolders();
 	loadNumberOfGames();

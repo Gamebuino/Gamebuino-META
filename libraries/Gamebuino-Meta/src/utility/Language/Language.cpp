@@ -1,5 +1,8 @@
 #include "Language.h"
 
+#include "../../Gamebuino-Meta.h"
+extern Gamebuino gb;
+
 namespace Gamebuino_Meta {
 
 LangCode Language::getCurrentLang() {
@@ -23,6 +26,14 @@ const char* Language::get(const MultiLang* l, uint8_t num) {
 		}
 	}
 	return def;
+}
+
+void Language::print(const MultiLang* l, uint8_t num) {
+	gb.display.print(get(l, num));
+}
+
+void Language::println(const MultiLang* l, uint8_t num) {
+	gb.display.println(get(l, num));
 }
 
 }; // Gamebuino_Meta

@@ -25,5 +25,8 @@ void loop() {
     
     // we can also combind the two lines above, letting it become:
     gb.display.println(gb.language.get(fox));
+    
+    // or, if we want to print to the display, we can even do
+    gb.language.println(fox);
   }
 }

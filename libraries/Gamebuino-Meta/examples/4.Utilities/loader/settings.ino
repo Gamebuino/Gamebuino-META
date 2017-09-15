@@ -24,15 +24,15 @@ void settingsView() {
 		gb.display.setCursors(0, 8);
 		gb.display.setColor(BEIGE);
 		gb.display.print(" ");
-		gb.display.print(gb.language.get(lang_settings_default_name));
+		gb.language.print(lang_settings_default_name);
 		gb.display.print(":\n  ");
 		gb.display.setColor(LIGHTBLUE);
 		gb.display.println(defaultName);
 		gb.display.setColor(BEIGE);
 		gb.display.print(" ");
-		gb.display.println(gb.language.get(lang_settings_enter_bootloader));
+		gb.language.println(lang_settings_enter_bootloader);
 		gb.display.print(" ");
-		gb.display.println(gb.language.get(lang_settings_back));
+		gb.language.println(lang_settings_back);
 		
 		if ((gb.frameCount%10) < 5) {
 			gb.display.setColor(RED);
