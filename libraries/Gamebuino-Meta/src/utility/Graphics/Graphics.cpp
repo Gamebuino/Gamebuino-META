@@ -1449,7 +1449,7 @@ void Graphics::getTextBounds(const __FlashStringHelper *str,
 
 // Return the size of the display (per current rotation)
 int16_t Graphics::width(void) const {
-	if (gb.inited) {
+	if (gb.inited || _width) {
 		// we are inited
 		return _width;
 	}
@@ -1462,7 +1462,7 @@ int16_t Graphics::width(void) const {
 }
 
 int16_t Graphics::height(void) const {
-	if (gb.inited) {
+	if (gb.inited || _height) {
 		// we are inited
 		return _height;
 	}

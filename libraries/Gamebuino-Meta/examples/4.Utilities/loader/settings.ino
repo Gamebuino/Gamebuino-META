@@ -6,9 +6,9 @@ const uint8_t settings_cursorPositions[] = {
 };
 const uint8_t settings_numCursorPositions = 3;
 void settingsView() {
-	uint16_t bootloader_major = Gamebuino_Meta::bootloader_version() >> 16;
-	uint8_t bootloader_minor = Gamebuino_Meta::bootloader_version() >> 8;
-	uint8_t bootloader_patch = Gamebuino_Meta::bootloader_version() >> 8;
+	uint16_t bootloader_major = gb.bootloader.version() >> 16;
+	uint8_t bootloader_minor = gb.bootloader.version() >> 8;
+	uint8_t bootloader_patch = gb.bootloader.version() >> 8;
 	char defaultName[13];
 	gb.getDefaultName(defaultName);
 	uint8_t cursor = 0;
@@ -16,6 +16,7 @@ void settingsView() {
 		if (!gb.update()) {
 			continue;
 		}
+		gb.display.clear();
 		const char* s = gb.language.get(lang_settings);
 		gb.display.setColor(WHITE);
 		gb.display.setCursors(40 - strlen(s)*2, 1);
@@ -64,7 +65,7 @@ void settingsView() {
 					break;
 				case 1:
 					// enter bootloader mode
-					Gamebuino_Meta::enter_bootloader();
+					gb.bootloader.enter();
 					break;
 				case 2:
 					// back

@@ -48,6 +48,7 @@ void gridView() {
 		if (!gb.update()) {
 			continue;
 		}
+		gb.display.clear();
 		if (!totalGames) {
 			gb.display.setColor(RED);
 			gb.display.println(gb.language.get(lang_no_games));

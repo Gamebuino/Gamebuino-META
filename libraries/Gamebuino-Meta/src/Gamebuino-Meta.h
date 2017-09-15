@@ -35,6 +35,7 @@ extern SdFat SD;
 #include "utility/Buttons.h"
 #include "utility/Sound.h"
 #include "utility/Save.h"
+#include "utility/Bootloader.h"
 
 #include "utility/Adafruit_NeoPixel.h"
 #include "utility/Display-ST7735.h"
@@ -62,37 +63,6 @@ namespace Gamebuino_Meta {
 #define NEOPIX_PIN	(38u)
 #define BAT_PIN		(A5)
 
-
-// implement the bootloader functions as inlines
-inline uint32_t bootloader_version(void) {
-	return *(uint32_t*)0x3FFC;
-}
-
-inline void load_game(const char* filename) {
-	noInterrupts(); // fix for bootloader 1.0.0
-	((void(*)(const char*))(*((uint32_t*)0x3FF8)))(filename);
-}
-
-inline void load_game(char* filename) {
-	load_game((const char*)filename);
-}
-
-inline void load_loader(void) {
-	((void(*)(void))(*((uint32_t*)0x3FF4)))();
-}
-
-inline void enter_bootloader(void) {
-	((void(*)(void))(*((uint32_t*)0x3FEC)))();
-}
-
-inline void trigger_error(uint16_t e) {
-	if (Gamebuino_Meta::bootloader_version() <= 0x10001) {
-		Gamebuino_Meta::load_loader();
-	} else {
-		((void(*)(uint16_t))(*((uint32_t*)0x3FE8)))(e);
-	}
-}
-
 #define wrap(i, imax) ((imax+i)%(imax))
 
 class Gamebuino {
@@ -110,6 +80,7 @@ public:
 	Save save;
 	Save settings;
 	Language language;
+	Bootloader bootloader;
 
 	void begin();
 	void titleScreen(const char* filename, Image* img = 0);
@@ -132,7 +103,7 @@ public:
 	void homeMenu();
 	void keyboard(char* text, uint8_t length);
 	void popup(const char* text, uint8_t duration);
-	//void adjustVolume();
+	
 	void changeGame();
 	bool settingsAvailable();
 	void readSettings();

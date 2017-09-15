@@ -136,6 +136,7 @@ void setup() {
 				if (!gb.update()) {
 					continue;
 				}
+				gb.display.clear();
 				gb.display.print("ERROR (");
 				gb.display.print(error);
 				gb.display.println(")");

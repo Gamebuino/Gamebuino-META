@@ -53,7 +53,7 @@ void loadGame() {
 		gb.display.print(nameBuffer);
 	}
 	gb.updateDisplay();
-	Gamebuino_Meta::load_game(nameBuffer);
+	gb.bootloader.game(nameBuffer);
 }
 
 void detailedView() {
@@ -62,6 +62,7 @@ void detailedView() {
 		if (!gb.update()) {
 			continue;
 		}
+		gb.display.clear();
 		uint16_t currentGameInBlock = currentGame % BLOCK_LENGTH;
 		if (titleScreenImageExists) {
 			gb.display.drawImage(0, 0, titleScreenImage);
