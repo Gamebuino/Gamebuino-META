@@ -1,16 +1,16 @@
 
-Image titleScreenImage{gb.display.width(), gb.display.height(), ColorMode::rgb565};
+Image titleScreenImage;
+
 bool titleScreenImageExists;
 bool displayName;
 void loadDetailedView() {
-	uint16_t currentGameInBlock = currentGame % BLOCK_LENGTH;
-	strcpy(nameBuffer, gameFolders[currentGameInBlock]);
+	strcpy(nameBuffer, getCurrentGameFolder());
 	strcpy(nameBuffer + strlen(nameBuffer), "/TITLESCREEN.BMP");
 	titleScreenImageExists = SD.exists(nameBuffer);
 	displayName = !titleScreenImageExists;
 	if (!titleScreenImageExists) {
 		// try to display the first BMP in the rec folder
-		strcpy(nameBuffer, gameFolders[currentGameInBlock]);
+		strcpy(nameBuffer, getCurrentGameFolder());
 		strcpy(nameBuffer + strlen(nameBuffer), "/REC/");
 		uint16_t i = strlen(nameBuffer);
 		if (SD.exists(nameBuffer)) {
@@ -20,7 +20,7 @@ void loadDetailedView() {
 				if (!entry.isFile()) {
 					continue;
 				}
-				entry.getName(nameBuffer + i, 512 - i);
+				entry.getName(nameBuffer + i, NAMEBUFFER_LENGTH - i);
 				if (!strstr(nameBuffer, ".BMP") && !strstr(nameBuffer, ".bmp")) {
 					continue;
 				}
@@ -35,18 +35,23 @@ void loadDetailedView() {
 		gb.display.setCursors(0, 0);
 		gb.language.println(lang_loading);
 		gb.updateDisplay();
-		titleScreenImage.init(80, 64, nameBuffer);
+		gb.display.init(80, 64, nameBuffer);
+		if (gb.display.width() != 80 || gb.display.height() != 64) {
+			titleScreenImageExists = false;
+		}
+	}
+	if (!titleScreenImageExists) {
+		gb.display.init(80, 64, ColorMode::rgb565);
 	}
 }
 
 void loadGame() {
-	uint16_t currentGameInBlock = currentGame % BLOCK_LENGTH;
-	strcpy(folderName, gameFolders[currentGameInBlock]);
+	strcpy(folderName, getCurrentGameFolder());
 	getBinPath(nameBuffer);
 	if (titleScreenImageExists) {
-		gb.display.drawImage(0, 0, titleScreenImage);
+		loadDetailedView(); // easiest way to fetch the first frame
 	} else {
-		gb.display.fill(BLACK);
+		gb.display.clear();
 		gb.display.setColor(WHITE, BLACK);
 		gb.display.setCursors(0, 24);
 		gb.language.println(lang_loading);
@@ -62,12 +67,14 @@ void detailedView() {
 		if (!gb.update()) {
 			continue;
 		}
-		gb.display.clear();
-		uint16_t currentGameInBlock = currentGame % BLOCK_LENGTH;
+		uint8_t blockOffset = currentGame / BLOCK_LENGTH;
+		uint8_t gameInBlock = currentGame % BLOCK_LENGTH;
+		uint8_t b = getBlock(blockOffset);
+		
 		if (titleScreenImageExists) {
-			gb.display.drawImage(0, 0, titleScreenImage);
+			gb.display.nextFrame();
 		} else {
-			gb.display.fill(BLACK);
+			gb.display.clear();
 		}
 		
 		if (displayName) {
@@ -81,7 +88,7 @@ void detailedView() {
 			// game name
 			gb.display.setColor(WHITE);
 			gb.display.setCursors(2, 17);
-			gb.display.println(gameFolders[currentGameInBlock] + 1);
+			gb.display.println(getCurrentGameFolder() + 1);
 		}
 		
 		// lower bar
@@ -106,43 +113,24 @@ void detailedView() {
 		gb.display.setColor(BROWN);
 		gb.language.print(lang_browse);
 		
-		if (gb.buttons.repeat(BUTTON_LEFT, 4)) {
-			if (currentGameInBlock == 0 && gameFolderBlock == 0) {
-				// nothing to do
-			} else if (currentGameInBlock == 0) {
-				currentGame--;
-				gameFolderBlock--;
-				loadGameFolderBlock();
-				loadDetailedView();
-				gb.sound.playTick();
-			} else {
-				currentGame--;
-				loadDetailedView();
-				gb.sound.playTick();
-			}
+		if (gb.buttons.repeat(BUTTON_LEFT, 4) && currentGame > 0) {
+			currentGame--;
+			loadDetailedView();
+			gb.sound.playTick();
 		}
 		
-		if (gb.buttons.repeat(BUTTON_RIGHT, 4)) {
-			if (currentGameInBlock >= (filesInBlock - 1) && lastBlock) {
-				// do nothing
-			} else if (currentGameInBlock >= (filesInBlock - 1)) {
-				currentGame++;
-				gameFolderBlock++;
-				loadGameFolderBlock();
-				loadDetailedView();
-				gb.sound.playTick();
-			} else {
-				currentGame++;
-				loadDetailedView();
-				gb.sound.playTick();
-			}
+		if (gb.buttons.repeat(BUTTON_RIGHT, 4) && currentGame < totalGames - 1) {
+			currentGame++;
+			loadDetailedView();
+			gb.sound.playTick();
 		}
 		
 		if (gb.buttons.pressed(BUTTON_A)) {
 			loadGame();
 		}
 		
-		if (gb.buttons.pressed(BUTTON_C)) {
+		if (gb.buttons.pressed(BUTTON_B)) {
+			gb.display.init(80, 64, ColorMode::rgb565);
 			gb.sound.playCancel();
 			return;
 		}

@@ -1,7 +1,7 @@
 #include <Gamebuino-Meta.h>
 #include "language.h"
 
-const char LOADER_VERSION[] = "0.1.1";
+const char LOADER_VERSION[] = "dev";
 
 #define RAM_FLAG_ADDRESS (0x20007FFCul)
 #define RAM_FLAG_VALUE (*((volatile uint32_t *)RAM_FLAG_ADDRESS))
@@ -9,40 +9,19 @@ const char LOADER_VERSION[] = "0.1.1";
 
 
 #define MAX_FOLDER_NAME_LENGTH 40
-#define GRID_WIDTH 4
-#define GRID_HEIGHT 2
-#define PAGE_SIZE (GRID_WIDTH * GRID_HEIGHT)
-#define PAGES_PER_BLOCK 8
+#define NAMEBUFFER_LENGTH (MAX_FOLDER_NAME_LENGTH*2)
+#define PAGE_SIZE 6
+#define PAGES_PER_BLOCK 2
 #define BLOCK_LENGTH (PAGE_SIZE * PAGES_PER_BLOCK)
-char gameFolders[BLOCK_LENGTH][MAX_FOLDER_NAME_LENGTH];
-uint32_t totalGames;
-uint8_t filesInBlock;
-uint8_t pageInBlock = 0;
-bool lastBlock = false;
-char folderName[512];
-char nameBuffer[512];
+uint8_t blocksLoaded[2];
+uint32_t totalGames = 0;
+char folderName[MAX_FOLDER_NAME_LENGTH];
+char nameBuffer[NAMEBUFFER_LENGTH];
+char gameFolders[2][BLOCK_LENGTH][MAX_FOLDER_NAME_LENGTH];
 uint32_t currentGame = 0;
-uint32_t gameFolderBlock = 0;
 
 
 const uint16_t startupSound[] = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
-
-void clearEmptyFolders() {
-	File dir_walk = SD.open("/");
-	File entry;
-	while (entry = dir_walk.openNextFile()) {
-		if (!entry.isDirectory()) {
-			continue;
-		}
-		folderName[0] = '/';
-		entry.getName(folderName+1, 512-1);
-		if (!strstr(folderName, "loader")) {
-			SD.rmdir(folderName); // this already checks if the folder is empty
-		}
-	}
-	entry.close();
-	dir_walk.close();
-}
 
 bool getBinPath(char* name) {
 	File dir_walk = SD.open(folderName);
@@ -60,7 +39,7 @@ bool getBinPath(char* name) {
 		if (!entry.isFile()) {
 			continue;
 		}
-		entry.getName(name + i, 512 - i);
+		entry.getName(name + i, NAMEBUFFER_LENGTH - i);
 		if (strstr(name, ".bin") || strstr(name, ".BIN")) {
 			return true;
 		}
@@ -68,7 +47,7 @@ bool getBinPath(char* name) {
 	return false;
 }
 
-void loadNumberOfGames() {
+void initFolders() {
 	File root = SD.open("/");
 	File entry;
 	totalGames = 0;
@@ -78,57 +57,85 @@ void loadNumberOfGames() {
 		}
 		folderName[0] = '/';
 		entry.getName(folderName + 1, MAX_FOLDER_NAME_LENGTH - 1);
+		if (!strstr(folderName, "loader")) {
+			SD.rmdir(folderName); // this already checks if the folder is empty
+		}
 		if (!getBinPath(nameBuffer)) {
 			continue;
 		}
 		totalGames++;
 	}
+	entry.close();
+	root.close();
 }
 
-void loadGameFolderBlock() {
+uint8_t getBlock(uint8_t b) {
+	if (blocksLoaded[0] == b) {
+		return 0;
+	}
+	if (blocksLoaded[1] == b) {
+		return 1;
+	}
+	int8_t diff = blocksLoaded[0] - b;
+	if (diff <= 1 && diff >= -1) {
+		loadGameFolderBlock(1, b);
+		blocksLoaded[1] = b;
+		return 1;
+	} else {
+		loadGameFolderBlock(0, b);
+		blocksLoaded[0] = b;
+		return 0;
+	}
+}
+
+char* getCurrentGameFolder() {
+	uint8_t blockOffset = currentGame / BLOCK_LENGTH;
+	uint8_t gameInBlock = currentGame % BLOCK_LENGTH;
+	uint8_t b = getBlock(blockOffset);
+	return gameFolders[b][gameInBlock];
+}
+
+void loadGameFolderBlock(uint8_t b, uint8_t bb) {
 	File root = SD.open("/");
 	File entry;
-	filesInBlock = 0;
-	uint32_t i = 0;
-	uint32_t j = 0;
-	bool searchForLast = false;
-	lastBlock = true;
+	uint8_t filesInBlock = 0;
+	uint8_t i = 0;
+	int8_t j = -1; // thefuck?
 	while (entry = root.openNextFile()) {
 		if (!entry.isDirectory()) {
 			continue;
 		}
-		gameFolders[filesInBlock][0] = '/';
-		entry.getName(gameFolders[filesInBlock] + 1, MAX_FOLDER_NAME_LENGTH - 1);
-		strcpy(folderName, gameFolders[filesInBlock]);
+		gameFolders[b][filesInBlock][0] = '/';
+		entry.getName(gameFolders[b][filesInBlock] + 1, MAX_FOLDER_NAME_LENGTH - 1);
+		strcpy(folderName, gameFolders[b][filesInBlock]);
 		
 		if (!getBinPath(nameBuffer)) {
 			continue;
 		}
-		if (searchForLast) {
-			lastBlock = false;
-			break;
-		}
-		if (i < gameFolderBlock) {
+		if (i < bb) {
+			j++;
 			if (j < BLOCK_LENGTH) {
-				j++;
 				continue;
 			}
 			i++;
 			j = 0;
-			if (i < gameFolderBlock) {
+			if (i < bb) {
 				continue;
 			}
 		}
 		filesInBlock++;
 		if (filesInBlock >= BLOCK_LENGTH) {
-			searchForLast = true;
+			break;
 		}
 	}
+	entry.close();
+	root.close();
 }
 
 void setup() {
 	gb.begin();
-//	SerialUSB.begin(115200)
+//	SerialUSB.begin(115200);
+//	while(!SerialUSB);
 	if ((RAM_FLAG_VALUE & 0xFFFF0000) == LOADER_MAGIC) {
 		uint16_t error = RAM_FLAG_VALUE & 0x0000FFFF;
 		if (error && error != 0xD87A) {
@@ -169,14 +176,16 @@ void setup() {
 		RAM_FLAG_VALUE = 0; // make sure we don't get weird stuff
 	}
 	
-	gb.sound.play(startupSound);
 	gb.display.setCursors(0, 0);
 	gb.language.println(lang_loading);
 	gb.updateDisplay();
-	clearEmptyFolders();
-	loadNumberOfGames();
-	loadGameFolderBlock();
+	initFolders();
+	loadGameFolderBlock(0, 0);
+	loadGameFolderBlock(1, 1);
+	blocksLoaded[0] = 0;
+	blocksLoaded[1] = 1;
 	
+	gb.sound.play(startupSound);
 	
 	
 	gridView();
