@@ -144,6 +144,12 @@ public:
 	
 	Color createColor(uint8_t r, uint8_t g, uint8_t b);
 	uint8_t getTimePerFrame();
+	
+	// so that we know when the object is actually initialized
+	// importent for proper detection of what gb.display.width() and gb.display.height() return outside any function
+	// unfortunatelly the arduino platform.txt doesn't allow us to change the order of object files, which would be the prefered way
+	// as the Gamebuino constructor would be called then first, for sure
+	bool inited = true;
 
 private:
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);

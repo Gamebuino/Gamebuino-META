@@ -43,6 +43,10 @@ POSSIBILITY OF SUCH DAMAGE.
 // default 3x5 font table
 extern const uint8_t font3x5[];
 
+// gb is only needed to check for the inited state to get proper width() and height() during initialization
+#include "../../Gamebuino-Meta.h"
+extern Gamebuino gb;
+
 namespace Gamebuino_Meta {
 
 //default values of static members
@@ -1445,7 +1449,7 @@ void Graphics::getTextBounds(const __FlashStringHelper *str,
 
 // Return the size of the display (per current rotation)
 int16_t Graphics::width(void) const {
-	if (_width) {
+	if (gb.inited) {
 		// we are inited
 		return _width;
 	}
@@ -1458,7 +1462,7 @@ int16_t Graphics::width(void) const {
 }
 
 int16_t Graphics::height(void) const {
-	if (_height) {
+	if (gb.inited) {
 		// we are inited
 		return _height;
 	}
