@@ -28,16 +28,47 @@ void loadGridEntry(uint8_t i, uint32_t game) {
 	if (SD.exists(nameBuffer)) {
 		gridViewEntries[i].mode = GridMode::icon;
 		gridViewEntries[i].img.init(ICON_WIDTH, ICON_HEIGHT, nameBuffer);
-	} else {
-		gridViewEntries[i].mode = GridMode::name;
+		return;
 	}
+	// maybe we have an old, cached icon?
+	// not used as apparently live cropping is fast enough
+	/*
+	strcpy(nameBuffer + strlen(gameFolders[b][gameInBlock]), "/ICON_CACHE.BMP");
+	if (SD.exists(nameBuffer)) {
+		gridViewEntries[i].mode = GridMode::icon;
+		gridViewEntries[i].img.init(ICON_WIDTH, ICON_HEIGHT, nameBuffer);
+		return;
+	}
+	*/
+	// okay, maybe the user made a screenshot that we need to crop?
+	strcpy(nameBuffer + strlen(gameFolders[b][gameInBlock]), "/REC/");
+	if (SD.exists(nameBuffer)) {
+		uint8_t j = strlen(nameBuffer);
+		File dir_walk = SD.open(nameBuffer);
+		File entry;
+		while (entry = dir_walk.openNextFile()) {
+			if (!entry.isFile()) {
+				continue;
+			}
+			entry.getName(nameBuffer + j, NAMEBUFFER_LENGTH - j);
+			if (!strstr(nameBuffer, ".BMP") && !strstr(nameBuffer, ".bmp")) {
+				continue;
+			}
+			// OK, it's time to create a cropped image!
+			gridViewEntries[i].img.init(ICON_WIDTH, ICON_HEIGHT, ColorMode::rgb565);
+			
+			gb.display.init(80, 64, nameBuffer);
+			gridViewEntries[i].img.drawImage((ICON_WIDTH - 80) / 2, (ICON_HEIGHT - 64) / 2, gb.display);
+			gb.display.init(80, 64, ColorMode::rgb565);
+			
+			gridViewEntries[i].mode = GridMode::icon;
+			return;
+		}
+	}
+	gridViewEntries[i].mode = GridMode::name;
 }
 
 void loadGridView() {
-	gb.display.setCursors(0, 0);
-	gb.display.setColor(WHITE, BLACK);
-	gb.language.println(lang_loading);
-	gb.updateDisplay();
 	uint32_t gameOffset;
 	if (currentGame < 2) {
 		gameOffset = 0;
@@ -53,17 +84,19 @@ void loadGridView() {
 #define GRID_WIDTH 4
 #define GRID_HEIGHT 2
 
+const uint8_t CAMERA_INITIAL = 15;
+
 void gridView() {
 	loadGridView();
-	char singleLine[5] = "XXXX";
+	char singleLine[8];
 	char pageCounter[20];
 	uint16_t totalPages = (totalGames / PAGE_SIZE) + 1;
 	uint8_t gridIndex = 0;
 	if ((totalGames % PAGE_SIZE) == 0) {
 		totalPages--;
 	}
-	int8_t cameraY = 1;
-	int8_t cameraY_actual = 1;
+	int8_t cameraY = CAMERA_INITIAL;
+	int8_t cameraY_actual = CAMERA_INITIAL;
 	uint8_t cursorX = 0;
 	uint8_t cursorY = 0;
 	while(1) {
@@ -72,7 +105,10 @@ void gridView() {
 		}
 		gb.display.clear();
 		if (!totalGames) {
+			gb.display.setColor(WHITE);
+			gb.display.drawBitmap(0, 2, GAMEBUINO_LOGO);
 			gb.display.setColor(RED);
+			gb.display.setCursors(0, 18);
 			gb.language.println(lang_no_games);
 			continue;
 		}
@@ -107,15 +143,40 @@ void gridView() {
 				cameraY_actual -= adjust;
 			}
 		}
+		if (currentGame <= 3) {
+			gb.display.drawBitmap(0, cameraY_actual - CAMERA_INITIAL + 2, GAMEBUINO_LOGO);
+		}
 		
 		uint8_t i = gridIndex;
 		int16_t yy = cameraY_actual;
-		gb.display.setColor(RED);
+		gb.display.setColor(WHITE);
+		
+		uint8_t cg = currentGame - cursorX - 2*cursorY;
 		for (uint8_t j = 0; j < PAGE_SIZE; j++) {
 			uint8_t xx = j % 2 ? 32 + 6 + 1 : 0 + 6;
 			if (gridViewEntries[i].mode == GridMode::icon) {
 				gb.display.drawImage(xx, yy, gridViewEntries[i].img);
+			} else if (gridViewEntries[i].mode == GridMode::name) {
+				uint8_t blockOffset = cg / BLOCK_LENGTH;
+				uint8_t gameInBlock = cg % BLOCK_LENGTH;
+				uint8_t b = getBlock(blockOffset);
+				gb.display.setCursors(xx + 1, yy + 1);
+				const char* n = gameFolders[b][gameInBlock] + 1;
+				int8_t len = strlen(n);
+				if (len > 7*4) {
+					len = 7*4; // we don't want to display more than four rows
+				}
+				while (len > 0) {
+					strncpy(singleLine, n, 7);
+					len -= 7;
+					n += 7;
+					gb.display.print(singleLine);
+					gb.display.cursorY += 7;
+					gb.display.cursorX = xx + 1;
+				}
 			}
+			cg++;
+			
 			if (j % 2) {
 				yy += 33;
 			}
@@ -147,11 +208,12 @@ void gridView() {
 			currentGame -= 2;
 			cursorY--;
 			if (currentGame <= 1) {
-				cameraY = 1;
+				cameraY = CAMERA_INITIAL;
 			} else {
 				cameraY += 33;
 			}
 			if (cursorY < 1 && currentGame > 1) {
+				gb.update(); // we want to already draw the screen
 				cameraY -= 33;
 				cameraY_actual -= 33;
 				cursorY = 1;
@@ -177,6 +239,7 @@ void gridView() {
 				cameraY -= 33;
 			}
 			if (cursorY > 1 && currentGame < totalGames - 1) {
+				gb.update(); // we want to already draw the screen
 				cameraY += 33;
 				cameraY_actual += 33;
 				cursorY = 1;
@@ -196,11 +259,16 @@ void gridView() {
 			gb.sound.playOK();
 			detailedView();
 			gridIndex = 0;
+			
+			gb.display.setCursors(0, 0);
+			gb.display.setColor(WHITE, BLACK);
+			gb.language.println(lang_loading);
+			gb.updateDisplay();
 			loadGridView();
 			cursorX = currentGame%2 ? 1 : 0;
 			if (currentGame < 2) {
 				cursorY = 0;
-				cameraY = cameraY_actual = 1;
+				cameraY = cameraY_actual = CAMERA_INITIAL;
 			} else {
 				cursorY = 1;
 				cameraY = cameraY_actual = -16;

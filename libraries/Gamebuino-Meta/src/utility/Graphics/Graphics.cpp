@@ -692,8 +692,11 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 	int16_t i2offset = 0;
 	int16_t w2cropped = w1;
 	if (x < 0) {
-			i2offset = -x;
-			w2cropped = w1 + x;
+		i2offset = -x;
+		w2cropped = w1 + x;
+		if (w2cropped > _width) {
+			w2cropped = _width;
+		}
 	} else if ((x + w1) > _width) {
 		w2cropped = _width - x;
 	}
@@ -702,12 +705,13 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 	int16_t j2offset = 0;
 	int16_t h2cropped = h1;
 	if (y < 0) {
-			j2offset = -y;
-			h2cropped = h1 + y;
-	} else {
-			if ((y + h1) > _height) {
-					h2cropped = _height - y;
-			}
+		j2offset = -y;
+		h2cropped = h1 + y;
+		if (h2cropped > _height) {
+			h2cropped = _height;
+		}
+	} else if ((y + h1) > _height) {
+		h2cropped = _height - y;
 	}
 
 	//draw INDEX => RGB
