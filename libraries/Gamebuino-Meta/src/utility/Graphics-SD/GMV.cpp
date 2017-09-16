@@ -79,7 +79,7 @@ GMV::GMV(Image* _img, char* filename) {
 	
 	img->allocateBuffer();
 	
-	if (!img->_buffer || !img->_width || !img->_height) {
+	if (!img->_buffer) {
 		// sorry, nope
 		img->frames = 1;
 		return;

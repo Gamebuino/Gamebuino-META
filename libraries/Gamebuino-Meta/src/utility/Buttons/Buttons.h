@@ -24,7 +24,7 @@
 
 namespace Gamebuino_Meta {
 const uint8_t NUM_BTN = 8;
-const uint8_t BTN_CS = PIN_LED_RXL;
+const uint8_t BTN_CS = 25;
 
 enum class Button : uint8_t {
 	down,
