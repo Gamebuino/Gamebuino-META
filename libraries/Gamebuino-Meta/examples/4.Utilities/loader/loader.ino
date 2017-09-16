@@ -8,17 +8,19 @@ const char LOADER_VERSION[] = "dev";
 #define LOADER_MAGIC 0x242A0000
 
 
-#define MAX_FOLDER_NAME_LENGTH 40
-#define NAMEBUFFER_LENGTH (MAX_FOLDER_NAME_LENGTH*2)
-#define PAGE_SIZE 6
-#define PAGES_PER_BLOCK 2
-#define BLOCK_LENGTH (PAGE_SIZE * PAGES_PER_BLOCK)
+const uint32_t MAX_FOLDER_NAME_LENGTH = 40;
+const uint8_t NAMEBUFFER_LENGTH = (MAX_FOLDER_NAME_LENGTH*2);
+const uint8_t PAGE_SIZE = 6;
+const uint8_t PAGES_PER_BLOCK = 2;
+const uint8_t BLOCK_LENGTH = (PAGE_SIZE * PAGES_PER_BLOCK);
 uint8_t blocksLoaded[2];
 uint32_t totalGames = 0;
 char folderName[MAX_FOLDER_NAME_LENGTH];
 char nameBuffer[NAMEBUFFER_LENGTH];
 char gameFolders[2][BLOCK_LENGTH][MAX_FOLDER_NAME_LENGTH];
 uint32_t currentGame = 0;
+
+const char GAMEFOLDERS_CACHE_FILE[] = "gamefolders.cache";
 
 
 const uint16_t startupSound[] = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
@@ -69,6 +71,73 @@ void initFolders() {
 	root.close();
 }
 
+void createCache() {
+	File cache;
+	if (SD.exists(GAMEFOLDERS_CACHE_FILE)) {
+		cache = SD.open(GAMEFOLDERS_CACHE_FILE, FILE_WRITE);
+		cache.rewind();
+		uint32_t num;
+		cache.read(&num, 4);
+		uint32_t games;
+		cache.read(&games, 4);
+		cache.close();
+		if (games == totalGames && num == MAX_FOLDER_NAME_LENGTH) {
+			uint8_t numBlocks = totalGames / BLOCK_LENGTH;
+			bool invalid = false;
+			for (uint8_t b = 0; b < numBlocks; b++) {
+				loadGameFolderBlock(0, b);
+				for (uint8_t i = 0; i < BLOCK_LENGTH; i++) {
+					if (b*BLOCK_LENGTH + i < totalGames && !SD.exists(gameFolders[0][i])) {
+						invalid = true;
+						break;
+					}
+				}
+				if (invalid) {
+					break;
+				}
+			}
+			if (!invalid) {
+				return; //everything is OK
+			}
+		}
+	}
+	
+	SD.remove(GAMEFOLDERS_CACHE_FILE);
+	cache = SD.open(GAMEFOLDERS_CACHE_FILE, FILE_WRITE);
+	cache.rewind();
+	cache.write(&MAX_FOLDER_NAME_LENGTH, 4);
+	cache.write(&totalGames, 4);
+	
+	File root = SD.open("/");
+	File entry;
+	uint8_t filesInBlock = 0;
+	uint8_t numBlocks = 0;
+	while (entry = root.openNextFile()) {
+		if (!entry.isDirectory()) {
+			continue;
+		}
+		folderName[0] = '/';
+		entry.getName(folderName + 1, MAX_FOLDER_NAME_LENGTH - 1);
+		if (!getBinPath(nameBuffer)) {
+			continue;
+		}
+		strncpy(gameFolders[0][filesInBlock], folderName, MAX_FOLDER_NAME_LENGTH);
+		filesInBlock++;
+		if (filesInBlock >= BLOCK_LENGTH) {
+			cache.write(gameFolders[0], BLOCK_LENGTH*MAX_FOLDER_NAME_LENGTH);
+			numBlocks++;
+			filesInBlock = 0;
+		}
+	}
+	if (filesInBlock < BLOCK_LENGTH) {
+		// still gotta cache the last block
+		cache.write(gameFolders[0], filesInBlock*MAX_FOLDER_NAME_LENGTH);
+	}
+	cache.close();
+	entry.close();
+	root.close();
+}
+
 uint8_t getBlock(uint8_t b) {
 	if (blocksLoaded[0] == b) {
 		return 0;
@@ -96,40 +165,10 @@ char* getCurrentGameFolder() {
 }
 
 void loadGameFolderBlock(uint8_t b, uint8_t bb) {
-	File root = SD.open("/");
-	File entry;
-	uint8_t filesInBlock = 0;
-	uint8_t i = 0;
-	int8_t j = -1; // thefuck?
-	while (entry = root.openNextFile()) {
-		if (!entry.isDirectory()) {
-			continue;
-		}
-		gameFolders[b][filesInBlock][0] = '/';
-		entry.getName(gameFolders[b][filesInBlock] + 1, MAX_FOLDER_NAME_LENGTH - 1);
-		strcpy(folderName, gameFolders[b][filesInBlock]);
-		
-		if (!getBinPath(nameBuffer)) {
-			continue;
-		}
-		if (i < bb) {
-			j++;
-			if (j < BLOCK_LENGTH) {
-				continue;
-			}
-			i++;
-			j = 0;
-			if (i < bb) {
-				continue;
-			}
-		}
-		filesInBlock++;
-		if (filesInBlock >= BLOCK_LENGTH) {
-			break;
-		}
-	}
-	entry.close();
-	root.close();
+	File cache = SD.open(GAMEFOLDERS_CACHE_FILE, FILE_WRITE);
+	cache.seekSet(8 + bb*BLOCK_LENGTH*MAX_FOLDER_NAME_LENGTH);
+	cache.read(gameFolders[b], BLOCK_LENGTH*MAX_FOLDER_NAME_LENGTH);
+	cache.close();
 }
 
 void setup() {
@@ -180,6 +219,7 @@ void setup() {
 	gb.language.println(lang_loading);
 	gb.updateDisplay();
 	initFolders();
+	createCache();
 	loadGameFolderBlock(0, 0);
 	loadGameFolderBlock(1, 1);
 	blocksLoaded[0] = 0;
