@@ -23,92 +23,6 @@
 #include "utility/Language/SystemLanguage.h"
 SdFat SD;
 
-// create our custom NMI handler
-void NMI_Handler() {
-	Gamebuino_Meta::trigger_error(1);
-}
-
-#if HARDFAULT_DEBUG_HANDLER
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress ) {
-	/* These are volatile to try and prevent the compiler/linker optimising them
-	away as the variables never actually get used.  If the debugger won't show the
-	values of the variables, make them global my moving their declaration outside
-	of this function. */
-	volatile uint32_t r0;
-	volatile uint32_t r1;
-	volatile uint32_t r2;
-	volatile uint32_t r3;
-	volatile uint32_t r12;
-	volatile uint32_t lr; /* Link register. */
-	volatile uint32_t pc; /* Program counter. */
-	volatile uint32_t psr;/* Program status register. */
-
-	r0 = pulFaultStackAddress[ 0 ];
-	r1 = pulFaultStackAddress[ 1 ];
-	r2 = pulFaultStackAddress[ 2 ];
-	r3 = pulFaultStackAddress[ 3 ];
-
-	r12 = pulFaultStackAddress[ 4 ];
-	lr = pulFaultStackAddress[ 5 ];
-	pc = pulFaultStackAddress[ 6 ];
-	psr = pulFaultStackAddress[ 7 ];
-
-	/* When the following line is hit, the variables contain the register values. */
-	gb.tft.setCursors(0, 0);
-	gb.tft.println("Hard Fault");
-	gb.tft.print("r0:");
-	gb.tft.println(r0);
-	gb.tft.print("r1:");
-	gb.tft.println(r1);
-	gb.tft.print("r2:");
-	gb.tft.println(r2);
-	gb.tft.print("r3:");
-	gb.tft.println(r3);
-	gb.tft.print("r12:");
-	gb.tft.println(r12);
-	gb.tft.print("lr:");
-	gb.tft.println(lr);
-	gb.tft.print("pc:");
-	gb.tft.println(pc);
-	gb.tft.print("psr:");
-	gb.tft.println(psr);
-	__asm("BKPT #0\n") ; // Break into the debugger
-	while(1);
-}
-
-
-void HardFault_Handler( void ) __attribute__( ( naked ) );
-
-void HardFault_Handler(void) {
-	__asm( ".syntax unified\n"
-		"MOVS R0, #4 \n"
-		"MOV R1, LR \n"
-		"TST R0, R1 \n"
-		"BEQ _MSP \n"
-		"MRS R0, PSP \n"
-		"B prvGetRegistersFromStack \n"
-		"_MSP: \n"
-		"MRS R0, MSP \n"
-		"B prvGetRegistersFromStack \n"
-		".syntax divided\n"
-	) ;
-}
-
-#ifdef __cplusplus
-}
-#endif
-
-#else // HARDFAULT_DEBUG_HANDLER
-void HardFault_Handler() {
-	Gamebuino_Meta::trigger_error(2);
-}
-#endif
-
 // a 3x5 font table
 extern const uint8_t font3x5[];
 
@@ -129,12 +43,9 @@ const uint8_t gamebuinoLogo[] =
 	0b00001111, 0b10110000, 0b01111000, 0b11000110, 0b11111111, 0b01111110, 0b00011111, 0b00011011, 0b00000110, 0b00011110, 0b00001111, 
 };
 
-const SaveDefault savefileDefaults[SAVECONF_SIZE] = SAVECONF;
-
-#define SETTINGSCONF_SIZE 5
 // we have more blocks for, in case we add things in the future, old games are less likely to erase our new blocks
-#define SETTINGSCONF_NUM_BLOCKS 32
-const SaveDefault settingsDefaults [SETTINGSCONF_SIZE] = {
+const uint8_t SETTINGSCONF_NUM_BLOCKS = 32;
+const SaveDefault settingsDefaults [] = {
 	SaveDefault(SETTING_VOLUME, SAVETYPE_INT, 6),
 	SaveDefault(SETTING_VOLUME_MUTE, SAVETYPE_INT, 0),
 	SaveDefault(SETTING_DEFAULTNAME, SAVETYPE_BLOB, "gamebuinian", 13),
@@ -183,16 +94,11 @@ void Gamebuino::begin() {
 	tft.initR(INITR_BLACKTAB);
 	tft.setRotation(3);
 	display.fill(Color::black);
-
-	updateDisplay();
-#if DISPLAY_MODE == DISPLAY_MODE_INDEX
-	display.fontSize = 2;
-#endif
+	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
 	display.setColor(Color::brown, Color::black);
-	
-	
 	display.print("SD INIT... ");
 	updateDisplay();
+	
 	if (!SD.begin(SD_CS)) {
 		display.setColor(Color::red, Color::black);
 		display.println("FAILED!");
@@ -213,9 +119,10 @@ void Gamebuino::begin() {
 	}
 	SD.chdir(folder_name);
 	
-	save = Save(&tft, SAVEFILE_NAME, savefileDefaults, SAVECONF_SIZE, SAVEBLOCK_NUM, folder_name);
+	save = Save(&tft, SAVEFILE_NAME, folder_name);
 	
-	settings = Save(&tft, "/settings.sav", settingsDefaults, SETTINGSCONF_SIZE, SETTINGSCONF_NUM_BLOCKS, "GBMS");
+	settings = Save(&tft, "/settings.sav", "GBMS");
+	settings.config(SETTINGSCONF_NUM_BLOCKS, settingsDefaults);
 	
 	//sound
 	sound.begin();
@@ -233,96 +140,73 @@ void Gamebuino::begin() {
 	Graphics_SD::setTft(&tft);
 }
 
-void Gamebuino::titleScreen(const char* name){
-	titleScreen(name, 0);
+void Gamebuino::titleScreen(const char* filename, Image* img) {
+	ColorMode ts_backup_colorMode = display.colorMode;
+	uint16_t ts_backup_width = display._width;
+	uint16_t ts_backup_height = display._height;
+	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
+	bool foundFile = false;
+	bool useImage = false;
+	if (filename && SD.exists(filename)) {
+		foundFile = true;
+		display.init(ts_backup_width, ts_backup_height, (char*)filename);
+	} else if (img) {
+		useImage = true;
+	} else {
+		display.setCursors(0, 0);
+		display.println("Gamebuino game");
+		display.println(folder_name);
+	}
+	
+	bool first = false;
+	while(1) {
+		if(!update()) {
+			continue;
+		}
+		if (useImage) {
+			display.drawImage(0, 0, *img);
+		} else {
+			display.nextFrame();
+		}
+		if ((frameCount % 32) < 20) {
+			const char* msg = language._get(lang_titlescreen_a_start);
+			uint8_t w = display.fontWidth*strlen(msg)*display.fontSize;
+			uint8_t h = display.fontHeight*display.fontSize;
+			uint8_t x = (display.width() - w) / 2;
+			uint8_t y = (display.height() / 5) * 3 + h;
+			
+			display.setColor(Color::gray);
+			display.drawRect(x - display.fontSize*2, y - display.fontSize*2, w + display.fontSize*4, h + display.fontSize*3);
+			
+			display.setColor(Color::brown);
+			display.fillRect(x - display.fontSize, y - display.fontSize, w + display.fontSize*2, h + display.fontSize);
+			display.setColor(Color::white);
+			display.setCursors(x, y);
+			display.print(msg);
+			first = true;
+		} else if (display.frames == 1 && foundFile && first) {
+			display.init(ts_backup_width, ts_backup_height, (char*)filename);
+			first = false;
+		}
+		if (gb.buttons.pressed(Button::a)) {
+			sound.playOK();
+			break;
+		}
+	}
+	display.init(ts_backup_width, ts_backup_height, ts_backup_colorMode);
 }
 
-void Gamebuino::titleScreen(const uint8_t* logo){
-	titleScreen("", logo);
+void Gamebuino::titleScreen(Image& img) {
+	titleScreen(0, &img);
 }
 
 void Gamebuino::titleScreen(){
-	titleScreen("", 0);
-}
-
-void Gamebuino::titleScreen(const char*  name, const uint8_t *logo){
-	display.fontSize = 1;
-	display.textWrap = false;
-	//display.persistence = false;
-	
-	while(1){
-		if(update()){
-			uint8_t logoOffset = name[0]?display.fontHeight:0; //add an offset the logo when there is a name to display
-			//draw graphics
-			//#if LCDWIDTH == LCDWIDTH_NOROT
-			display.drawBitmap(-1,1, gamebuinoLogo);
-			if(logo){
-				display.drawBitmap(0, 12+logoOffset, logo);
-			}
-			display.setCursors(0, 12);
-			/*#else
-			display.drawBitmap(7,0, gamebuinoLogo);
-			display.drawBitmap(-41,12,gamebuinoLogo);
-			if(logo){
-				display.drawBitmap(0, 24+logoOffset, logo);
-			}
-			display.cursorX = 0;
-			display.cursorY = 24;
-			#endif*/
-			display.setCursorY(12);
-			
-			display.print(name);
-			
-			//A button
-			display.cursorX = display.width() - display.fontWidth*3 -1;
-			display.cursorY = display.height() - display.fontHeight*3 - 3;
-			if((frameCount/16)%2) {
-				display.println("\25 \20");
-			} else {
-				display.println("\25\20 ");
-			}
-			//B button
-			display.cursorX = display.width() - display.fontWidth*3 - 1;
-			display.cursorY++;
-			if(!sound.isMute()) {
-				display.println("\26\23\24");
-			} else {
-				display.println("\26\23x");
-			}
-			//C button
-			display.cursorX = display.width() - display.fontWidth*3 - 1;
-			display.cursorY++;
-			display.println("\27SD");
-			
-			//toggle volume when B is pressed
-			if(buttons.pressed(Button::b)){
-				if (sound.isMute()) {
-					sound.unmute();
-					sound.playTick();
-					settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
-				} else {
-					sound.mute();
-					settings.set(SETTING_VOLUME_MUTE, 1);
-				}
-			}
-			//leave the menu
-			if(buttons.pressed(Button::a)){
-				//startMenuTimer = 255; //don't automatically skip the title screen next time it's displayed
-				//sound.stopPattern(0);
-				sound.playOK();
-				break;
-			}
-			//flash the loader
-			if(buttons.pressed(Button::c)) {
-				changeGame();
-			}
-		}
-	}
+	titleScreen("TITLESCREEN.BMP");
 }
 
 bool recording_screen = false;
 
-bool Gamebuino::_update(bool inpersistence) {
+bool Gamebuino::update() {
 	if (((nextFrameMillis - millis()) > timePerFrame) && frameEndMicros) { //if time to render a new frame is reached and the frame end has ran once
 		nextFrameMillis = millis() + timePerFrame;
 		frameCount++;
@@ -377,35 +261,10 @@ bool Gamebuino::_update(bool inpersistence) {
 	}
 	neoPixels.show();
 	neoPixels.clear();
-	
-	if (inpersistence) {
-#ifdef GAMEBUINO_COMPAT_MODE
-		if (!display.persistence) {
-			display.fill(DISPLAY_DEFAULT_BACKGROUND_COLOR);
-		}
-#else
-		display.fill(DISPLAY_DEFAULT_BACKGROUND_COLOR); //clear the buffer
-#endif
-		light.fill(Color::black);
-	}
-	
-	display.setColor(DISPLAY_DEFAULT_COLOR);
-	
-	display.setCursor(0, 0);
-	display.fontSize = 1;
-	display.textWrap = true;
 
 	frameEndMicros = micros(); //measure the frame's end time
 	frameDurationMicros = frameEndMicros - frameStartMicros;
 	return false;
-}
-
-bool Gamebuino::update() {
-	return _update(true);
-}
-
-bool Gamebuino::updatePersistent() {
-	return _update(false);
 }
 
 void Gamebuino::updateDisplay() {
@@ -432,7 +291,6 @@ uint16_t Gamebuino::getFreeRam() {
 }
 
 int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
-#if (ENABLE_GUI > 0)
 	//display.persistence = false;
 	int8_t activeItem = 0;
 	int8_t currentY = display.height();
@@ -476,7 +334,7 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 			currentY = (currentY + targetY) / 2;
 			display.cursorX = 0;
 			display.cursorY = currentY;
-			display.fontSize = 1;
+			display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
 			display.textWrap = false;
 			for (byte i = 0; i < length; i++) {
 				if (i == activeItem){
@@ -501,9 +359,6 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 			display.drawRoundRect(0, currentY + display.fontHeight * activeItem - 2, display.width(), (display.fontHeight+3), 3);
 		}
 	}
-#else
-	return 0;
-#endif
 }
 
 const uint8_t numLangEntries = 2;
@@ -539,10 +394,35 @@ void Hook_ExitHomeMenu() {
 	
 }
 
+#define HOME_MENU_SAVE_STATE \
+	int16_t hm_save_cursorX = display.cursorX; \
+	int16_t hm_save_cursorY = display.cursorY; \
+	Color hm_save_color = display.color; \
+	Color hm_save_bgcolor = display.bgcolor; \
+	uint8_t hm_save_fontSize = display.fontSize; \
+	bool hm_save_textWrap = display.textWrap; \
+	uint8_t* hm_save_font = display.font; \
+	uint8_t hm_save_fontWidth = display.fontWidth; \
+	uint8_t hm_save_fontHeight = display.fontHeight;
+
+#define HOME_MENU_RESTORE_STATE \
+	display.cursorX = hm_save_cursorX; \
+	display.cursorY = hm_save_cursorY; \
+	display.color = hm_save_color; \
+	display.bgcolor = hm_save_bgcolor; \
+	display.fontSize = hm_save_fontSize; \
+	display.textWrap = hm_save_textWrap; \
+	display.font = hm_save_font; \
+	display.fontWidth = hm_save_fontWidth; \
+	display.fontHeight = hm_save_fontHeight;
+
 void Gamebuino::homeMenu(){
 	//here we don't use gb.update and display.not to interfere with the game
 	//the only things we use are gb.tft and gb.buttons
 	sound.startEfxOnly();
+	
+	HOME_MENU_SAVE_STATE;
+	
 	int currentItem = 0;
 	const int numItems = 6;
 	unsigned long lastMillis = 0;
@@ -619,11 +499,12 @@ void Gamebuino::homeMenu(){
 			
 			if(buttons.released(Button::d) || buttons.released(Button::b) || buttons.released(Button::c)){
 				sound.stopEfxOnly();
+				HOME_MENU_RESTORE_STATE;
 				Hook_ExitHomeMenu();
 				return;
 			}
 			if(buttons.held(Button::d, 25)){
-				load_loader();
+				changeGame();
 			}
 			
 			if(buttons.repeat(Button::down, 8)){
@@ -731,6 +612,7 @@ void Gamebuino::homeMenu(){
 							tft.print(language._get(lang_homeMenu_GO));
 							delay(250);
 							sound.stopEfxOnly();
+							HOME_MENU_RESTORE_STATE;
 							Hook_ExitHomeMenu();
 							return;
 						} else {
@@ -860,11 +742,11 @@ void Gamebuino::homeMenu(){
 			changed = false;
 		}
 	}
-	Hook_ExitHomeMenu();
 }
 
+#define KEYBOARD_W 16
+#define KEYBOARD_H 14
 void Gamebuino::keyboard(char* text, uint8_t length) {
-#if (ENABLE_GUI > 0)
 	//display.persistence = false;
 	//memset(text, 0, length); //clear the text
 	text[length-1] = '\0';
@@ -881,6 +763,7 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 
 	while (1) {
 		if (update()) {
+			display.clear();
 			//move the character selector
 			if (buttons.repeat(Button::down, 4)) {
 				activeY++;
@@ -940,6 +823,7 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 				sound.playOK();
 				while (1) {
 					if (update()) {
+						display.clear();
 						//display.setCursor(0,0);
 						display.println("You entered\n");
 						display.print(text);
@@ -1004,18 +888,14 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 			}
 		}
 	}
-#endif
 }
 
 void Gamebuino::popup(const char* text, uint8_t duration){
-#if (ENABLE_GUI > 0)
 	popupText = text;
 	popupTimeLeft = duration+12;
-#endif
 }
 
 void Gamebuino::updatePopup(){
-#if (ENABLE_GUI > 0)
 	if (popupTimeLeft){
 		uint8_t yOffset = 0;
 		if(popupTimeLeft<12){
@@ -1033,14 +913,13 @@ void Gamebuino::updatePopup(){
 		display.print(popupText);
 		popupTimeLeft--;
 	}
-#endif
 }
 
 void Gamebuino::changeGame(){
 	//clear the screen
-	tft.fill(BLACK);
+	tft.fill(Color::black);
 	//flash loader.bin
-	load_loader();
+	bootloader.loader();
 }
 
 void Gamebuino::getDefaultName(char* string){
@@ -1117,6 +996,6 @@ void noTone(uint32_t outputPin) {
 
 void yield() {
 	if (gb.frameEndMicros || gb.frameStartMicros) {
-		gb.updatePersistent();
+		gb.update();
 	}
 }

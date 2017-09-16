@@ -21,6 +21,8 @@ void loop(){
   //updates the gamebuino (the display, the sound... everything)
   //returns true when it's time to render a new frame (25 times/second)
   if(gb.update()){
+    // clear the previous screen
+    gb.display.clear();
     
     //add the speed of the ball to its position
     ball_x = ball_x + ball_vx;

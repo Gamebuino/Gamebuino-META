@@ -94,4 +94,14 @@ const MultiLang lang_keyboard_save[] = {
 	{LangCode::de, "fertig"},
 };
 
+
+//////////
+// Keyboard
+//////////
+
+const MultiLang lang_titlescreen_a_start[] = {
+	{LangCode::en, "\x15 to start"},
+	{LangCode::de, "\x15 zum starten"},
+};
+
 }; // namespace Gamebuino_Meta

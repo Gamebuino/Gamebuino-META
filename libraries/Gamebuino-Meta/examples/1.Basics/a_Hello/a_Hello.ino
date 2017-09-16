@@ -16,6 +16,8 @@ void loop(){
   //updates the gamebuino (the display, the sound... everything)
   //returns true when it's time to render a new frame (25 times/second)
   if(gb.update()){
+    // clear the previous screen
+    gb.display.clear();
     //prints Hello World! on the screen
     gb.display.println("Hello World!");
     //declare a variable named count of type integer :

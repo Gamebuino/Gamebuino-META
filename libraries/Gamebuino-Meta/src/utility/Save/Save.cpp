@@ -45,13 +45,24 @@ SaveDefault::SaveDefault(uint16_t _i, uint8_t _type, const void* _ptr, uint8_t _
 	length = _length;
 }
 
-Save::Save(Display_ST7735 *_tft, const char* _savefile, const SaveDefault* _defaults, uint16_t _num_defaults, uint16_t _blocks, const char* _checkbytes) {
+Save::Save(Display_ST7735 *_tft, const char* _savefile, const char* _checkbytes) {
 	tft = _tft;
 	savefile = _savefile;
+	checkbytes = _checkbytes;
+	
+	defaults = 0;
+	num_defaults = 0;
+	blocks = SAVEBLOCK_NUM;
+}
+
+void Save::config(const SaveDefault* _defaults, uint16_t _num_defaults) {
+	config(SAVEBLOCK_NUM, _defaults, _num_defaults);
+}
+
+void Save::config(uint16_t _blocks, const SaveDefault* _defaults, uint16_t _num_defaults) {
+	blocks = _blocks > _num_defaults ? _blocks : _num_defaults;
 	defaults = _defaults;
 	num_defaults = _num_defaults;
-	blocks = _blocks;
-	checkbytes = _checkbytes;
 }
 
 void Save::error(const char *s) {

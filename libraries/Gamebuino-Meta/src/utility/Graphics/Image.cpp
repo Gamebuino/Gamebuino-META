@@ -75,9 +75,15 @@ uint32_t Frame_Handler_RAM::getBufferSizeWithFrames() {
  * start of actual image class
  ********/
 
-Image::Image() : Graphics(0, 0) {
+void Image::freshStart() {
 	_buffer = 0;
 	frame_handler = 0;
+	bufferSize = 0;
+	isObjectCopy = false;
+}
+
+Image::Image() : Graphics(0, 0) {
+	freshStart();
 }
 
 Image::Image(const Image& img) : Graphics(0, 0) { // copy constructor!
@@ -94,6 +100,7 @@ Image::Image(const Image& img) : Graphics(0, 0) { // copy constructor!
 
 // ram constructors
 Image::Image(uint16_t w, uint16_t h, uint16_t frames, uint8_t fl) : Graphics(w, h) {
+	freshStart();
 	init(w, h, frames, fl);
 }
 void Image::init(uint16_t w, uint16_t h, uint16_t frames, uint8_t fl) {
@@ -101,6 +108,7 @@ void Image::init(uint16_t w, uint16_t h, uint16_t frames, uint8_t fl) {
 }
 
 Image::Image(uint16_t w, uint16_t h, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(w, h) {
+	freshStart();
 	init(w, h, col, frames, fl);
 }
 void Image::init(uint16_t w, uint16_t h, ColorMode col, uint16_t _frames, uint8_t fl) {
@@ -127,6 +135,7 @@ void Image::init(uint16_t w, uint16_t h, ColorMode col, uint16_t _frames, uint8_
 
 // flash constructors
 Image::Image(const uint16_t* buffer, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	freshStart();
 	init(buffer, frames, fl);
 }
 void Image::init(const uint16_t* buffer, uint16_t frames, uint8_t fl) {
@@ -134,6 +143,7 @@ void Image::init(const uint16_t* buffer, uint16_t frames, uint8_t fl) {
 }
 
 Image::Image(const uint16_t* buffer, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	freshStart();
 	init(buffer, col, frames, fl);
 }
 void Image::init(const uint16_t* buffer, ColorMode col, uint16_t _frames, uint8_t fl) {
@@ -164,6 +174,7 @@ void Image::init(const uint16_t* buffer, ColorMode col, uint16_t _frames, uint8_
 
 // flash indexed constructors
 Image::Image(const uint8_t* buffer, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	freshStart();
 	init(buffer, frames, fl);
 }
 void Image::init(const uint8_t* buffer, uint16_t frames, uint8_t fl) {
@@ -171,6 +182,7 @@ void Image::init(const uint8_t* buffer, uint16_t frames, uint8_t fl) {
 }
 
 Image::Image(const uint8_t* buffer, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+	freshStart();
 	init(buffer, col, frames, fl);
 }
 void Image::init(const uint8_t* buffer, ColorMode col, uint16_t _frames, uint8_t fl) {
@@ -200,6 +212,7 @@ void Image::init(const uint8_t* buffer, ColorMode col, uint16_t _frames, uint8_t
 
 // SD constructors
 Image::Image(char* filename, uint8_t fl) : Graphics(0, 0) {
+	freshStart();
 	init(filename, fl);
 }
 void Image::init(char* filename, uint8_t fl) {
@@ -207,6 +220,7 @@ void Image::init(char* filename, uint8_t fl) {
 }
 
 Image::Image(uint16_t w, uint16_t h, char* filename, uint8_t fl) : Graphics(w, h) {
+	freshStart();
 	init(w, h, filename, fl);
 }
 void Image::init(uint16_t w, uint16_t h, char* filename, uint8_t fl) {

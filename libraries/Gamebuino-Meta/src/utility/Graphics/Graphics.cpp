@@ -43,6 +43,10 @@ POSSIBILITY OF SUCH DAMAGE.
 // default 3x5 font table
 extern const uint8_t font3x5[];
 
+// gb is only needed to check for the inited state to get proper width() and height() during initialization
+#include "../../Gamebuino-Meta.h"
+extern Gamebuino gb;
+
 namespace Gamebuino_Meta {
 
 //default values of static members
@@ -363,6 +367,55 @@ void Graphics::fill(Color c) {
 	}
 	fill();
 	color = tempColor;
+}
+
+void Graphics::clearTextVars() {
+	setCursor(0, 0);
+	setFont(font3x5);
+	fontSize = DEFAULT_FONT_SIZE;
+	textWrap = true;
+}
+
+void Graphics::clear() {
+	clear(Color::black);
+}
+
+void Graphics::clear(Color c) {
+	if (colorMode == ColorMode::index) {
+		clear(rgb565ToIndex(c));
+		return;
+	}
+	fill(c);
+	setColor((Color)(0xFFFF ^ (uint16_t)c));
+	clearTextVars();
+}
+
+void Graphics::clear(ColorIndex c) {
+	const ColorIndex complimentary[] = {
+		ColorIndex::white, // black
+		ColorIndex::yellow, // darkblue
+		ColorIndex::lightgreen, // purple
+		ColorIndex::orange, // green
+		ColorIndex::darkgray, // brown
+		ColorIndex::brown, // darkgray
+		ColorIndex::red, // gray
+		ColorIndex::black, // white
+		ColorIndex::gray, // red
+		ColorIndex::green, // orange
+		ColorIndex::darkblue, // yellow
+		ColorIndex::purple, // lightgreen
+		ColorIndex::pink, // lightblue
+		ColorIndex::beige, // blue
+		ColorIndex::lightblue, // pink
+		ColorIndex::blue, // beige
+	};
+	if (colorMode == ColorMode::rgb565) {
+		clear(colorIndex[(uint8_t)c]);
+		return;
+	}
+	fill(c);
+	setColor(complimentary[(uint8_t)c]);
+	clearTextVars();
 }
 
 void Graphics::fill(ColorIndex c) {
@@ -1396,7 +1449,7 @@ void Graphics::getTextBounds(const __FlashStringHelper *str,
 
 // Return the size of the display (per current rotation)
 int16_t Graphics::width(void) const {
-	if (_width) {
+	if (gb.inited || _width) {
 		// we are inited
 		return _width;
 	}
@@ -1409,7 +1462,7 @@ int16_t Graphics::width(void) const {
 }
 
 int16_t Graphics::height(void) const {
-	if (_height) {
+	if (gb.inited || _height) {
 		// we are inited
 		return _height;
 	}

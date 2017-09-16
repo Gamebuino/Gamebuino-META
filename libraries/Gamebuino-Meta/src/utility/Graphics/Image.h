@@ -111,6 +111,7 @@ public:
 	};
 private:
 	bool isObjectCopy;
+	void freshStart();
 };
 
 } // namespace Gamebuino_Meta

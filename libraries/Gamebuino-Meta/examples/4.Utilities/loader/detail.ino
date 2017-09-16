@@ -33,7 +33,7 @@ void loadDetailedView() {
 	if (titleScreenImageExists) {
 		gb.display.setColor(WHITE, BLACK);
 		gb.display.setCursors(0, 0);
-		gb.display.println(gb.language.get(lang_loading));
+		gb.language.println(lang_loading);
 		gb.updateDisplay();
 		titleScreenImage.init(80, 64, nameBuffer);
 	}
@@ -49,11 +49,11 @@ void loadGame() {
 		gb.display.fill(BLACK);
 		gb.display.setColor(WHITE, BLACK);
 		gb.display.setCursors(0, 24);
-		gb.display.println(gb.language.get(lang_loading));
+		gb.language.println(lang_loading);
 		gb.display.print(nameBuffer);
 	}
 	gb.updateDisplay();
-	Gamebuino_Meta::load_game(nameBuffer);
+	gb.bootloader.game(nameBuffer);
 }
 
 void detailedView() {
@@ -62,6 +62,7 @@ void detailedView() {
 		if (!gb.update()) {
 			continue;
 		}
+		gb.display.clear();
 		uint16_t currentGameInBlock = currentGame % BLOCK_LENGTH;
 		if (titleScreenImageExists) {
 			gb.display.drawImage(0, 0, titleScreenImage);
@@ -93,7 +94,7 @@ void detailedView() {
 		gb.display.print("A");
 		gb.display.setCursorX(8);
 		gb.display.setColor(BROWN);
-		gb.display.print(gb.language.get(lang_select));
+		gb.language.print(lang_select);
 		
 		// < > BROWSE
 		gb.display.setCursorX(43);
@@ -103,7 +104,7 @@ void detailedView() {
 		gb.display.print(">");
 		gb.display.setCursorX(55);
 		gb.display.setColor(BROWN);
-		gb.display.print(gb.language.get(lang_browse));
+		gb.language.print(lang_browse);
 		
 		if (gb.buttons.repeat(BUTTON_LEFT, 4)) {
 			if (currentGameInBlock == 0 && gameFolderBlock == 0) {

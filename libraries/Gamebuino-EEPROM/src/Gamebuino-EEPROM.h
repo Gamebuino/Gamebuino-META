@@ -9,6 +9,7 @@ class EEPROM_Class {
 private:
 	uint8_t* buffer;
 	void flush();
+	void flush(uint32_t address, uint32_t size);
 	uint32_t blocks;
 	uint32_t size;
 public:
@@ -34,7 +35,7 @@ public:
 		uint8_t *ptr = (uint8_t*) &var;
 		if (memcmp(&buffer[address], ptr, sizeof(T))) {
 			memcpy(&buffer[address], ptr, sizeof(T));
-			flush();
+			flush(address, sizeof(T));
 		}
 		return var;
 	}
