@@ -366,7 +366,10 @@ void Gamebuino::checkHomeMenu() {
 	if (buttons.held(Button::d, 25)){
 		changeGame();
 	}
-	if (buttons.released(Button::d)) {
+	if (framesDisplayRecording != -1) {
+		framesDisplayRecording--;
+	}
+	if (buttons.released(Button::d) || (framesDisplayRecording == 0 && recording_screen)) {
 		if (recording_screen) {
 			// stop the recording
 			sound.startEfxOnly();
@@ -409,6 +412,44 @@ void Hook_ExitHomeMenu() {
 	display.font = hm_save_font; \
 	display.fontWidth = hm_save_fontWidth; \
 	display.fontHeight = hm_save_fontHeight;
+
+bool homeMenuGetUniquePath(char* name, uint8_t offset, uint8_t len, uint8_t f_offset) {
+	if(!SD.exists("REC")) {
+		SD.mkdir("REC");
+	}
+	uint32_t start;
+	File cache;
+	if (!SD.exists("rec.cache")) {
+		cache = SD.open("rec.cache", FILE_WRITE);
+		cache.rewind();
+		f_write32(0, &cache); // images
+		f_write32(0, &cache); // videos
+		cache.close();
+	}
+	cache = SD.open("rec.cache", FILE_WRITE);
+	cache.seekSet(f_offset);
+	start = f_read32(&cache);
+	start = sdPathNoDuplicate(name, offset, len, start + 1);
+	cache.seekSet(f_offset);
+	if (start == -1) {
+		f_write32(0, &cache);
+		start = sdPathNoDuplicate(name, offset, len);
+	}
+	if (start == -1) {
+		cache.close();
+		return false;
+	}
+	f_write32(start, &cache);
+	cache.close();
+	return true;
+}
+
+template<uint8_t N>
+void fileEndingGmvToBmp(char (&name)[N]) {
+	name[N-4] = 'B';
+	//name[N-3] = 'M'; // no need as GMV and BMP have same second letter
+	name[N-2] = 'P';
+}
 
 void Gamebuino::homeMenu(){
 	//here we don't use gb.update and display.not to interfere with the game
@@ -569,13 +610,17 @@ void Gamebuino::homeMenu(){
 				case 2:
 					if (buttons.released(Button::a)){
 						tft.print(language._get(lang_homeMenu_SAVING));
-						if(!SD.exists("REC")) {
-							SD.mkdir("REC");
-						}
-						char name[] = "REC/IMAGE0000.BMP";
+						char name[] = "REC/IMAGE0000.GMV";
 						// now `name` will be a unique thing
-						// 6 because "REC/IMAGE" is 9 long, 4 because "0000" is 4 chars
-						if(sd_path_no_duplicate(name, 9, 4) && display.save(name)){
+						// 9 because "REC/IMAGE" is 9 long, 4 because "0000" is 4 chars
+						bool success = homeMenuGetUniquePath(name, 9, 4, 0);
+						if (success) {
+							fileEndingGmvToBmp(name);
+							success = display.save(name);
+						}
+						// we temp. set inited to false so that delay() won't re-draw the screen
+						inited = false;
+						if (success){
 							tft.setColor(LIGHTGREEN, BROWN);
 							tft.cursorX = xOffset;
 							tft.print(language._get(lang_homeMenu_SAVED));
@@ -588,22 +633,40 @@ void Gamebuino::homeMenu(){
 							delay(250);
 							changed = true;
 						}
+						inited = true;
 					}
 				break;
 				////RECORD SCREEN
 				case 3:
-					if (buttons.released(Button::a)){
+					if (buttons.released(Button::a) || buttons.held(Button::a, 100)){
 						tft.print(language._get(lang_homeMenu_READY));
-						if(!SD.exists("REC")) {
-							SD.mkdir("REC");
+						char name[] = "REC/VIDEO0000.GMV";
+						bool success = homeMenuGetUniquePath(name, 9, 4, 4);
+						bool infinite = buttons.held(Button::a, 100);
+						if (success) {
+							if (!infinite) {
+								fileEndingGmvToBmp(name);
+								framesDisplayRecording = (1000 / timePerFrame) * 6;
+							} else {
+								framesDisplayRecording = -1;
+							}
+							success = display.startRecording(name);
 						}
-						char name[] = "REC/VIDEO0000.BMP";
-						if (sd_path_no_duplicate(name, 9, 4) && display.startRecording(name)) {
+						// we temp. set inited to false so that delay() won't re-draw the screen
+						inited = false;
+						if (success) {
 							recording_screen = true;
+							if (infinite) {
+								do {
+									delay(10);
+									buttons.update();
+								} while (!buttons.released(Button::a));
+							}
 							delay(250);
 							tft.cursorX = xOffset;
 							tft.print(language._get(lang_homeMenu_GO));
 							delay(250);
+							inited = true;
 							sound.stopEfxOnly();
 							HOME_MENU_RESTORE_STATE;
 							Hook_ExitHomeMenu();
@@ -615,6 +678,7 @@ void Gamebuino::homeMenu(){
 							delay(250);
 							changed = true;
 						}
+						inited = true;
 					}
 				break;
 				//// NEOPIXELS
@@ -956,7 +1020,7 @@ void noTone(uint32_t outputPin) {
 }
 
 void yield() {
-	if (gb.frameEndMicros || gb.frameStartMicros) {
+	if (gb.inited && (gb.frameEndMicros || gb.frameStartMicros)) {
 		gb.update();
 	}
 }

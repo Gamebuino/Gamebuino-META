@@ -6,27 +6,31 @@ namespace Gamebuino_Meta {
 // call via etc.
 // char name[] = "/TMP0000.BIN";
 // sd_path_no_duplicate(name, 4, 4); // returns true on success, false on no success
-bool sd_path_no_duplicate(char* name, uint8_t offset, uint8_t digits) {
-	uint32_t power = 1;
+void intToStr(int32_t i, char* buf) {
+	while (true) {
+		*(buf) = '0' + (i % 10);
+		if (i < 10) {
+			break;
+		}
+		i /= 10;
+		buf--;
+	}
+}
+
+int32_t sdPathNoDuplicate(char* name, uint8_t offset, uint8_t digits, int32_t start) {
+	int32_t power = 1;
 	for (uint8_t j = 0; j < digits; j++) {
 		power *= 10;
 	}
-	for(uint32_t i = 0; i < power; i++) {
-		// in this loop we copy i to the buffer
-		char* buf = name + offset + digits - 1;
-		uint32_t j = i;
-		while (true) {
-			*(buf) = '0' + (j % 10);
-			if (j < 10) {
-				break;
-			}
-			j /= 10;
-			buf--;
-		}
+	
+	char* buf = name + offset + digits - 1;
+	for (int32_t i = start; i < power; i++) {
+		intToStr(i, buf);
 		if (!SD.exists(name)) {
-			return true; // we are done folks!
+			return i; // we are done folks!
 		}
 	}
+	return -1;
 }
 
 uint16_t rgb888Torgb565(RGB888 c) {

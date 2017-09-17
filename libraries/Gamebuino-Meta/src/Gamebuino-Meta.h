@@ -129,6 +129,7 @@ private:
 	void updatePopup();
 	const char* popupText;
 	uint8_t popupTimeLeft;
+	int16_t framesDisplayRecording = -1;
 #ifdef FOLDER_NAME
 	const char folder_name[sizeof FOLDER_NAME] = FOLDER_NAME;
 #else

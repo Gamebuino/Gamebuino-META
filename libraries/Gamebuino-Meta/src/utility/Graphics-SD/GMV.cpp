@@ -211,6 +211,7 @@ void GMV::writeHeader(File* f) {
 	header_size = 14; // currently it is still all static
 	f->seekSet(2);
 	f_write16(header_size, f); // fill in header size!
+	f->flush();
 	f->seekSet(header_size);
 }
 
