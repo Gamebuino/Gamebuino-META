@@ -361,12 +361,6 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 	}
 }
 
-const uint8_t numLangEntries = 2;
-const MultiLang langEntries[numLangEntries] = {
-	{LangCode::en, "en"},
-	{LangCode::de, "de"},
-};
-
 void Gamebuino::checkHomeMenu() {
 	//get back to game list when "HOME is held
 	if (buttons.held(Button::d, 25)){
@@ -424,7 +418,7 @@ void Gamebuino::homeMenu(){
 	HOME_MENU_SAVE_STATE;
 	
 	int currentItem = 0;
-	const int numItems = 6;
+	const int numItems = 5;
 	unsigned long lastMillis = 0;
 	//3 text lines vertical coordinates
 	const int yOffset1 = 34;
@@ -441,7 +435,6 @@ void Gamebuino::homeMenu(){
 		lang_homeMenu_save_image,
 		lang_homeMenu_save_video,
 		lang_homeMenu_light,
-		lang_homeMenu_language,
 	};
 	
 	
@@ -650,28 +643,6 @@ void Gamebuino::homeMenu(){
 						neoPixels.setPixelColor(i, 0xFF, 0xFF, 0xFF);
 					}
 				break;
-				//// LANGUAGE
-				case 5:
-					if (buttons.released(Button::a) || buttons.released(Button::left) || buttons.released(Button::right)) {
-						uint8_t curLangIndex = 0;
-						for (;(curLangIndex < numLangEntries) && (langEntries[curLangIndex].code != language.getCurrentLang()); curLangIndex++);
-						if (buttons.released(Button::left)) {
-							if (curLangIndex == 0) {
-								curLangIndex = numLangEntries - 1;
-							} else {
-								curLangIndex--;
-							}
-						} else {
-							curLangIndex++;
-							if (curLangIndex >= numLangEntries) {
-								curLangIndex = 0;
-							}
-						}
-						settings.set(SETTING_LANGUAGE, (int)langEntries[curLangIndex].code);
-						language.setCurrentLang(langEntries[curLangIndex].code);
-						changed = true;
-					}
-				break;
 			}
 			
 			if(changed == true){
@@ -715,16 +686,6 @@ void Gamebuino::homeMenu(){
 								tft.setColor(WHITE, BROWN);
 							}
 							tft.print("*");
-						}
-					break;
-					////LANGUAGE
-					case 5:
-						tft.cursorX -= 4*2*3;
-						for (uint8_t i = 0; i < numLangEntries; i++) {
-							if (langEntries[i].code == language.getCurrentLang()) {
-								tft.print(langEntries[i].str);
-								break;
-							}
 						}
 					break;
 					

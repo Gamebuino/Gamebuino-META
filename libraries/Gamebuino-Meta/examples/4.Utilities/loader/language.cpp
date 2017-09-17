@@ -43,6 +43,11 @@ const MultiLang lang_settings_enter_bootloader[] = {
 	{LANG_DE, "Öffne Bootloader"},
 };
 
+const MultiLang lang_settings_language[] = {
+	{LANG_EN, "Language"},
+	{LANG_DE, "Sprache"},
+};
+
 const MultiLang lang_settings_back[] = {
 	{LANG_EN, "Back"},
 	{LANG_DE, "Zurück"},

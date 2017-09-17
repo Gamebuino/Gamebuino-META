@@ -3,8 +3,18 @@ const uint8_t settings_cursorPositions[] = {
 	8,
 	20,
 	26,
+	32,
 };
-const uint8_t settings_numCursorPositions = 3;
+const uint8_t settings_numCursorPositions = 4;
+
+const uint8_t numLangEntries = 3;
+const MultiLang langEntries[numLangEntries] = {
+	{LANG_EN, "en"},
+	{LANG_FR, "fr"},
+	{LANG_DE, "de"},
+};
+
+
 void settingsView() {
 	uint16_t bootloader_major = gb.bootloader.version() >> 16;
 	uint8_t bootloader_minor = gb.bootloader.version() >> 8;
@@ -12,6 +22,9 @@ void settingsView() {
 	char defaultName[13];
 	gb.getDefaultName(defaultName);
 	uint8_t cursor = 0;
+	
+	uint8_t curLangIndex = 0;
+	for (;(curLangIndex < numLangEntries) && (langEntries[curLangIndex].code != gb.language.getCurrentLang()); curLangIndex++);
 	while(1) {
 		if (!gb.update()) {
 			continue;
@@ -31,6 +44,10 @@ void settingsView() {
 		gb.display.setColor(BEIGE);
 		gb.display.print(" ");
 		gb.language.println(lang_settings_enter_bootloader);
+		gb.display.print(" ");
+		gb.language.print(lang_settings_language);
+		gb.display.print(": ");
+		gb.display.println(langEntries[curLangIndex].str);
 		gb.display.print(" ");
 		gb.language.println(lang_settings_back);
 		
@@ -68,9 +85,33 @@ void settingsView() {
 					gb.bootloader.enter();
 					break;
 				case 2:
+					// language
+					// we handle this a bit later
+					break;
+				case 3:
 					// back
 					gb.sound.playCancel();
 					return; // return
+			}
+		}
+		if (cursor == 2) {
+			// language
+			if (gb.buttons.pressed(BUTTON_A) || gb.buttons.pressed(BUTTON_RIGHT) || gb.buttons.pressed(BUTTON_LEFT)) {
+				if (gb.buttons.pressed(BUTTON_LEFT)) {
+					if (curLangIndex == 0) {
+						curLangIndex = numLangEntries - 1;
+					} else {
+						curLangIndex--;
+					}
+				} else {
+					curLangIndex++;
+					if (curLangIndex >= numLangEntries){
+						curLangIndex = 0;
+					}
+				}
+				gb.settings.set(SETTING_LANGUAGE, (int32_t)langEntries[curLangIndex].code);
+				gb.language.setCurrentLang(langEntries[curLangIndex].code);
+				gb.sound.playTick();
 			}
 		}
 		if (gb.buttons.repeat(BUTTON_UP, 8)) {

@@ -34,11 +34,6 @@ const MultiLang lang_homeMenu_light[] = {
 	{LangCode::de, "LICHT     "},
 };
 
-const MultiLang lang_homeMenu_language[] = {
-	{LangCode::en, "LANGUAGE  "},
-	{LangCode::de, "SPRACHE   "},
-};
-
 const MultiLang lang_homeMenu_SELECT[] = {
 	{LangCode::en, "SELECT  "},
 	{LangCode::de, "WÄHLEN  "},
@@ -96,7 +91,7 @@ const MultiLang lang_keyboard_save[] = {
 
 
 //////////
-// Keyboard
+// Titlescreen
 //////////
 
 const MultiLang lang_titlescreen_a_start[] = {
