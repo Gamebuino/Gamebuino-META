@@ -54,14 +54,18 @@ void Buttons::update() {
 		bool pressed = (buttonsData & (1 << thisButton)) == 0;
 		
 		if (pressed) { //if button pressed
-			states[thisButton]++; //increase button hold time
+			if (states[thisButton] < 0xFD) { // we want 0xFE to be max value for the counter
+				states[thisButton]++; //increase button hold time
+			}
 		} else {
-			if (states[thisButton] == 0)//button idle
+			if (states[thisButton] == 0) {//button idle
 				continue;
-			if (states[thisButton] == 0xFF)//if previously released
+			}
+			if (states[thisButton] == 0xFF) {//if previously released
 				states[thisButton] = 0; //set to idle
-			else
+			} else {
 				states[thisButton] = 0xFF; //button just released
+			}
 		}
 	}
 }
@@ -71,20 +75,14 @@ void Buttons::update() {
  * The button has to be released for it to be triggered again.
  */
 bool Buttons::pressed(Button button) {
-	if (states[(uint8_t)button] == 1)
-		return true;
-	else
-		return false;
+	return states[(uint8_t)button] == 1;
 }
 
 /*
  * return true if 'button' is released
  */
 bool Buttons::released(Button button) {
-	if (states[(uint8_t)button] == 0xFF)
-		return true;
-	else
-		return false;
+	return states[(uint8_t)button] == 0xFF;
 }
 
 /**
@@ -94,10 +92,7 @@ bool Buttons::released(Button button) {
  * @return true when 'button' is held for 'time' frames
  */
 bool Buttons::held(Button button, uint8_t time){
-	if(states[(uint8_t)button] == (time+1))
-		return true;
-	else
-		return false;
+	return states[(uint8_t)button] == (time+1);
 }
 
 /**
