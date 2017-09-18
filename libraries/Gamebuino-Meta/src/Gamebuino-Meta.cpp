@@ -159,6 +159,12 @@ void Gamebuino::titleScreen(const char* filename, Image* img) {
 	}
 	
 	bool first = false;
+	
+	const char* msg = language._get(lang_titlescreen_a_start);
+	uint8_t w = display.fontWidth*strlen(msg)*display.fontSize;
+	uint8_t h = display.fontHeight*display.fontSize;
+	uint8_t x = (display.width() - w) / 2;
+	uint8_t y = (display.height() / 5) * 3 + h;
 	while(1) {
 		if(!update()) {
 			continue;
@@ -169,11 +175,6 @@ void Gamebuino::titleScreen(const char* filename, Image* img) {
 			display.nextFrame();
 		}
 		if ((frameCount % 32) < 20) {
-			const char* msg = language._get(lang_titlescreen_a_start);
-			uint8_t w = display.fontWidth*strlen(msg)*display.fontSize;
-			uint8_t h = display.fontHeight*display.fontSize;
-			uint8_t x = (display.width() - w) / 2;
-			uint8_t y = (display.height() / 5) * 3 + h;
 			
 			display.setColor(Color::gray);
 			display.drawRect(x - display.fontSize*2, y - display.fontSize*2, w + display.fontSize*4, h + display.fontSize*3);

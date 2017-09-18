@@ -13,7 +13,7 @@ public:
 	void fillScreen();
 	void fillScreen(Color color);
 	void fillScreen(ColorIndex color);
-	bool persistence;
+	bool persistence = false;
 };
 
 }; // namespace Gamebuino_Compat
