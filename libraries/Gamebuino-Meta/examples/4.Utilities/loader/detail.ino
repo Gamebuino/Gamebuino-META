@@ -46,11 +46,12 @@ void loadDetailedView() {
 }
 
 void loadGame() {
-	strcpy(folderName, getCurrentGameFolder());
-	getBinPath(nameBuffer);
 	if (titleScreenImageExists) {
 		loadDetailedView(); // easiest way to fetch the first frame
-	} else {
+	}
+	strcpy(folderName, getCurrentGameFolder());
+	getBinPath(nameBuffer);
+	if (!titleScreenImageExists) {
 		gb.display.clear();
 		gb.display.setColor(WHITE, BLACK);
 		gb.display.setCursors(0, 24);
