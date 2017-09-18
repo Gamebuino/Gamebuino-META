@@ -43,10 +43,10 @@ public:
 	void update();
 	bool pressed(Button button);
 	bool released(Button button);
-	bool held(Button button, uint8_t time);
-	bool repeat(Button button, uint8_t period);
-	uint8_t timeHeld(Button button);
-	uint8_t states[NUM_BTN];
+	bool held(Button button, uint16_t time);
+	bool repeat(Button button, uint16_t period);
+	uint16_t timeHeld(Button button);
+	uint16_t states[NUM_BTN];
 
 };
 

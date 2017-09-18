@@ -54,17 +54,17 @@ void Buttons::update() {
 		bool pressed = (buttonsData & (1 << thisButton)) == 0;
 		
 		if (pressed) { //if button pressed
-			if (states[thisButton] < 0xFD) { // we want 0xFE to be max value for the counter
+			if (states[thisButton] < 0xFFFD) { // we want 0xFFFE to be max value for the counter
 				states[thisButton]++; //increase button hold time
 			}
 		} else {
 			if (states[thisButton] == 0) {//button idle
 				continue;
 			}
-			if (states[thisButton] == 0xFF) {//if previously released
+			if (states[thisButton] == 0xFFFF) {//if previously released
 				states[thisButton] = 0; //set to idle
 			} else {
-				states[thisButton] = 0xFF; //button just released
+				states[thisButton] = 0xFFFF; //button just released
 			}
 		}
 	}
@@ -82,7 +82,7 @@ bool Buttons::pressed(Button button) {
  * return true if 'button' is released
  */
 bool Buttons::released(Button button) {
-	return states[(uint8_t)button] == 0xFF;
+	return states[(uint8_t)button] == 0xFFFF;
 }
 
 /**
@@ -91,7 +91,7 @@ bool Buttons::released(Button button) {
  * @param time How much frames button must be held, between 1 and 254.
  * @return true when 'button' is held for 'time' frames
  */
-bool Buttons::held(Button button, uint8_t time){
+bool Buttons::held(Button button, uint16_t time){
 	return states[(uint8_t)button] == (time+1);
 }
 
@@ -101,13 +101,13 @@ bool Buttons::held(Button button, uint8_t time){
  * @param period How much frames button must be held, between 1 and 254.
  * @return true if the button is held for the given time
  */
-bool Buttons::repeat(Button button, uint8_t period) {
+bool Buttons::repeat(Button button, uint16_t period) {
 	if (period <= 1) {
-		if ((states[(uint8_t)button] != 0xFF) && (states[(uint8_t)button])) {
+		if ((states[(uint8_t)button] != 0xFFFF) && (states[(uint8_t)button])) {
 			return true;
 		}
 	} else {
-		if ((states[(uint8_t)button] != 0xFF) && ((states[(uint8_t)button] % period) == 1)) {
+		if ((states[(uint8_t)button] != 0xFFFF) && ((states[(uint8_t)button] % period) == 1)) {
 			return true;
 		}
 	}
@@ -119,8 +119,8 @@ bool Buttons::repeat(Button button, uint8_t period) {
  * @param button The button's ID
  * @return The number of frames during which the button has been held.
  */
-uint8_t Buttons::timeHeld(Button button){
-	if(states[(uint8_t)button] != 0xFF) {
+uint16_t Buttons::timeHeld(Button button){
+	if(states[(uint8_t)button] != 0xFFFF) {
 		return states[(uint8_t)button];
 	} else {
 		return 0;
