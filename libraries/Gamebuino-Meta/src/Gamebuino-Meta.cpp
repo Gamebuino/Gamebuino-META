@@ -121,7 +121,7 @@ void Gamebuino::begin() {
 	
 	save = Save(&tft, SAVEFILE_NAME, folder_name);
 	
-	settings = Save(&tft, "/settings.sav", "GBMS");
+	settings = Save(&tft, "/SETTINGS.SAV", "GBMS");
 	settings.config(SETTINGSCONF_NUM_BLOCKS, settingsDefaults);
 	
 	//sound
@@ -419,14 +419,14 @@ bool homeMenuGetUniquePath(char* name, uint8_t offset, uint8_t len, uint8_t f_of
 	}
 	uint32_t start;
 	File cache;
-	if (!SD.exists("rec.cache")) {
-		cache = SD.open("rec.cache", FILE_WRITE);
+	if (!SD.exists("REC.CACHE")) {
+		cache = SD.open("REC.CACHE", FILE_WRITE);
 		cache.rewind();
 		f_write32(0, &cache); // images
 		f_write32(0, &cache); // videos
 		cache.close();
 	}
-	cache = SD.open("rec.cache", FILE_WRITE);
+	cache = SD.open("REC.CACHE", FILE_WRITE);
 	cache.seekSet(f_offset);
 	start = f_read32(&cache);
 	start = sdPathNoDuplicate(name, offset, len, start + 1);

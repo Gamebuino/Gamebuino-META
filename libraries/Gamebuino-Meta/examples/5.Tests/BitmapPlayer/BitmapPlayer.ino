@@ -17,6 +17,7 @@ void setup() {
   if (!loadNextBitmap()) {
     while (1) {
       if (gb.update()) {
+        gb.display.clear();
         gb.display.println("NO BITMAP FOUND");
       }
     }

@@ -33,7 +33,7 @@ const uint8_t GAMEBUINO_LOGO[] = {80,10,
 	0b00111111,0b00110011,0b00110011,0b00110011,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00000000,
 };
 
-const char GAMEFOLDERS_CACHE_FILE[] = "gamefolders.cache";
+const char GAMEFOLDERS_CACHE_FILE[] = "GAMEFOLDERS.CACHE";
 
 
 const uint16_t startupSound[] = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
@@ -191,35 +191,35 @@ void setup() {
 	if ((RAM_FLAG_VALUE & 0xFFFF0000) == LOADER_MAGIC) {
 		uint16_t error = RAM_FLAG_VALUE & 0x0000FFFF;
 		if (error && error != 0xD87A) {
+			gb.display.clear();
+			gb.display.print("ERROR (");
+			gb.display.print(error);
+			gb.display.println(")");
+			switch (error) {
+				case 0:
+					gb.display.println("no error");
+					break;
+				case 1:
+					gb.display.println("NMI fault");
+					break;
+				case 2:
+					gb.display.println("hard fault");
+					break;
+				case 3:
+					gb.display.println("WDT reset");
+					break;
+				case 4:
+					gb.display.println("Invalid program");
+					break;
+				default:
+					gb.display.println("Unknown");
+			}
+			gb.display.print("\n");
+			gb.language.print(lang_press_a_continue);
 			while (1) {
 				if (!gb.update()) {
 					continue;
 				}
-				gb.display.clear();
-				gb.display.print("ERROR (");
-				gb.display.print(error);
-				gb.display.println(")");
-				switch (error) {
-					case 0:
-						gb.display.println("no error");
-						break;
-					case 1:
-						gb.display.println("NMI fault");
-						break;
-					case 2:
-						gb.display.println("hard fault");
-						break;
-					case 3:
-						gb.display.println("WDT reset");
-						break;
-					case 4:
-						gb.display.println("Invalid program");
-						break;
-					default:
-						gb.display.println("Unknown");
-				}
-				gb.display.print("\n");
-				gb.language.print(lang_press_a_continue);
 				if (gb.buttons.pressed(BUTTON_A)) {
 					break;
 				}
@@ -228,6 +228,7 @@ void setup() {
 		RAM_FLAG_VALUE = 0; // make sure we don't get weird stuff
 	}
 	
+	gb.display.clear();
 	gb.display.drawBitmap(0, 2, GAMEBUINO_LOGO);
 	gb.display.setCursors(0, 18);
 	gb.language.println(lang_loading);
