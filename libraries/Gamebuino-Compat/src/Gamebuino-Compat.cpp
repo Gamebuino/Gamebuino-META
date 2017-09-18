@@ -30,13 +30,15 @@ void Gamebuino::getDefaultName(char* string) {
 }
 
 bool Gamebuino::update() {
+	Color c = display.color;
+	Color c2 = display.bgcolor;
 	bool u = Gamebuino_Meta::Gamebuino::update();
 	if (u) {
-		display.clearTextVars();
 		if (!display.persistence) {
 			display.clear();
 		}
-		display.setColor(Color::black);
+		display.color = c;
+		display.bgcolor = c2;
 		return true;
 	}
 	return false;
