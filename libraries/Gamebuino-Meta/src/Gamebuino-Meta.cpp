@@ -374,6 +374,8 @@ void Gamebuino::checkHomeMenu() {
 		if (recording_screen) {
 			// stop the recording
 			sound.startEfxOnly();
+			bool isMute = sound.isMute();
+			sound.mute();
 			display.setFont(font3x5);
 			neoPixels.clear();
 			neoPixels.show();
@@ -381,6 +383,9 @@ void Gamebuino::checkHomeMenu() {
 			recording_screen = false;
 			//refresh screen to erase log messages
 			updateDisplay();
+			if (!isMute) {
+				sound.unmute();
+			}
 			sound.stopEfxOnly();
 		}
 		homeMenu();
@@ -639,15 +644,15 @@ void Gamebuino::homeMenu(){
 				break;
 				////RECORD SCREEN
 				case 3:
-					if (buttons.released(Button::a) || buttons.held(Button::a, 100)){
+					if (buttons.released(Button::a) || buttons.held(Button::a, 25)){
 						tft.print(language._get(lang_homeMenu_READY));
 						char name[] = "REC/VIDEO0000.GMV";
 						bool success = homeMenuGetUniquePath(name, 9, 4, 4);
-						bool infinite = buttons.held(Button::a, 100);
+						bool infinite = buttons.held(Button::a, 25);
 						if (success) {
 							if (!infinite) {
 								fileEndingGmvToBmp(name);
-								framesDisplayRecording = (1000 / timePerFrame) * 6;
+								framesDisplayRecording = (1000 / timePerFrame) * 3;
 							} else {
 								framesDisplayRecording = -1;
 							}
