@@ -12,8 +12,9 @@ void galleryView(int8_t direction) {
 	}
 	
 	strcpy(nameBuffer, getCurrentGameFolder());
-	strcpy(nameBuffer + strlen(nameBuffer), "/REC/IMAGE0000.GMV");
+	strcpy(nameBuffer + strlen(nameBuffer), "/REC/00000.GMV");
 	uint8_t offset = strlen(nameBuffer) - 5;
+	uint8_t offsetStart = offset - 4;
 	
 	int32_t index;
 	if (direction > 0) {
@@ -35,6 +36,7 @@ void galleryView(int8_t direction) {
 					gb.sound.playTick();
 					return;
 				}
+				memset(nameBuffer + offsetStart, '0', 5);
 				Gamebuino_Meta::intToStr(index, nameBuffer + offset);
 			} while(!SD.exists(nameBuffer));
 			gb.display.init(nameBuffer);

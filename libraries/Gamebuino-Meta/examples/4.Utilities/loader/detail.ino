@@ -23,7 +23,7 @@ void loadDetailedView() {
 					continue;
 				}
 				entry.getName(nameBuffer + i, NAMEBUFFER_LENGTH - i);
-				if (!strstr(nameBuffer, ".BMP") && !strstr(nameBuffer, ".bmp")) {
+				if (!strstr(nameBuffer, ".GMV") && !strstr(nameBuffer, ".gmv")) {
 					continue;
 				}
 				titleScreenImageExists = true;

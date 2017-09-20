@@ -419,7 +419,7 @@ void Hook_ExitHomeMenu() {
 	display.fontWidth = hm_save_fontWidth; \
 	display.fontHeight = hm_save_fontHeight;
 
-bool homeMenuGetUniquePath(char* name, uint8_t offset, uint8_t len, uint8_t f_offset) {
+bool homeMenuGetUniquePath(char* name, uint8_t offset, uint8_t len) {
 	if(!SD.exists("REC")) {
 		SD.mkdir("REC");
 	}
@@ -429,14 +429,13 @@ bool homeMenuGetUniquePath(char* name, uint8_t offset, uint8_t len, uint8_t f_of
 		cache = SD.open("REC.CACHE", FILE_WRITE);
 		cache.rewind();
 		f_write32(0, &cache); // images
-		f_write32(0, &cache); // videos
 		cache.close();
 	}
 	cache = SD.open("REC.CACHE", FILE_WRITE);
-	cache.seekSet(f_offset);
+	cache.rewind();
 	start = f_read32(&cache);
 	start = sdPathNoDuplicate(name, offset, len, start + 1);
-	cache.seekSet(f_offset);
+	cache.rewind();
 	if (start == -1) {
 		f_write32(0, &cache);
 		start = sdPathNoDuplicate(name, offset, len);
@@ -616,10 +615,10 @@ void Gamebuino::homeMenu(){
 				case 2:
 					if (buttons.released(Button::a)){
 						tft.print(language._get(lang_homeMenu_SAVING));
-						char name[] = "REC/IMAGE0000.GMV";
+						char name[] = "REC/00000.GMV";
 						// now `name` will be a unique thing
-						// 9 because "REC/IMAGE" is 9 long, 4 because "0000" is 4 chars
-						bool success = homeMenuGetUniquePath(name, 9, 4, 0);
+						// 9 because "REC/" is 4 long, 5 because "00000" is 4 chars
+						bool success = homeMenuGetUniquePath(name, 4, 5);
 						if (success) {
 							fileEndingGmvToBmp(name);
 							success = display.save(name);
@@ -646,8 +645,8 @@ void Gamebuino::homeMenu(){
 				case 3:
 					if (buttons.released(Button::a) || buttons.held(Button::a, 25)){
 						tft.print(language._get(lang_homeMenu_READY));
-						char name[] = "REC/VIDEO0000.GMV";
-						bool success = homeMenuGetUniquePath(name, 9, 4, 4);
+						char name[] = "REC/00000.GMV";
+						bool success = homeMenuGetUniquePath(name, 4, 5);
 						bool infinite = buttons.held(Button::a, 25);
 						if (success) {
 							if (!infinite) {
