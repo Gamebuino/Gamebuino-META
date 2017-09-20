@@ -35,8 +35,10 @@ void loadDetailedView() {
 		gb.display.setCursors(0, 0);
 		gb.language.println(lang_loading);
 		gb.updateDisplay();
-		gb.display.init(80, 64, nameBuffer);
-		if (gb.display.width() != 80 || gb.display.height() != 64) {
+		gb.display.init(nameBuffer);
+		if ((gb.display.width() == 80 && gb.display.height() == 64) || (gb.display.width() == 160 && gb.display.height() == 128)) {
+			gb.display.fontSize = gb.display.width() == 80 ? 1 : 2;
+		} else {
 			titleScreenImageExists = false;
 		}
 	}
@@ -81,36 +83,40 @@ void detailedView() {
 		if (displayName) {
 			// center bar
 			gb.display.setColor(BROWN);
-			gb.display.fillRect(0, 15, 80, 9);
+			gb.display.fillRect(0, 15*gb.display.fontSize, 80*gb.display.fontSize, 9*gb.display.fontSize);
 			gb.display.setColor(DARKGRAY);
-			gb.display.drawFastHLine(0, 14, 80);
-			gb.display.drawFastHLine(0, 24, 80);
+			gb.display.drawFastHLine(0, 14*gb.display.fontSize, 80*gb.display.fontSize);
+			gb.display.drawFastHLine(0, 24*gb.display.fontSize, 80*gb.display.fontSize);
+			if (gb.display.fontSize > 1) {
+				gb.display.drawFastHLine(0, 14*gb.display.fontSize + 1, 80*gb.display.fontSize);
+				gb.display.drawFastHLine(0, 24*gb.display.fontSize + 1, 80*gb.display.fontSize);
+			}
 			
 			// game name
 			gb.display.setColor(WHITE);
-			gb.display.setCursors(2, 17);
+			gb.display.setCursors(2*gb.display.fontSize, 17*gb.display.fontSize);
 			gb.display.println(getCurrentGameFolder() + 1);
 		}
 		
 		// lower bar
 		gb.display.setColor(DARKGRAY);
-		gb.display.fillRect(0, 57, 80, 7);
+		gb.display.fillRect(0, 57*gb.display.fontSize, 80*gb.display.fontSize, 7*gb.display.fontSize);
 		
 		// A SELECT
 		gb.display.setColor(GREEN);
-		gb.display.setCursors(2, 58);
+		gb.display.setCursors(2*gb.display.fontSize, 58*gb.display.fontSize);
 		gb.display.print("A");
-		gb.display.setCursorX(8);
+		gb.display.setCursorX(8*gb.display.fontSize);
 		gb.display.setColor(BROWN);
 		gb.language.print(lang_select);
 		
 		// < > BROWSE
-		gb.display.setCursorX(43);
+		gb.display.setCursorX(43*gb.display.fontSize);
 		gb.display.setColor(LIGHTBLUE);
 		gb.display.print("<");
-		gb.display.setCursorX(49);
+		gb.display.setCursorX(49*gb.display.fontSize);
 		gb.display.print(">");
-		gb.display.setCursorX(55);
+		gb.display.setCursorX(55*gb.display.fontSize);
 		gb.display.setColor(BROWN);
 		gb.language.print(lang_browse);
 		
@@ -134,6 +140,18 @@ void detailedView() {
 			gb.display.init(80, 64, ColorMode::rgb565);
 			gb.sound.playCancel();
 			return;
+		}
+		
+		if (gb.buttons.pressed(BUTTON_DOWN)) {
+			galleryView(1);
+			loadDetailedView();
+			continue;
+		}
+		
+		if (gb.buttons.pressed(BUTTON_UP)) {
+			galleryView(-1);
+			loadDetailedView();
+			continue;
 		}
 	}
 }

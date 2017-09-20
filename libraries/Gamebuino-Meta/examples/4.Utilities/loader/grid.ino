@@ -51,17 +51,19 @@ void loadGridEntry(uint8_t i, uint32_t game) {
 				continue;
 			}
 			entry.getName(nameBuffer + j, NAMEBUFFER_LENGTH - j);
-			if (!strstr(nameBuffer, ".BMP") && !strstr(nameBuffer, ".bmp")) {
+			if (!strstr(nameBuffer, ".GMV") && !strstr(nameBuffer, ".gmv")) {
 				continue;
 			}
 			// OK, it's time to create a cropped image!
 			gridViewEntries[i].img.init(ICON_WIDTH, ICON_HEIGHT, ColorMode::rgb565);
-			
-			gb.display.init(80, 64, nameBuffer);
-			gridViewEntries[i].img.drawImage((ICON_WIDTH - 80) / 2, (ICON_HEIGHT - 64) / 2, gb.display);
+			gb.display.init(nameBuffer);
+			bool valid = gb.display.width() == 80 && gb.display.height() == 64;
+			if (valid) {
+				gridViewEntries[i].img.drawImage((ICON_WIDTH - 80) / 2, (ICON_HEIGHT - 64) / 2, gb.display);
+			} 
 			gb.display.init(80, 64, ColorMode::rgb565);
 			
-			gridViewEntries[i].mode = GridMode::icon;
+			gridViewEntries[i].mode = valid ? GridMode::icon : GridMode::name;
 			return;
 		}
 	}
@@ -260,8 +262,7 @@ void gridView() {
 			detailedView();
 			gridIndex = 0;
 			
-			gb.display.setCursors(0, 0);
-			gb.display.setColor(WHITE, BLACK);
+			gb.display.clear();
 			gb.language.println(lang_loading);
 			gb.updateDisplay();
 			loadGridView();

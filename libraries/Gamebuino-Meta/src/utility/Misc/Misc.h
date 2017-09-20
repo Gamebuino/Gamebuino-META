@@ -8,6 +8,8 @@ extern SdFat SD;
 
 namespace Gamebuino_Meta {
 
+void intToStr(int32_t i, char* buf);
+
 int32_t sdPathNoDuplicate(char* name, uint8_t offset, uint8_t digits, int32_t start = 0);
 
 struct RGB888 {
