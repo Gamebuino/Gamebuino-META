@@ -149,7 +149,9 @@ void createCache() {
 		for (uint8_t i = 0; i < maxFavs; i++) {
 			gb.save.get(SAVE_FAVOFFSET + i, folderName);
 			if (!SD.exists(folderName)) {
-				// TODO: handle missing fav
+				currentGame = i;
+				unfavoriteGame(); // this will re-build cache again, so we recursively fix our list
+				return;
 			}
 			memcpy(favGames + (i*MAX_FOLDER_NAME_LENGTH), folderName, MAX_FOLDER_NAME_LENGTH);
 			memcpy(gameFolders[0][filesInBlock], folderName, MAX_FOLDER_NAME_LENGTH);
@@ -247,14 +249,14 @@ void unfavoriteGame() {
 	SD.remove(GAMEFOLDERS_CACHE_FILE);
 	createCache();
 	
-	currentGame = maxFavs;
+	currentGame = maxFavs - 1;
 	while (strcmp(backup, getCurrentGameFolder()) != 0) {
 		currentGame++;
 	}
 }
 
 bool favoriteGame() {
-	if (isFavorite()) {
+	if (isGameFavorite()) {
 		return true;
 	}
 	uint8_t maxFavs = gb.save.get(SAVE_NUM_FAVS);
@@ -266,10 +268,10 @@ bool favoriteGame() {
 	
 	SD.remove(GAMEFOLDERS_CACHE_FILE);
 	createCache();
-	currentGame = maxFavs + 1;
+	currentGame = maxFavs; // no +1 because games start with zero
 }
 
-bool isFavorite() {
+bool isGameFavorite() {
 	char* identifier = getCurrentGameFolder();
 	uint8_t maxFavs = gb.save.get(SAVE_NUM_FAVS);
 	for (uint8_t i = 0; i < maxFavs; i++) {

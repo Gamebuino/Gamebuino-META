@@ -16,5 +16,7 @@ extern const MultiLang lang_settings_back[];
 extern const MultiLang lang_versions[];
 extern const MultiLang lang_loader[];
 extern const MultiLang lang_bootloader[];
+extern const MultiLang lang_fav_added[];
+extern const MultiLang lang_fav_removed[];
 
 #endif // _LANGUAGE_H_

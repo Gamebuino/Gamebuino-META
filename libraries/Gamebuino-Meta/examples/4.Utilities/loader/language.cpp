@@ -67,3 +67,13 @@ const MultiLang lang_bootloader[] = {
 	{LANG_EN, "Bootloader"},
 	{LANG_DE, "Bootloader"},
 };
+
+const MultiLang lang_fav_added[] = {
+	{LANG_EN, "added favorit"},
+	{LANG_DE, "Favorit hinzugefügt"},
+};
+
+const MultiLang lang_fav_removed[] = {
+	{LANG_EN, "removed favorit"},
+	{LANG_DE, "Favorit entfernt"},
+};
