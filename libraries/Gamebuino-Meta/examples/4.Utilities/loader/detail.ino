@@ -3,7 +3,9 @@ Image titleScreenImage;
 
 bool titleScreenImageExists;
 bool displayName;
+bool gameIsFavorite;
 void loadDetailedView() {
+	gameIsFavorite = isFavorite();
 	strcpy(nameBuffer, getCurrentGameFolder());
 	strcpy(nameBuffer + strlen(nameBuffer), "/TITLESCREEN.BMP");
 	titleScreenImageExists = SD.exists(nameBuffer);
@@ -152,6 +154,16 @@ void detailedView() {
 			galleryView(-1);
 			loadDetailedView();
 			continue;
+		}
+		
+		if (gb.buttons.pressed(BUTTON_C)) {
+			if (isFavorite()) {
+				unfavoriteGame();
+				gb.sound.playCancel();
+			} else {
+				favoriteGame();
+				gb.sound.playOK();
+			}
 		}
 	}
 }

@@ -20,6 +20,24 @@ char nameBuffer[NAMEBUFFER_LENGTH];
 char gameFolders[2][BLOCK_LENGTH][MAX_FOLDER_NAME_LENGTH];
 uint32_t currentGame = 0;
 
+const uint8_t MAX_FAV_GAMES = 10;
+const uint8_t SAVE_NUM_FAVS = 0;
+const uint8_t SAVE_FAVOFFSET = 1;
+const SaveDefault savefileDefaults[] = {
+	SaveDefault(SAVE_NUM_FAVS, SAVETYPE_INT, 0),
+	SaveDefault(1, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(2, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(3, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(4, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(5, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(6, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(7, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(8, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(9, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(10, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+};
+
+
 const uint8_t GAMEBUINO_LOGO[] = {80,10,
 	0b00111100,0b00111111,0b00111111,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00111111,0b00011100,
 	0b00111100,0b00111111,0b00111111,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00111111,0b00100110,
@@ -120,11 +138,32 @@ void createCache() {
 	cache.rewind();
 	cache.write(&MAX_FOLDER_NAME_LENGTH, 4);
 	cache.write(&totalGames, 4);
+	uint8_t filesInBlock = 0;
+	uint8_t numBlocks = 0;
+	
+	// first we load the favourited games
+	char* favGames = (char*)gb.display._buffer; // this should be large enough
+	memset(favGames, 0, MAX_FOLDER_NAME_LENGTH*SAVE_NUM_FAVS);
+	uint8_t maxFavs = gb.save.get(SAVE_NUM_FAVS);
+	if (maxFavs) {
+		for (uint8_t i = 0; i < maxFavs; i++) {
+			gb.save.get(SAVE_FAVOFFSET + i, folderName);
+			if (!SD.exists(folderName)) {
+				// TODO: handle missing fav
+			}
+			memcpy(favGames + (i*MAX_FOLDER_NAME_LENGTH), folderName, MAX_FOLDER_NAME_LENGTH);
+			memcpy(gameFolders[0][filesInBlock], folderName, MAX_FOLDER_NAME_LENGTH);
+			filesInBlock++;
+			if (filesInBlock >= BLOCK_LENGTH) {
+				cache.write(gameFolders[0], BLOCK_LENGTH*MAX_FOLDER_NAME_LENGTH);
+				numBlocks++;
+				filesInBlock = 0;
+			}
+		}
+	}
 	
 	File root = SD.open("/");
 	File entry;
-	uint8_t filesInBlock = 0;
-	uint8_t numBlocks = 0;
 	while (entry = root.openNextFile()) {
 		if (!entry.isDirectory()) {
 			continue;
@@ -132,6 +171,16 @@ void createCache() {
 		folderName[0] = '/';
 		entry.getName(folderName + 1, MAX_FOLDER_NAME_LENGTH - 1);
 		if (!getBinPath(nameBuffer)) {
+			continue;
+		}
+		bool isFav = false;
+		for (uint8_t i = 0; i < maxFavs; i++) {
+			if (strcmp(folderName, favGames + (i*MAX_FOLDER_NAME_LENGTH)) == 0) {
+				isFav = true;
+				break;
+			}
+		}
+		if (isFav) {
 			continue;
 		}
 		strncpy(gameFolders[0][filesInBlock], folderName, MAX_FOLDER_NAME_LENGTH);
@@ -177,6 +226,61 @@ char* getCurrentGameFolder() {
 	return gameFolders[b][gameInBlock];
 }
 
+void unfavoriteGame() {
+	char* identifier = getCurrentGameFolder();
+	uint8_t maxFavs = gb.save.get(SAVE_NUM_FAVS);
+	bool moving = false;
+	for (uint8_t i = 0; i < maxFavs; i++) {
+		gb.save.get(SAVE_FAVOFFSET + i, nameBuffer);
+		if (strcmp(nameBuffer, identifier) == 0) {
+			moving = true;
+		} else if (moving) {
+			gb.save.set(SAVE_FAVOFFSET + i - i, nameBuffer);
+		}
+	}
+	gb.save.del(SAVE_FAVOFFSET + maxFavs - 1);
+	gb.save.set(SAVE_NUM_FAVS, maxFavs - 1);
+	
+	char backup[MAX_FOLDER_NAME_LENGTH];
+	strcpy(backup, identifier); // let's save it...
+	
+	SD.remove(GAMEFOLDERS_CACHE_FILE);
+	createCache();
+	
+	currentGame = maxFavs;
+	while (strcmp(backup, getCurrentGameFolder()) != 0) {
+		currentGame++;
+	}
+}
+
+bool favoriteGame() {
+	if (isFavorite()) {
+		return true;
+	}
+	uint8_t maxFavs = gb.save.get(SAVE_NUM_FAVS);
+	if (maxFavs >= MAX_FAV_GAMES) {
+		return false;
+	}
+	gb.save.set(SAVE_FAVOFFSET + maxFavs, getCurrentGameFolder());
+	gb.save.set(SAVE_NUM_FAVS, maxFavs + 1);
+	
+	SD.remove(GAMEFOLDERS_CACHE_FILE);
+	createCache();
+	currentGame = maxFavs + 1;
+}
+
+bool isFavorite() {
+	char* identifier = getCurrentGameFolder();
+	uint8_t maxFavs = gb.save.get(SAVE_NUM_FAVS);
+	for (uint8_t i = 0; i < maxFavs; i++) {
+		gb.save.get(SAVE_FAVOFFSET + i, nameBuffer);
+		if (strcmp(nameBuffer, identifier) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void loadGameFolderBlock(uint8_t b, uint8_t bb) {
 	File cache = SD.open(GAMEFOLDERS_CACHE_FILE, FILE_WRITE);
 	cache.seekSet(8 + bb*BLOCK_LENGTH*MAX_FOLDER_NAME_LENGTH);
@@ -186,6 +290,7 @@ void loadGameFolderBlock(uint8_t b, uint8_t bb) {
 
 void setup() {
 	gb.begin();
+	gb.save.config(savefileDefaults);
 //	SerialUSB.begin(115200);
 //	while(!SerialUSB);
 	if ((RAM_FLAG_VALUE & 0xFFFF0000) == LOADER_MAGIC) {
