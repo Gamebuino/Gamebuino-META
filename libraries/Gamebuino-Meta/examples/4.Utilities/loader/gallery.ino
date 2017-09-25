@@ -3,7 +3,7 @@
 void galleryView(int8_t direction) {
 	uint32_t max = 0;
 	strcpy(nameBuffer, getCurrentGameFolder());
-	strcpy(nameBuffer + strlen(nameBuffer), "/REC.CACHE");
+	strcpy(nameBuffer + strlen(nameBuffer), "/REC/REC.CACHE");
 	if (SD.exists(nameBuffer)) {
 		File cache = SD.open(nameBuffer);
 		cache.rewind();

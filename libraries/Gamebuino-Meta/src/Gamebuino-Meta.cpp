@@ -425,13 +425,13 @@ bool homeMenuGetUniquePath(char* name, uint8_t offset, uint8_t len) {
 	}
 	uint32_t start;
 	File cache;
-	if (!SD.exists("REC.CACHE")) {
-		cache = SD.open("REC.CACHE", FILE_WRITE);
+	if (!SD.exists("REC/REC.CACHE")) {
+		cache = SD.open("REC/REC.CACHE", FILE_WRITE);
 		cache.rewind();
 		f_write32(0, &cache); // images
 		cache.close();
 	}
-	cache = SD.open("REC.CACHE", FILE_WRITE);
+	cache = SD.open("REC/REC.CACHE", FILE_WRITE);
 	cache.rewind();
 	start = f_read32(&cache);
 	start = sdPathNoDuplicate(name, offset, len, start + 1);
