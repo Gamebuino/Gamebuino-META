@@ -40,6 +40,22 @@ void loadGridEntry(uint8_t i, uint32_t game) {
 		return;
 	}
 	*/
+	// maybe we have a titlescreen to crop?
+	strcpy(nameBuffer + strlen(gameFolders[b][gameInBlock]), "/TITLESCREEN.BMP");
+	if (SD.exists(nameBuffer)) {
+		gridViewEntries[i].img.init(ICON_WIDTH, ICON_HEIGHT, ColorMode::rgb565);
+		gb.display.init(nameBuffer);
+		bool valid = gb.display.width() == 80 && gb.display.height() == 64;
+		if (valid) {
+			gridViewEntries[i].img.drawImage((ICON_WIDTH - 80) / 2, (ICON_HEIGHT - 64) / 2, gb.display);
+			gb.display.init(80, 64, ColorMode::rgb565);
+			
+			gridViewEntries[i].mode = GridMode::icon;
+			return;
+		} 
+		gb.display.init(80, 64, ColorMode::rgb565);
+	}
+	
 	// okay, maybe the user made a screenshot that we need to crop?
 	strcpy(nameBuffer + strlen(gameFolders[b][gameInBlock]), "/REC/");
 	if (SD.exists(nameBuffer)) {
