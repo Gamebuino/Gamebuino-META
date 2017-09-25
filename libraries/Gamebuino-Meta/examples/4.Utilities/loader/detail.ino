@@ -67,6 +67,7 @@ void loadDetailedView() {
 	}
 	if (!titleScreenImageExists) {
 		gb.display.init(80, 64, ColorMode::rgb565);
+		gb.display.fontSize = 1;
 	}
 }
 

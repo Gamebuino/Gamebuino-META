@@ -63,15 +63,20 @@ GMV::GMV(Image* _img, char* filename) {
 	}
 	header_size = f_read16(&file);
 	file.seekCur(1); // trash version byte
+#if STRICT_IMAGES
 	int16_t w = f_read16(&file);
 	int16_t h = f_read16(&file);
-#if STRICT_IMAGES
+	int16_t _w = img->_width;
+	int16_t _h = img->_height;
 	if ((img->_width && w > img->_width) || (img->_height && h > img->_height)) {
 		return;
 	}
-#endif
 	img->_width = w;
 	img->_height = h;
+#else
+	img->_width = f_read16(&file);
+	img->_height = f_read16(&file);
+#endif
 	img->frames = f_read16(&file);
 	uint8_t flags = file.read();
 	img->colorMode = flags & 0x01 ? (ColorMode::index) : (ColorMode::rgb565);
@@ -85,7 +90,7 @@ GMV::GMV(Image* _img, char* filename) {
 	file.seekSet(header_size);
 
 #if STRICT_IMAGES
-	if (!img->_width || !img->_height) {
+	if (!_w || !_h) {
 		if (img->getBufferSize() > img->bufferSize) {
 			return;
 		}

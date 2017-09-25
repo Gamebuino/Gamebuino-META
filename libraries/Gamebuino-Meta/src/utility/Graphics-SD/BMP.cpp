@@ -46,6 +46,7 @@ BMP::BMP(File* file, Image* img) {
 		return;
 	}
 #endif
+	img->_width = width;
 	uint32_t pixel_height = f_read32(file);
 	if (img->_height) {
 		height = img->_height;
