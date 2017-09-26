@@ -125,6 +125,8 @@ public:
 	
 	virtual void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size);
 	void setCursor(int16_t x, int16_t y);
+	Color setTmpColor(Color c);
+	Color setTmpColor(ColorIndex c);
 	void setColor(Color c);
 	void setColor(Color c, Color bg);
 	void setColor(ColorIndex c);
@@ -189,8 +191,20 @@ public:
 	int16_t
 		_width, _height; // Display w/h as modified by current rotation
 	static int16_t cursorX, cursorY;
-	static Color
-		color, bgcolor;
+	static union ColorUnion {
+		Color c;
+		struct {
+			uint8_t iu;
+			uint8_t i;
+		};
+	} color;
+	static union BgcolorUnion {
+		Color c;
+		struct {
+			uint8_t iu;
+			uint8_t i;
+		};
+	} bgcolor;
 	static uint8_t
 		fontSize,
 		rotation;

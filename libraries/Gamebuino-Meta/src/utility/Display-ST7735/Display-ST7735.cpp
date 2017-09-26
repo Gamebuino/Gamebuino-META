@@ -872,8 +872,8 @@ void Display_ST7735::_drawPixel(int16_t x, int16_t y) {
 #endif
 	dataMode();
 	
-	spiwrite((uint16_t)color >> 8);
-	spiwrite((uint16_t)color);
+	spiwrite((uint16_t)color.c >> 8);
+	spiwrite((uint16_t)color.c);
 
 	idleMode();
 #if defined (SPI_HAS_TRANSACTION)
@@ -888,7 +888,7 @@ void Display_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h) {
 	if((y+h-1) >= _height) h = _height-y;
 	setAddrWindow(x, y, x, y+h-1);
 
-	uint8_t hi = (uint16_t)Graphics::color >> 8, lo = (uint16_t)Graphics::color;
+	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
 		
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
@@ -911,7 +911,7 @@ void Display_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w) {
 	if((x+w-1) >= _width)	w = _width-x;
 	setAddrWindow(x, y, x+w-1, y);
 
-	uint8_t hi = (uint16_t)Graphics::color >> 8, lo = (uint16_t)Graphics::color;
+	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
 
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
@@ -936,7 +936,7 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 
 	setAddrWindow(x, y, x+w-1, y+h-1);
 
-	uint8_t hi = (uint16_t)Graphics::color >> 8, lo = (uint16_t)Graphics::color;
+	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
 		
 #if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);

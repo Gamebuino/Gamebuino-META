@@ -73,8 +73,8 @@ Color _colorIndex[16] = {
 };
 Color* Graphics::colorIndex = _colorIndex;
 BlendMode Graphics::blendMode = BlendMode::blend;
-Color Graphics::color = Color::black;
-Color Graphics::bgcolor = Color::white;
+Graphics::ColorUnion Graphics::color = {(Color)0};
+Graphics::BgcolorUnion Graphics::bgcolor = {(Color)0};
 int16_t Graphics::cursorX = 0;
 int16_t Graphics::cursorY = 0;
 uint8_t Graphics::fontSize = 0;
@@ -168,7 +168,7 @@ Graphics::Graphics(int16_t w, int16_t h) : WIDTH(w), HEIGHT(h) {
 	rotation  = 0;
 	cursorY  = cursorX    = 0;
 	fontSize  = 1;
-	color = bgcolor = Color::white;
+	setColor(Color::white);
 	textWrap      = true;
 	_cp437    = false;
 	gfxFont   = NULL;
@@ -359,14 +359,9 @@ void Graphics::fill() {
 }
 
 void Graphics::fill(Color c) {
-	Color tempColor = color;
-	if (colorMode == ColorMode::index) {
-		color = (Color)rgb565ToIndex(c);
-	} else {
-		color = c;
-	}
+	Color tmpColor = setTmpColor(c);
 	fill();
-	color = tempColor;
+	color.c = tmpColor;
 }
 
 void Graphics::clearTextVars() {
@@ -419,14 +414,9 @@ void Graphics::clear(ColorIndex c) {
 }
 
 void Graphics::fill(ColorIndex c) {
-	Color tempColor = color;
-	if (colorMode == ColorMode::index) {
-		color = (Color)c;
-	} else {
-		color = (Color)colorIndex[(uint8_t)c];
-	}
+	Color tmpColor = setTmpColor(c);
 	fill();
-	color = tempColor;
+	color.c = tmpColor;
 }
 
 // Draw a rounded rectangle
@@ -914,15 +904,15 @@ void Graphics::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 						fillRect(x + (i * size), y + (j * size), size, size);
 					}
 				}
-				else if (bgcolor != color) {
-					Color tempcolor = color;
-					color = bgcolor;
+				else if (bgcolor.c != color.c) {
+					Color tempcolor = color.c;
+					color.c = bgcolor.c;
 					if (size == 1) // default size
 						drawPixel(x + i, y + j);
 					else { // big size
 						fillRect(x + i*size, y + j*size, size, size);
 					}
-					color = tempcolor; //restore color to its initial value
+					color.c = tempcolor; //restore color to its initial value
 				}
 				line >>= 1;
 			}
@@ -1019,58 +1009,70 @@ void Graphics::drawPixel(int16_t x, int16_t y) {
 }
 
 void Graphics::drawPixel(int16_t x, int16_t y, Color c) {
-	Color tempColor = color;
-	if (colorMode == ColorMode::index) {
-		color = (Color)rgb565ToIndex(c);
-	} else {
-		color = c;
-	}
+	Color tmpColor = setTmpColor(c);
 	drawPixel(x, y);
-	color = tempColor;
+	color.c = tmpColor;
 }
 
 void Graphics::drawPixel(int16_t x, int16_t y, ColorIndex c) {
-	Color tempColor = color;
-	if (colorMode == ColorMode::index) {
-		color = (Color)c;
-	} else {
-		color = (Color)colorIndex[(uint8_t)c];
-	}
+	Color tmpColor = setTmpColor(c);
 	drawPixel(x, y);
-	color = tempColor;
+	color.c = tmpColor;
+}
+
+Color Graphics::setTmpColor(Color c) {
+	if (colorMode == ColorMode::index) {
+		return setTmpColor(rgb565ToIndex(c));
+	}
+	Color tmpColor = color.c;
+	color.c = c;
+	return tmpColor;
+}
+
+Color Graphics::setTmpColor(ColorIndex c) {
+	if (colorMode == ColorMode::index) {
+		Color tmpColor = color.c;
+		color.i = (uint8_t)c & 0x0F;
+		color.iu = color.i << 4;
+		return tmpColor;
+	}
+	return setTmpColor(colorIndex[(uint8_t)c]);
 }
 
 void Graphics::setColor(Color c) {
 	// For 'transparent' background, we'll set the bg
 	// to the same as fg instead of using a flag
 	if (colorMode == ColorMode::index) {
-		color = bgcolor = (Color)rgb565ToIndex(c);
-		return;
+		setColor(rgb565ToIndex(c));
+	} else {
+		color.c = bgcolor.c = c;
 	}
-	color = bgcolor = c;
 }
 
 void Graphics::setColor(Color c, Color b) {
 	if (colorMode == ColorMode::index) {
-		color = (Color)rgb565ToIndex(c);
-		bgcolor = (Color)rgb565ToIndex(b);
-		return;
+		setColor(rgb565ToIndex(c), rgb565ToIndex(b));
+	} else {
+		color.c = c;
+		bgcolor.c = b;
 	}
-	color   = c;
-	bgcolor = b;
 }
 
 void Graphics::setColor(ColorIndex c) {
 	if (colorMode == ColorMode::index) {
-		color = bgcolor = (Color)c;
+		color.i = (uint8_t)c & 0x0F;
+		color.iu = color.i << 4;
+		bgcolor.c = color.c; // simpler to just have them be the same
 	} else {
 		setColor(colorIndex[(uint8_t)c]);
 	}
 }
 void Graphics::setColor(ColorIndex c, ColorIndex bg) {
 	if (colorMode == ColorMode::index) {
-		color   = (Color)c;
-		bgcolor = (Color)bg;
+		color.i = (uint8_t)c & 0x0F;
+		color.iu = color.i << 4;
+		bgcolor.i = (uint8_t)bg & 0x0F;
+		bgcolor.iu = bgcolor.i << 4;
 	} else {
 		setColor(colorIndex[(uint8_t)c], colorIndex[(uint8_t)bg]);
 	}

@@ -400,8 +400,8 @@ void Hook_ExitHomeMenu() {
 #define HOME_MENU_SAVE_STATE \
 	int16_t hm_save_cursorX = display.cursorX; \
 	int16_t hm_save_cursorY = display.cursorY; \
-	Color hm_save_color = display.color; \
-	Color hm_save_bgcolor = display.bgcolor; \
+	Color hm_save_color = display.color.c; \
+	Color hm_save_bgcolor = display.bgcolor.c; \
 	uint8_t hm_save_fontSize = display.fontSize; \
 	bool hm_save_textWrap = display.textWrap; \
 	uint8_t* hm_save_font = display.font; \
@@ -411,8 +411,8 @@ void Hook_ExitHomeMenu() {
 #define HOME_MENU_RESTORE_STATE \
 	display.cursorX = hm_save_cursorX; \
 	display.cursorY = hm_save_cursorY; \
-	display.color = hm_save_color; \
-	display.bgcolor = hm_save_bgcolor; \
+	display.color.c = hm_save_color; \
+	display.bgcolor.c = hm_save_bgcolor; \
 	display.fontSize = hm_save_fontSize; \
 	display.textWrap = hm_save_textWrap; \
 	display.font = hm_save_font; \
