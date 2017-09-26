@@ -122,8 +122,7 @@ public:
 	void drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius);
 	void fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius);
 
-	void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap);
-	void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip);
+	
 	virtual void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size);
 	void setCursor(int16_t x, int16_t y);
 	void setColor(Color c);

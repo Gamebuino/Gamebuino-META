@@ -674,4 +674,142 @@ void Image::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 	Graphics::drawChar(x, y, c, size);
 }
 
+void Image::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
+	uint8_t w = *(bitmap++);
+	uint8_t h = *(bitmap++);
+	
+	if ((x >= _width) || (y >= _height) || (x + w <= 0) || (x + h <= 0)) {
+		return;
+	}
+	uint8_t bw = (w + 7) / 8;
+	uint8_t _x = x;
+	if (colorMode == ColorMode::index) {
+		uint8_t bw = (w + 7) / 8;
+		if (y < 0) {
+			h += y;
+			bitmap -= bw*y;
+			y = 0;
+		}
+		if (y + h > _height) {
+			h = _height - y;
+		}
+		uint8_t x1 = max(0, x);
+		uint8_t x2 = min(_width, x + w);
+		
+		bitmap += (x1 - x) / 8;
+		uint8_t first_bitmap_mask = 0x80 >> ((x1 - x) & 7);
+		uint16_t bufBytewidth = ((_width + 1) / 2);
+		uint8_t* buf = (uint8_t*)_buffer;
+		buf += bufBytewidth * y + x1 / 2;
+		bool screen_alt_initial = (x1 % 2) == 0;
+		
+		
+		uint8_t b1 = (uint8_t)color;
+		uint8_t b2 = b1 << 4;
+		
+		for (uint8_t dy=0; dy<h; dy++, bitmap+=bw, buf+=bufBytewidth) {
+			const uint8_t* bitmap_ptr = bitmap;
+			uint8_t bitmap_mask = first_bitmap_mask;
+			uint8_t* screen_buf = buf;
+			uint8_t pixels = *(bitmap_ptr++);
+			bool screen_alt = screen_alt_initial;
+			for (uint8_t sx=x1; sx<x2; sx++) {
+				
+				if (screen_alt) {
+					if (pixels & bitmap_mask) {
+						*screen_buf = (*screen_buf & 0x0F) | b2;
+					}
+				} else {
+					if (pixels & bitmap_mask) {
+						*screen_buf = (*screen_buf & 0xF0) | b1;
+					}
+					screen_buf++;
+				}
+				screen_alt = !screen_alt;
+				
+				bitmap_mask >>= 1;
+				if (!bitmap_mask) {
+					bitmap_mask = 0x80;
+					pixels = *(bitmap_ptr++);
+				}
+			}
+		}
+	} else {
+		uint8_t dw = 8 - (w%8);
+		for (uint8_t j = 0; j < h; j++) {
+			x = _x;
+			for (uint8_t i = 0; i < bw;) {
+				uint8_t b = *(bitmap++);
+				i++;
+				for (uint8_t k = 0; k < 8; k++) {
+					if (i == bw && k == dw) {
+						x += (w%8);
+						break;
+					}
+					if (b&0x80) {
+						drawPixel(x, y);
+					}
+					b <<= 1;
+					x++;
+				}
+			}
+			y++;
+		}
+	}
+}
+
+void Image::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
+	uint8_t rotation, uint8_t flip) {
+	if ((rotation == NOROT) && (flip == NOFLIP)) {
+		drawBitmap(x, y, bitmap); //use the faster algorithm
+		return;
+	}
+	uint8_t w = pgm_read_byte(bitmap);
+	uint8_t h = pgm_read_byte(bitmap + 1);
+	bitmap = bitmap + 2; //add an offset to the pointer to start after the width and height
+	int8_t i, j, //coordinates in the raw bitmap
+			k, l, //coordinates in the rotated/flipped bitmap
+			byteNum, bitNum, byteWidth = (w + 7) >> 3;
+
+	rotation %= 4;
+
+	for (i = 0; i < w; i++) {
+		byteNum = i / 8;
+		bitNum = i % 8;
+		for (j = 0; j < h; j++) {
+			if (pgm_read_byte(bitmap + j * byteWidth + byteNum) & (B10000000 >> bitNum)) {
+				switch (rotation) {
+				case NOROT: //no rotation
+					k = i;
+					l = j;
+					break;
+				case ROTCCW: //90Â° counter-clockwise
+					k = j;
+					l = w - i - 1;
+					break;
+				case ROT180: //180Â°
+					k = w - i - 1;
+					l = h - j - 1;
+					break;
+				case ROTCW: //90Â° clockwise
+					k = h - j - 1;
+					l = i;
+					break;
+				}
+				if (flip) {
+					if (flip & B00000001) { //horizontal flip
+						k = w - k - 1;
+					}
+					if (flip & B00000010) { //vertical flip
+						l = h - l;
+					}
+				}
+				k += x; //place the bitmap on the screen
+				l += y;
+				drawPixel(k, l);
+			}
+		}
+	}
+}
+
 } // namespace Gamebuino_Meta
