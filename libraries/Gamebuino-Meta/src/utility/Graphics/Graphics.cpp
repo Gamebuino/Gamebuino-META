@@ -526,59 +526,88 @@ void Graphics::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
 		drawFastHLine(a, y, b-a+1);
 	}
 }
-/*
-// Draw a 1-bit image (bitmap) at the specified (x,y) position from the
-// provided bitmap buffer (must be PROGMEM memory)
-void Graphics::drawBitmap(int16_t x, int16_t y,
- const uint8_t *bitmap, int16_t w, int16_t h) {
 
-	int16_t i, j, byteWidth = (w + 7) / 8;
-	uint8_t byte;
-
-	for(j=0; j<h; j++) {
-		for(i=0; i<w; i++ ) {
-			if(i & 7) byte <<= 1;
-			else      byte   = pgm_read_byte(bitmap + j * byteWidth + i / 8);
-			if(byte & 0x80) drawPixel(x+i, y+j);
-		}
-	}
-}
-
-// drawBitmap() variant w/background for RAM-resident (not PROGMEM) bitmaps.
-void Graphics::drawBitmap(int16_t x, int16_t y,
- uint8_t *bitmap, int16_t w, int16_t h) {
-
-	int16_t i, j, byteWidth = (w + 7) / 8;
-	uint8_t byte;
-
-	for(j=0; j<h; j++) {
-		for(i=0; i<w; i++ ) {
-			if(i & 7) byte <<= 1;
-			else      byte   = bitmap[j * byteWidth + i / 8];
-			if(byte & 0x80) drawPixel(x+i, y+j);
-		}
-	}
-}
-
-
-//Draw XBitMap Files (*.xbm), exported from GIMP,
-//Usage: Export from GIMP to *.xbm, rename *.xbm to *.c and open in editor.
-//C Array can be directly used with this function
-void Graphics::drawXBitmap(int16_t x, int16_t y,
-		const uint8_t *bitmap, int16_t w, int16_t h) {
-
-		int16_t i, j, byteWidth = (w + 7) / 8;
-		uint8_t byte;
-
-		for (j = 0; j<h; j++) {
-				for (i = 0; i<w; i++) {
-						if (i & 7) byte >>= 1;
-						else      byte = pgm_read_byte(bitmap + j * byteWidth + i / 8);
-						if (byte & 0x01) drawPixel(x + i, y + j);
+void Graphics::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
+	uint8_t w = *(bitmap++);
+	uint8_t h = *(bitmap++);
+	
+	uint8_t byteWidth = (w + 7) / 8;
+	uint8_t _x = x;
+	uint8_t dw = 8 - (w%8);
+	for (uint8_t j = 0; j < h; j++) {
+		x = _x;
+		for (uint8_t i = 0; i < byteWidth;) {
+			uint8_t b = *(bitmap++);
+			i++;
+			for (uint8_t k = 0; k < 8; k++) {
+				if (i == byteWidth && k == dw) {
+					x += (w%8);
+					break;
 				}
+				if (b&0x80) {
+					drawPixel(x, y);
+				}
+				b <<= 1;
+				x++;
+			}
 		}
+		y++;
+	}
 }
-*/
+
+void Graphics::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
+	uint8_t rotation, uint8_t flip) {
+	if ((rotation == NOROT) && (flip == NOFLIP)) {
+		drawBitmap(x, y, bitmap); //use the faster algorithm
+		return;
+	}
+	uint8_t w = pgm_read_byte(bitmap);
+	uint8_t h = pgm_read_byte(bitmap + 1);
+	bitmap = bitmap + 2; //add an offset to the pointer to start after the width and height
+	int8_t i, j, //coordinates in the raw bitmap
+			k, l, //coordinates in the rotated/flipped bitmap
+			byteNum, bitNum, byteWidth = (w + 7) >> 3;
+
+	rotation %= 4;
+
+	for (i = 0; i < w; i++) {
+		byteNum = i / 8;
+		bitNum = i % 8;
+		for (j = 0; j < h; j++) {
+			if (pgm_read_byte(bitmap + j * byteWidth + byteNum) & (B10000000 >> bitNum)) {
+				switch (rotation) {
+				case NOROT: //no rotation
+					k = i;
+					l = j;
+					break;
+				case ROTCCW: //90° counter-clockwise
+					k = j;
+					l = w - i - 1;
+					break;
+				case ROT180: //180°
+					k = w - i - 1;
+					l = h - j - 1;
+					break;
+				case ROTCW: //90° clockwise
+					k = h - j - 1;
+					l = i;
+					break;
+				}
+				if (flip) {
+					if (flip & B00000001) { //horizontal flip
+						k = w - k - 1;
+					}
+					if (flip & B00000010) { //vertical flip
+						l = h - l;
+					}
+				}
+				k += x; //place the bitmap on the screen
+				l += y;
+				drawPixel(k, l);
+			}
+		}
+	}
+}
 
 
 boolean Graphics::getBitmapPixel(const uint8_t* bitmap, uint8_t x, uint8_t y) {
