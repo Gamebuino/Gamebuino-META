@@ -105,8 +105,6 @@ public:
 	void popup(const char* text, uint8_t duration);
 	
 	void changeGame();
-	bool settingsAvailable();
-	void readSettings();
 	void getDefaultName(char* string);
 	
 	bool collidePointRect(int16_t x1, int16_t y1 ,int16_t x2 ,int16_t y2, int16_t w, int16_t h);

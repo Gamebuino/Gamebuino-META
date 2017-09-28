@@ -60,8 +60,6 @@ public:
 	int8_t play(char* filename, bool loop = false);
 	int8_t play(const uint16_t* buf, bool loop = false);
 	int8_t play(uint16_t* buf, bool loop = false);
-	int8_t play(const uint16_t** buf, bool loop = false);
-	int8_t play(uint16_t** buf, bool loop = false);
 	int8_t play(const uint8_t* buf, uint32_t len, bool loop = false);
 	int8_t play(uint8_t* buf, uint32_t len, bool loop = false);
 	template<uint32_t N>
