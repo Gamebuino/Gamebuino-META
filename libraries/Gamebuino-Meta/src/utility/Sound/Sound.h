@@ -60,8 +60,17 @@ public:
 	int8_t play(char* filename, bool loop = false);
 	int8_t play(const uint16_t* buf, bool loop = false);
 	int8_t play(uint16_t* buf, bool loop = false);
-	int8_t play(const uint16_t** buf, bool loop = false);
-	int8_t play(uint16_t** buf, bool loop = false);
+	int8_t play(const uint8_t* buf, uint32_t len, bool loop = false);
+	int8_t play(uint8_t* buf, uint32_t len, bool loop = false);
+	template<uint32_t N>
+	int8_t play(const uint8_t (&buf)[N], bool loop = false) {
+		play(buf, N, loop);
+	};
+	template<uint32_t N>
+	int8_t play(uint8_t (&buf)[N], bool loop = false) {
+		play((const uint8_t*)buf, N, loop);
+	};
+	
 	int8_t play(Sound_Handler* handler, bool loop = false);
 	int8_t tone(uint32_t frequency, int32_t duration = 0);
 	int8_t playOK();

@@ -26,7 +26,7 @@ void setup()
   
   initHighscore();
   
-  gb.titleScreen("REC/UFO-RACE-01.BMP");
+  gb.titleScreen();
 }
 
 void loop(){

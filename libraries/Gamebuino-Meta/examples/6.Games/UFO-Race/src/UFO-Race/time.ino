@@ -33,5 +33,3 @@ void drawTime(){
   gb.display.setColor(BLACK,WHITE);
   gb.display.print(time);
 }
-
-

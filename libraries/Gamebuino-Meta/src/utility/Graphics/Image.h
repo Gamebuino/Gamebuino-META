@@ -11,7 +11,7 @@ namespace Gamebuino_Meta {
 class Frame_Handler {
 public:
 	Frame_Handler(Image* _img);
-	~Frame_Handler();
+	virtual ~Frame_Handler();
 	virtual void next() = 0;
 	virtual void set(uint16_t frame) = 0;
 	virtual void first();
@@ -88,7 +88,9 @@ public:
 	uint16_t getBufferSize();
 	
 	void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size);
-
+	
+	void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap);
+	void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip);
 	//`frame_looping` holds every how many frames it should get updated
 	//`frame_loopcounter` is the counter for that.
 	//Typically `frame_looping` is 1 if you want to update every frame.

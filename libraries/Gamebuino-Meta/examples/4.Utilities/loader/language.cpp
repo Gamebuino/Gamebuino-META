@@ -43,6 +43,11 @@ const MultiLang lang_settings_enter_bootloader[] = {
 	{LANG_DE, "Öffne Bootloader"},
 };
 
+const MultiLang lang_settings_language[] = {
+	{LANG_EN, "Language"},
+	{LANG_DE, "Sprache"},
+};
+
 const MultiLang lang_settings_back[] = {
 	{LANG_EN, "Back"},
 	{LANG_DE, "Zurück"},
@@ -61,4 +66,14 @@ const MultiLang lang_loader[] = {
 const MultiLang lang_bootloader[] = {
 	{LANG_EN, "Bootloader"},
 	{LANG_DE, "Bootloader"},
+};
+
+const MultiLang lang_fav_added[] = {
+	{LANG_EN, "added favorit"},
+	{LANG_DE, "Favorit hinzugefügt"},
+};
+
+const MultiLang lang_fav_removed[] = {
+	{LANG_EN, "removed favorit"},
+	{LANG_DE, "Favorit entfernt"},
 };

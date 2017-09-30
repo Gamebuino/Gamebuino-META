@@ -1,48 +1,60 @@
 #include <Gamebuino-Meta.h>
 #include "language.h"
 
-const char LOADER_VERSION[] = "0.1.1";
+const char LOADER_VERSION[] = "dev";
 
 #define RAM_FLAG_ADDRESS (0x20007FFCul)
 #define RAM_FLAG_VALUE (*((volatile uint32_t *)RAM_FLAG_ADDRESS))
 #define LOADER_MAGIC 0x242A0000
 
 
-#define MAX_FOLDER_NAME_LENGTH 40
-#define GRID_WIDTH 4
-#define GRID_HEIGHT 2
-#define PAGE_SIZE (GRID_WIDTH * GRID_HEIGHT)
-#define PAGES_PER_BLOCK 8
-#define BLOCK_LENGTH (PAGE_SIZE * PAGES_PER_BLOCK)
-char gameFolders[BLOCK_LENGTH][MAX_FOLDER_NAME_LENGTH];
-uint32_t totalGames;
-uint8_t filesInBlock;
-uint8_t pageInBlock = 0;
-bool lastBlock = false;
-char folderName[512];
-char nameBuffer[512];
+const uint32_t MAX_FOLDER_NAME_LENGTH = 40;
+const uint8_t NAMEBUFFER_LENGTH = (MAX_FOLDER_NAME_LENGTH*2);
+const uint8_t PAGE_SIZE = 6;
+const uint8_t PAGES_PER_BLOCK = 2;
+const uint8_t BLOCK_LENGTH = (PAGE_SIZE * PAGES_PER_BLOCK);
+uint8_t blocksLoaded[2];
+uint32_t totalGames = 0;
+char folderName[MAX_FOLDER_NAME_LENGTH];
+char nameBuffer[NAMEBUFFER_LENGTH];
+char gameFolders[2][BLOCK_LENGTH][MAX_FOLDER_NAME_LENGTH];
 uint32_t currentGame = 0;
-uint32_t gameFolderBlock = 0;
+
+const uint8_t MAX_FAV_GAMES = 10;
+const uint8_t SAVE_NUM_FAVS = 0;
+const uint8_t SAVE_FAVOFFSET = 1;
+const SaveDefault savefileDefaults[] = {
+	SaveDefault(SAVE_NUM_FAVS, SAVETYPE_INT, 0),
+	SaveDefault(1, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(2, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(3, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(4, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(5, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(6, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(7, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(8, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(9, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+	SaveDefault(10, SAVETYPE_BLOB, MAX_FOLDER_NAME_LENGTH),
+};
+
+
+const uint8_t GAMEBUINO_LOGO[] = {80,10,
+	0b00111100,0b00111111,0b00111111,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00111111,0b00011100,
+	0b00111100,0b00111111,0b00111111,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00111111,0b00100110,
+	0b00110000,0b00110011,0b00110011,0b00110011,0b00000011,0b00110011,0b00110011,0b00110011,0b00110011,0b00100110,
+	0b00110000,0b00110011,0b00110011,0b00110011,0b00000011,0b00110011,0b00110011,0b00110011,0b00110011,0b00101010,
+	0b00110011,0b00111111,0b00110011,0b00110011,0b11110011,0b11000011,0b00110011,0b00110011,0b00110011,0b00011100,
+	0b00110011,0b00111111,0b00110011,0b00110011,0b11110011,0b11000011,0b00110011,0b00110011,0b00110011,0b00000000,
+	0b00110011,0b00110011,0b00110011,0b00110011,0b00000011,0b00110011,0b00110011,0b00110011,0b00110011,0b00000000,
+	0b00110011,0b00110011,0b00110011,0b00110011,0b00000011,0b00110011,0b00110011,0b00110011,0b00110011,0b00000000,
+	0b00111111,0b00110011,0b00110011,0b00110011,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00000000,
+	0b00111111,0b00110011,0b00110011,0b00110011,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00000000,
+};
+
+const char GAMEFOLDERS_CACHE_FILE[] = "GAMEFOLDERS.CACHE";
 
 
 const uint16_t startupSound[] = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
-
-void clearEmptyFolders() {
-	File dir_walk = SD.open("/");
-	File entry;
-	while (entry = dir_walk.openNextFile()) {
-		if (!entry.isDirectory()) {
-			continue;
-		}
-		folderName[0] = '/';
-		entry.getName(folderName+1, 512-1);
-		if (!strstr(folderName, "loader")) {
-			SD.rmdir(folderName); // this already checks if the folder is empty
-		}
-	}
-	entry.close();
-	dir_walk.close();
-}
 
 bool getBinPath(char* name) {
 	File dir_walk = SD.open(folderName);
@@ -60,7 +72,7 @@ bool getBinPath(char* name) {
 		if (!entry.isFile()) {
 			continue;
 		}
-		entry.getName(name + i, 512 - i);
+		entry.getName(name + i, NAMEBUFFER_LENGTH - i);
 		if (strstr(name, ".bin") || strstr(name, ".BIN")) {
 			return true;
 		}
@@ -68,7 +80,7 @@ bool getBinPath(char* name) {
 	return false;
 }
 
-void loadNumberOfGames() {
+void initFolders() {
 	File root = SD.open("/");
 	File entry;
 	totalGames = 0;
@@ -78,89 +90,243 @@ void loadNumberOfGames() {
 		}
 		folderName[0] = '/';
 		entry.getName(folderName + 1, MAX_FOLDER_NAME_LENGTH - 1);
+		if (!strstr(folderName, "loader")) {
+			SD.rmdir(folderName); // this already checks if the folder is empty
+		}
 		if (!getBinPath(nameBuffer)) {
 			continue;
 		}
 		totalGames++;
 	}
+	entry.close();
+	root.close();
 }
 
-void loadGameFolderBlock() {
+void createCache() {
+	File cache;
+	if (SD.exists(GAMEFOLDERS_CACHE_FILE)) {
+		cache = SD.open(GAMEFOLDERS_CACHE_FILE, FILE_WRITE);
+		cache.rewind();
+		uint32_t num;
+		cache.read(&num, 4);
+		uint32_t games;
+		cache.read(&games, 4);
+		cache.close();
+		if (games == totalGames && num == MAX_FOLDER_NAME_LENGTH) {
+			uint8_t numBlocks = totalGames / BLOCK_LENGTH;
+			bool invalid = false;
+			for (uint8_t b = 0; b < numBlocks; b++) {
+				loadGameFolderBlock(0, b);
+				for (uint8_t i = 0; i < BLOCK_LENGTH; i++) {
+					if (b*BLOCK_LENGTH + i < totalGames && !SD.exists(gameFolders[0][i])) {
+						invalid = true;
+						break;
+					}
+				}
+				if (invalid) {
+					break;
+				}
+			}
+			if (!invalid) {
+				return; //everything is OK
+			}
+		}
+	}
+	
+	SD.remove(GAMEFOLDERS_CACHE_FILE);
+	cache = SD.open(GAMEFOLDERS_CACHE_FILE, FILE_WRITE);
+	cache.rewind();
+	cache.write(&MAX_FOLDER_NAME_LENGTH, 4);
+	cache.write(&totalGames, 4);
+	uint8_t filesInBlock = 0;
+	uint8_t numBlocks = 0;
+	
+	// first we load the favourited games
+	char* favGames = (char*)gb.display._buffer; // this should be large enough
+	memset(favGames, 0, MAX_FOLDER_NAME_LENGTH*SAVE_NUM_FAVS);
+	uint8_t maxFavs = gb.save.get(SAVE_NUM_FAVS);
+	if (maxFavs) {
+		for (uint8_t i = 0; i < maxFavs; i++) {
+			gb.save.get(SAVE_FAVOFFSET + i, folderName);
+			if (!SD.exists(folderName)) {
+				currentGame = i;
+				unfavoriteGame(); // this will re-build cache again, so we recursively fix our list
+				return;
+			}
+			memcpy(favGames + (i*MAX_FOLDER_NAME_LENGTH), folderName, MAX_FOLDER_NAME_LENGTH);
+			memcpy(gameFolders[0][filesInBlock], folderName, MAX_FOLDER_NAME_LENGTH);
+			filesInBlock++;
+			if (filesInBlock >= BLOCK_LENGTH) {
+				cache.write(gameFolders[0], BLOCK_LENGTH*MAX_FOLDER_NAME_LENGTH);
+				numBlocks++;
+				filesInBlock = 0;
+			}
+		}
+	}
+	
 	File root = SD.open("/");
 	File entry;
-	filesInBlock = 0;
-	uint32_t i = 0;
-	uint32_t j = 0;
-	bool searchForLast = false;
-	lastBlock = true;
 	while (entry = root.openNextFile()) {
 		if (!entry.isDirectory()) {
 			continue;
 		}
-		gameFolders[filesInBlock][0] = '/';
-		entry.getName(gameFolders[filesInBlock] + 1, MAX_FOLDER_NAME_LENGTH - 1);
-		strcpy(folderName, gameFolders[filesInBlock]);
-		
+		folderName[0] = '/';
+		entry.getName(folderName + 1, MAX_FOLDER_NAME_LENGTH - 1);
 		if (!getBinPath(nameBuffer)) {
 			continue;
 		}
-		if (searchForLast) {
-			lastBlock = false;
-			break;
-		}
-		if (i < gameFolderBlock) {
-			if (j < BLOCK_LENGTH) {
-				j++;
-				continue;
-			}
-			i++;
-			j = 0;
-			if (i < gameFolderBlock) {
-				continue;
+		bool isFav = false;
+		for (uint8_t i = 0; i < maxFavs; i++) {
+			if (strcmp(folderName, favGames + (i*MAX_FOLDER_NAME_LENGTH)) == 0) {
+				isFav = true;
+				break;
 			}
 		}
+		if (isFav) {
+			continue;
+		}
+		strncpy(gameFolders[0][filesInBlock], folderName, MAX_FOLDER_NAME_LENGTH);
 		filesInBlock++;
 		if (filesInBlock >= BLOCK_LENGTH) {
-			searchForLast = true;
+			cache.write(gameFolders[0], BLOCK_LENGTH*MAX_FOLDER_NAME_LENGTH);
+			numBlocks++;
+			filesInBlock = 0;
 		}
 	}
+	if (filesInBlock < BLOCK_LENGTH) {
+		// still gotta cache the last block
+		cache.write(gameFolders[0], filesInBlock*MAX_FOLDER_NAME_LENGTH);
+	}
+	cache.close();
+	entry.close();
+	root.close();
+}
+
+uint8_t getBlock(uint8_t b) {
+	if (blocksLoaded[0] == b) {
+		return 0;
+	}
+	if (blocksLoaded[1] == b) {
+		return 1;
+	}
+	int8_t diff = blocksLoaded[0] - b;
+	if (diff <= 1 && diff >= -1) {
+		loadGameFolderBlock(1, b);
+		blocksLoaded[1] = b;
+		return 1;
+	} else {
+		loadGameFolderBlock(0, b);
+		blocksLoaded[0] = b;
+		return 0;
+	}
+}
+
+char* getCurrentGameFolder() {
+	uint8_t blockOffset = currentGame / BLOCK_LENGTH;
+	uint8_t gameInBlock = currentGame % BLOCK_LENGTH;
+	uint8_t b = getBlock(blockOffset);
+	return gameFolders[b][gameInBlock];
+}
+
+void unfavoriteGame() {
+	char* identifier = getCurrentGameFolder();
+	uint8_t maxFavs = gb.save.get(SAVE_NUM_FAVS);
+	bool moving = false;
+	for (uint8_t i = 0; i < maxFavs; i++) {
+		gb.save.get(SAVE_FAVOFFSET + i, nameBuffer);
+		if (strcmp(nameBuffer, identifier) == 0) {
+			moving = true;
+		} else if (moving) {
+			gb.save.set(SAVE_FAVOFFSET + i - i, nameBuffer);
+		}
+	}
+	gb.save.del(SAVE_FAVOFFSET + maxFavs - 1);
+	gb.save.set(SAVE_NUM_FAVS, maxFavs - 1);
+	
+	char backup[MAX_FOLDER_NAME_LENGTH];
+	strcpy(backup, identifier); // let's save it...
+	
+	SD.remove(GAMEFOLDERS_CACHE_FILE);
+	createCache();
+	
+	currentGame = maxFavs - 1;
+	while (strcmp(backup, getCurrentGameFolder()) != 0) {
+		currentGame++;
+	}
+}
+
+bool favoriteGame() {
+	if (isGameFavorite()) {
+		return true;
+	}
+	uint8_t maxFavs = gb.save.get(SAVE_NUM_FAVS);
+	if (maxFavs >= MAX_FAV_GAMES) {
+		return false;
+	}
+	gb.save.set(SAVE_FAVOFFSET + maxFavs, getCurrentGameFolder());
+	gb.save.set(SAVE_NUM_FAVS, maxFavs + 1);
+	
+	SD.remove(GAMEFOLDERS_CACHE_FILE);
+	createCache();
+	currentGame = maxFavs; // no +1 because games start with zero
+}
+
+bool isGameFavorite() {
+	char* identifier = getCurrentGameFolder();
+	uint8_t maxFavs = gb.save.get(SAVE_NUM_FAVS);
+	for (uint8_t i = 0; i < maxFavs; i++) {
+		gb.save.get(SAVE_FAVOFFSET + i, nameBuffer);
+		if (strcmp(nameBuffer, identifier) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void loadGameFolderBlock(uint8_t b, uint8_t bb) {
+	File cache = SD.open(GAMEFOLDERS_CACHE_FILE, FILE_WRITE);
+	cache.seekSet(8 + bb*BLOCK_LENGTH*MAX_FOLDER_NAME_LENGTH);
+	cache.read(gameFolders[b], BLOCK_LENGTH*MAX_FOLDER_NAME_LENGTH);
+	cache.close();
 }
 
 void setup() {
 	gb.begin();
-//	SerialUSB.begin(115200)
+	gb.save.config(savefileDefaults);
+//	SerialUSB.begin(115200);
+//	while(!SerialUSB);
 	if ((RAM_FLAG_VALUE & 0xFFFF0000) == LOADER_MAGIC) {
 		uint16_t error = RAM_FLAG_VALUE & 0x0000FFFF;
 		if (error && error != 0xD87A) {
+			gb.display.clear();
+			gb.display.print("ERROR (");
+			gb.display.print(error);
+			gb.display.println(")");
+			switch (error) {
+				case 0:
+					gb.display.println("no error");
+					break;
+				case 1:
+					gb.display.println("NMI fault");
+					break;
+				case 2:
+					gb.display.println("hard fault");
+					break;
+				case 3:
+					gb.display.println("WDT reset");
+					break;
+				case 4:
+					gb.display.println("Invalid program");
+					break;
+				default:
+					gb.display.println("Unknown");
+			}
+			gb.display.print("\n");
+			gb.language.print(lang_press_a_continue);
 			while (1) {
 				if (!gb.update()) {
 					continue;
 				}
-				gb.display.clear();
-				gb.display.print("ERROR (");
-				gb.display.print(error);
-				gb.display.println(")");
-				switch (error) {
-					case 0:
-						gb.display.println("no error");
-						break;
-					case 1:
-						gb.display.println("NMI fault");
-						break;
-					case 2:
-						gb.display.println("hard fault");
-						break;
-					case 3:
-						gb.display.println("WDT reset");
-						break;
-					case 4:
-						gb.display.println("Invalid program");
-						break;
-					default:
-						gb.display.println("Unknown");
-				}
-				gb.display.print("\n");
-				gb.language.print(lang_press_a_continue);
 				if (gb.buttons.pressed(BUTTON_A)) {
 					break;
 				}
@@ -169,14 +335,19 @@ void setup() {
 		RAM_FLAG_VALUE = 0; // make sure we don't get weird stuff
 	}
 	
-	gb.sound.play(startupSound);
-	gb.display.setCursors(0, 0);
+	gb.display.clear();
+	gb.display.drawBitmap(0, 2, GAMEBUINO_LOGO);
+	gb.display.setCursors(0, 18);
 	gb.language.println(lang_loading);
 	gb.updateDisplay();
-	clearEmptyFolders();
-	loadNumberOfGames();
-	loadGameFolderBlock();
+	initFolders();
+	createCache();
+	loadGameFolderBlock(0, 0);
+	loadGameFolderBlock(1, 1);
+	blocksLoaded[0] = 0;
+	blocksLoaded[1] = 1;
 	
+	gb.sound.play(startupSound);
 	
 	
 	gridView();

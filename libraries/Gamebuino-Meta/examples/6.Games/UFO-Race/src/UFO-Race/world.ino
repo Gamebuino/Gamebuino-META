@@ -101,15 +101,17 @@ void drawWorld(){
 void drawMap(){
   gb.display.fillRect(0,0,18,18);
   gb.display.setColor(WHITE);
-  for(byte y = 0; y < 16; y++){
-    for(byte x = 0; x < 16; x++){
-      char tile_x = x + player.x/16 - 8;
-      char tile_y = y + player.y/16 - 8;
+  int8_t tile_x = (player.x/16) - 8;
+  int8_t tile_x_initial = tile_x;
+  int8_t tile_y = (player.y/16) - 8;
+  for(byte y = 0; y < 16; y++, tile_y++){
+    for(byte x = 0; x < 16; x++, tile_x++){
       if(tile_x < 0 || tile_x > WORLD_W || tile_y < 0 || tile_y > WORLD_H)
         continue;
       if(getTile(tile_x, tile_y) < 8)
         gb.display.drawPixel(x+1, y+1);
     }
+    tile_x = tile_x_initial;
   }
   //player position
   gb.display.setColor(RED);

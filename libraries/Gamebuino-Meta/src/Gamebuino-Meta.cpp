@@ -121,7 +121,7 @@ void Gamebuino::begin() {
 	
 	save = Save(&tft, SAVEFILE_NAME, folder_name);
 	
-	settings = Save(&tft, "/settings.sav", "GBMS");
+	settings = Save(&tft, "/SETTINGS.SAV", "GBMS");
 	settings.config(SETTINGSCONF_NUM_BLOCKS, settingsDefaults);
 	
 	//sound
@@ -159,6 +159,12 @@ void Gamebuino::titleScreen(const char* filename, Image* img) {
 	}
 	
 	bool first = false;
+	
+	const char* msg = language._get(lang_titlescreen_a_start);
+	uint8_t w = display.fontWidth*strlen(msg)*display.fontSize;
+	uint8_t h = display.fontHeight*display.fontSize;
+	uint8_t x = (display.width() - w) / 2;
+	uint8_t y = (display.height() / 5) * 3 + h;
 	while(1) {
 		if(!update()) {
 			continue;
@@ -169,11 +175,6 @@ void Gamebuino::titleScreen(const char* filename, Image* img) {
 			display.nextFrame();
 		}
 		if ((frameCount % 32) < 20) {
-			const char* msg = language._get(lang_titlescreen_a_start);
-			uint8_t w = display.fontWidth*strlen(msg)*display.fontSize;
-			uint8_t h = display.fontHeight*display.fontSize;
-			uint8_t x = (display.width() - w) / 2;
-			uint8_t y = (display.height() / 5) * 3 + h;
 			
 			display.setColor(Color::gray);
 			display.drawRect(x - display.fontSize*2, y - display.fontSize*2, w + display.fontSize*4, h + display.fontSize*3);
@@ -361,21 +362,20 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 	}
 }
 
-const uint8_t numLangEntries = 2;
-const MultiLang langEntries[numLangEntries] = {
-	{LangCode::en, "en"},
-	{LangCode::de, "de"},
-};
-
 void Gamebuino::checkHomeMenu() {
 	//get back to game list when "HOME is held
 	if (buttons.held(Button::d, 25)){
 		changeGame();
 	}
-	if (buttons.released(Button::d)) {
+	if (framesDisplayRecording != -1) {
+		framesDisplayRecording--;
+	}
+	if (buttons.released(Button::d) || (framesDisplayRecording == 0 && recording_screen)) {
 		if (recording_screen) {
 			// stop the recording
 			sound.startEfxOnly();
+			bool isMute = sound.isMute();
+			sound.mute();
 			display.setFont(font3x5);
 			neoPixels.clear();
 			neoPixels.show();
@@ -383,6 +383,9 @@ void Gamebuino::checkHomeMenu() {
 			recording_screen = false;
 			//refresh screen to erase log messages
 			updateDisplay();
+			if (!isMute) {
+				sound.unmute();
+			}
 			sound.stopEfxOnly();
 		}
 		homeMenu();
@@ -397,8 +400,8 @@ void Hook_ExitHomeMenu() {
 #define HOME_MENU_SAVE_STATE \
 	int16_t hm_save_cursorX = display.cursorX; \
 	int16_t hm_save_cursorY = display.cursorY; \
-	Color hm_save_color = display.color; \
-	Color hm_save_bgcolor = display.bgcolor; \
+	Color hm_save_color = display.color.c; \
+	Color hm_save_bgcolor = display.bgcolor.c; \
 	uint8_t hm_save_fontSize = display.fontSize; \
 	bool hm_save_textWrap = display.textWrap; \
 	uint8_t* hm_save_font = display.font; \
@@ -408,13 +411,50 @@ void Hook_ExitHomeMenu() {
 #define HOME_MENU_RESTORE_STATE \
 	display.cursorX = hm_save_cursorX; \
 	display.cursorY = hm_save_cursorY; \
-	display.color = hm_save_color; \
-	display.bgcolor = hm_save_bgcolor; \
+	display.color.c = hm_save_color; \
+	display.bgcolor.c = hm_save_bgcolor; \
 	display.fontSize = hm_save_fontSize; \
 	display.textWrap = hm_save_textWrap; \
 	display.font = hm_save_font; \
 	display.fontWidth = hm_save_fontWidth; \
 	display.fontHeight = hm_save_fontHeight;
+
+bool homeMenuGetUniquePath(char* name, uint8_t offset, uint8_t len) {
+	if(!SD.exists("REC")) {
+		SD.mkdir("REC");
+	}
+	uint32_t start;
+	File cache;
+	if (!SD.exists("REC/REC.CACHE")) {
+		cache = SD.open("REC/REC.CACHE", FILE_WRITE);
+		cache.rewind();
+		f_write32(0, &cache); // images
+		cache.close();
+	}
+	cache = SD.open("REC/REC.CACHE", FILE_WRITE);
+	cache.rewind();
+	start = f_read32(&cache);
+	start = sdPathNoDuplicate(name, offset, len, start + 1);
+	cache.rewind();
+	if (start == -1) {
+		f_write32(0, &cache);
+		start = sdPathNoDuplicate(name, offset, len);
+	}
+	if (start == -1) {
+		cache.close();
+		return false;
+	}
+	f_write32(start, &cache);
+	cache.close();
+	return true;
+}
+
+template<uint8_t N>
+void fileEndingGmvToBmp(char (&name)[N]) {
+	name[N-4] = 'B';
+	//name[N-3] = 'M'; // no need as GMV and BMP have same second letter
+	name[N-2] = 'P';
+}
 
 void Gamebuino::homeMenu(){
 	//here we don't use gb.update and display.not to interfere with the game
@@ -424,7 +464,7 @@ void Gamebuino::homeMenu(){
 	HOME_MENU_SAVE_STATE;
 	
 	int currentItem = 0;
-	const int numItems = 6;
+	const int numItems = 5;
 	unsigned long lastMillis = 0;
 	//3 text lines vertical coordinates
 	const int yOffset1 = 34;
@@ -441,7 +481,6 @@ void Gamebuino::homeMenu(){
 		lang_homeMenu_save_image,
 		lang_homeMenu_save_video,
 		lang_homeMenu_light,
-		lang_homeMenu_language,
 	};
 	
 	
@@ -576,13 +615,17 @@ void Gamebuino::homeMenu(){
 				case 2:
 					if (buttons.released(Button::a)){
 						tft.print(language._get(lang_homeMenu_SAVING));
-						if(!SD.exists("REC")) {
-							SD.mkdir("REC");
-						}
-						char name[] = "REC/IMAGE0000.BMP";
+						char name[] = "REC/00000.GMV";
 						// now `name` will be a unique thing
-						// 6 because "REC/IMAGE" is 9 long, 4 because "0000" is 4 chars
-						if(sd_path_no_duplicate(name, 9, 4) && display.save(name)){
+						// 9 because "REC/" is 4 long, 5 because "00000" is 4 chars
+						bool success = homeMenuGetUniquePath(name, 4, 5);
+						if (success) {
+							fileEndingGmvToBmp(name);
+							success = display.save(name);
+						}
+						// we temp. set inited to false so that delay() won't re-draw the screen
+						inited = false;
+						if (success){
 							tft.setColor(LIGHTGREEN, BROWN);
 							tft.cursorX = xOffset;
 							tft.print(language._get(lang_homeMenu_SAVED));
@@ -595,22 +638,40 @@ void Gamebuino::homeMenu(){
 							delay(250);
 							changed = true;
 						}
+						inited = true;
 					}
 				break;
 				////RECORD SCREEN
 				case 3:
-					if (buttons.released(Button::a)){
+					if (buttons.released(Button::a) || buttons.held(Button::a, 25)){
 						tft.print(language._get(lang_homeMenu_READY));
-						if(!SD.exists("REC")) {
-							SD.mkdir("REC");
+						char name[] = "REC/00000.GMV";
+						bool success = homeMenuGetUniquePath(name, 4, 5);
+						bool infinite = buttons.held(Button::a, 25);
+						if (success) {
+							if (!infinite) {
+								fileEndingGmvToBmp(name);
+								framesDisplayRecording = (1000 / timePerFrame) * 3;
+							} else {
+								framesDisplayRecording = -1;
+							}
+							success = display.startRecording(name);
 						}
-						char name[] = "REC/VIDEO0000.BMP";
-						if (sd_path_no_duplicate(name, 9, 4) && display.startRecording(name)) {
+						// we temp. set inited to false so that delay() won't re-draw the screen
+						inited = false;
+						if (success) {
 							recording_screen = true;
+							if (infinite) {
+								do {
+									delay(10);
+									buttons.update();
+								} while (!buttons.released(Button::a));
+							}
 							delay(250);
 							tft.cursorX = xOffset;
 							tft.print(language._get(lang_homeMenu_GO));
 							delay(250);
+							inited = true;
 							sound.stopEfxOnly();
 							HOME_MENU_RESTORE_STATE;
 							Hook_ExitHomeMenu();
@@ -622,6 +683,7 @@ void Gamebuino::homeMenu(){
 							delay(250);
 							changed = true;
 						}
+						inited = true;
 					}
 				break;
 				//// NEOPIXELS
@@ -648,28 +710,6 @@ void Gamebuino::homeMenu(){
 					//light up neopixels according to intensity
 					for(uint8_t i = 0; i < neoPixels.numPixels(); i++){
 						neoPixels.setPixelColor(i, 0xFF, 0xFF, 0xFF);
-					}
-				break;
-				//// LANGUAGE
-				case 5:
-					if (buttons.released(Button::a) || buttons.released(Button::left) || buttons.released(Button::right)) {
-						uint8_t curLangIndex = 0;
-						for (;(curLangIndex < numLangEntries) && (langEntries[curLangIndex].code != language.getCurrentLang()); curLangIndex++);
-						if (buttons.released(Button::left)) {
-							if (curLangIndex == 0) {
-								curLangIndex = numLangEntries - 1;
-							} else {
-								curLangIndex--;
-							}
-						} else {
-							curLangIndex++;
-							if (curLangIndex >= numLangEntries) {
-								curLangIndex = 0;
-							}
-						}
-						settings.set(SETTING_LANGUAGE, (int)langEntries[curLangIndex].code);
-						language.setCurrentLang(langEntries[curLangIndex].code);
-						changed = true;
 					}
 				break;
 			}
@@ -715,16 +755,6 @@ void Gamebuino::homeMenu(){
 								tft.setColor(WHITE, BROWN);
 							}
 							tft.print("*");
-						}
-					break;
-					////LANGUAGE
-					case 5:
-						tft.cursorX -= 4*2*3;
-						for (uint8_t i = 0; i < numLangEntries; i++) {
-							if (langEntries[i].code == language.getCurrentLang()) {
-								tft.print(langEntries[i].str);
-								break;
-							}
 						}
 					break;
 					
@@ -995,7 +1025,7 @@ void noTone(uint32_t outputPin) {
 }
 
 void yield() {
-	if (gb.frameEndMicros || gb.frameStartMicros) {
+	if (gb.inited && (gb.frameEndMicros || gb.frameStartMicros)) {
 		gb.update();
 	}
 }

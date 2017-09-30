@@ -63,8 +63,20 @@ GMV::GMV(Image* _img, char* filename) {
 	}
 	header_size = f_read16(&file);
 	file.seekCur(1); // trash version byte
+#if STRICT_IMAGES
+	int16_t w = f_read16(&file);
+	int16_t h = f_read16(&file);
+	int16_t _w = img->_width;
+	int16_t _h = img->_height;
+	if ((img->_width && w > img->_width) || (img->_height && h > img->_height)) {
+		return;
+	}
+	img->_width = w;
+	img->_height = h;
+#else
 	img->_width = f_read16(&file);
 	img->_height = f_read16(&file);
+#endif
 	img->frames = f_read16(&file);
 	uint8_t flags = file.read();
 	img->colorMode = flags & 0x01 ? (ColorMode::index) : (ColorMode::rgb565);
@@ -76,10 +88,17 @@ GMV::GMV(Image* _img, char* filename) {
 		img->transparentColor = f_read16(&file);
 	}
 	file.seekSet(header_size);
-	
+
+#if STRICT_IMAGES
+	if (!_w || !_h) {
+		if (img->getBufferSize() > img->bufferSize) {
+			return;
+		}
+	}
+#endif
 	img->allocateBuffer();
 	
-	if (!img->_buffer || !img->_width || !img->_height) {
+	if (!img->_buffer) {
 		// sorry, nope
 		img->frames = 1;
 		return;
@@ -211,6 +230,7 @@ void GMV::writeHeader(File* f) {
 	header_size = 14; // currently it is still all static
 	f->seekSet(2);
 	f_write16(header_size, f); // fill in header size!
+	f->flush();
 	f->seekSet(header_size);
 }
 

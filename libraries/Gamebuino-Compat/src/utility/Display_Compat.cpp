@@ -7,7 +7,7 @@ Display::Display() : Gamebuino_Meta::Image(80, 64, ColorMode::rgb565) {
 }
 
 void Display::clear() {
-	fillScreen(WHITE);
+	Gamebuino_Meta::Image::fill(Color::white);
 	setCursors(0, 0);
 }
 

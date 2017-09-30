@@ -1,16 +1,39 @@
 
-Image titleScreenImage{gb.display.width(), gb.display.height(), ColorMode::rgb565};
+const uint8_t starBuf[] = {
+	16, 16,
+	0x00, 0x00, 0x00, 0x0A, 0xA0, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x0A, 0xA0, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0xAA, 0xAA, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0xAA, 0xAA, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x0A, 0xAA, 0xAA, 0xA0, 0x00, 0x00,
+	0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+	0x0A, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xA0,
+	0x00, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0x00,
+	0x00, 0x0A, 0xAA, 0xAA, 0xAA, 0xAA, 0xA0, 0x00,
+	0x00, 0x00, 0xAA, 0xAA, 0xAA, 0xAA, 0x00, 0x00,
+	0x00, 0x00, 0xAA, 0xAA, 0xAA, 0xAA, 0x00, 0x00,
+	0x00, 0x0A, 0xAA, 0xAA, 0xAA, 0xAA, 0xA0, 0x00,
+	0x00, 0x0A, 0xAA, 0xAA, 0xAA, 0xAA, 0xA0, 0x00,
+	0x00, 0xAA, 0xAA, 0xA0, 0x0A, 0xAA, 0xAA, 0x00,
+	0x00, 0xAA, 0xA0, 0x00, 0x00, 0x0A, 0xAA, 0x00,
+	0x0A, 0xA0, 0xA0, 0x00, 0x00, 0x0A, 0x0A, 0xA0,
+};
+Image star{starBuf};
+
+
 bool titleScreenImageExists;
 bool displayName;
+bool detailGameIsFav;
 void loadDetailedView() {
-	uint16_t currentGameInBlock = currentGame % BLOCK_LENGTH;
-	strcpy(nameBuffer, gameFolders[currentGameInBlock]);
+	star.setTransparentColor(INDEX_BLACK);
+	detailGameIsFav = isGameFavorite();
+	strcpy(nameBuffer, getCurrentGameFolder());
 	strcpy(nameBuffer + strlen(nameBuffer), "/TITLESCREEN.BMP");
 	titleScreenImageExists = SD.exists(nameBuffer);
 	displayName = !titleScreenImageExists;
 	if (!titleScreenImageExists) {
 		// try to display the first BMP in the rec folder
-		strcpy(nameBuffer, gameFolders[currentGameInBlock]);
+		strcpy(nameBuffer, getCurrentGameFolder());
 		strcpy(nameBuffer + strlen(nameBuffer), "/REC/");
 		uint16_t i = strlen(nameBuffer);
 		if (SD.exists(nameBuffer)) {
@@ -20,8 +43,8 @@ void loadDetailedView() {
 				if (!entry.isFile()) {
 					continue;
 				}
-				entry.getName(nameBuffer + i, 512 - i);
-				if (!strstr(nameBuffer, ".BMP") && !strstr(nameBuffer, ".bmp")) {
+				entry.getName(nameBuffer + i, NAMEBUFFER_LENGTH - i);
+				if (!strstr(nameBuffer, ".GMV") && !strstr(nameBuffer, ".gmv")) {
 					continue;
 				}
 				titleScreenImageExists = true;
@@ -35,18 +58,27 @@ void loadDetailedView() {
 		gb.display.setCursors(0, 0);
 		gb.language.println(lang_loading);
 		gb.updateDisplay();
-		titleScreenImage.init(80, 64, nameBuffer);
+		gb.display.init(nameBuffer);
+		if ((gb.display.width() == 80 && gb.display.height() == 64) || (gb.display.width() == 160 && gb.display.height() == 128)) {
+			gb.display.fontSize = gb.display.width() == 80 ? 1 : 2;
+		} else {
+			titleScreenImageExists = false;
+		}
+	}
+	if (!titleScreenImageExists) {
+		gb.display.init(80, 64, ColorMode::rgb565);
+		gb.display.fontSize = 1;
 	}
 }
 
 void loadGame() {
-	uint16_t currentGameInBlock = currentGame % BLOCK_LENGTH;
-	strcpy(folderName, gameFolders[currentGameInBlock]);
-	getBinPath(nameBuffer);
 	if (titleScreenImageExists) {
-		gb.display.drawImage(0, 0, titleScreenImage);
-	} else {
-		gb.display.fill(BLACK);
+		loadDetailedView(); // easiest way to fetch the first frame
+	}
+	strcpy(folderName, getCurrentGameFolder());
+	getBinPath(nameBuffer);
+	if (!titleScreenImageExists) {
+		gb.display.clear();
 		gb.display.setColor(WHITE, BLACK);
 		gb.display.setCursors(0, 24);
 		gb.language.println(lang_loading);
@@ -58,93 +90,116 @@ void loadGame() {
 
 void detailedView() {
 	loadDetailedView();
+	
+	bool reInitDisplay = false;
 	while (1) {
 		if (!gb.update()) {
 			continue;
 		}
-		gb.display.clear();
-		uint16_t currentGameInBlock = currentGame % BLOCK_LENGTH;
+		uint8_t blockOffset = currentGame / BLOCK_LENGTH;
+		uint8_t gameInBlock = currentGame % BLOCK_LENGTH;
+		uint8_t b = getBlock(blockOffset);
+		
+		if (reInitDisplay) {
+			gb.display.init(nameBuffer);
+			reInitDisplay = false;
+		}
 		if (titleScreenImageExists) {
-			gb.display.drawImage(0, 0, titleScreenImage);
+			gb.display.nextFrame();
 		} else {
-			gb.display.fill(BLACK);
+			gb.display.clear();
+		}
+		
+		if (detailGameIsFav) {
+			gb.display.drawImage(0, 0, star, star.width()*gb.display.fontSize, star.height()*gb.display.fontSize);
 		}
 		
 		if (displayName) {
 			// center bar
 			gb.display.setColor(BROWN);
-			gb.display.fillRect(0, 15, 80, 9);
+			gb.display.fillRect(0, 15*gb.display.fontSize, 80*gb.display.fontSize, 9*gb.display.fontSize);
 			gb.display.setColor(DARKGRAY);
-			gb.display.drawFastHLine(0, 14, 80);
-			gb.display.drawFastHLine(0, 24, 80);
+			gb.display.drawFastHLine(0, 14*gb.display.fontSize, 80*gb.display.fontSize);
+			gb.display.drawFastHLine(0, 24*gb.display.fontSize, 80*gb.display.fontSize);
+			if (gb.display.fontSize > 1) {
+				gb.display.drawFastHLine(0, 14*gb.display.fontSize + 1, 80*gb.display.fontSize);
+				gb.display.drawFastHLine(0, 24*gb.display.fontSize + 1, 80*gb.display.fontSize);
+			}
 			
 			// game name
 			gb.display.setColor(WHITE);
-			gb.display.setCursors(2, 17);
-			gb.display.println(gameFolders[currentGameInBlock] + 1);
+			gb.display.setCursors(2*gb.display.fontSize, 17*gb.display.fontSize);
+			gb.display.println(getCurrentGameFolder() + 1);
 		}
 		
 		// lower bar
 		gb.display.setColor(DARKGRAY);
-		gb.display.fillRect(0, 57, 80, 7);
+		gb.display.fillRect(0, 57*gb.display.fontSize, 80*gb.display.fontSize, 7*gb.display.fontSize);
 		
 		// A SELECT
 		gb.display.setColor(GREEN);
-		gb.display.setCursors(2, 58);
+		gb.display.setCursors(2*gb.display.fontSize, 58*gb.display.fontSize);
 		gb.display.print("A");
-		gb.display.setCursorX(8);
+		gb.display.setCursorX(8*gb.display.fontSize);
 		gb.display.setColor(BROWN);
 		gb.language.print(lang_select);
 		
 		// < > BROWSE
-		gb.display.setCursorX(43);
+		gb.display.setCursorX(43*gb.display.fontSize);
 		gb.display.setColor(LIGHTBLUE);
 		gb.display.print("<");
-		gb.display.setCursorX(49);
+		gb.display.setCursorX(49*gb.display.fontSize);
 		gb.display.print(">");
-		gb.display.setCursorX(55);
+		gb.display.setCursorX(55*gb.display.fontSize);
 		gb.display.setColor(BROWN);
 		gb.language.print(lang_browse);
 		
-		if (gb.buttons.repeat(BUTTON_LEFT, 4)) {
-			if (currentGameInBlock == 0 && gameFolderBlock == 0) {
-				// nothing to do
-			} else if (currentGameInBlock == 0) {
-				currentGame--;
-				gameFolderBlock--;
-				loadGameFolderBlock();
-				loadDetailedView();
-				gb.sound.playTick();
-			} else {
-				currentGame--;
-				loadDetailedView();
-				gb.sound.playTick();
-			}
+		if (gb.buttons.repeat(BUTTON_LEFT, 4) && currentGame > 0) {
+			currentGame--;
+			loadDetailedView();
+			gb.sound.playTick();
 		}
 		
-		if (gb.buttons.repeat(BUTTON_RIGHT, 4)) {
-			if (currentGameInBlock >= (filesInBlock - 1) && lastBlock) {
-				// do nothing
-			} else if (currentGameInBlock >= (filesInBlock - 1)) {
-				currentGame++;
-				gameFolderBlock++;
-				loadGameFolderBlock();
-				loadDetailedView();
-				gb.sound.playTick();
-			} else {
-				currentGame++;
-				loadDetailedView();
-				gb.sound.playTick();
-			}
+		if (gb.buttons.repeat(BUTTON_RIGHT, 4) && currentGame < totalGames - 1) {
+			currentGame++;
+			loadDetailedView();
+			gb.sound.playTick();
 		}
 		
 		if (gb.buttons.pressed(BUTTON_A)) {
 			loadGame();
 		}
 		
-		if (gb.buttons.pressed(BUTTON_C)) {
+		if (gb.buttons.pressed(BUTTON_B)) {
+			gb.display.init(80, 64, ColorMode::rgb565);
 			gb.sound.playCancel();
 			return;
+		}
+		
+		if (gb.buttons.pressed(BUTTON_DOWN)) {
+			galleryView(1);
+			loadDetailedView();
+			continue;
+		}
+		
+		if (gb.buttons.pressed(BUTTON_UP)) {
+			galleryView(-1);
+			loadDetailedView();
+			continue;
+		}
+		
+		if (gb.buttons.pressed(BUTTON_C)) {
+			if (detailGameIsFav) {
+				gb.sound.playCancel();
+				unfavoriteGame();
+				gb.popup(gb.language.get(lang_fav_removed), 50);
+			} else {
+				gb.sound.playOK();
+				favoriteGame();
+				gb.popup(gb.language.get(lang_fav_added), 50);
+			}
+			loadDetailedView();
+			continue;
 		}
 	}
 }

@@ -100,6 +100,8 @@ public:
 	virtual void invertDisplay(boolean i);
 	virtual void drawImage(int16_t x, int16_t y, Image& img);
 	virtual void drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);
+	virtual void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap);
+	virtual void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip);
 
 	// These exist only with Graphics (no subclass overrides)
 	void drawPixel(int16_t x, int16_t y);
@@ -122,10 +124,11 @@ public:
 	void drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius);
 	void fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius);
 
-	void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap);
-	void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip);
+	
 	virtual void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size);
 	void setCursor(int16_t x, int16_t y);
+	Color setTmpColor(Color c);
+	Color setTmpColor(ColorIndex c);
 	void setColor(Color c);
 	void setColor(Color c, Color bg);
 	void setColor(ColorIndex c);
@@ -190,8 +193,20 @@ public:
 	int16_t
 		_width, _height; // Display w/h as modified by current rotation
 	static int16_t cursorX, cursorY;
-	static Color
-		color, bgcolor;
+	static union ColorUnion {
+		Color c;
+		struct {
+			uint8_t iu;
+			uint8_t i;
+		};
+	} color;
+	static union BgcolorUnion {
+		Color c;
+		struct {
+			uint8_t iu;
+			uint8_t i;
+		};
+	} bgcolor;
 	static uint8_t
 		fontSize,
 		rotation;

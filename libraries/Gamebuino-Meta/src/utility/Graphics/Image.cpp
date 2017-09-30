@@ -368,7 +368,7 @@ void Image::_drawPixel(int16_t x, int16_t y) {
 		return;
 	}
 	if (colorMode == ColorMode::rgb565) {
-		_buffer[x + y * _width] = (uint16_t)color;
+		_buffer[x + y * _width] = (uint16_t)color.c;
 		return;
 	}
 	if (colorMode == ColorMode::index) {
@@ -376,10 +376,10 @@ void Image::_drawPixel(int16_t x, int16_t y) {
 		uint8_t* buf = (uint8_t*)_buffer;
 		if (!(x % 2)) { //odd pixels
 			buf[addr] &= 0x0F; //clear
-			buf[addr] |= ((uint8_t)color << 4); //set
+			buf[addr] |= (uint8_t)color.iu; //set
 		} else { //even pixels
 			buf[addr] &= 0xF0; //clear
-			buf[addr] |= ((uint8_t)color & 0x0F); //set
+			buf[addr] |= (uint8_t)color.i; //set
 		}
 		return;
 	}
@@ -388,17 +388,18 @@ void Image::_drawPixel(int16_t x, int16_t y) {
 void Image::_fill() {
 	if (_buffer) {
 		if (colorMode == ColorMode::rgb565) {
-			uint8_t hi = (uint16_t)color >> 8, lo = (uint16_t)color & 0xFF;
+			uint8_t hi = (uint16_t)color.c >> 8;
+			uint8_t lo = (uint16_t)color.c & 0xFF;
 			if (hi == lo) {
 				memset(_buffer, lo, _width * _height * 2);
 			} else {
 				uint16_t i, pixels = _width * _height;
-				for (i = 0; i<pixels; i++) _buffer[i] = (uint16_t)color;
+				for (i = 0; i<pixels; i++) _buffer[i] = (uint16_t)color.c;
 			}
 		}
 		
 		if (colorMode == ColorMode::index) {
-			uint8_t pack = ((uint8_t)color) + ((uint8_t)color << 4);
+			uint8_t pack = ((uint8_t)color.i) | ((uint8_t)color.iu);
 			memset(_buffer, pack, _width * _height / 2);
 		}
 	}
@@ -581,8 +582,8 @@ void Image::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 		if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
 		if (c >= 0x80) c -= 0x20;
 		if (!(x % 2)) {
-			uint8_t fg = ((uint8_t)color << 4) | (uint8_t)color;
-			uint8_t bg = ((uint8_t)bgcolor << 4) | (uint8_t)bgcolor;
+			uint8_t fg = color.iu | color.i;
+			uint8_t bg = bgcolor.iu | bgcolor.i;
 			uint8_t* buf = (uint8_t*)_buffer;
 			uint8_t img_bytewidth = (_width + 1) / 2;
 			buf += y*img_bytewidth + (x / 2);
@@ -617,10 +618,10 @@ void Image::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 			
 			return;
 		} else {
-			uint8_t fg1 = (uint8_t)color;
-			uint8_t fg2 = (uint8_t)color << 4;
-			uint8_t bg1 = (uint8_t)bgcolor;
-			uint8_t bg2 = (uint8_t)bgcolor << 4;
+			uint8_t fg1 = color.i;
+			uint8_t fg2 = color.iu;
+			uint8_t bg1 = bgcolor.i;
+			uint8_t bg2 = bgcolor.iu;
 			
 			uint8_t* buf = (uint8_t*)_buffer;
 			uint8_t img_bytewidth = (_width + 1) / 2;
@@ -672,6 +673,95 @@ void Image::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 	
 	
 	Graphics::drawChar(x, y, c, size);
+}
+
+void Image::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
+	uint8_t w = *(bitmap++);
+	uint8_t h = *(bitmap++);
+	
+	if ((x >= _width) || (y >= _height) || (x + w <= 0) || (x + h <= 0)) {
+		return;
+	}
+	uint8_t bw = (w + 7) / 8;
+	uint8_t _x = x;
+	if (colorMode == ColorMode::index) {
+		uint8_t bw = (w + 7) / 8;
+		if (y < 0) {
+			h += y;
+			bitmap -= bw*y;
+			y = 0;
+		}
+		if (y + h > _height) {
+			h = _height - y;
+		}
+		uint8_t x1 = max(0, x);
+		uint8_t x2 = min(_width, x + w);
+		
+		bitmap += (x1 - x) / 8;
+		uint8_t first_bitmap_mask = 0x80 >> ((x1 - x) & 7);
+		uint16_t bufBytewidth = ((_width + 1) / 2);
+		uint8_t* buf = (uint8_t*)_buffer;
+		buf += bufBytewidth * y + x1 / 2;
+		bool screen_alt_initial = (x1 % 2) == 0;
+		
+		
+		uint8_t b1 = color.i;
+		uint8_t b2 = color.iu;
+		
+		for (uint8_t dy=0; dy<h; dy++, bitmap+=bw, buf+=bufBytewidth) {
+			const uint8_t* bitmap_ptr = bitmap;
+			uint8_t bitmap_mask = first_bitmap_mask;
+			uint8_t* screen_buf = buf;
+			uint8_t pixels = *(bitmap_ptr++);
+			bool screen_alt = screen_alt_initial;
+			for (uint8_t sx=x1; sx<x2; sx++) {
+				
+				if (screen_alt) {
+					if (pixels & bitmap_mask) {
+						*screen_buf = (*screen_buf & 0x0F) | b2;
+					}
+				} else {
+					if (pixels & bitmap_mask) {
+						*screen_buf = (*screen_buf & 0xF0) | b1;
+					}
+					screen_buf++;
+				}
+				screen_alt = !screen_alt;
+				
+				bitmap_mask >>= 1;
+				if (!bitmap_mask) {
+					bitmap_mask = 0x80;
+					pixels = *(bitmap_ptr++);
+				}
+			}
+		}
+	} else {
+		uint8_t dw = 8 - (w%8);
+		for (uint8_t j = 0; j < h; j++) {
+			x = _x;
+			for (uint8_t i = 0; i < bw;) {
+				uint8_t b = *(bitmap++);
+				i++;
+				for (uint8_t k = 0; k < 8; k++) {
+					if (i == bw && k == dw) {
+						x += (w%8);
+						break;
+					}
+					if (b&0x80) {
+						drawPixel(x, y);
+					}
+					b <<= 1;
+					x++;
+				}
+			}
+			y++;
+		}
+	}
+}
+
+void Image::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
+	uint8_t rotation, uint8_t flip) {
+	Graphics::drawBitmap(x, y, bitmap, rotation, flip);
 }
 
 } // namespace Gamebuino_Meta
