@@ -101,7 +101,7 @@ const MultiLang lang_keyboard_back[] = {
 const MultiLang lang_keyboard_save[] = {
 	{LangCode::en, "save"},
 	{LangCode::de, "fertig"},
-	{LangCode::fr, "enregistrer"},
+	{LangCode::fr, "enreg."},
 };
 
 
