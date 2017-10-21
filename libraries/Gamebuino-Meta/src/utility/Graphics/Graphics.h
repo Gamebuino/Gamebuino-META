@@ -126,7 +126,6 @@ public:
 
 	
 	virtual void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size);
-	void setCursor(int16_t x, int16_t y);
 	Color setTmpColor(Color c);
 	Color setTmpColor(ColorIndex c);
 	void setColor(Color c);

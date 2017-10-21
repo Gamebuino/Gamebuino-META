@@ -1008,11 +1008,6 @@ void Graphics::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 	} // End classic vs custom font
 }
 
-void Graphics::setCursor(int16_t x, int16_t y) {
-	cursorX = x;
-	cursorY = y;
-}
-
 int16_t Graphics::getCursorX(void) const {
 	return cursorX;
 }
