@@ -956,12 +956,6 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 }
 
 
-// Pass 8-bit (each) R,G,B, get back 16-bit packed color
-Color Display_ST7735::Color565(uint8_t r, uint8_t g, uint8_t b) {
-	return (Color)(((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3));
-}
-
-
 #define MADCTL_MY	0x80
 #define MADCTL_MX	0x40
 #define MADCTL_MV	0x20

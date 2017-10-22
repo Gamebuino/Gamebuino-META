@@ -148,7 +148,6 @@ public:
 		fillRect(int16_t x, int16_t y, int16_t w, int16_t h),
 		setRotation(uint8_t r),
 		invertDisplay(boolean i);
-	Color Color565(uint8_t r, uint8_t g, uint8_t b);
 	ColorMode colorMode = ColorMode::rgb565;
 
 /* These are not for current use, 8-bit protocol only!
