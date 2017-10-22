@@ -365,7 +365,7 @@ void Graphics::fill(Color c) {
 }
 
 void Graphics::clearTextVars() {
-	setCursor(0, 0);
+	setCursors(0, 0);
 	setFont(font3x5);
 	fontSize = DEFAULT_FONT_SIZE;
 	textWrap = true;

@@ -71,7 +71,6 @@ public:
 	
 	void nextFrame();
 	void setFrame(uint16_t frame);
-	void freeBuffer();
 	void _drawPixel(int16_t x, int16_t y);
 	void _fill();
 	void drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img);
