@@ -358,7 +358,7 @@ class World {
       while (1) {
         if (gb.update()) {
           gb.display.clear(WHITE);
-          gb.light.clear();
+          gb.lights.clear();
           gb.display.setColor(BLACK, WHITE);
 
           //assign the selected map
@@ -779,7 +779,7 @@ class Bullet :
           // rodot....sorry IDK what your logic is behind this so you gotta fix it, not looking into it too deeply atm
           // TODO: fix
           // here, have this substitute (lighting all pixels)
-          gb.light.fill(gb.createColor(r, g, b));
+          gb.lights.fill(gb.createColor(r, g, b));
           /*
           for(uint8_t i = 0; i < gb.neoPixels.numPixels(); i++){
             int16_t xScreen = toScreenX(x) + (getWidth() / 2 / SCALE);
@@ -1038,16 +1038,16 @@ class Weapon {
         r = g = b = 0;
         break;
       }
-      gb.light.setColor(gb.createColor(r, g, b));
+      gb.lights.setColor(gb.createColor(r, g, b));
       switch (subtype) {
         //light only in the shooting direction for these weapons
         case W_PISTOL :
         case W_RIFLE :
         case W_LASER :
           if (shooter->dir < 0) {
-            gb.light.fillRect(0, 0, 1, 4);
+            gb.lights.fillRect(0, 0, 1, 4);
           } else {
-            gb.light.fillRect(1, 0, 1, 4);
+            gb.lights.fillRect(1, 0, 1, 4);
           }
           break;
       }
@@ -1862,7 +1862,7 @@ void setup() {
 void loop() {
   if (gb.update()) {
     gb.display.setCursors(0, 0);
-    gb.light.clear();
+    gb.lights.clear();
     if (gb.buttons.pressed(BUTTON_C)) {
       gamePaused();
     }
@@ -1932,7 +1932,7 @@ void loop() {
       while (1) {
         if (gb.update()) {
           gb.display.setCursors(0, 0);
-          gb.light.clear();
+          gb.lights.clear();
           player.update();
           enemiesEngine.update();
           drawAll();
@@ -1960,7 +1960,7 @@ void gamePaused() {
   while (1) {
     if (gb.update()) {
       gb.display.clear(WHITE);
-      gb.light.clear();
+      gb.lights.clear();
       gb.display.setColor(BLUE, WHITE);
       drawAll();
       gb.display.setColor(WHITE, BLACK);

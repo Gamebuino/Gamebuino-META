@@ -76,7 +76,7 @@ public:
 	Sound sound;
 #endif
 	Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
-	Image light = Image(2, 4, ColorMode::rgb565);
+	Image lights = Image(2, 4, ColorMode::rgb565);
 	Save save;
 	Save settings;
 	Language language;

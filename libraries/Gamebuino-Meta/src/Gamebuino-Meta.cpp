@@ -245,8 +245,8 @@ bool Gamebuino::update() {
 	updateDisplay();
 	
 	//neoPixels update
-	uint8_t px_height = light.height();
-	uint8_t px_width = light.width();
+	uint8_t px_height = lights.height();
+	uint8_t px_width = lights.width();
 	const uint8_t px_map[] = {
 		7, 0,
 		6, 1,
@@ -255,7 +255,7 @@ bool Gamebuino::update() {
 	};
 	for (uint8_t y = 0; y < px_height; y++) {
 		for (uint8_t x = 0; x < px_width; x++) {
-			RGB888 c = rgb565Torgb888(light.getPixel(x, y));
+			RGB888 c = rgb565Torgb888(lights.getPixel(x, y));
 			// intensity is scaled directly via neoPixels.setBrightness
 			neoPixels.setPixelColor(px_map[y*px_width + x], c.r, c.g, c.b);
 		}

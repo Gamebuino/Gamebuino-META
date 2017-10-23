@@ -150,7 +150,7 @@ void updatePlayer() {
     player.v *= 0.5;
   }
 
-  gb.light.fill(gb.createColor(r, g, b));
+  gb.lights.fill(gb.createColor(r, g, b));
 
   //target position of the camera for the cursor to be centered
   int camera_x_target = player.x + cos(player.angle) * player.v * 64 - gb.display.width() / 2;
