@@ -138,20 +138,26 @@ void Gamebuino::begin() {
 	neoPixels.setBrightness(neoPixelsIntensities[settings.get(SETTING_NEOPIXELS_INTENSITY)]);
 	
 	Graphics_SD::setTft(&tft);
+	
+	// only do titleScreen after a hard power on
+	if (PM->RCAUSE.bit.POR) {
+		titleScreen();
+	}
+	
+	display.clear();
 }
 
-void Gamebuino::titleScreen(const char* filename, Image* img) {
+void Gamebuino::titleScreen() {
+	const char* filename = "TITLESCREEN.BMP";
 	ColorMode ts_backup_colorMode = display.colorMode;
 	uint16_t ts_backup_width = display._width;
 	uint16_t ts_backup_height = display._height;
 	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
 	bool foundFile = false;
-	bool useImage = false;
+	
 	if (filename && SD.exists(filename)) {
 		foundFile = true;
 		display.init(ts_backup_width, ts_backup_height, (char*)filename);
-	} else if (img) {
-		useImage = true;
 	} else {
 		display.setCursors(0, 0);
 		display.println("Gamebuino game");
@@ -169,11 +175,8 @@ void Gamebuino::titleScreen(const char* filename, Image* img) {
 		if(!update()) {
 			continue;
 		}
-		if (useImage) {
-			display.drawImage(0, 0, *img);
-		} else {
-			display.nextFrame();
-		}
+		display.nextFrame();
+		
 		if ((frameCount % 32) < 20) {
 			
 			display.setColor(Color::gray);
@@ -195,14 +198,6 @@ void Gamebuino::titleScreen(const char* filename, Image* img) {
 		}
 	}
 	display.init(ts_backup_width, ts_backup_height, ts_backup_colorMode);
-}
-
-void Gamebuino::titleScreen(Image& img) {
-	titleScreen(0, &img);
-}
-
-void Gamebuino::titleScreen(){
-	titleScreen("TITLESCREEN.BMP");
 }
 
 bool recording_screen = false;

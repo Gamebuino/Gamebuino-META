@@ -25,8 +25,6 @@ void setup()
   gb.save.config(savefileDefaults);
   
   initHighscore();
-  
-  gb.titleScreen();
 }
 
 void loop(){

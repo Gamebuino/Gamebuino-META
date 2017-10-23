@@ -83,8 +83,6 @@ public:
 	Bootloader bootloader;
 
 	void begin();
-	void titleScreen(const char* filename, Image* img = 0);
-	void titleScreen(Image& img);
 	void titleScreen();
 	bool update();
 	void updateDisplay();
