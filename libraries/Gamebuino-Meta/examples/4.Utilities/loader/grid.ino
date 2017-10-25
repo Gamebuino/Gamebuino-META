@@ -210,65 +210,86 @@ void gridView() {
 			gb.display.drawRect(cursorX*33 + 6 - 1, cursorY*33 + cameraY_actual - 1, 34, 34);
 		}
 		
-		if (gb.buttons.repeat(BUTTON_LEFT, 4) && cursorX == 1) {
-			cursorX = 0;
-			currentGame--;
-			gb.sound.playTick();
-		}
-		
-		if (gb.buttons.repeat(BUTTON_RIGHT, 4) && cursorX == 0 && currentGame < totalGames - 1) {
-			cursorX = 1;
-			currentGame++;
-			gb.sound.playTick();
-		}
-		
-		if (gb.buttons.repeat(BUTTON_UP, 4) && currentGame >= 2) {
-			currentGame -= 2;
-			cursorY--;
-			if (currentGame <= 1) {
-				cameraY = CAMERA_INITIAL;
-			} else {
-				cameraY += 33;
+		if (gb.buttons.repeat(BUTTON_LEFT, 4) || gb.buttons.repeat(BUTTON_RIGHT, 4)) {
+			if (cursorX == 1) {
+				cursorX = 0;
+				currentGame--;
+				gb.sound.playTick();
+			} else if (currentGame < totalGames - 1) {
+				cursorX = 1;
+				currentGame++;
+				gb.sound.playTick();
 			}
-			if (cursorY < 1 && currentGame > 1) {
-				gb.update(); // we want to already draw the screen
-				cameraY -= 33;
-				cameraY_actual -= 33;
-				cursorY = 1;
-				uint32_t cg = (currentGame / 2) * 2;
-				if (gridIndex > 0) {
-					gridIndex -= 2;
+		}
+		
+		if (gb.buttons.repeat(BUTTON_UP, 4)) {
+			if (currentGame >= 2) {
+				currentGame -= 2;
+				cursorY--;
+				if (currentGame <= 1) {
+					cameraY = CAMERA_INITIAL;
 				} else {
-					gridIndex = PAGE_SIZE - 2;
+					cameraY += 33;
 				}
-				loadGridEntry(gridIndex, cg - 2);
-				loadGridEntry(gridIndex + 1, cg - 1);
+				if (cursorY < 1 && currentGame > 1) {
+					gb.update(); // we want to already draw the screen
+					cameraY -= 33;
+					cameraY_actual -= 33;
+					cursorY = 1;
+					uint32_t cg = (currentGame / 2) * 2;
+					if (gridIndex > 0) {
+						gridIndex -= 2;
+					} else {
+						gridIndex = PAGE_SIZE - 2;
+					}
+					loadGridEntry(gridIndex, cg - 2);
+					loadGridEntry(gridIndex + 1, cg - 1);
+				}
+			} else {
+				// loop to bottom
+				gridIndex = 0;
+				cursorY = 1;
+				currentGame = (((totalGames + 1) / 2) * 2) - 2 + cursorX;
+				if (totalGames % 2 && cursorX == 1) {
+					currentGame -= 2;
+				}
+				loadGridView();
+				cameraY = -16;
 			}
 			gb.sound.playTick();
 		}
 		
-		if (gb.buttons.repeat(BUTTON_DOWN, 4) && currentGame < totalGames - 2) {
-			currentGame += 2;
-			cursorY++;
-			if (currentGame <= 3) {
-				// adjust the first row thing
-				cameraY = -16;
-			} else {
-				cameraY -= 33;
-			}
-			if (cursorY > 1 && currentGame < totalGames - 1) {
-				gb.update(); // we want to already draw the screen
-				cameraY += 33;
-				cameraY_actual += 33;
-				cursorY = 1;
-				uint32_t cg = (currentGame / 2) * 2;
-				loadGridEntry(gridIndex, cg + 2);
-				loadGridEntry(gridIndex + 1, cg + 3);
-				
-				gridIndex += 2;
-				if (gridIndex >= PAGE_SIZE) {
-					gridIndex = 0;
+		if (gb.buttons.repeat(BUTTON_DOWN, 4)) {
+			if (currentGame < totalGames - 2) {
+				currentGame += 2;
+				cursorY++;
+				if (currentGame <= 3) {
+					// adjust the first row thing
+					cameraY = -16;
+				} else {
+					cameraY -= 33;
 				}
+				if (cursorY > 1 && currentGame < totalGames - 1) {
+					gb.update(); // we want to already draw the screen
+					cameraY += 33;
+					cameraY_actual += 33;
+					cursorY = 1;
+					uint32_t cg = (currentGame / 2) * 2;
+					loadGridEntry(gridIndex, cg + 2);
+					loadGridEntry(gridIndex + 1, cg + 3);
+					
+					gridIndex += 2;
+					if (gridIndex >= PAGE_SIZE) {
+						gridIndex = 0;
+					}
+				}
+			} else {
+				// loop to top
+				currentGame = cursorX;
+				cursorY = 0;
+				gridIndex = 0;
+				loadGridView();
+				cameraY = CAMERA_INITIAL;
 			}
 			gb.sound.playTick();
 		}

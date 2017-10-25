@@ -153,14 +153,22 @@ void detailedView() {
 		gb.display.setColor(BROWN);
 		gb.language.print(lang_browse);
 		
-		if (gb.buttons.repeat(BUTTON_LEFT, 4) && currentGame > 0) {
-			currentGame--;
+		if (gb.buttons.repeat(BUTTON_LEFT, 4)) {
+			if (currentGame > 0) {
+				currentGame--;
+			} else {
+				currentGame = totalGames - 1;
+			}
 			loadDetailedView();
 			gb.sound.playTick();
 		}
 		
-		if (gb.buttons.repeat(BUTTON_RIGHT, 4) && currentGame < totalGames - 1) {
-			currentGame++;
+		if (gb.buttons.repeat(BUTTON_RIGHT, 4)) {
+			if (currentGame < totalGames - 1) {
+				currentGame++;
+			} else {
+				currentGame = 0;
+			}
 			loadDetailedView();
 			gb.sound.playTick();
 		}
