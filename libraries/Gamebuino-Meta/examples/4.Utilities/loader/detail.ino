@@ -23,6 +23,12 @@ Image star{starBuf};
 bool titleScreenImageExists;
 bool displayName;
 bool detailGameIsFav;
+
+const char* msg_a_start;
+uint8_t msg_a_w;
+uint8_t msg_a_h;
+uint8_t msg_a_x;
+uint8_t msg_a_y;
 void loadDetailedView() {
 	star.setTransparentColor(INDEX_BLACK);
 	detailGameIsFav = isGameFavorite();
@@ -68,6 +74,12 @@ void loadDetailedView() {
 		gb.display.init(80, 64, ColorMode::rgb565);
 		gb.display.fontSize = 1;
 	}
+	
+	msg_a_start = gb.language.get(lang_a_start);
+	msg_a_w = gb.display.fontWidth*strlen(msg_a_start)*gb.display.fontSize;
+	msg_a_h = gb.display.fontHeight*gb.display.fontSize;
+	msg_a_x = (gb.display.width() - msg_a_w) / 2;
+	msg_a_y = (gb.display.height() / 5) * 3 + msg_a_h;
 }
 
 void loadGame() {
@@ -89,20 +101,23 @@ void loadGame() {
 
 void detailedView() {
 	loadDetailedView();
-	
+	bool first = true;
 	bool reInitDisplay = false;
 	while (1) {
 		if (!gb.update()) {
 			continue;
 		}
+		gb.display.fontSize = gb.display.width() == 80 ? 1 : 2;
+		if (reInitDisplay && titleScreenImageExists) {
+			if (gb.display.frames == 1) {
+				gb.display.init(nameBuffer);
+			}
+			reInitDisplay = false;
+		}
 		uint8_t blockOffset = currentGame / BLOCK_LENGTH;
 		uint8_t gameInBlock = currentGame % BLOCK_LENGTH;
 		uint8_t b = getBlock(blockOffset);
 		
-		if (reInitDisplay) {
-			gb.display.init(nameBuffer);
-			reInitDisplay = false;
-		}
 		if (titleScreenImageExists) {
 			gb.display.nextFrame();
 		} else {
@@ -131,27 +146,23 @@ void detailedView() {
 			gb.display.println(getCurrentGameFolder() + 1);
 		}
 		
-		// lower bar
-		gb.display.setColor(DARKGRAY);
-		gb.display.fillRect(0, 57*gb.display.fontSize, 80*gb.display.fontSize, 7*gb.display.fontSize);
-		
-		// A SELECT
-		gb.display.setColor(GREEN);
-		gb.display.setCursors(2*gb.display.fontSize, 58*gb.display.fontSize);
-		gb.display.print("A");
-		gb.display.setCursorX(8*gb.display.fontSize);
-		gb.display.setColor(BROWN);
-		gb.language.print(lang_select);
-		
-		// < > BROWSE
-		gb.display.setCursorX(43*gb.display.fontSize);
-		gb.display.setColor(LIGHTBLUE);
-		gb.display.print("<");
-		gb.display.setCursorX(49*gb.display.fontSize);
-		gb.display.print(">");
-		gb.display.setCursorX(55*gb.display.fontSize);
-		gb.display.setColor(BROWN);
-		gb.language.print(lang_browse);
+		// flashing "A to start"
+		if ((gb.frameCount % 32) < 20) {
+			gb.display.setColor(GRAY);
+			gb.display.drawRect(msg_a_x - gb.display.fontSize*2, msg_a_y - gb.display.fontSize*2, msg_a_w + gb.display.fontSize*4, msg_a_h + gb.display.fontSize*3);
+			if (gb.display.fontSize > 1) {
+				gb.display.drawRect(msg_a_x - gb.display.fontSize*2 + 1, msg_a_y - gb.display.fontSize*2 + 1, msg_a_w + gb.display.fontSize*4 - 2, msg_a_h + gb.display.fontSize*3 - 2);
+			}
+			gb.display.setColor(BROWN);
+			gb.display.fillRect(msg_a_x - gb.display.fontSize, msg_a_y - gb.display.fontSize, msg_a_w + gb.display.fontSize*2, msg_a_h + gb.display.fontSize);
+			gb.display.setColor(WHITE);
+			gb.display.setCursors(msg_a_x, msg_a_y);
+			gb.display.print(msg_a_start);
+			first = true;
+		} else if (titleScreenImageExists && gb.display.frames == 1 && first) {
+			reInitDisplay = true;
+			first = false;
+		}
 		
 		if (gb.buttons.repeat(BUTTON_LEFT, 4)) {
 			if (currentGame > 0) {

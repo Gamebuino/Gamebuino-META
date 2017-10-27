@@ -92,3 +92,9 @@ const MultiLang lang_fav_removed[] = {
 	{LANG_DE, "Favorit entfernt"},
 	{LANG_FR, "Retiré des favoris"},
 };
+
+const MultiLang lang_a_start[] = {
+	{LANG_EN, "\x15 to start"},
+	{LANG_DE, "\x15 zum starten"},
+	{LANG_FR, "\x15 pour commencer"},
+};

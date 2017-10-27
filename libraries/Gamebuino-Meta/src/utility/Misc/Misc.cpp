@@ -41,13 +41,13 @@ RGB888 rgb565Torgb888(uint16_t c) {
 	RGB888 out;
 	
 	out.r = (uint8_t)((c >> 8) & 0xF8);
-	out.r |= out.b >> 5;
+	out.r |= out.r >> 5;
 	
 	out.g = (uint8_t)((c >> 3) & 0xFC);
 	out.g |= out.g >> 6;
 	
 	out.b = (uint8_t)(c << 3);
-	out.b |= out.r >> 5;
+	out.b |= out.b >> 5;
 	return out;
 }
 

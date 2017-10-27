@@ -20,6 +20,10 @@
 #define SAVECONF_DEFAULT_BLOBSIZE 32
 #endif
 
+#ifndef AUTOSHOW_TITLESCREEN
+#define AUTOSHOW_TITLESCREEN 1
+#endif
+
 ///////////////
 // display defines
 ///////////////
