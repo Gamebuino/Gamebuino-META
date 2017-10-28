@@ -32,9 +32,9 @@ void settingsView() {
 		gb.display.clear();
 		const char* s = gb.language.get(lang_settings);
 		gb.display.setColor(WHITE);
-		gb.display.setCursors(40 - strlen(s)*2, 1);
+		gb.display.setCursor(40 - strlen(s)*2, 1);
 		gb.display.print(s);
-		gb.display.setCursors(0, 8);
+		gb.display.setCursor(0, 8);
 		gb.display.setColor(BEIGE);
 		gb.display.print(" ");
 		gb.language.print(lang_settings_default_name);
@@ -53,13 +53,13 @@ void settingsView() {
 		
 		if ((gb.frameCount%10) < 5) {
 			gb.display.setColor(RED);
-			gb.display.setCursors(0, settings_cursorPositions[cursor]);
+			gb.display.setCursor(0, settings_cursorPositions[cursor]);
 			gb.display.print(">");
 		}
 		
 		gb.display.setColor(GRAY);
 		s = gb.language.get(lang_versions);
-		gb.display.setCursors(40 - strlen(s)*2, 45);
+		gb.display.setCursor(40 - strlen(s)*2, 45);
 		gb.display.println(s);
 		gb.display.print(gb.language.get(lang_loader));
 		gb.display.print(": ");

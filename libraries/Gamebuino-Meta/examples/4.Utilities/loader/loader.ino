@@ -337,7 +337,7 @@ void setup() {
 	
 	gb.display.clear();
 	gb.display.drawBitmap(0, 2, GAMEBUINO_LOGO);
-	gb.display.setCursors(0, 18);
+	gb.display.setCursor(0, 18);
 	gb.language.println(lang_loading);
 	gb.updateDisplay();
 	initFolders();

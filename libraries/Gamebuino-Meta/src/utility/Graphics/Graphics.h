@@ -139,7 +139,7 @@ public:
 	void clearTransparentColor();
 	void setCursorX(int16_t x);
 	void setCursorY(int16_t y);
-	void setCursors(int16_t x, int16_t y);
+	void setCursor(int16_t x, int16_t y);
 	void setFontSize(uint8_t s);
 	void setTextWrap(bool w);
 	void setRotation(uint8_t r);

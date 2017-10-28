@@ -144,7 +144,7 @@ void Gamebuino::titleScreen() {
 		foundFile = true;
 		display.init(ts_backup_width, ts_backup_height, (char*)filename);
 	} else {
-		display.setCursors(0, 0);
+		display.setCursor(0, 0);
 		display.println("Gamebuino game");
 		display.println(folder_name);
 	}
@@ -170,7 +170,7 @@ void Gamebuino::titleScreen() {
 			display.setColor(Color::brown);
 			display.fillRect(x - display.fontSize, y - display.fontSize, w + display.fontSize*2, h + display.fontSize);
 			display.setColor(Color::white);
-			display.setCursors(x, y);
+			display.setCursor(x, y);
 			display.print(msg);
 			first = true;
 		} else if (display.frames == 1 && foundFile && first) {
@@ -916,7 +916,7 @@ void Gamebuino::updatePopup(){
 		display.fillRoundRect(0,display.height()-display.getFontHeight()+yOffset-3,display.width(),display.getFontHeight()+3,3);
 		display.setColor(DISPLAY_DEFAULT_COLOR);
 		display.drawRoundRect(0,display.height()-display.getFontHeight()+yOffset-3,display.width(),display.getFontHeight()+3,3);
-		display.setCursors(
+		display.setCursor(
 			4,
 			display.height()-display.getFontHeight()+yOffset-1
 		);

@@ -60,7 +60,7 @@ void loadDetailedView() {
 	}
 	if (titleScreenImageExists) {
 		gb.display.setColor(WHITE, BLACK);
-		gb.display.setCursors(0, 0);
+		gb.display.setCursor(0, 0);
 		gb.language.println(lang_loading);
 		gb.updateDisplay();
 		gb.display.init(nameBuffer);
@@ -91,7 +91,7 @@ void loadGame() {
 	if (!titleScreenImageExists) {
 		gb.display.clear();
 		gb.display.setColor(WHITE, BLACK);
-		gb.display.setCursors(0, 24);
+		gb.display.setCursor(0, 24);
 		gb.language.println(lang_loading);
 		gb.display.print(nameBuffer);
 	}
@@ -142,7 +142,7 @@ void detailedView() {
 			
 			// game name
 			gb.display.setColor(WHITE);
-			gb.display.setCursors(2*gb.display.fontSize, 17*gb.display.fontSize);
+			gb.display.setCursor(2*gb.display.fontSize, 17*gb.display.fontSize);
 			gb.display.println(getCurrentGameFolder() + 1);
 		}
 		
@@ -156,7 +156,7 @@ void detailedView() {
 			gb.display.setColor(BROWN);
 			gb.display.fillRect(msg_a_x - gb.display.fontSize, msg_a_y - gb.display.fontSize, msg_a_w + gb.display.fontSize*2, msg_a_h + gb.display.fontSize);
 			gb.display.setColor(WHITE);
-			gb.display.setCursors(msg_a_x, msg_a_y);
+			gb.display.setCursor(msg_a_x, msg_a_y);
 			gb.display.print(msg_a_start);
 			first = true;
 		} else if (titleScreenImageExists && gb.display.frames == 1 && first) {

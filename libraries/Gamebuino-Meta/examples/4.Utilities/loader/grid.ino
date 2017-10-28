@@ -126,7 +126,7 @@ void gridView() {
 			gb.display.setColor(WHITE);
 			gb.display.drawBitmap(0, 2, GAMEBUINO_LOGO);
 			gb.display.setColor(RED);
-			gb.display.setCursors(0, 18);
+			gb.display.setCursor(0, 18);
 			gb.language.println(lang_no_games);
 			continue;
 		}
@@ -178,7 +178,7 @@ void gridView() {
 				uint8_t blockOffset = cg / BLOCK_LENGTH;
 				uint8_t gameInBlock = cg % BLOCK_LENGTH;
 				uint8_t b = getBlock(blockOffset);
-				gb.display.setCursors(xx + 1, yy + 1);
+				gb.display.setCursor(xx + 1, yy + 1);
 				const char* n = gameFolders[b][gameInBlock] + 1;
 				int8_t len = strlen(n);
 				if (len > 7*4) {

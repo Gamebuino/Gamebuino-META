@@ -1861,7 +1861,7 @@ void setup() {
 ///////////////////////////////////////////// LOOP
 void loop() {
   if (gb.update()) {
-    gb.display.setCursors(0, 0);
+    gb.display.setCursor(0, 0);
     gb.lights.clear();
     if (gb.buttons.pressed(BUTTON_C)) {
       gamePaused();
@@ -1931,7 +1931,7 @@ void loop() {
       }
       while (1) {
         if (gb.update()) {
-          gb.display.setCursors(0, 0);
+          gb.display.setCursor(0, 0);
           gb.lights.clear();
           player.update();
           enemiesEngine.update();

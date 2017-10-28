@@ -66,7 +66,7 @@ void Save::config(uint16_t _blocks, const SaveDefault* _defaults, uint16_t _num_
 }
 
 void Save::error(const char *s) {
-	tft->setCursors(0, 0);
+	tft->setCursor(0, 0);
 	tft->setColor(Color::red, Color::black);
 	tft->print("SAVE ERROR ");
 	tft->setColor(Color::white, Color::black);

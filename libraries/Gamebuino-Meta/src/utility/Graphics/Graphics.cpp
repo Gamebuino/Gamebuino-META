@@ -365,7 +365,7 @@ void Graphics::fill(Color c) {
 }
 
 void Graphics::clearTextVars() {
-	setCursors(0, 0);
+	setCursor(0, 0);
 	setFont(font3x5);
 	fontSize = DEFAULT_FONT_SIZE;
 	textWrap = true;
@@ -1144,7 +1144,7 @@ void Graphics::setCursorY(int16_t y) {
 	cursorY = y;
 }
 
-void Graphics::setCursors(int16_t x, int16_t y) {
+void Graphics::setCursor(int16_t x, int16_t y) {
 	cursorX = x;
 	cursorY = y;
 }
