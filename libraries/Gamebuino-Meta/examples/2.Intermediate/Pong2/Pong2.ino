@@ -22,7 +22,7 @@ int oponent_vy = 0;
 
 //ball variables
 int ball_size = 3;
-int ball_x = gb.display.width() - ball_size - oponent_w - 1;
+int ball_x = oponent_x - ball_size - 5;
 int ball_y = (gb.display.height() - ball_size) / 2;
 int ball_vx = 2;
 int ball_vy = 0;
@@ -44,6 +44,8 @@ void loop() {
   if (gb.update()) {
     // clear the previous screen
     gb.display.clear();
+    gb.lights.clear();
+    
 
     //pause the game if C is pressed
     if (gb.buttons.pressed(BUTTON_C)) {
@@ -90,18 +92,22 @@ void loop() {
       ball_vy += player_vy / 2; //add some effet to the ball
       ball_vy = constrain(ball_vy, (-ball_vymax), ball_vymax);
       gb.sound.playTick();
+      gb.lights.drawPixel(0, map(ball_y, 0, gb.display.height(), 0, 4));
     }
     //collision with the oponent
     if (gb.collideRectRect(ball_x, ball_y, ball_size, ball_size, oponent_x, oponent_y, oponent_w, oponent_h)) {
       ball_x = oponent_x - ball_size;
       ball_vx = -ball_vx;
-      ball_vy += (oponent_vy/2);
+      ball_vy += (oponent_vy / 2);
       gb.sound.playTick();
+      gb.lights.drawPixel(1, map(ball_y, 0, gb.display.height(), 0, 4));
     }
     //collision with the left side
     if (ball_x < 0) {
       oponent_score = oponent_score + 1;
       gb.sound.playCancel();
+      gb.lights.setColor(RED);
+      gb.lights.drawPixel(0, map(ball_y, 0, gb.display.height(), 0, 4));
       player_y = (gb.display.height() / 2) - (player_h / 2);
       ball_x = oponent_x - 4;
       ball_vx = -abs(ball_vx);
@@ -112,6 +118,8 @@ void loop() {
     if ((ball_x + ball_size) > gb.display.width()) {
       player_score = player_score + 1;
       gb.sound.playOK();
+      gb.lights.setColor(RED);
+      gb.lights.drawPixel(1, map(ball_y, 0, gb.display.height(), 0, 4));
       player_y = (gb.display.height() / 2) - (player_h / 2);
       ball_x = oponent_x - 4;
       ball_vx = -abs(ball_vx);
@@ -139,12 +147,11 @@ void loop() {
 
     //draw the score
     //gb.display.fontSize = 2;
-    gb.display.setCursors(15, 16);
+    gb.display.setCursor(15, 16);
     gb.display.print(player_score);
 
-    gb.display.setCursors(57, 16);
+    gb.display.setCursor(57, 16);
     gb.display.print(oponent_score);
-
     //draw the ball
     gb.display.fillRect(ball_x, ball_y, ball_size, ball_size);
     //draw the player
