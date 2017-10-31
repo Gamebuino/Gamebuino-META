@@ -11,7 +11,7 @@ void EEPROM_Class::begin(uint32_t _size) {
 		blocks++;
 	}
 	gb.display.fill(DISPLAY_DEFAULT_BACKGROUND_COLOR);
-	gb.display.setCursors(0, 0);
+	gb.display.setCursor(0, 0);
 	gb.display.setColor(DISPLAY_DEFAULT_COLOR);
 	gb.display.print("Loading...");
 	gb.updateDisplay();

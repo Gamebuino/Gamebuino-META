@@ -133,23 +133,38 @@ void Gamebuino::begin() {
 }
 
 void Gamebuino::titleScreen() {
-	const char* filename = "TITLESCREEN.BMP";
 	ColorMode ts_backup_colorMode = display.colorMode;
 	uint16_t ts_backup_width = display._width;
 	uint16_t ts_backup_height = display._height;
 	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
-	bool foundFile = false;
+	char filename[17] = "TITLESCREEN.BMP";
 	
-	if (filename && SD.exists(filename)) {
-		foundFile = true;
-		display.init(ts_backup_width, ts_backup_height, (char*)filename);
-	} else {
-		display.setCursor(0, 0);
-		display.println("Gamebuino game");
-		display.println(folder_name);
+	bool titleScreenImageExists = SD.exists(filename);
+	bool displayName = !titleScreenImageExists;
+	if (!titleScreenImageExists && SD.exists("REC")) {
+		strcpy(filename, "REC/");
+		const uint8_t f_offset = 4;
+		File dir_walk = SD.open(filename);
+		File entry;
+		while (entry = dir_walk.openNextFile()) {
+			if (!entry.isFile()) {
+				continue;
+			}
+			entry.getName(filename + f_offset, sizeof(filename) - f_offset);
+			if (!strstr(filename, ".GMV") && !strstr(filename, ".gmv")) {
+				continue;
+			}
+			titleScreenImageExists = true;
+			displayName = true;
+			break;
+		}
+	}
+	if (titleScreenImageExists) {
+		display.init(ts_backup_width, ts_backup_height, filename);
 	}
 	
-	bool first = false;
+	bool first = true;
+	bool reInitDisplay = false;
 	
 	const char* msg = language._get(lang_titlescreen_a_start);
 	uint8_t w = display.fontWidth*strlen(msg)*display.fontSize;
@@ -160,12 +175,43 @@ void Gamebuino::titleScreen() {
 		if(!update()) {
 			continue;
 		}
-		display.nextFrame();
+		if (reInitDisplay && titleScreenImageExists) {
+			if (display.frames == 1) {
+				display.init(ts_backup_width, ts_backup_height, (char*)filename);
+			}
+			reInitDisplay = false;
+		}
+		if (titleScreenImageExists) {
+			display.nextFrame();
+		} else {
+			display.clear();
+		}
+		
+		if (displayName) {
+			// center bar
+			display.setColor(BROWN);
+			display.fillRect(0, 15*display.fontSize, 80*display.fontSize, 9*display.fontSize);
+			display.setColor(DARKGRAY);
+			display.drawFastHLine(0, 14*display.fontSize, 80*display.fontSize);
+			display.drawFastHLine(0, 24*display.fontSize, 80*display.fontSize);
+			if (display.fontSize > 1) {
+				display.drawFastHLine(0, 14*display.fontSize + 1, 80*display.fontSize);
+				display.drawFastHLine(0, 24*display.fontSize + 1, 80*display.fontSize);
+			}
+			
+			// game name
+			display.setColor(WHITE);
+			display.setCursor(2*display.fontSize, 17*display.fontSize);
+			display.println(folder_name);
+		}
 		
 		if ((frameCount % 32) < 20) {
 			
 			display.setColor(Color::gray);
 			display.drawRect(x - display.fontSize*2, y - display.fontSize*2, w + display.fontSize*4, h + display.fontSize*3);
+			if (display.fontSize > 1) {
+				display.drawRect(x - display.fontSize*2 + 1, y - display.fontSize*2 + 1, w + display.fontSize*4 - 2, h + display.fontSize*3 - 2);
+			}
 			
 			display.setColor(Color::brown);
 			display.fillRect(x - display.fontSize, y - display.fontSize, w + display.fontSize*2, h + display.fontSize);
@@ -173,8 +219,8 @@ void Gamebuino::titleScreen() {
 			display.setCursor(x, y);
 			display.print(msg);
 			first = true;
-		} else if (display.frames == 1 && foundFile && first) {
-			display.init(ts_backup_width, ts_backup_height, (char*)filename);
+		} else if (display.frames == 1 && titleScreenImageExists && first) {
+			reInitDisplay = true;
 			first = false;
 		}
 		if (gb.buttons.pressed(Button::a)) {
