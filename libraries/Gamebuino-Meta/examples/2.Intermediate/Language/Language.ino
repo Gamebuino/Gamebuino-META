@@ -27,6 +27,6 @@ void loop() {
     gb.display.println(gb.language.get(fox));
     
     // or, if we want to print to the display, we can even do
-    gb.language.println(fox);
+    gb.display.println(fox);
   }
 }

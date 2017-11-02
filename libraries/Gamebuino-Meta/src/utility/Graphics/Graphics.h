@@ -10,6 +10,8 @@
 
 #include "gfxfont.h"
 
+#include "../Language.h"
+
 namespace Gamebuino_Meta {
 
 
@@ -77,7 +79,7 @@ enum class ColorMode : uint8_t {
 	index,
 };
 
-class Graphics : public Print {
+class Graphics : public Print_Language {
 
 public:
 
