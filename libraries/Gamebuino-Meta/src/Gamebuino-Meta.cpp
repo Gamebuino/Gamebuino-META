@@ -204,10 +204,10 @@ void Gamebuino::titleScreen() {
 			display.setCursor(2*display.fontSize, 17*display.fontSize);
 			display.println(folder_name);
 		}
-		
+		// flashing "A to start"
 		if ((frameCount % 32) < 20) {
 			
-			display.setColor(Color::gray);
+			display.setColor(Color::darkgray);
 			display.drawRect(x - display.fontSize*2, y - display.fontSize*2, w + display.fontSize*4, h + display.fontSize*3);
 			if (display.fontSize > 1) {
 				display.drawRect(x - display.fontSize*2 + 1, y - display.fontSize*2 + 1, w + display.fontSize*4 - 2, h + display.fontSize*3 - 2);
