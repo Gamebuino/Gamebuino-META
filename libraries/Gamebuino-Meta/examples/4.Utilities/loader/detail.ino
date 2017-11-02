@@ -148,7 +148,7 @@ void detailedView() {
 		
 		// flashing "A to start"
 		if ((gb.frameCount % 32) < 20) {
-			gb.display.setColor(GRAY);
+			gb.display.setColor(DARKGRAY);
 			gb.display.drawRect(msg_a_x - gb.display.fontSize*2, msg_a_y - gb.display.fontSize*2, msg_a_w + gb.display.fontSize*4, msg_a_h + gb.display.fontSize*3);
 			if (gb.display.fontSize > 1) {
 				gb.display.drawRect(msg_a_x - gb.display.fontSize*2 + 1, msg_a_y - gb.display.fontSize*2 + 1, msg_a_w + gb.display.fontSize*4 - 2, msg_a_h + gb.display.fontSize*3 - 2);
