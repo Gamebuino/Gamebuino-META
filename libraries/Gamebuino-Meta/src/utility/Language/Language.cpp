@@ -1,8 +1,5 @@
 #include "Language.h"
 
-#include "../../Gamebuino-Meta.h"
-extern Gamebuino gb;
-
 namespace Gamebuino_Meta {
 
 LangCode Language::currentLang = LangCode::en;
