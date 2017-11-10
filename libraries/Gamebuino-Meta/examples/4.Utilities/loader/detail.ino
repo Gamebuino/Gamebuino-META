@@ -61,7 +61,7 @@ void loadDetailedView() {
 	if (titleScreenImageExists) {
 		gb.display.setColor(WHITE, BLACK);
 		gb.display.setCursor(0, 0);
-		gb.language.println(lang_loading);
+		gb.display.println(lang_loading);
 		gb.updateDisplay();
 		gb.display.init(nameBuffer);
 		if ((gb.display.width() == 80 && gb.display.height() == 64) || (gb.display.width() == 160 && gb.display.height() == 128)) {
@@ -92,7 +92,7 @@ void loadGame() {
 		gb.display.clear();
 		gb.display.setColor(WHITE, BLACK);
 		gb.display.setCursor(0, 24);
-		gb.language.println(lang_loading);
+		gb.display.println(lang_loading);
 		gb.display.print(nameBuffer);
 	}
 	gb.updateDisplay();
