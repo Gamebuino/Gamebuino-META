@@ -1,7 +1,7 @@
 #include <Gamebuino-Meta.h>
 #include "language.h"
 
-const char LOADER_VERSION[] = "dev";
+const char LOADER_VERSION[] = "0.0.1";
 
 #define RAM_FLAG_ADDRESS (0x20007FFCul)
 #define RAM_FLAG_VALUE (*((volatile uint32_t *)RAM_FLAG_ADDRESS))
@@ -322,7 +322,7 @@ void setup() {
 					gb.display.println("Unknown");
 			}
 			gb.display.print("\n");
-			gb.language.print(lang_press_a_continue);
+			gb.display.print(lang_press_a_continue);
 			while (1) {
 				if (!gb.update()) {
 					continue;
@@ -338,7 +338,7 @@ void setup() {
 	gb.display.clear();
 	gb.display.drawBitmap(0, 2, GAMEBUINO_LOGO);
 	gb.display.setCursor(0, 18);
-	gb.language.println(lang_loading);
+	gb.display.println(lang_loading);
 	gb.updateDisplay();
 	initFolders();
 	createCache();

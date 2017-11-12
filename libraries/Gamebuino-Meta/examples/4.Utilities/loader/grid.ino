@@ -127,7 +127,7 @@ void gridView() {
 			gb.display.drawBitmap(0, 2, GAMEBUINO_LOGO);
 			gb.display.setColor(RED);
 			gb.display.setCursor(0, 18);
-			gb.language.println(lang_no_games);
+			gb.display.println(lang_no_games);
 			continue;
 		}
 		
@@ -300,7 +300,7 @@ void gridView() {
 			gridIndex = 0;
 			
 			gb.display.clear();
-			gb.language.println(lang_loading);
+			gb.display.println(lang_loading);
 			gb.updateDisplay();
 			loadGridView();
 			cursorX = currentGame%2 ? 1 : 0;
