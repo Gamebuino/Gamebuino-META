@@ -61,7 +61,7 @@ const uint8_t gamebuinoLogo[] = {80,10,
 	0b00111111,0b00110011,0b00110011,0b00110011,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00000000,
 };
 
-const uint16_t startSound[] = {0x0005,0x638,0x2FC,0x354,0x35C,0x2FC,0x668,0x0000};
+const uint16_t startSound[] = {0x0005,0x338,0x3FC,0x254,0x1FC,0x25C,0x3FC,0x368,0x0000};
 
 void Gamebuino::begin() {
 	// first we disable the watchdog timer so that we tell the bootloader everything is fine!
