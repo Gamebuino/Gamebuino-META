@@ -45,7 +45,13 @@ void Sound_Handler_Pattern::update() {
 	}
 	data >>= 2;
 	
-	channel->total = _halfPeriods[data & 0x003F] * 2;
+	uint8_t id = data & 0x003F;
+	if (id == 63) {
+		channel->amplitude = 0;
+	} else {
+		channel->total = _halfPeriods[id] * 2;
+		channel->amplitude = 0x30;
+	}
 	channel->index = 0;
 	data >>= 6;
 	note_duration = data;
