@@ -20,14 +20,14 @@
 #include "Gamebuino-Meta.h"
 #include "utility/Graphics-SD.h"
 #include "utility/Misc.h"
-#include "utility/Language/SystemLanguage.h"
+#include "utility/Language/SystemLanguage.h"	
 SdFat SD;
 
 // a 3x5 font table
 extern const uint8_t font3x5[];
 
 namespace Gamebuino_Meta {
-
+	
 // we have more blocks for, in case we add things in the future, old games are less likely to erase our new blocks
 const uint8_t SETTINGSCONF_NUM_BLOCKS = 32;
 const SaveDefault settingsDefaults [] = {
@@ -44,6 +44,24 @@ const SaveDefault settingsDefaults [] = {
 const uint8_t neoPixelsIntensities[] = {
 	0, 16, 64, 143, 255
 };
+
+const uint16_t startLightsData[] = {2,4,0xc000,0x4000,0x4000,0x1000,0x1000,0x0,0x0,0x0,0x3800,0xa001,0x1000,0x3800,0x0,0x1000,0x0,0x0,0x1000,0x3001,0x0,0x9006,0x0,0x3003,0x0,0x1001,0x0,0x1001,0x0,0x3806,0x0,0xa815,0x1002,0x4008,0x0,0x1003,0x0,0x1003,0x1804,0x5810,0x5814,0xa03f,0x0,0x0,0x1809,0x0,0x501f,0x180d,0x70ff,0x403f,0x1818,0x0,0x305f,0x0,0x69ff,0x0,0x289f,0x101f,0x28bf,0x83f,0x7b5f,0x0,0x20ff,0x0,0x85f,0x0,0x94bf,0x295f,0x299f,0x87f,0x7f,0x0,0x0,0x0,0x221f,0xadff,0xdf,0x1a5f,0x0,0xfe,0x0,0x0,0x153,0xb7f,0x0,0xcf5f,0x0,0x49f,0x0,0x18b,0x0,0x1a9,0x0,0x63d,0x0,0xdfff,0x1c7,0x659,0x0,0x1c6,0x0,0x1c5,0x1c5,0x632,0x62f,0xa7fd,0x0,0x0,0x1a3,0x0,0x5e8,0x1a2,0x6ff7,0x5c6,0x1a1,0x0,0x5c3,0x0,0x4fef,0x0,0x5a1,0x180,0x580,0x180,0x2fe8,0x0,0x540,0x0,0x160,0x0,0x1fe3,0x4e0,0x4a0,0x140,0x120,0x0,0x0,0x0,0x2e0,0xfa0,0xa0,0x260,0x0,0xa0,0x0,0x0,0x60,0x960,0x0,0x1b60,0x0,0x900,0x0,0x40,0x0,0x40,0x0,0x8a0,0x0,0x2160,0x20,0x880,0x0,0x20,0x0,0x20,0x20,0x840,0x840,0x18c0,0x0,0x0,0x20,0x0,0x840,0x20,0x2060,0x1020,0x0,0x0,0x1020,0x0,0x3840,0x0,0x1820,0x800,0x2000,0x800,0x6820,0x0,0x2800,0x0,0x1000,0x0};
+Image startLights = Image(startLightsData, ColorMode::rgb565,24);
+
+const uint8_t gamebuinoLogo[] = {80,10,
+	0b00111100,0b00111111,0b00111111,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00111111,0b00011100,
+	0b00111100,0b00111111,0b00111111,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00111111,0b00100110,
+	0b00110000,0b00110011,0b00110011,0b00110011,0b00000011,0b00110011,0b00110011,0b00110011,0b00110011,0b00100110,
+	0b00110000,0b00110011,0b00110011,0b00110011,0b00000011,0b00110011,0b00110011,0b00110011,0b00110011,0b00101010,
+	0b00110011,0b00111111,0b00110011,0b00110011,0b11110011,0b11000011,0b00110011,0b00110011,0b00110011,0b00011100,
+	0b00110011,0b00111111,0b00110011,0b00110011,0b11110011,0b11000011,0b00110011,0b00110011,0b00110011,0b00000000,
+	0b00110011,0b00110011,0b00110011,0b00110011,0b00000011,0b00110011,0b00110011,0b00110011,0b00110011,0b00000000,
+	0b00110011,0b00110011,0b00110011,0b00110011,0b00000011,0b00110011,0b00110011,0b00110011,0b00110011,0b00000000,
+	0b00111111,0b00110011,0b00110011,0b00110011,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00000000,
+	0b00111111,0b00110011,0b00110011,0b00110011,0b11110011,0b11110011,0b11110011,0b00110011,0b00111111,0b00000000,
+};
+
+const uint16_t startSound[] = {0x0005,0x638,0x2FC,0x354,0x35C,0x2FC,0x668,0x0000};
 
 void Gamebuino::begin() {
 	// first we disable the watchdog timer so that we tell the bootloader everything is fine!
@@ -75,12 +93,15 @@ void Gamebuino::begin() {
 	buttons.update();
 	
 	//tft
-	
 	tft.initR(INITR_BLACKTAB);
 	tft.setRotation(3);
+	
+	
 	display.fill(Color::black);
 	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
+	gb.display.drawBitmap(0,0,gamebuinoLogo);
 	display.setColor(Color::brown, Color::black);
+	display.setCursor(0,display.height()-gb.display.getFontHeight());
 	display.print("SD INIT... ");
 	updateDisplay();
 	
@@ -126,10 +147,27 @@ void Gamebuino::begin() {
 #if AUTOSHOW_TITLESCREEN
 	// only do titleScreen after a hard power on
 	if (PM->RCAUSE.bit.POR) {
+		startScreen();
 		titleScreen();
 	}
 #endif
 	display.clear();
+}
+
+void Gamebuino::startScreen(){
+	int8_t i = 24;
+	update();
+	gb.sound.play(startSound);
+	while(i){
+		if(update()){
+			i--;
+			gb.display.clear();
+			gb.display.drawBitmap(0,min(0,i-10),gamebuinoLogo);
+			lights.drawImage(0,0,startLights);
+		}
+	}
+	lights.clear();
+	update();
 }
 
 void Gamebuino::titleScreen() {

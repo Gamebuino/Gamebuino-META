@@ -83,6 +83,7 @@ public:
 	Bootloader bootloader;
 
 	void begin();
+	void startScreen();
 	void titleScreen();
 	bool update();
 	void updateDisplay();
