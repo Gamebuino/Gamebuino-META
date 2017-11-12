@@ -59,6 +59,8 @@ const Button BUTTON_RIGHT = Button::right;
 const Button BUTTON_UP = Button::up;
 const Button BUTTON_A = Button::a;
 const Button BUTTON_B = Button::b;
+const Button BUTTON_MENU = Button::c;
+const Button BUTTON_HOME = Button::d;
 const Button BUTTON_C = Button::c;
 const Button BUTTON_D = Button::d;
 
