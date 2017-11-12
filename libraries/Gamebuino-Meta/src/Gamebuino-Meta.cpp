@@ -531,9 +531,9 @@ void Gamebuino::homeMenu(){
 	const int numItems = 5;
 	unsigned long lastMillis = 0;
 	//3 text lines vertical coordinates
-	const int yOffset1 = 34;
-	const int yOffset2 = 34+16;
-	const int yOffset3 = 34+16+16;
+	const int yOffset1 = 42;
+	const int yOffset2 = 42+16;
+	const int yOffset3 = 42+16+16;
 	//main text offset
 	const int xOffset = 40;
 	boolean changed = true;
@@ -554,17 +554,23 @@ void Gamebuino::homeMenu(){
 	uint8_t neoPixelsIntensity = 0;
 	for (;(neoPixelsIntensity < 5) && (neoPixels.getBrightness() > neoPixelsIntensities[neoPixelsIntensity]);neoPixelsIntensity++);
 	
+	
 	//static screen content
+	//logo
+	tft.setColor(BLACK);
+	tft.fillRect(0,0,160,12);
+	tft.setColor(WHITE);
+	tft.drawBitmap(40,0,gamebuinoLogo);
 	//text settings
 	display.setFont(font3x5);
 	tft.fontSize = 2;
 	tft.textWrap = false;
 	//horizontal stripes
 	tft.setColor(DARKGRAY);
-	for (int i = 0; i < tft.height(); i+=4){
+	for (int i = 12; i < tft.height(); i+=4){
 		tft.fillRect(0, i, tft.width(), 2);
 	}
-	//text background first to feel snappy because it's where user focus is
+	
 	tft.setColor(DARKGRAY);
 	//first row
 	tft.fillRect(xOffset-8, yOffset1 - 2, tft.width() - 2*(xOffset-8), 14);
@@ -575,19 +581,6 @@ void Gamebuino::homeMenu(){
 	//last row
 	tft.setColor(DARKGRAY);
 	tft.fillRect(xOffset-8, yOffset3 - 2, tft.width() - 2*(xOffset-8), 14);
-	//bottom button indicator
-	tft.cursorY = tft.height() - 10;
-	tft.cursorX = 0;
-	tft.setColor(GREEN, DARKGRAY);
-	tft.print(" A");
-	tft.setColor(BROWN, DARKGRAY);
-	tft.print(":");
-	tft.print(language._get(lang_homeMenu_SELECT));
-	tft.setColor(RED, DARKGRAY);
-	tft.print("B");
-	tft.setColor(BROWN, DARKGRAY);
-	tft.print(":");
-	tft.print(language._get(lang_homeMenu_RESUME));
 		
 	while(1){
 		//Ensure constant framerate using millis (40ms = 25FPS)

@@ -4,13 +4,12 @@ namespace Gamebuino_Meta {
 
 #define NUMBER_SYSTEM_LANGUAGES 3
 
-
 //////////
 // Home Menu
 //////////
 
 const MultiLang lang_homeMenu_exit[] = {
-	{LangCode::en, "EXIT      "},
+	{LangCode::en, "EXIT GAME "},
 	{LangCode::de, "VERLASSEN "},
 	{LangCode::fr, "QUITTER   "},
 };
