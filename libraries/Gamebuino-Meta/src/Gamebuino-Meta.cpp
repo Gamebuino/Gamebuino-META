@@ -151,6 +151,7 @@ void Gamebuino::begin() {
 		titleScreen();
 	}
 #endif
+	pickRandomSeed();
 	display.clear();
 }
 
@@ -341,7 +342,7 @@ void Gamebuino::setFrameRate(uint8_t fps) {
 }
 
 void Gamebuino::pickRandomSeed(){
-	//randomSeed(~micros() * ~micros() + backlight.ambientLight + micros());
+	randomSeed(micros() * micros() ^ analogRead(1)*analogRead(2)); // can't use analogRad(0) as we have a speaker attached there
 }
 
 uint8_t Gamebuino::getCpuLoad(){
