@@ -300,11 +300,6 @@ bool Gamebuino::update() {
 	
 	sound.update(); // update sound stuff once per frame
 	
-	//show a red contour when screen is recording
-	if (recording_screen) {
-		display.setColor(Color::red, Color::black);
-		display.drawRect(0, 0, display._width, display._height);
-	}
 	
 	//send buffer to the screen
 	updateDisplay();
@@ -323,6 +318,14 @@ bool Gamebuino::update() {
 			RGB888 c = rgb565Torgb888(lights.getPixel(x, y));
 			// intensity is scaled directly via neoPixels.setBrightness
 			neoPixels.setPixelColor(px_map[y*px_width + x], c.r, c.g, c.b);
+		}
+	}
+	//show a red blinking pixel on recording screen
+	if (recording_screen) {
+		if ((frameCount % 10) < 5) {
+			neoPixels.setPixelColor(px_map[0], 0xFF, 0, 0);
+		} else {
+			neoPixels.setPixelColor(px_map[0], 0, 0, 0);
 		}
 	}
 	neoPixels.show();
