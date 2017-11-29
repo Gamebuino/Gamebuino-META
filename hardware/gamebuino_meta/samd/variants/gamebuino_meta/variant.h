@@ -78,11 +78,12 @@ extern "C"
 
 // LEDs
 #define PIN_LED_13           (13u)
-#define PIN_LED_RXL          (25u)
-#define PIN_LED_TXL          (26u)
+// we don't have RX / TX LEDs
+//#define PIN_LED_RXL          (25u)
+//#define PIN_LED_TXL          (26u)
 #define PIN_LED              PIN_LED_13
-#define PIN_LED2             PIN_LED_RXL
-#define PIN_LED3             PIN_LED_TXL
+//#define PIN_LED2             PIN_LED_RXL
+//#define PIN_LED3             PIN_LED_TXL
 #define LED_BUILTIN          PIN_LED_13
 
 /*
@@ -220,4 +221,3 @@ extern Uart Serial1;
 #define SERIAL_PORT_HARDWARE_OPEN   Serial1
 
 #endif /* _VARIANT_ARDUINO_ZERO_ */
-

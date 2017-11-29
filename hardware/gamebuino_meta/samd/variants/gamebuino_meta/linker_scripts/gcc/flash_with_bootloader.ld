@@ -69,7 +69,7 @@ SECTIONS
 
 		KEEP(*(.sketch_boot))
 
-		. = ALIGN(0x2000);
+		. = ALIGN(0x4000);
 		KEEP(*(.isr_vector))
 		*(.text*)
 

@@ -12,7 +12,17 @@ Please note that functions are actually pointers to functions, so at that locati
 |8     |0x3FF8 | function `sd_load_game`      | `const char* filename` |Loads a .bin file from the SD card
 |12    |0x3FF4 | function `sd_load_loader`    | _none_                 |Loads loader.bin from the SD card
 |16    |0x3FF0 | function `board_init_full`   | _none_                 |Initializes the board, screen and SPI and sets input/output for the SPI peripherals screen, keys and sd-card
-|20    |0x3FEC | function `enter_bootloader`  | _none_                     |Enters bootloader mode
+|20    |0x3FEC | function `enter_bootloader`  | _none_                 |Enters bootloader mode
+|24    |0x3FE8 | function `trigger_error`     | `uint16_t error`       |Triggers an error (loading loader.bin with an error code)
+
+### Error Codes
+|Code|Define               |Purpose
+|----|---------------------|---
+|0   |ERROR_NONE           |No error
+|1   |ERROR_NMI            |NMI error
+|2   |ERROR_HARD_FAULT     |Hard Fault
+|3   |ERROR_WDT            |Watchdog Timer Reset
+|4   |ERROR_INVALID_PROGRAM|Invalid program
 
 ## Boot process
 * if reset was WDT try to flash loader

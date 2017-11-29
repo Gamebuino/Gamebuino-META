@@ -392,4 +392,3 @@ private:
 
 	volatile bool notify;
 };
-
