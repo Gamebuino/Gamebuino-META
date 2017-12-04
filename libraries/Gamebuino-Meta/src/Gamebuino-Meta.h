@@ -44,8 +44,13 @@ extern SdFat SD;
 #include "utility/Language.h"
 
 // make sure that sketches don't screw things up, the SAMD architecture has only one addressable space, thus making the PROGMEM concept unneded
+#ifndef F
 #define F(x) x
+#endif
+
+#ifndef PROGMEM
 #define PROGMEM  
+#endif
 
 #ifdef GAMEBUINO_COMPAT_MODE
 // we need the display definition from the compat lib....
