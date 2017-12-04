@@ -430,41 +430,6 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 	}
 }
 
-void Gamebuino::checkHomeMenu() {
-	//get back to game list when "HOME is held
-	if (buttons.held(Button::d, 25)){
-		changeGame();
-	}
-	if (framesDisplayRecording != -1) {
-		framesDisplayRecording--;
-	}
-	if (buttons.released(Button::d) || (framesDisplayRecording == 0 && recording_screen)) {
-		if (recording_screen) {
-			// stop the recording
-			sound.startEfxOnly();
-			bool isMute = sound.isMute();
-			sound.mute();
-			display.setFont(font3x5);
-			neoPixels.clear();
-			neoPixels.show();
-			display.stopRecording(true);
-			recording_screen = false;
-			//refresh screen to erase log messages
-			updateDisplay();
-			if (!isMute) {
-				sound.unmute();
-			}
-			sound.stopEfxOnly();
-		}
-		homeMenu();
-	}
-}
-
-void Hook_ExitHomeMenu() __attribute__((weak));
-void Hook_ExitHomeMenu() {
-	
-}
-
 #define HOME_MENU_SAVE_STATE \
 	int16_t hm_save_cursorX = display.cursorX; \
 	int16_t hm_save_cursorY = display.cursorY; \
@@ -486,6 +451,43 @@ void Hook_ExitHomeMenu() {
 	display.font = hm_save_font; \
 	display.fontWidth = hm_save_fontWidth; \
 	display.fontHeight = hm_save_fontHeight;
+
+void Gamebuino::checkHomeMenu() {
+	//get back to game list when "HOME is held
+	if (buttons.held(Button::d, 25)){
+		changeGame();
+	}
+	if (framesDisplayRecording != -1) {
+		framesDisplayRecording--;
+	}
+	if (buttons.released(Button::d) || (framesDisplayRecording == 0 && recording_screen)) {
+		if (recording_screen) {
+			// stop the recording
+			HOME_MENU_SAVE_STATE;
+			sound.startEfxOnly();
+			bool isMute = sound.isMute();
+			sound.mute();
+			display.setFont(font3x5);
+			neoPixels.clear();
+			neoPixels.show();
+			display.stopRecording(true);
+			recording_screen = false;
+			//refresh screen to erase log messages
+			updateDisplay();
+			if (!isMute) {
+				sound.unmute();
+			}
+			sound.stopEfxOnly();
+			HOME_MENU_RESTORE_STATE;
+		}
+		homeMenu();
+	}
+}
+
+void Hook_ExitHomeMenu() __attribute__((weak));
+void Hook_ExitHomeMenu() {
+	
+}
 
 bool homeMenuGetUniquePath(char* name, uint8_t offset, uint8_t len) {
 	if(!SD.exists("REC")) {
