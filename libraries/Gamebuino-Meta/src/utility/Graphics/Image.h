@@ -26,6 +26,7 @@ protected:
 class Frame_Handler_Mem : public Frame_Handler {
 public:
 	Frame_Handler_Mem(Image* _img);
+	virtual ~Frame_Handler_Mem();
 	void next();
 	void set(uint16_t frame);
 };
@@ -33,6 +34,7 @@ public:
 class Frame_Handler_RAM : public Frame_Handler_Mem {
 public:
 	Frame_Handler_RAM(Image* _img);
+	~Frame_Handler_RAM();
 	uint32_t getBufferSizeWithFrames();
 };
 

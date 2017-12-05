@@ -40,7 +40,7 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress ) {
 	psr = pulFaultStackAddress[ 7 ];
 
 	/* When the following line is hit, the variables contain the register values. */
-	gb.tft.setCursors(0, 0);
+	gb.tft.setCursor(0, 0);
 	gb.tft.setColor(Color::white, Color::black);
 	gb.tft.println("Hard Fault");
 	gb.tft.print("r0: 0x");

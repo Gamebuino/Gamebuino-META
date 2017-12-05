@@ -53,6 +53,13 @@ Frame_Handler_Mem::Frame_Handler_Mem(Image* _img) : Frame_Handler(_img) {
 	
 }
 
+Frame_Handler_Mem::~Frame_Handler_Mem() {
+	if (buf) {
+		img->_buffer = buf;
+		img->bufferSize = 0;
+	}
+}
+
 void Frame_Handler_Mem::set(uint16_t frame) {
 	uint32_t buf_size = img->getBufferSize();
 	img->_buffer = (uint16_t*)((uint32_t)buf + (buf_size * frame));
@@ -64,6 +71,13 @@ void Frame_Handler_Mem::next() {
 
 Frame_Handler_RAM::Frame_Handler_RAM(Image* _img) : Frame_Handler_Mem(_img) {
 	allocateBuffer();
+}
+
+Frame_Handler_RAM::~Frame_Handler_RAM() {
+	if (buf) {
+		img->_buffer = buf;
+		img->bufferSize = bufferSize;
+	}
 }
 
 uint32_t Frame_Handler_RAM::getBufferSizeWithFrames() {
@@ -192,8 +206,7 @@ void Image::init(const uint8_t* buffer, ColorMode col, uint16_t _frames, uint8_t
 	if (frame_handler) {
 		delete frame_handler;
 	}
-	bufferSize = 0;
-	if (_buffer && (uint32_t)_buffer >= 0x20000000) {
+	if (bufferSize && _buffer && (uint32_t)_buffer >= 0x20000000) {
 		free(_buffer);
 	}
 	useTransparentIndex = false;
