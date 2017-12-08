@@ -113,7 +113,7 @@ void createCache() {
 		cache.read(&games, 4);
 		cache.close();
 		if (games == totalGames && num == MAX_FOLDER_NAME_LENGTH) {
-			uint8_t numBlocks = totalGames / BLOCK_LENGTH;
+			uint8_t numBlocks = (totalGames + BLOCK_LENGTH - 1) / BLOCK_LENGTH;
 			bool invalid = false;
 			for (uint8_t b = 0; b < numBlocks; b++) {
 				loadGameFolderBlock(0, b);
