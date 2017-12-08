@@ -122,4 +122,29 @@ void Bootloader::error(uint16_t e) {
 	}
 }
 
+void Bootloader::lock() {
+	if (version() >= 0x010200) {
+		((void(*)(void))(*((uint32_t*)0x3FE4)))();
+	}
+}
+
+void Bootloader::unlock() {
+	if (version() >= 0x010200) {
+		((void(*)(void))(*((uint32_t*)0x3FE0)))();
+	}
+}
+
+void Bootloader::flash_delete(uint32_t addr) {
+	if (version() >= 0x010200) {
+		((void(*)(uint32_t))(*((uint32_t*)0x3FDC)))(addr);
+	}
+}
+
+void Bootloader::flash_write(uint32_t size, uint32_t *src_addr, uint32_t *dst_addr) {
+	if (version() >= 0x010200) {
+		((void(*)(uint32_t, uint32_t*, uint32_t*))(*((uint32_t*)0x3FD8)))(size, src_addr, dst_addr);
+	}
+}
+
+
 }; //namespace Gamebuino_Meta

@@ -14,6 +14,10 @@ Please note that functions are actually pointers to functions, so at that locati
 |16    |0x3FF0 | function `board_init_full`   | _none_                 |Initializes the board, screen and SPI and sets input/output for the SPI peripherals screen, keys and sd-card
 |20    |0x3FEC | function `enter_bootloader`  | _none_                 |Enters bootloader mode
 |24    |0x3FE8 | function `trigger_error`     | `uint16_t error`       |Triggers an error (loading loader.bin with an error code)
+|28    |0x3FE4 | function `lock`              | _none_                 |Locks the flash of the bootloader
+|32    |0x3FE0 | function `unlock`            | _none_                 |Unlocks the flash of the bootloader
+|36    |0x3FDC | function `flash_delete`      | `uint32_t addr`        |Deletes the flash page at the address
+|40    |0x3FD8 | function `flash_write`       | `uint32_t size`, `uint32_t *src_addr`, `uint32_t *dst_addr` |Writes to flash `size` bytes from `src_addr` to `dst_addr`
 
 ### Error Codes
 |Code|Define               |Purpose

@@ -93,4 +93,3 @@ StartType=3
 ErrorControl=1
 ServiceBinary=%12%\usbser.sys
 LoadOrderGroup=Base
-

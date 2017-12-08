@@ -18,7 +18,7 @@ const MultiLang langEntries[numLangEntries] = {
 void settingsView() {
 	uint16_t bootloader_major = gb.bootloader.version() >> 16;
 	uint8_t bootloader_minor = gb.bootloader.version() >> 8;
-	uint8_t bootloader_patch = gb.bootloader.version() >> 8;
+	uint8_t bootloader_patch = gb.bootloader.version();
 	char defaultName[13];
 	gb.getDefaultName(defaultName);
 	uint8_t cursor = 0;
