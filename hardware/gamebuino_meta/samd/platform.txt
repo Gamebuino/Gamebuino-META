@@ -19,6 +19,9 @@
 # For more info:
 # https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5---3rd-party-Hardware-specification
 
+# Modified for usage with the Gamebuino-Meta
+# Copyright (c) Aadalie 2017
+
 name=Gamebuino Meta Boards
 version=1.6.12
 

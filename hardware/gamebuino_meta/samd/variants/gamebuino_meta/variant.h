@@ -16,6 +16,12 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/*
+Modified for usage for the Gamebuino-Meta
+Copyright (c) Aadalie 2017
+*/
+
+
 #ifndef _VARIANT_ARDUINO_ZERO_
 #define _VARIANT_ARDUINO_ZERO_
 
