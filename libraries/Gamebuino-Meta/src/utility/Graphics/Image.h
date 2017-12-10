@@ -113,6 +113,10 @@ public:
 	
 	void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap);
 	void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip);
+	
+	void drawImage(int16_t x, int16_t y, Image& img);
+	void drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);
+	
 	//`frame_looping` holds every how many frames it should get updated
 	//`frame_loopcounter` is the counter for that.
 	//Typically `frame_looping` is 1 if you want to update every frame.

@@ -796,4 +796,63 @@ void Image::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 	Graphics::drawBitmap(x, y, bitmap, rotation, flip);
 }
 
+void Image::drawImage(int16_t x, int16_t y, Image& img) {
+	//draw INDEX => RGB, non-transparent
+	if ((img.colorMode == ColorMode::index) && (colorMode == ColorMode::rgb565) && !img.useTransparentIndex) {
+		img.nextFrame();
+		int16_t w1 = img._width; //width of the source image
+		int16_t h1 = img._height; //height of the source image
+		if ((x > _width) || ((x + w1) < 0) || (y > _height) || ((y + h1) < 0)) return;
+		//horizontal cropping
+		int16_t i2offset = 0;
+		int16_t w2cropped = w1;
+		if (x < 0) {
+			i2offset = -x;
+			w2cropped = w1 + x;
+			if (w2cropped > _width) {
+				w2cropped = _width;
+			}
+		} else if ((x + w1) > _width) {
+			w2cropped = _width - x;
+		}
+
+		//vertical cropping
+		int16_t j2offset = 0;
+		int16_t h2cropped = h1;
+		if (y < 0) {
+			j2offset = -y;
+			h2cropped = h1 + y;
+			if (h2cropped > _height) {
+				h2cropped = _height;
+			}
+		} else if ((y + h1) > _height) {
+			h2cropped = _height - y;
+		}
+		
+		for (int j2 = 0; j2 < h2cropped; j2++) {
+			uint8_t *srcLine;
+			
+			// w1+1 for ceiling rather than flooring
+			srcLine = (uint8_t*)img._buffer + ((w1 + 1) / 2) * (j2 + j2offset) + (i2offset/2);
+			
+
+			indexTo565(
+				&_buffer[x + i2offset + (y + j2offset + j2)*_width],
+				srcLine, colorIndex, w2cropped, i2offset%2
+			);
+		}
+		
+		return;
+	}
+	Graphics::drawImage(x, y, img);
+}
+
+void Image::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2) {
+	if ((img._width == w2) && (img._height == h2)) {
+		drawImage(x, y, img);
+		return;
+	}
+	Graphics::drawImage(x, y, img, w2, h2);
+}
+
 } // namespace Gamebuino_Meta
