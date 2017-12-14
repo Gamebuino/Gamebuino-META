@@ -29,7 +29,6 @@ gamebuino_meta_native.pid.2=0x824d
 gamebuino_meta_native.vid.2.build.vid=0x2341
 gamebuino_meta_native.vid.2.build.pid=0x824d
 gamebuino_meta_native.vid.2.build.usb_product="Genuino Zero"
-gamebuino_meta_native.vid.2.bootloader.file=gamebuino_meta/samd21_sam_ba.bin
 
 gamebuino_meta_native.vid.3=0x2341
 gamebuino_meta_native.pid.3=0x024d
@@ -37,7 +36,6 @@ gamebuino_meta_native.pid.3=0x024d
 gamebuino_meta_native.vid.3.build.vid=0x2341
 gamebuino_meta_native.vid.3.build.pid=0x824d
 gamebuino_meta_native.vid.3.build.usb_product="Genuino Zero"
-gamebuino_meta_native.vid.3.bootloader.file=gamebuino_meta/samd21_sam_ba.bin
 
 gamebuino_meta_native.upload.tool=bossac
 gamebuino_meta_native.upload.protocol=sam-ba
@@ -58,8 +56,6 @@ gamebuino_meta_native.build.variant=gamebuino_meta
 gamebuino_meta_native.build.variant_system_lib=
 gamebuino_meta_native.build.vid=0x2341
 gamebuino_meta_native.build.pid=0x804d
-gamebuino_meta_native.bootloader.tool=openocd
-gamebuino_meta_native.bootloader.file=gamebuino_meta/samd21_sam_ba.bin
 
 
 # Gamebuino Meta (Prorgamming Port)
@@ -87,5 +83,3 @@ gamebuino_meta_edbg.build.variant=gamebuino_meta
 gamebuino_meta_edbg.build.variant_system_lib=
 gamebuino_meta_edbg.build.vid=0x2341
 gamebuino_meta_edbg.build.pid=0x804d
-gamebuino_meta_edbg.bootloader.tool=openocd
-gamebuino_meta_edbg.bootloader.file=gamebuino_meta/samd21_sam_ba.bin
