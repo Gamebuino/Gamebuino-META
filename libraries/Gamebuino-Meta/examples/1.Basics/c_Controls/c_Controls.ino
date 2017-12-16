@@ -12,8 +12,6 @@ int ball_size = 6; //the size of the ball in number of pixels
 void setup(){
   // initialize the Gamebuino object
   gb.begin();
-  // show the start menu
-  gb.titleScreen("Controls");
 }
 
 // the loop routine runs over and over again forever
@@ -47,9 +45,6 @@ void loop(){
     }
     if(gb.buttons.pressed(BUTTON_B)){
       gb.sound.playCancel();
-    }
-    if(gb.buttons.pressed(BUTTON_C)){
-      gb.titleScreen("Controls");
     }
     
     //check that the ball is not going out of the screen

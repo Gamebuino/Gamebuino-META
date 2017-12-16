@@ -5,8 +5,6 @@
 void setup(){
   // initialize the Gamebuino object
   gb.begin();
-  //display the main menu:
-  gb.titleScreen("My first game");
   //creates a popup that will last for 100 frames (4 seconds)
   gb.popup("Let's go!", 100);
 }
