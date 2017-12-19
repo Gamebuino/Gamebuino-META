@@ -293,32 +293,28 @@ Image::~Image() {
 }
 
 void Image::drawFastHLine(int16_t x, int16_t y, int16_t w) {
-	if (colorMode == ColorMode::rgb565)
-	{
+	// Don't draw if we are outside the screen
+	if (x + w <= 0 || x >= _width || y < 0 || y >= _height) return;
+	
+	if (colorMode == ColorMode::rgb565) {
 
-		// Don't draw if we are outside the screen
-		if (x + w <= 0 || x >= _width || y < 0 || y >= _height) return;
 		
 		// Clamp value so we don't go outside the buffer
-		int16_t new_x = max(x,0);
-		int bound = new_x + min(w - (new_x - x),_width-new_x);
+		uint16_t new_x = max(x,0);
+		uint32_t bound = new_x + min(w - (new_x - x),_width-new_x);
 
-		if (new_x%2 == 1)
-		{
+		if (new_x%2 == 1){
 			_buffer[y * _width + new_x] = (uint16_t)color.c;
 			new_x ++;
 		}
 		
 		_buffer[y * _width + bound-1] = (uint16_t)color.c;
-		for (int i = new_x>>1; i < (bound>>1); i++)
-		{
+		for (uint32_t i = new_x>>1; i < (bound>>1); i++){
 			((uint32_t*)_buffer)[(y * (_width>>1)) + i] = ((uint16_t)color.c << 16) | (uint16_t)color.c;
 		}
+		return;
 	}
-	else
-	{
-		drawLine(x, y, x+w-1, y);
-	}
+	drawLine(x, y, x+w-1, y);
 }
 
 uint16_t Image::getBufferSize() {
