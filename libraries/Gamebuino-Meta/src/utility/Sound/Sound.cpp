@@ -322,6 +322,7 @@ void Audio_Handler (void) {
 					output += (channels[i].buffer[channels[i].index++] - 0x80);
 				} else if (!channels[i].last) {
 					channels[i].index = 0;
+					output += (channels[i].buffer[channels[i].index++] - 0x80);
 				} else if (channels[i].loop) {
 					handlers[i]->rewind();
 				} else {
