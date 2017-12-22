@@ -102,9 +102,11 @@ void Gamebuino::begin() {
 	
 	display.fill(Color::black);
 	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
-	gb.display.drawBitmap(0,0,gamebuinoLogo);
+	
+	display.setColor(Color::white);
+	drawLogo(2, 0);
 	display.setColor(Color::brown, Color::black);
-	display.setCursor(0,display.height()-gb.display.getFontHeight());
+	display.setCursor(0,display.height() - (display.getFontHeight()*display.fontSize));
 	display.print("SD INIT... ");
 	updateDisplay();
 	
@@ -147,28 +149,37 @@ void Gamebuino::begin() {
 	neoPixels.setBrightness(neoPixelsIntensities[settings.get(SETTING_NEOPIXELS_INTENSITY)]);
 	
 	Graphics_SD::setTft(&tft);
-#if AUTOSHOW_TITLESCREEN
 	// only do titleScreen after a hard power on
 	if (PM->RCAUSE.bit.POR) {
 		startScreen();
+#if AUTOSHOW_TITLESCREEN
 		titleScreen();
-	}
 #endif
+	}
 	pickRandomSeed();
 	display.clear();
 }
 
+void Gamebuino::drawLogo(int8_t x, int8_t y) {
+	Image logo(78, 10, ColorMode::index);
+	logo.clear();
+	logo.drawBitmap(-2, 0, gamebuinoLogo);
+	display.drawImage(x*display.fontSize, y*display.fontSize, logo, 78*display.fontSize, 10*display.fontSize);
+}
+
 void Gamebuino::startScreen(){
-	Image startLights = Image(startLightsData, ColorMode::rgb565, 24);
+	Image startLights(startLightsData, 24);
 	int8_t i = 24;
 	update();
-	gb.sound.play(startSound);
+	sound.play(startSound);
+	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
 	while(i){
 		if(update()){
 			i--;
-			gb.display.clear();
-			gb.display.drawBitmap(0,min(0,i-10),gamebuinoLogo);
-			lights.drawImage(0,0,startLights);
+			display.clear();
+			Image logo(78, 10, ColorMode::index);
+			drawLogo(2, min(0, i-10));
+			lights.drawImage(0, 0, startLights);
 		}
 	}
 	lights.clear();
