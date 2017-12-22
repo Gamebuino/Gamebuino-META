@@ -64,6 +64,10 @@
 #define SOUND_CHANNELS 4
 #endif
 
+#ifndef SOUND_FREQ
+#define SOUND_FREQ 44100
+#endif
+
 ///////////////
 // image defines
 ///////////////

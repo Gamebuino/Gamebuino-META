@@ -128,7 +128,7 @@ void Sound_Handler::setChannel(Sound_Channel* _channel) {
 void Sound::begin() {
 #if SOUND_CHANNELS > 0
 	dacConfigure();
-	tcConfigure(44100);
+	tcConfigure(SOUND_FREQ);
 	tcStart();
 #endif
 }
