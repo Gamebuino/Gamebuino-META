@@ -109,6 +109,10 @@ bool Sound_Handler_Wav::init(const char* filename) {
 	channel->use = true;
 }
 
+uint32_t Sound_Handler_Wav::getPos() {
+	return file.position() - wav_offset - head_index;
+}
+
 void Sound_Handler_Wav::rewind() {
 	rewind_flag = true;
 }

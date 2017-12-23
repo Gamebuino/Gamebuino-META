@@ -121,6 +121,10 @@ Sound_Handler::~Sound_Handler() {
 	
 }
 
+uint32_t Sound_Handler::getPos() {
+	return 0xFFFFFFFF;
+}
+
 void Sound_Handler::setChannel(Sound_Channel* _channel) {
 	channel = _channel;
 }
@@ -294,6 +298,13 @@ void Sound::setVolume(uint8_t volume) {
 
 uint8_t Sound::getVolume() {
 	return globalVolume;
+}
+
+uint32_t Sound::getPos(int8_t i) {
+	if (!isPlaying(i) || !(handlers[i])) {
+		return 0xFFFFFFFF;
+	}
+	return handlers[i]->getPos();
 }
 
 #if SOUND_CHANNELS > 0

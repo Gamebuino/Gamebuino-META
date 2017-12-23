@@ -32,6 +32,7 @@ public:
 	Sound_Handler_Raw(Sound_Channel* chan, uint8_t* buffer, uint32_t lenght);
 	void update();
 	void rewind();
+	uint32_t getPos();
 private:
 	uint8_t* buffer;
 	uint32_t length;

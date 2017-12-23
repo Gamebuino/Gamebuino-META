@@ -50,4 +50,8 @@ void Sound_Handler_Raw::rewind() {
 	channel->use = true;
 }
 
+uint32_t Sound_Handler_Raw::getPos() {
+	return channel->index;
+}
+
 }; // namespace Gamebuino_Meta

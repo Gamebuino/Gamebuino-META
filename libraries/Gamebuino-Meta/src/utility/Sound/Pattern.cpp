@@ -107,6 +107,10 @@ void Sound_Handler_Pattern::rewind() {
 	patternCursor = 0;
 }
 
+uint32_t Sound_Handler_Pattern::getPos() {
+	return patternCursor;
+}
+
 void Sound_Handler_Pattern::update() {
 	if (note_duration--) {
 		return;

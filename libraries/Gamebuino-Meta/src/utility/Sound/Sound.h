@@ -52,6 +52,7 @@ public:
 	virtual ~Sound_Handler();
 	virtual void update() = 0;
 	virtual void rewind() = 0;
+	virtual uint32_t getPos();
 	void setChannel(Sound_Channel* chan);
 protected:
 	Sound_Channel* channel;
@@ -95,6 +96,8 @@ public:
 	
 	void setVolume(uint8_t volume);
 	uint8_t getVolume();
+	
+	uint32_t getPos(int8_t i);
 };
 
 } // namespace Gamebuino_Meta

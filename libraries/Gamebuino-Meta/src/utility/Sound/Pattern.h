@@ -32,6 +32,7 @@ public:
 	Sound_Handler_Pattern(Sound_Channel* chan, uint8_t* buffer);
 	void update();
 	void rewind();
+	uint32_t getPos();
 private:
 	uint8_t patternCursor;
 	uint8_t note_duration;

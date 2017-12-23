@@ -35,6 +35,7 @@ public:
 	bool init(const char* filename);
 	void update();
 	void rewind();
+	uint32_t getPos();
 private:
 	File file;
 	uint16_t head_index;
