@@ -29,24 +29,6 @@ namespace Gamebuino_Meta {
 
 #define MIN(x, y) ((x < y) ? x : y)
 
-
-SaveDefault::SaveDefault(uint16_t _i, uint8_t _type, int32_t _ival) {
-	i = _i;
-	type = _type;
-	if (type == SAVETYPE_INT) {
-		val.ival = _ival;
-	} else {
-		val.ptr = 0;
-		length = (uint8_t)_ival;
-	}
-}
-SaveDefault::SaveDefault(uint16_t _i, uint8_t _type, const void* _ptr, uint8_t _length) {
-	i = _i;
-	type = _type;
-	val.ptr = _ptr;
-	length = _length;
-}
-
 Save::Save(Display_ST7735 *_tft, const char* _savefile, const char* _checkbytes) {
 	tft = _tft;
 	savefile = _savefile;
@@ -234,7 +216,7 @@ int32_t Save::get(uint16_t i) {
 	return (int32_t)_get(i);
 }
 
-bool Save::get(uint16_t i, void* buf, uint8_t bufsize) {
+bool Save::get(uint16_t i, void* buf, uint32_t bufsize) {
 	openFile();
 	SaveVar s = getVarInfo(i);
 	if (!s.defined) {
@@ -245,7 +227,7 @@ bool Save::get(uint16_t i, void* buf, uint8_t bufsize) {
 				if (defaults[j].type != SAVETYPE_BLOB) {
 					error("trying to get from a non-blob type");
 				}
-				if (defaults[j].val.ptr) {
+				if (defaults[j].length && defaults[j].val.ptr) {
 					memcpy(buf, defaults[j].val.ptr, MIN(bufsize, defaults[j].length));
 				}
 				break;
@@ -260,12 +242,12 @@ bool Save::get(uint16_t i, void* buf, uint8_t bufsize) {
 	uint32_t b = _get(i);
 	
 	// determine how many bytes to set
-	uint8_t size = b >> 24;
+	uint32_t size;
+	f.seekSet(SAVEFILE_PAYLOAD_START + b);
+	f.read(&size, 4);
 	size = MIN(size, bufsize);
 	
-	// get the pointer and seek the file there
-	b &= 0x00FFFFFF;
-	f.seekSet(SAVEFILE_PAYLOAD_START + b);
+	// wwe already have the file pointer at the start
 	
 	// now finally perform the read
 	f.read(buf, size);
@@ -308,18 +290,20 @@ bool Save::set(uint16_t i, int32_t num) {
 	return true;
 }
 
-void Save::newBlob(uint16_t i, uint8_t size) {
+void Save::newBlob(uint16_t i, uint32_t size) {
 	// set the int-table pointer
-	_set(i, (((uint32_t)size) << 24) | payload_size);
+	_set(i, payload_size);
 	
-	// now fill the payload with zeros
 	f.seekSet(SAVEFILE_PAYLOAD_START + payload_size);
-	for(uint8_t j = 0; j < size; j++) {
+	// write the size
+	f.write(&size, 4);
+	// now fill the payload with zeros
+	for(uint32_t j = 0; j < size; j++) {
 		f.write((uint8_t)0);
 	}
 	
 	// aaand increase the payload size
-	payload_size += size;
+	payload_size += size + 4; // +4 because size is stored in payload
 	f.seekSet(6);
 	f.write(&payload_size, 4);
 }
@@ -332,11 +316,11 @@ bool Save::set(uint16_t i, const char* buf) {
 	return set(i, (void*)buf, strlen(buf) + 1);
 }
 
-bool Save::set(uint16_t i, const void* buf, uint8_t bufsize) {
+bool Save::set(uint16_t i, const void* buf, uint32_t bufsize) {
 	return set(i, (void*)buf, bufsize);
 }
 
-bool Save::set(uint16_t i, void* buf, uint8_t bufsize) {
+bool Save::set(uint16_t i, void* buf, uint32_t bufsize) {
 	openFile();
 	if (readOnly) {
 		return false;
@@ -346,14 +330,18 @@ bool Save::set(uint16_t i, void* buf, uint8_t bufsize) {
 		// trying to store an int in a non-int
 		error("trying set to a non-blob type");
 	}
-	uint8_t want_size = SAVECONF_DEFAULT_BLOBSIZE;
+	uint32_t want_size = SAVECONF_DEFAULT_BLOBSIZE;
 	for (uint16_t j = 0; j < num_defaults; j++) {
 		if (defaults[j].i == i) {
 			// we found our element!
 			if (defaults[j].type != SAVETYPE_BLOB) {
 				error("trying set to a non-blob type");
 			}
-			want_size = defaults[j].length;
+			if (defaults[j].length) {
+				want_size = defaults[j].length;
+			} else {
+				want_size = (uint32_t)defaults[j].val.ival;
+			}
 			break;
 		}
 	}
@@ -366,9 +354,12 @@ bool Save::set(uint16_t i, void* buf, uint8_t bufsize) {
 	}
 	
 	uint32_t b = _get(i);
+	f.seekSet(SAVEFILE_PAYLOAD_START + b);
+	
 	
 	// determine how many bytes to set
-	uint8_t size = b >> 24;
+	uint32_t size;
+	f.read(&size, 4);
 	if (size != want_size) {
 		// ok the size is different, so let's change this!
 		del(i);
@@ -376,9 +367,7 @@ bool Save::set(uint16_t i, void* buf, uint8_t bufsize) {
 	}
 	size = MIN(size, bufsize);
 	
-	// get the pointer and seek the file there
-	b &= 0x00FFFFFF;
-	f.seekSet(SAVEFILE_PAYLOAD_START + b);
+	// we already seeked correctly
 	
 	// now finally perform the write
 	f.write(buf, size);
@@ -411,22 +400,19 @@ void Save::del(uint16_t i) {
 	uint32_t b = _get(i);
 	
 	// determine the size of the payload
-	uint8_t size = b >> 24;
-	
-	// get the pointer and seek the file there
-	b &= 0x00FFFFFF;
+	f.seekSet(SAVEFILE_PAYLOAD_START + b);
+	uint32_t size;
+	f.read(&size, 4);
+	size += 4; // we need to also delete the size bytes
 	
 	// now we need to loop all blocks and shift those with a payload pointer that is greater down a bit
 	for (i = 0; i < blocks; i++) {
 		s = getVarInfo(i);
 		if (s.defined && s.type == SAVETYPE_BLOB) {
 			uint32_t c = _get(i);
-			uint8_t size_c = c >> 24;
-			c &= 0x00FFFFFF;
 			if (c > b) {
 				// we just adjust the pointer here, we do all the shifting later on
 				c -= size;
-				c |= (size_c << 24);
 				_set(i, c);
 			}
 		}

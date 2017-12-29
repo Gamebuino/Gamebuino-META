@@ -39,15 +39,15 @@ struct SaveVar {
 };
 
 struct SaveDefault {
-	SaveDefault(uint16_t _i, uint8_t _type, int32_t _ival);
-	SaveDefault(uint16_t i, uint8_t _type, const void* _ptr, uint8_t _length);
-	uint16_t i;
-	uint8_t type;
-	union {
-		int32_t ival;
+	const uint16_t i;
+	const uint8_t type;
+	const union {
+		const int32_t ival;
 		const void *ptr;
 	} val;
-	uint8_t length;
+	const uint32_t length;
+//	SaveDefault(const uint8_t i, const uint8_t type, const int32_t ival): i(i), type(type), val{.ival=ival}, length(0){};
+//	SaveDefault(const uint8_t i, const uint8_t type, const void* ptr, const uint8_t length): i(i), type(type), val{.ptr=ptr}, length(length){};
 };
 
 class Save {
@@ -66,15 +66,15 @@ public:
 	}
 	
 	int32_t get(uint16_t i);
-	bool get(uint16_t i, void* buf, uint8_t bufsize);
+	bool get(uint16_t i, void* buf, uint32_t bufsize);
 	template< typename T > bool get(uint16_t i, T& obj) {
 		return get(i, &obj, sizeof(T));
 	};
 	bool set(uint16_t i, int32_t num);
 	bool set(uint16_t i, char* buf);
 	bool set(uint16_t i, const char* buf);
-	bool set(uint16_t i, void* buf, uint8_t bufsize);
-	bool set(uint16_t i, const void* buf, uint8_t bufsize);
+	bool set(uint16_t i, void* buf, uint32_t bufsize);
+	bool set(uint16_t i, const void* buf, uint32_t bufsize);
 	template< typename T > bool set(uint16_t i, T& obj) {
 		if (std::is_arithmetic<T>::value) {
 			return set(i, (int32_t)obj);
@@ -95,7 +95,7 @@ private:
 	const SaveDefault* defaults;
 	void _set(uint16_t i, uint32_t b);
 	uint32_t _get(uint16_t i);
-	void newBlob(uint16_t i, uint8_t size);
+	void newBlob(uint16_t i, uint32_t size);
 	void openFile();
 	void error(const char *s);
 	SaveVar getVarInfo(uint16_t i);

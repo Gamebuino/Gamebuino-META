@@ -35,11 +35,10 @@ namespace Gamebuino_Meta {
 // we have more blocks for, in case we add things in the future, old games are less likely to erase our new blocks
 const uint8_t SETTINGSCONF_NUM_BLOCKS = 32;
 const SaveDefault settingsDefaults [] = {
-	SaveDefault(SETTING_VOLUME, SAVETYPE_INT, 6),
-	SaveDefault(SETTING_VOLUME_MUTE, SAVETYPE_INT, 0),
-	SaveDefault(SETTING_DEFAULTNAME, SAVETYPE_BLOB, "gamebuinian", 13),
-	SaveDefault(SETTING_LANGUAGE, SAVETYPE_INT, (int)LangCode::en),
-	SaveDefault(SETTING_NEOPIXELS_INTENSITY, SAVETYPE_INT, 4),
+	{ SETTING_VOLUME, SAVETYPE_INT, 6, 0 },
+	{ SETTING_VOLUME_MUTE, SAVETYPE_INT, 0, 0 },
+	{ SETTING_DEFAULTNAME, SAVETYPE_BLOB, {.ptr="gamebuinian"}, 13 },
+	{ SETTING_NEOPIXELS_INTENSITY, SAVETYPE_INT, 4, 0 },
 };
 // neoPixel intensity is quadratic
 // 0 is min, 255 is max
