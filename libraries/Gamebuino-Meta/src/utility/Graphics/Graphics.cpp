@@ -53,7 +53,7 @@ namespace Gamebuino_Meta {
 //uint16_t Graphics::transparentColor = 0xF81F; //magenta is the default transparent color
 uint16_t Graphics::tint = 0xFFFF;
 uint8_t Graphics::alpha = 255;
-Color _colorIndex[16] = {
+const Color _colorIndex[16] = {
 	Color::black,
 	Color::darkblue,
 	Color::purple,
@@ -71,7 +71,7 @@ Color _colorIndex[16] = {
 	Color::pink,
 	Color::beige,
 };
-Color* Graphics::colorIndex = _colorIndex;
+Color* Graphics::colorIndex = (Color*)_colorIndex;
 BlendMode Graphics::blendMode = BlendMode::blend;
 Graphics::ColorUnion Graphics::color = {(Color)0};
 Graphics::BgcolorUnion Graphics::bgcolor = {(Color)0};
