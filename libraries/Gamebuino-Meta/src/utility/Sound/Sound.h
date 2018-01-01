@@ -69,11 +69,11 @@ public:
 	int8_t play(uint8_t* buf, uint32_t len, bool loop = false);
 	template<uint32_t N>
 	int8_t play(const uint8_t (&buf)[N], bool loop = false) {
-		play(buf, N, loop);
+		return play(buf, N, loop);
 	};
 	template<uint32_t N>
 	int8_t play(uint8_t (&buf)[N], bool loop = false) {
-		play((const uint8_t*)buf, N, loop);
+		return play((const uint8_t*)buf, N, loop);
 	};
 	
 	int8_t play(Sound_Handler* handler, bool loop = false);
