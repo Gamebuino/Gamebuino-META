@@ -18,9 +18,9 @@ namespace Gamebuino_Meta {
 enum class Color : uint16_t {
 	white		= 0xFFFF,
 	gray		= 0xACD0,
-	darkgray	= 0x72C7,
+	darkgray	= 0x5268,
 	black		= 0x0000,
-	purple		= 0x8A39,
+	purple		= 0x9008,
 	pink		= 0xCA30,
 	red			= 0xD8E4,
 	orange		= 0xFD42,
