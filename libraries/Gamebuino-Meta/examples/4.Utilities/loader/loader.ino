@@ -53,9 +53,6 @@ const uint8_t GAMEBUINO_LOGO[] = {80,10,
 
 const char GAMEFOLDERS_CACHE_FILE[] = "GAMEFOLDERS.CACHE";
 
-
-const uint16_t startupSound[] = {0x0005,0x3089,0x208,0x238,0x7849,0x1468,0x0000};
-
 bool getBinPath(char* name) {
 	File dir_walk = SD.open(folderName);
 	File entry;
@@ -346,9 +343,6 @@ void setup() {
 	loadGameFolderBlock(1, 1);
 	blocksLoaded[0] = 0;
 	blocksLoaded[1] = 1;
-	
-	gb.sound.play(startupSound);
-	
 	
 	gridView();
 }
