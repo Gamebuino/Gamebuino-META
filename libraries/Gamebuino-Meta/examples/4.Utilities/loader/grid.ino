@@ -214,11 +214,9 @@ void gridView() {
 			if (cursorX == 1) {
 				cursorX = 0;
 				currentGame--;
-				gb.sound.playTick();
 			} else if (currentGame < totalGames - 1) {
 				cursorX = 1;
 				currentGame++;
-				gb.sound.playTick();
 			}
 		}
 		
@@ -256,7 +254,6 @@ void gridView() {
 				loadGridView();
 				cameraY = -16;
 			}
-			gb.sound.playTick();
 		}
 		
 		if (gb.buttons.repeat(BUTTON_DOWN, 4)) {
@@ -291,11 +288,9 @@ void gridView() {
 				loadGridView();
 				cameraY = CAMERA_INITIAL;
 			}
-			gb.sound.playTick();
 		}
 		
 		if (gb.buttons.pressed(BUTTON_A)) {
-			gb.sound.playOK();
 			detailedView();
 			gridIndex = 0;
 			
@@ -315,7 +310,6 @@ void gridView() {
 		}
 		
 		if (gb.buttons.pressed(BUTTON_C)) {
-			gb.sound.playOK();
 			settingsView();
 		}
 	}

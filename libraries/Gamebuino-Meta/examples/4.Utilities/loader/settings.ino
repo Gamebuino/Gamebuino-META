@@ -76,7 +76,6 @@ void settingsView() {
 			switch(cursor) {
 				case 0:
 					// change default name
-					gb.sound.playOK();
 					gb.keyboard(defaultName, 13);
 					gb.settings.set(SETTING_DEFAULTNAME, defaultName, 13);
 					break;
@@ -90,7 +89,6 @@ void settingsView() {
 					break;
 				case 3:
 					// back
-					gb.sound.playCancel();
 					return; // return
 			}
 		}
@@ -111,7 +109,6 @@ void settingsView() {
 				}
 				gb.settings.set(SETTING_LANGUAGE, (int32_t)langEntries[curLangIndex].code);
 				gb.language.setCurrentLang(langEntries[curLangIndex].code);
-				gb.sound.playTick();
 			}
 		}
 		if (gb.buttons.repeat(BUTTON_UP, 8)) {
@@ -120,17 +117,14 @@ void settingsView() {
 			} else {
 				cursor--;
 			}
-			gb.sound.playTick();
 		}
 		if (gb.buttons.repeat(BUTTON_DOWN, 8)) {
 			cursor++;
 			if (cursor >= settings_numCursorPositions) {
 				cursor = 0;
 			}
-			gb.sound.playTick();
 		}
 		if (gb.buttons.pressed(BUTTON_C)) {
-			gb.sound.playCancel();
 			return;
 		}
 	}

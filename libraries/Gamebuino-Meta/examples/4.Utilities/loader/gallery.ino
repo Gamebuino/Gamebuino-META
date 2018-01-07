@@ -33,14 +33,12 @@ void galleryView(int8_t direction) {
 			do {
 				index += direction;
 				if (index < 0 || index > max) {
-					gb.sound.playTick();
 					return;
 				}
 				memset(nameBuffer + offsetStart, '0', 5);
 				Gamebuino_Meta::intToStr(index, nameBuffer + offset);
 			} while(!SD.exists(nameBuffer));
 			gb.display.init(nameBuffer);
-			gb.sound.playTick();
 			loaded = true;
 		}
 		if (gb.buttons.repeat(BUTTON_DOWN, 4)) {
@@ -52,7 +50,6 @@ void galleryView(int8_t direction) {
 			loaded = false;
 		}
 		if (gb.buttons.pressed(BUTTON_B)) {
-			gb.sound.playTick();
 			return;
 		}
 	}

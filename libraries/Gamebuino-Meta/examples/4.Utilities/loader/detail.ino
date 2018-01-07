@@ -171,7 +171,6 @@ void detailedView() {
 				currentGame = totalGames - 1;
 			}
 			loadDetailedView();
-			gb.sound.playTick();
 		}
 		
 		if (gb.buttons.repeat(BUTTON_RIGHT, 4)) {
@@ -181,7 +180,6 @@ void detailedView() {
 				currentGame = 0;
 			}
 			loadDetailedView();
-			gb.sound.playTick();
 		}
 		
 		if (gb.buttons.pressed(BUTTON_A)) {
@@ -190,7 +188,6 @@ void detailedView() {
 		
 		if (gb.buttons.pressed(BUTTON_B)) {
 			gb.display.init(80, 64, ColorMode::rgb565);
-			gb.sound.playCancel();
 			return;
 		}
 		
@@ -208,11 +205,9 @@ void detailedView() {
 		
 		if (gb.buttons.pressed(BUTTON_C)) {
 			if (detailGameIsFav) {
-				gb.sound.playCancel();
 				unfavoriteGame();
 				gb.popup(gb.language.get(lang_fav_removed), 50);
 			} else {
-				gb.sound.playOK();
 				favoriteGame();
 				gb.popup(gb.language.get(lang_fav_added), 50);
 			}
