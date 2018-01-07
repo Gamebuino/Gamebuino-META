@@ -75,7 +75,7 @@ enum class BlendMode : uint8_t {
 };
 
 enum class ColorMode : uint8_t {
-	rgb565,
+	rgb565 = 0,
 	index,
 };
 

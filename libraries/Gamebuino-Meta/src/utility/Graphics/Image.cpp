@@ -167,19 +167,11 @@ void Image::init(uint16_t w, uint16_t h, ColorMode col, uint16_t _frames, uint8_
 }
 
 // flash constructors
-Image::Image(const uint16_t* buffer, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+Image::Image(const uint16_t* buffer) : Graphics(0, 0) {
 	freshStart();
-	init(buffer, frames, fl);
+	init(buffer);
 }
-void Image::init(const uint16_t* buffer, uint16_t frames, uint8_t fl) {
-	init(buffer, ColorMode::rgb565, frames, fl);
-}
-
-Image::Image(const uint16_t* buffer, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
-	freshStart();
-	init(buffer, col, frames, fl);
-}
-void Image::init(const uint16_t* buffer, ColorMode col, uint16_t _frames, uint8_t fl) {
+void Image::init(const uint16_t* buffer) {
 	if (isObjectCopy) {
 		return;
 	}
@@ -190,15 +182,24 @@ void Image::init(const uint16_t* buffer, ColorMode col, uint16_t _frames, uint8_
 	if (_buffer && (uint32_t)_buffer >= 0x20000000) {
 		free(_buffer);
 	}
-	transparentColor = 0xF81F;
-	frames = _frames;
-	colorMode = col;
 	uint16_t* buf = (uint16_t*)buffer;
 	_width = *(buf++);
 	_height = *(buf++);
+	frames = *(buf++);
+	frame_looping = *(buf++);
+	transparentColor = *(buf++);
+	colorMode = (ColorMode)(*(buf++));
+	if (colorMode == ColorMode::index) {
+		if (transparentColor > 0x0F) {
+			useTransparentIndex = false;
+		} else {
+			uint8_t c = transparentColor;
+			transparentColorIndex = c;
+			useTransparentIndex = true;
+		}
+	}
 	
 	_buffer = buf;
-	frame_looping = fl;
 	frame_handler = new Frame_Handler_Mem(this);
 	frame_loopcounter = 0;
 	last_frame = (gb.frameCount & 0xFF) - 1;
@@ -206,19 +207,11 @@ void Image::init(const uint16_t* buffer, ColorMode col, uint16_t _frames, uint8_
 }
 
 // flash indexed constructors
-Image::Image(const uint8_t* buffer, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
+Image::Image(const uint8_t* buffer) : Graphics(0, 0) {
 	freshStart();
-	init(buffer, frames, fl);
+	init(buffer);
 }
-void Image::init(const uint8_t* buffer, uint16_t frames, uint8_t fl) {
-	init(buffer, ColorMode::index, frames, fl);
-}
-
-Image::Image(const uint8_t* buffer, ColorMode col, uint16_t frames, uint8_t fl) : Graphics(0, 0) {
-	freshStart();
-	init(buffer, col, frames, fl);
-}
-void Image::init(const uint8_t* buffer, ColorMode col, uint16_t _frames, uint8_t fl) {
+void Image::init(const uint8_t* buffer) {
 	if (isObjectCopy) {
 		return;
 	}
@@ -228,14 +221,26 @@ void Image::init(const uint8_t* buffer, ColorMode col, uint16_t _frames, uint8_t
 	if (bufferSize && _buffer && (uint32_t)_buffer >= 0x20000000) {
 		free(_buffer);
 	}
-	useTransparentIndex = false;
-	frames = _frames;
-	colorMode = col;
+	
 	uint8_t* buf = (uint8_t*)buffer;
 	_width = *(buf++);
 	_height = *(buf++);
+	frames = *(buf++);
+	frames += (*(buf++)) << 8;
+	frame_looping = *(buf++);
+	transparentColor = *(buf++);
+	colorMode = (ColorMode)(*(buf++));
+	if (colorMode == ColorMode::index) {
+		if (transparentColor > 0x0F) {
+			useTransparentIndex = false;
+		} else {
+			uint8_t c = transparentColor;
+			transparentColorIndex = c;
+			useTransparentIndex = true;
+		}
+	}
+	
 	_buffer = (uint16_t*)buf;
-	frame_looping = fl;
 	frame_handler = new Frame_Handler_Mem(this);
 	frame_loopcounter = 0;
 	last_frame = (gb.frameCount & 0xFF) - 1;
