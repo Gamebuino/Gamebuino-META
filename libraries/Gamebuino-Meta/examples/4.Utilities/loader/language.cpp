@@ -72,13 +72,13 @@ const MultiLang lang_versions[] = {
 const MultiLang lang_loader[] = {
 	{LANG_EN, "Loader"},
 	{LANG_DE, "Loader"},
-	{LANG_FR, "Chargeur"},
+	{LANG_DE, "Loader"},
 };
 
 const MultiLang lang_bootloader[] = {
 	{LANG_EN, "Bootloader"},
 	{LANG_DE, "Bootloader"},
-	{LANG_FR, "Chargeur de démarrage"},
+	{LANG_DE, "Bootloader"},
 };
 
 const MultiLang lang_fav_added[] = {
@@ -91,10 +91,4 @@ const MultiLang lang_fav_removed[] = {
 	{LANG_EN, "Removed favorite"},
 	{LANG_DE, "Favorit entfernt"},
 	{LANG_FR, "Retiré des favoris"},
-};
-
-const MultiLang lang_a_start[] = {
-	{LANG_EN, "\x15 to start"},
-	{LANG_DE, "\x15 zum starten"},
-	{LANG_FR, "\x15 pour commencer"},
 };

@@ -18,6 +18,5 @@ extern const MultiLang lang_loader[];
 extern const MultiLang lang_bootloader[];
 extern const MultiLang lang_fav_added[];
 extern const MultiLang lang_fav_removed[];
-extern const MultiLang lang_a_start[];
 
 #endif // _LANGUAGE_H_

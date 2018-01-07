@@ -74,12 +74,6 @@ void loadDetailedView() {
 		gb.display.init(80, 64, ColorMode::rgb565);
 		gb.display.fontSize = 1;
 	}
-	
-	msg_a_start = gb.language.get(lang_a_start);
-	msg_a_w = gb.display.fontWidth*strlen(msg_a_start)*gb.display.fontSize;
-	msg_a_h = gb.display.fontHeight*gb.display.fontSize;
-	msg_a_x = (gb.display.width() - msg_a_w) / 2;
-	msg_a_y = (gb.display.height() / 5) * 3 + msg_a_h;
 }
 
 void loadGame() {
@@ -101,19 +95,12 @@ void loadGame() {
 
 void detailedView() {
 	loadDetailedView();
-	bool first = true;
-	bool reInitDisplay = false;
 	while (1) {
 		if (!gb.update()) {
 			continue;
 		}
 		gb.display.fontSize = gb.display.width() == 80 ? 1 : 2;
-		if (reInitDisplay && titleScreenImageExists) {
-			if (gb.display.frames == 1) {
-				gb.display.init(nameBuffer);
-			}
-			reInitDisplay = false;
-		}
+
 		uint8_t blockOffset = currentGame / BLOCK_LENGTH;
 		uint8_t gameInBlock = currentGame % BLOCK_LENGTH;
 		uint8_t b = getBlock(blockOffset);
@@ -146,23 +133,18 @@ void detailedView() {
 			gb.display.println(getCurrentGameFolder() + 1);
 		}
 		
-		// flashing "A to start"
-		if ((gb.frameCount % 32) < 20) {
-			gb.display.setColor(DARKGRAY);
-			gb.display.drawRect(msg_a_x - gb.display.fontSize*2, msg_a_y - gb.display.fontSize*2, msg_a_w + gb.display.fontSize*4, msg_a_h + gb.display.fontSize*3);
-			if (gb.display.fontSize > 1) {
-				gb.display.drawRect(msg_a_x - gb.display.fontSize*2 + 1, msg_a_y - gb.display.fontSize*2 + 1, msg_a_w + gb.display.fontSize*4 - 2, msg_a_h + gb.display.fontSize*3 - 2);
-			}
-			gb.display.setColor(BROWN);
-			gb.display.fillRect(msg_a_x - gb.display.fontSize, msg_a_y - gb.display.fontSize, msg_a_w + gb.display.fontSize*2, msg_a_h + gb.display.fontSize);
-			gb.display.setColor(WHITE);
-			gb.display.setCursor(msg_a_x, msg_a_y);
-			gb.display.print(msg_a_start);
-			first = true;
-		} else if (titleScreenImageExists && gb.display.frames == 1 && first) {
-			reInitDisplay = true;
-			first = false;
-		}
+    //blinking A button icon
+    if((gb.frameCount%8) < 4){
+      buttonsIcons.setFrame(1); //button A pressed
+    } else {
+      buttonsIcons.setFrame(0); //button A released
+    }
+    uint8_t scale = gb.display.width() == 80 ? 1 : 2;
+    uint8_t w = buttonsIcons.width() * scale;
+    uint8_t h = buttonsIcons.height() * scale;
+    uint8_t x = gb.display.width() - w - (2 * scale);
+    uint8_t y = gb.display.height() - h - (2 * scale);
+    gb.display.drawImage(x, y, buttonsIcons, w, h);
 		
 		if (gb.buttons.repeat(BUTTON_LEFT, 4)) {
 			if (currentGame > 0) {
