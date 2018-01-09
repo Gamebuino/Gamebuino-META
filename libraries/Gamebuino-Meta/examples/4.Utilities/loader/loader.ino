@@ -123,6 +123,7 @@ void createCache() {
 				}
 			}
 			if (!invalid) {
+				loadGameFolderBlocks();
 				return; //everything is OK
 			}
 		}
@@ -195,6 +196,8 @@ void createCache() {
 	cache.close();
 	entry.close();
 	root.close();
+	
+	loadGameFolderBlocks();
 }
 
 uint8_t getBlock(uint8_t b) {
@@ -285,6 +288,11 @@ void loadGameFolderBlock(uint8_t b, uint8_t bb) {
 	cache.close();
 }
 
+void loadGameFolderBlocks() {
+	loadGameFolderBlock(0, blocksLoaded[0]);
+	loadGameFolderBlock(1, blocksLoaded[1]);
+}
+
 void setup() {
 	gb.begin();
 	gb.save.config(savefileDefaults);
@@ -336,11 +344,9 @@ void setup() {
 	gb.display.println(lang_loading);
 	gb.updateDisplay();
 	initFolders();
-	createCache();
-	loadGameFolderBlock(0, 0);
-	loadGameFolderBlock(1, 1);
 	blocksLoaded[0] = 0;
 	blocksLoaded[1] = 1;
+	createCache();
 	
 	gridView();
 }
