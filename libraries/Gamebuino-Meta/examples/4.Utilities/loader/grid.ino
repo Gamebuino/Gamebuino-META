@@ -220,7 +220,7 @@ void gridView() {
 			}
 		}
 		
-		if (gb.buttons.repeat(BUTTON_UP, 4)) {
+		if (gb.buttons.repeat(BUTTON_UP, 4) && totalGames > 2) {
 			if (currentGame >= 2) {
 				currentGame -= 2;
 				cursorY--;
@@ -256,7 +256,7 @@ void gridView() {
 			}
 		}
 		
-		if (gb.buttons.repeat(BUTTON_DOWN, 4)) {
+		if (gb.buttons.repeat(BUTTON_DOWN, 4) && totalGames > 2) {
 			if (currentGame < totalGames - 2) {
 				currentGame += 2;
 				cursorY++;
