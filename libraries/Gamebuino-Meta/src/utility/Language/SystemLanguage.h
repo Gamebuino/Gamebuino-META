@@ -127,15 +127,4 @@ const MultiLang lang_keyboard_save[] = {
 	{LangCode::fr, "enreg."},
 };
 
-
-//////////
-// Titlescreen
-//////////
-
-const MultiLang lang_titlescreen_a_start[] = {
-	{LangCode::en, "\x15 to start"},
-	{LangCode::de, "\x15 zum starten"},
-	{LangCode::fr, "\x15 pour commencer"},
-};
-
 }; // namespace Gamebuino_Meta

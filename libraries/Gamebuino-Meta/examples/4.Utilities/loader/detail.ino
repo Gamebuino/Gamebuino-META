@@ -1,6 +1,11 @@
 
 const uint8_t starBuf[] = {
 	15, 15,
+	1, 0,
+	0,
+	0,
+	1,
+	
 	0x00, 0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x77, 0xA0, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x7A, 0xF0, 0x00, 0x00, 0x00,
@@ -17,7 +22,7 @@ const uint8_t starBuf[] = {
 	0x00, 0x7F, 0x90, 0x00, 0x00, 0xFA, 0x90, 0x00,
 	0x00, 0xF9, 0x00, 0x00, 0x00, 0x09, 0xA0, 0x00,
 };
-Image star{starBuf};
+Image star(starBuf);
 
 
 bool titleScreenImageExists;
@@ -30,7 +35,6 @@ uint8_t msg_a_h;
 uint8_t msg_a_x;
 uint8_t msg_a_y;
 void loadDetailedView() {
-	star.setTransparentColor(INDEX_BLACK);
 	detailGameIsFav = isGameFavorite();
 	strcpy(nameBuffer, getCurrentGameFolder());
 	strcpy(nameBuffer + strlen(nameBuffer), "/TITLESCREEN.BMP");
@@ -95,6 +99,7 @@ void loadGame() {
 
 void detailedView() {
 	loadDetailedView();
+	Image buttonsIcons = Image(Gamebuino_Meta::buttonsIconsBuff);
 	while (1) {
 		if (!gb.update()) {
 			continue;
@@ -133,18 +138,18 @@ void detailedView() {
 			gb.display.println(getCurrentGameFolder() + 1);
 		}
 		
-    //blinking A button icon
-    if((gb.frameCount%8) < 4){
-      buttonsIcons.setFrame(1); //button A pressed
-    } else {
-      buttonsIcons.setFrame(0); //button A released
-    }
-    uint8_t scale = gb.display.width() == 80 ? 1 : 2;
-    uint8_t w = buttonsIcons.width() * scale;
-    uint8_t h = buttonsIcons.height() * scale;
-    uint8_t x = gb.display.width() - w - (2 * scale);
-    uint8_t y = gb.display.height() - h - (2 * scale);
-    gb.display.drawImage(x, y, buttonsIcons, w, h);
+		//blinking A button icon
+		if((gb.frameCount%8) < 4){
+			buttonsIcons.setFrame(1); //button A pressed
+		} else {
+			buttonsIcons.setFrame(0); //button A released
+		}
+		uint8_t scale = gb.display.width() == 80 ? 1 : 2;
+		uint8_t w = buttonsIcons.width() * scale;
+		uint8_t h = buttonsIcons.height() * scale;
+		uint8_t x = gb.display.width() - w - (2 * scale);
+		uint8_t y = gb.display.height() - h - (2 * scale);
+		gb.display.drawImage(x, y, buttonsIcons, w, h);
 		
 		if (gb.buttons.repeat(BUTTON_LEFT, 4)) {
 			if (currentGame > 0) {

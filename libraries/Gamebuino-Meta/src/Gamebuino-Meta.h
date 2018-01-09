@@ -144,6 +144,8 @@ private:
 #endif
 };
 
+extern const uint16_t buttonsIconsBuff[];
+
 } // namespace Gamebuino_Meta
 
 #ifdef GAMEBUINO_COMPAT_MODE
