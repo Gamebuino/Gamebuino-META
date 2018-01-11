@@ -60,6 +60,9 @@ void Save::error(const char *s) {
 
 
 SaveVar Save::getVarInfo(uint16_t i) {
+	if (readOnly) {
+		return {false, 0};
+	}
 	if (i >= blocks) {
 		// Trying to access bad block...
 		error("accessing non-existing block");
@@ -69,7 +72,6 @@ SaveVar Save::getVarInfo(uint16_t i) {
 	uint8_t b;
 	if (!f.read(&b, 1)) {
 		error("file I/O");
-		while(1);
 	}
 	s.defined = (b & 0x80) ? true : false;
 	s.type = b & 0x07;
