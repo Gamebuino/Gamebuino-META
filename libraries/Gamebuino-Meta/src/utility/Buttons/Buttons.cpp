@@ -60,6 +60,8 @@ void Buttons::update() {
 		if (pressed) { //if button pressed
 			if (states[thisButton] < 0xFFFD) { // we want 0xFFFE to be max value for the counter
 				states[thisButton]++; //increase button hold time
+			} else if (states[thisButton] == 0xFFFF) { // if we release / hold again too fast
+				states[thisButton] = 1;
 			}
 		} else {
 			if (states[thisButton] == 0) {//button idle
