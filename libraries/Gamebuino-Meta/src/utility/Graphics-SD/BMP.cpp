@@ -70,13 +70,8 @@ BMP::BMP(File* file, Image* img) {
 #endif
 	img->_width = width;
 	uint32_t pixel_height = f_read32(file);
-	if (img->_height) {
-		height = img->_height;
-		img->frames = frames = pixel_height / img->_height;
-	} else {
-		img->_height = height = pixel_height;
-		img->frames = frames = 1;
-	}
+	
+	
 	if (f_read16(file) != 1) { // # planes, must always be 1
 		return;
 	}
@@ -85,6 +80,32 @@ BMP::BMP(File* file, Image* img) {
 		// we can only load BMPs of depth 4 or 24 or 32
 		return;
 	}
+	
+#if STRICT_IMAGES
+	if (img->_height) {
+		height = img->_height;
+		img->frames = frames = pixel_height / img->_height;
+	} else {
+		uint32_t tmp_width = img->_width;
+		if (depth == 4) {
+			tmp_width /= 2;
+		} else {
+			tmp_width *= 2;
+		}
+		uint16_t frames_ = tmp_width*pixel_height / img->bufferSize;
+		img->frames = frames = frames_;
+		img->_height = height = pixel_height / frames_;
+	}
+#else
+	if (img->_height) {
+		height = img->_height;
+		img->frames = frames = pixel_height / img->_height;
+	} else {
+		img->_height = height = pixel_height;
+		img->frames = frames = 1;
+	}
+#endif
+	
 	uint32_t compression = f_read32(file);
 	bool createRGBAmasks = false;
 	if (depth == 32) {
