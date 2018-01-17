@@ -93,6 +93,9 @@ BMP::BMP(File* file, Image* img) {
 			tmp_width *= 2;
 		}
 		uint16_t frames_ = tmp_width*pixel_height / img->bufferSize;
+		if (frames_ < 1) {
+			frames_ = 1;
+		}
 		img->frames = frames = frames_;
 		img->_height = height = pixel_height / frames_;
 	}
