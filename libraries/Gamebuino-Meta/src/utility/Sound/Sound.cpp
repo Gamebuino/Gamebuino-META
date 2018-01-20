@@ -25,6 +25,7 @@ Authors:
 #include "Pattern.h"
 #include "Tone.h"
 #include "Raw.h"
+#include "Sound_FX.h"
 #include "../Sound-SD.h"
 #include "../../config/config.h"
 
@@ -40,6 +41,8 @@ bool muted = false;
 #if SOUND_CHANNELS > 0
 Sound_Channel channels[SOUND_CHANNELS];
 Sound_Handler* handlers[SOUND_CHANNELS];
+
+FX_Channel fx_channels[FX_CHANNELS] = { 0 };
 
 bool tcIsSyncing() {
 	return TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY;
@@ -211,6 +214,73 @@ int8_t Sound::play(Sound_Handler* handler, bool loop) {
 #endif // SOUND_CHANNELS
 }
 
+//int8_t Sound::play(const Gamebuino_Meta::Sound_FX & sound_fx)
+//{
+//#if SOUND_CHANNELS > 0
+//	int8_t i = findEmptyChannel();
+//	if (i < 0 || i >= SOUND_CHANNELS) {
+//		return -1; // no free channels atm
+//	}
+//	channels[i].loop = loop;
+//	Sound_Handler_FX * fx = new Sound_Handler_FX(&(channels[i]));
+//	handlers[i] = fx;
+//	fx->play(sound_fx);
+//	return i;
+//#else // SOUND_CHANNELS
+//	return -1;
+//#endif // SOUND_CHANNELS
+//
+//}
+//
+//int8_t Sound::play(const Gamebuino_Meta::Sound_FX * const chain)
+//{
+//#if SOUND_CHANNELS > 0
+//	int8_t i = findEmptyChannel();
+//	if (i < 0 || i >= SOUND_CHANNELS) {
+//		return -1; // no free channels atm
+//	}
+//	channels[i].loop = loop;
+//	Sound_Handler_FX * fx = new Sound_Handler_FX(&(channels[i]));
+//	handlers[i] = fx;
+//	fx->play(chain, 0);
+//	return i;
+//#else // SOUND_CHANNELS
+//	return -1;
+//#endif // SOUND_CHANNELS
+//	
+//}
+
+void Sound::fx(const Sound_FX & fx)
+{
+	if (fx_channels[0].handler == nullptr)
+	{
+		fx_channels[0].size = 44100 / SOUND_FREQ;
+		fx_channels[0].buffer = (int8_t*) new uint32_t[fx_channels[0].size / 4]; // Wierd cast so buffer is 32bit aligned
+		memset(fx_channels[0].buffer, 0, fx_channels[0].size);
+		fx_channels[0].index = 0;
+		fx_channels[0].handler = new Sound_Handler_FX(&fx_channels[0]);
+	}
+
+	fx_channels[0].handler->play(fx);
+}
+
+
+void Sound::fx(const Sound_FX * const fx)
+{
+	if (fx_channels[0].handler == nullptr)
+	{
+		fx_channels[0].size = 2048 / (44100 / SOUND_FREQ);
+		fx_channels[0].buffer = (int8_t*) new uint32_t[fx_channels[0].size / 4]; // Wierd cast so buffer is 32bit aligned
+		memset(fx_channels[0].buffer, 0, fx_channels[0].size);
+		fx_channels[0].index = 0;
+		fx_channels[0].handler = new Sound_Handler_FX(&fx_channels[0]);
+	}
+
+	fx_channels[0].handler->play(fx,0);
+	
+}
+
+
 int8_t Sound::tone(uint32_t frequency, int32_t duration) {
 #if SOUND_CHANNELS > 0
 	int8_t i = findEmptyChannel();
@@ -261,6 +331,11 @@ void Sound::update() {
 			delete handlers[i];
 			handlers[i] = 0;
 		}
+	}
+
+	if (fx_channels[0].handler)
+	{
+		fx_channels[0].handler->update();
 	}
 #endif // SOUND_CHANNELS
 }
@@ -357,6 +432,17 @@ void Audio_Handler (void) {
 			}
 		}
 	}
+
+	if (fx_channels[0].handler != nullptr)
+	{
+		output += fx_channels[0].buffer[fx_channels[0].index];
+		fx_channels[0].index++;
+		if (fx_channels[0].index >= fx_channels[0].size)
+		{
+			fx_channels[0].index = 0;
+		}
+	}
+
 	if (output) {
 		//we multiply by 4 to use the whole 0..1024 DAC range even with 8-bit 0..255 waves
 		//then we attenuate the signal. The attenuation is not linear because human ear's response isn't ;)

@@ -26,7 +26,34 @@ Authors:
 
 #include <Arduino.h>
 
+#define FX_CHANNELS 1
+
 namespace Gamebuino_Meta {
+
+enum class Sound_FX_Wave : int32_t // so we can cast Sound_FX as an int32_t array
+{
+	CONTINUE_FLAG = (1 << 31),
+	NOISE = 0,
+	SQUARE,
+	WAVE_COUNT,
+
+	NOISE_CONTIUE = NOISE | CONTINUE_FLAG,
+	SQUARE_CONTINUE = SQUARE | CONTINUE_FLAG,
+};
+
+union Sound_FX {
+	struct {
+		Sound_FX_Wave type;		// Type of the wave that will be played
+		int32_t volume_start;	// Volume amplitude as a 8 bit fixed point 
+		int32_t volume_sweep;	// How much the volume change for each sample (8 bit fixed point)
+
+		int32_t period_start;	// Period (inverse of frequency) for the sound to be played
+		int32_t period_sweep;	// Hom much the period change for each 4 sample (8 bit fixed point)
+
+		int32_t length;			// Length of the sound in samples
+	};
+	int32_t params[6];
+};
 
 enum class Sound_Channel_Type : uint8_t {
 	raw,
@@ -58,6 +85,17 @@ protected:
 	Sound_Channel* channel;
 };
 
+// Pre declare Sound_Handler_FX for the FX_Channel
+class Sound_Handler_FX;
+
+struct FX_Channel {
+public:
+	int8_t * buffer; // Just so we are sure it's 
+	uint16_t index;
+	Sound_Handler_FX * handler;
+	uint16_t size;
+};
+
 class Sound {
 public:
 	void begin();
@@ -77,6 +115,10 @@ public:
 	};
 	
 	int8_t play(Sound_Handler* handler, bool loop = false);
+	void fx(const Sound_FX & fx);
+	void fx(const Sound_FX * const fx);
+	//int8_t play(const Gamebuino_Meta::Sound_FX & sound_fx);
+	//int8_t play(const Gamebuino_Meta::Sound_FX * const chain);
 	int8_t tone(uint32_t frequency, int32_t duration = 0);
 	int8_t playOK();
 	int8_t playCancel();
