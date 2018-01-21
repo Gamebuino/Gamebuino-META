@@ -213,7 +213,7 @@ int8_t Sound::play(Sound_Handler* handler, bool loop) {
 #endif // SOUND_CHANNELS
 }
 
-void init_fx_channel(int channel_id) {
+void init_fx_channel() {
 	if (fx_channel.handler == nullptr){
 		fx_channel.size = SOUND_BUFFERSIZE;
 		fx_channel.buffer = (int8_t*) new uint32_t[fx_channel.size / 4]; // Wierd cast so buffer is 32bit aligned
@@ -224,13 +224,13 @@ void init_fx_channel(int channel_id) {
 }
 
 void Sound::fx(const Sound_FX & fx) {
-	init_fx_channel(0);
+	init_fx_channel();
 	fx_channel.handler->play(fx);
 }
 
 
 void Sound::fx(const Sound_FX * const fx) {
-	init_fx_channel(0);
+	init_fx_channel();
 	fx_channel.handler->play(fx,0);
 }
 
