@@ -42,7 +42,7 @@ bool muted = false;
 Sound_Channel channels[SOUND_CHANNELS];
 Sound_Handler* handlers[SOUND_CHANNELS];
 
-FX_Channel fx_channels[FX_CHANNELS] = { 0 };
+FX_Channel fx_channel = { 0 };
 
 bool tcIsSyncing() {
 	return TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY;
@@ -215,24 +215,24 @@ int8_t Sound::play(Sound_Handler* handler, bool loop) {
 }
 
 void init_fx_channel(int channel_id) {
-	if (fx_channels[channel_id].handler == nullptr){
-		fx_channels[channel_id].size = 2048 * SOUND_FREQ / 44100;
-		fx_channels[channel_id].buffer = (int8_t*) new uint32_t[fx_channels[channel_id].size / 4]; // Wierd cast so buffer is 32bit aligned
-		memset(fx_channels[channel_id].buffer, 0, fx_channels[channel_id].size);
-		fx_channels[channel_id].index = 0;
-		fx_channels[channel_id].handler = new Sound_Handler_FX(&fx_channels[channel_id]);
+	if (fx_channel.handler == nullptr){
+		fx_channel.size = SOUND_BUFFERSIZE;
+		fx_channel.buffer = (int8_t*) new uint32_t[fx_channel.size / 4]; // Wierd cast so buffer is 32bit aligned
+		memset(fx_channel.buffer, 0, fx_channel.size);
+		fx_channel.index = 0;
+		fx_channel.handler = new Sound_Handler_FX(&fx_channel);
 	}
 }
 
 void Sound::fx(const Sound_FX & fx) {
 	init_fx_channel(0);
-	fx_channels[0].handler->play(fx);
+	fx_channel.handler->play(fx);
 }
 
 
 void Sound::fx(const Sound_FX * const fx) {
 	init_fx_channel(0);
-	fx_channels[0].handler->play(fx,0);
+	fx_channel.handler->play(fx,0);
 }
 
 
@@ -288,8 +288,8 @@ void Sound::update() {
 		}
 	}
 
-	if (fx_channels[0].handler) {
-		fx_channels[0].handler->update();
+	if (fx_channel.handler) {
+		fx_channel.handler->update();
 	}
 #endif // SOUND_CHANNELS
 }
@@ -387,11 +387,11 @@ void Audio_Handler (void) {
 		}
 	}
 
-	if (fx_channels[0].handler != nullptr) {
-		output += fx_channels[0].buffer[fx_channels[0].index];
-		fx_channels[0].index++;
-		if (fx_channels[0].index >= fx_channels[0].size) {
-			fx_channels[0].index = 0;
+	if (fx_channel.handler != nullptr) {
+		output += fx_channel.buffer[fx_channel.index];
+		fx_channel.index++;
+		if (fx_channel.index >= fx_channel.size) {
+			fx_channel.index = 0;
 		}
 	}
 

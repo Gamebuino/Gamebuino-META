@@ -1,6 +1,6 @@
 /*
 This file is part of the Gamebuino-Meta library,
-Copyright (c) Aadalie 2017
+Copyright (c) Valden 2018
 
 This is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License (LGPL)
@@ -21,134 +21,128 @@ Authors:
 */
 
 #include "Sound_FX.h"
-#include <Gamebuino-Meta.h>
 
 namespace Gamebuino_Meta {
-	void Sound_Handler_FX::init() {
-		_current_Sound_FX_volume = 0;
-		_current_Sound_FX_freq = 0;
-		_noise_period = 0;
+void Sound_Handler_FX::init() {
+	_current_Sound_FX_volume = 0;
+	_current_Sound_FX_freq = 0;
+	_noise_period = 0;
 
-		_current_pattern_Sound_FX = UINT8_MAX;
-		_current_pattern_length = 0;
-		_current_pattern = NULL;
+	_current_pattern_Sound_FX = UINT8_MAX;
+	_current_pattern_length = 0;
+	_current_pattern = NULL;
 
-		_pitch_scale = 1 << FPP;
+	_pitch_scale = 1 << FPP;
 
-		resetGenerators();
-	}
+	resetGenerators();
+}
 
-	void Sound_Handler_FX::update() {
-		// Check if we should advance in the pattern
-		if (_current_Sound_FX_time >= _current_Sound_FX.length) {
-			// Check if there is still fx to play
-			if ((_current_pattern_length != 0 && _current_pattern_Sound_FX < _current_pattern_length - 1) || (_current_pattern_length == 0 && ((uint32_t)_current_pattern[_current_pattern_Sound_FX].type & (uint32_t) Sound_FX_Wave::CONTINUE_FLAG))) {
-				_current_pattern_Sound_FX++;
-				play(_current_pattern[_current_pattern_Sound_FX]);
-			}
-		}
-
-
-		// Generate sound
-		if (_current_Sound_FX_time < _current_Sound_FX.length) {
-			switch (_current_Sound_FX.type) {
-			case Sound_FX_Wave::NOISE:
-			case Sound_FX_Wave::NOISE_CONTIUE:
-				generateNoise();
-				break;
-			case Sound_FX_Wave::SQUARE:
-			case Sound_FX_Wave::SQUARE_CONTINUE:
-				generateSquare();
-				break;
-			default:
-				// WTF man
-				break;
-			}
-		}
-		else if (_current_Sound_FX_time != UINT32_MAX) {
-			memset(parent_channel->buffer, 0, parent_channel->size);
-			_current_Sound_FX_time = UINT32_MAX;
-		}
-		else{
-			//do nothing
+void Sound_Handler_FX::update() {
+	// Check if we should advance in the pattern
+	if (_current_Sound_FX_time >= _current_Sound_FX.length) {
+		// Check if there is still fx to play
+		if ((_current_pattern_length != 0 && _current_pattern_Sound_FX < _current_pattern_length - 1) || (_current_pattern_length == 0 && ((uint32_t)_current_pattern[_current_pattern_Sound_FX].type & (uint32_t) Sound_FX_Wave::CONTINUE_FLAG))) {
+			_current_pattern_Sound_FX++;
+			play(_current_pattern[_current_pattern_Sound_FX]);
 		}
 	}
 
-	void Sound_Handler_FX::rewind() {
-		//rewind stuff
+
+	// Generate sound
+	if (_current_Sound_FX_time < _current_Sound_FX.length) {
+		switch (_current_Sound_FX.type) {
+		case Sound_FX_Wave::NOISE:
+		case Sound_FX_Wave::NOISE_CONTIUE:
+			generateNoise();
+			break;
+		case Sound_FX_Wave::SQUARE:
+		case Sound_FX_Wave::SQUARE_CONTINUE:
+			generateSquare();
+			break;
+		default:
+			// WTF man
+			break;
+		}
 	}
-
-	uint32_t Sound_Handler_FX::getPos() {
-		return UINT32_MAX;
+	else if (_current_Sound_FX_time != UINT32_MAX) {
+		memset(parent_channel->buffer, 0, parent_channel->size);
+		_current_Sound_FX_time = UINT32_MAX;
 	}
-
-	void Sound_Handler_FX::play(const Sound_FX & Sound_FX) {
-		_current_Sound_FX = Sound_FX;
-		_current_Sound_FX_time = 0;
-		_current_Sound_FX_volume = Sound_FX.volume_start;
-		_current_Sound_FX_freq = Sound_FX.period_start;
-		resetGenerators();
-	}
-
-	void Sound_Handler_FX::play(const Sound_FX * const pattern, uint8_t length) {
-		_current_pattern = pattern;
-		_current_pattern_Sound_FX = 0;
-		_current_pattern_length = length;
-		play(_current_pattern[_current_pattern_Sound_FX]);
-	}
-
-	void Sound_Handler_FX::play(const Sound_FX * const pattern, uint8_t length, uint16_t pitch_scale) {
-		_current_pattern = pattern;
-		_current_pattern_Sound_FX = 0;
-		_current_pattern_length = length;
-		play(_current_pattern[_current_pattern_Sound_FX]);
-		_pitch_scale = pitch_scale;
-	}
-
-	void Sound_Handler_FX::resetGenerators() {
-		_square_period = 0;
-		_noise_period = 0;
-		_square_polarity = 1;
-	}
-
-	void Sound_Handler_FX::generateNoise() {
-		uint32_t target = parent_channel->index;
-		static uint16_t lfsr = 1;
-		do{
-			int8_t volume = getVolume();
-
-			if (--_noise_period <= 0) {
-				_noise_period = max((getFrequency() >> (FPP + 4)) / SR_DIVIDER, 0);
-				bool bit = (lfsr ^ (lfsr >> 1)) & 1;
-				lfsr = (lfsr >> 1) ^ (bit << 14);
-			}
-			volume = (lfsr & 1) ?  getVolume() :  -getVolume();
-			uint8_t v = (uint8_t)volume;
-			uint32_t sample = (v << 24) | (v << 16) | (v << 8) | v;
-
-			_head_index = (_head_index + 1) % (parent_channel->size >> 2);
-			_current_Sound_FX_time += 4 * SR_DIVIDER;
-			((uint32_t*)(&parent_channel->buffer[0]))[_head_index] = sample;
-		} while (_head_index != target >> 2);
-	}
-
-	void Sound_Handler_FX::generateSquare() {
-		uint32_t target = parent_channel->index;
-		do{
-			int8_t volume = getVolume();
-			_square_period -= 256;
-			if (_square_period <= 0) {
-				_square_period += max(getFrequency() / SR_DIVIDER, 0);
-				_square_polarity = -_square_polarity;
-			}
-			volume =  _square_polarity * volume;
-			uint8_t v = (uint8_t)volume;
-			uint32_t sample = (v << 24) | (v << 16) | (v << 8) | v;
-
-			_head_index = (_head_index + 1) % (parent_channel->size >> 2);
-			_current_Sound_FX_time += 4 * SR_DIVIDER;
-			((uint32_t*)(&parent_channel->buffer[0]))[_head_index] = sample;
-		} while (_head_index != target >> 2);
+	else{
+		//do nothing
 	}
 }
+
+void Sound_Handler_FX::play(const Sound_FX & Sound_FX) {
+	_current_Sound_FX = Sound_FX;
+	_current_Sound_FX_time = 0;
+	_current_Sound_FX_volume = Sound_FX.volume_start;
+	_current_Sound_FX_freq = Sound_FX.period_start;
+	resetGenerators();
+}
+
+void Sound_Handler_FX::play(const Sound_FX * const pattern, uint8_t length) {
+	_current_pattern = pattern;
+	_current_pattern_Sound_FX = 0;
+	_current_pattern_length = length;
+	play(_current_pattern[_current_pattern_Sound_FX]);
+}
+
+void Sound_Handler_FX::play(const Sound_FX * const pattern, uint8_t length, uint16_t pitch_scale) {
+	_current_pattern = pattern;
+	_current_pattern_Sound_FX = 0;
+	_current_pattern_length = length;
+	play(_current_pattern[_current_pattern_Sound_FX]);
+	_pitch_scale = pitch_scale;
+}
+
+void Sound_Handler_FX::resetGenerators() {
+	_square_period = 0;
+	_noise_period = 0;
+	_square_polarity = 1;
+}
+
+void Sound_Handler_FX::generateNoise() {
+	uint32_t target = parent_channel->index;
+	static uint16_t lfsr = 1;
+	do{
+		int8_t volume = getVolume();
+
+		if (--_noise_period <= 0) {
+			_noise_period = max((getFrequency() >> (FPP + 4)) / SR_DIVIDER, 0);
+			bool bit = (lfsr ^ (lfsr >> 1)) & 1;
+			lfsr = (lfsr >> 1) ^ (bit << 14);
+		}
+		volume = (lfsr & 1) ?  getVolume() :  -getVolume();
+		uint8_t v = (uint8_t)volume;
+		uint32_t sample = (v << 24) | (v << 16) | (v << 8) | v;
+
+		_head_index = (_head_index + 1) % (parent_channel->size >> 2);
+		_current_Sound_FX_time += 4 * SR_DIVIDER;
+		((uint32_t*)(&parent_channel->buffer[0]))[_head_index] = sample;
+	} while (_head_index != target >> 2);
+}
+
+void Sound_Handler_FX::generateSquare() {
+	uint32_t target = parent_channel->index;
+	do{
+		int8_t volume = getVolume();
+		_square_period -= 256;
+		if (_square_period <= 0) {
+			_square_period += max(getFrequency() / SR_DIVIDER, 0);
+			_square_polarity = -_square_polarity;
+		}
+		volume =  _square_polarity * volume;
+		uint8_t v = (uint8_t)volume;
+		uint32_t sample = (v << 24) | (v << 16) | (v << 8) | v;
+
+		_head_index = (_head_index + 1) % (parent_channel->size >> 2);
+		_current_Sound_FX_time += 4 * SR_DIVIDER;
+		((uint32_t*)(&parent_channel->buffer[0]))[_head_index] = sample;
+	} while (_head_index != target >> 2);
+}
+
+
+
+} // Namespace Gamebuino_META
 

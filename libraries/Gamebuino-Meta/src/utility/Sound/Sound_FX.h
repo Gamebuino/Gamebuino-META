@@ -1,6 +1,6 @@
 /*
 This file is part of the Gamebuino-Meta library,
-Copyright (c) Aadalie 2017
+Copyright (c) Valden 2018
 
 This is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License (LGPL)
@@ -40,7 +40,6 @@ namespace Gamebuino_Meta {
 
 		void init();
 		void update();
-		void rewind();
 		void generateNoise() __attribute__((optimize("-O3"))); // Handle noise instrument
 		void generateSquare() __attribute__((optimize("-O3")));
 
@@ -48,7 +47,6 @@ namespace Gamebuino_Meta {
 		void play(const Gamebuino_Meta::Sound_FX * const pattern, uint8_t length);
 		void play(const Gamebuino_Meta::Sound_FX * const pattern, uint8_t length, uint16_t pitch_scale);
 
-		uint32_t getPos();
 		Gamebuino_Meta::Sound_FX _current_Sound_FX;
 		Gamebuino_Meta::Sound_FX const * _current_pattern;
 		uint8_t _current_pattern_Sound_FX;
