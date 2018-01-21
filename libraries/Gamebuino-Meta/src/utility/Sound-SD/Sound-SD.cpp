@@ -34,7 +34,7 @@ struct Buffers {
 };
 Buffers buffers[SOUND_CHANNELS];
 
-const uint16_t NUM_SAMPLES = 1024*2;
+const uint16_t NUM_SAMPLES = SOUND_BUFFERSIZE;
 
 Sound_Handler_Wav::Sound_Handler_Wav(Sound_Channel* chan) : Sound_Handler(chan) {
 	

@@ -41,6 +41,8 @@ bool muted = false;
 Sound_Channel channels[SOUND_CHANNELS];
 Sound_Handler* handlers[SOUND_CHANNELS];
 
+FX_Channel fx_channel = { 0 };
+
 bool tcIsSyncing() {
 	return TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY;
 }
@@ -211,6 +213,28 @@ int8_t Sound::play(Sound_Handler* handler, bool loop) {
 #endif // SOUND_CHANNELS
 }
 
+void init_fx_channel() {
+	if (fx_channel.handler == nullptr){
+		fx_channel.size = SOUND_BUFFERSIZE;
+		fx_channel.buffer = (int8_t*) new uint32_t[fx_channel.size / 4]; // Wierd cast so buffer is 32bit aligned
+		memset(fx_channel.buffer, 0, fx_channel.size);
+		fx_channel.index = 0;
+		fx_channel.handler = new Sound_Handler_FX(&fx_channel);
+	}
+}
+
+void Sound::fx(const Sound_FX & fx) {
+	init_fx_channel();
+	fx_channel.handler->play(fx);
+}
+
+
+void Sound::fx(const Sound_FX * const fx) {
+	init_fx_channel();
+	fx_channel.handler->play(fx,0);
+}
+
+
 int8_t Sound::tone(uint32_t frequency, int32_t duration) {
 #if SOUND_CHANNELS > 0
 	int8_t i = findEmptyChannel();
@@ -261,6 +285,10 @@ void Sound::update() {
 			delete handlers[i];
 			handlers[i] = 0;
 		}
+	}
+
+	if (fx_channel.handler) {
+		fx_channel.handler->update();
 	}
 #endif // SOUND_CHANNELS
 }
@@ -357,6 +385,15 @@ void Audio_Handler (void) {
 			}
 		}
 	}
+
+	if (fx_channel.handler != nullptr) {
+		output += fx_channel.buffer[fx_channel.index];
+		fx_channel.index++;
+		if (fx_channel.index >= fx_channel.size) {
+			fx_channel.index = 0;
+		}
+	}
+
 	if (output) {
 		//we multiply by 4 to use the whole 0..1024 DAC range even with 8-bit 0..255 waves
 		//then we attenuate the signal. The attenuation is not linear because human ear's response isn't ;)

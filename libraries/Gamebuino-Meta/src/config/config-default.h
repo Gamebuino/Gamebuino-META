@@ -68,6 +68,10 @@
 #define SOUND_FREQ 44100
 #endif
 
+#ifndef SOUND_BUFFERSIZE
+#define SOUND_BUFFERSIZE (2048 * SOUND_FREQ / 44100)
+#endif
+
 ///////////////
 // image defines
 ///////////////

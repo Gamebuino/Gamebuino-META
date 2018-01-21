@@ -25,6 +25,7 @@ Authors:
 #define	_GAMEBUINO_META_SOUND_H_
 
 #include <Arduino.h>
+#include "Sound_FX.h"
 
 namespace Gamebuino_Meta {
 
@@ -58,6 +59,17 @@ protected:
 	Sound_Channel* channel;
 };
 
+// Pre declare Sound_Handler_FX for the FX_Channel
+class Sound_Handler_FX;
+union Sound_FX;
+
+struct FX_Channel {
+	int8_t * buffer;
+	uint16_t index;
+	Sound_Handler_FX * handler;
+	uint16_t size;
+};
+
 class Sound {
 public:
 	void begin();
@@ -77,6 +89,10 @@ public:
 	};
 	
 	int8_t play(Sound_Handler* handler, bool loop = false);
+
+	void fx(const Sound_FX & fx);
+	void fx(const Sound_FX * const fx);
+
 	int8_t tone(uint32_t frequency, int32_t duration = 0);
 	int8_t playOK();
 	int8_t playCancel();
