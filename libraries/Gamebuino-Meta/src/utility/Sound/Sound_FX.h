@@ -66,14 +66,12 @@ namespace Gamebuino_Meta {
 
 		void resetGenerators();
 
-		inline uint8_t getVolume()
-		{
+		inline uint8_t getVolume() {
 			_current_Sound_FX_volume += _current_Sound_FX.volume_sweep * SR_DIVIDER;
 			return (min(127, max(0, (_current_Sound_FX_volume >> FPP))));
 		} __attribute__((optimize("-O3")));
 
-		inline int32_t getFrequency()
-		{
+		inline int32_t getFrequency() {
 			_current_Sound_FX_freq += _current_Sound_FX.period_sweep * SR_DIVIDER;
 			return ((_current_Sound_FX_freq * _pitch_scale) >> FPP);
 		} __attribute__((optimize("-O3")));

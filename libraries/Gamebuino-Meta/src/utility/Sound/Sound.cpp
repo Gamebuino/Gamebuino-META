@@ -288,8 +288,7 @@ void Sound::update() {
 		}
 	}
 
-	if (fx_channels[0].handler)
-	{
+	if (fx_channels[0].handler) {
 		fx_channels[0].handler->update();
 	}
 #endif // SOUND_CHANNELS
@@ -388,12 +387,10 @@ void Audio_Handler (void) {
 		}
 	}
 
-	if (fx_channels[0].handler != nullptr)
-	{
+	if (fx_channels[0].handler != nullptr) {
 		output += fx_channels[0].buffer[fx_channels[0].index];
 		fx_channels[0].index++;
-		if (fx_channels[0].index >= fx_channels[0].size)
-		{
+		if (fx_channels[0].index >= fx_channels[0].size) {
 			fx_channels[0].index = 0;
 		}
 	}

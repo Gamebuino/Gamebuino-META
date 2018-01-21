@@ -23,10 +23,8 @@ Authors:
 #include "Sound_FX.h"
 #include <Gamebuino-Meta.h>
 
-namespace Gamebuino_Meta
-{
-	void Sound_Handler_FX::init()
-	{
+namespace Gamebuino_Meta {
+	void Sound_Handler_FX::init() {
 		_current_Sound_FX_volume = 0;
 		_current_Sound_FX_freq = 0;
 		_noise_period = 0;
@@ -40,8 +38,7 @@ namespace Gamebuino_Meta
 		resetGenerators();
 	}
 
-	void Sound_Handler_FX::update()
-	{
+	void Sound_Handler_FX::update() {
 		// Check if we should advance in the pattern
 		if (_current_Sound_FX_time >= _current_Sound_FX.length) {
 			// Check if there is still fx to play
