@@ -214,70 +214,25 @@ int8_t Sound::play(Sound_Handler* handler, bool loop) {
 #endif // SOUND_CHANNELS
 }
 
-//int8_t Sound::play(const Gamebuino_Meta::Sound_FX & sound_fx)
-//{
-//#if SOUND_CHANNELS > 0
-//	int8_t i = findEmptyChannel();
-//	if (i < 0 || i >= SOUND_CHANNELS) {
-//		return -1; // no free channels atm
-//	}
-//	channels[i].loop = loop;
-//	Sound_Handler_FX * fx = new Sound_Handler_FX(&(channels[i]));
-//	handlers[i] = fx;
-//	fx->play(sound_fx);
-//	return i;
-//#else // SOUND_CHANNELS
-//	return -1;
-//#endif // SOUND_CHANNELS
-//
-//}
-//
-//int8_t Sound::play(const Gamebuino_Meta::Sound_FX * const chain)
-//{
-//#if SOUND_CHANNELS > 0
-//	int8_t i = findEmptyChannel();
-//	if (i < 0 || i >= SOUND_CHANNELS) {
-//		return -1; // no free channels atm
-//	}
-//	channels[i].loop = loop;
-//	Sound_Handler_FX * fx = new Sound_Handler_FX(&(channels[i]));
-//	handlers[i] = fx;
-//	fx->play(chain, 0);
-//	return i;
-//#else // SOUND_CHANNELS
-//	return -1;
-//#endif // SOUND_CHANNELS
-//	
-//}
-
-void Sound::fx(const Sound_FX & fx)
-{
-	if (fx_channels[0].handler == nullptr)
-	{
-		fx_channels[0].size = 44100 / SOUND_FREQ;
-		fx_channels[0].buffer = (int8_t*) new uint32_t[fx_channels[0].size / 4]; // Wierd cast so buffer is 32bit aligned
-		memset(fx_channels[0].buffer, 0, fx_channels[0].size);
-		fx_channels[0].index = 0;
-		fx_channels[0].handler = new Sound_Handler_FX(&fx_channels[0]);
+void init_fx_channel(int channel_id) {
+	if (fx_channels[channel_id].handler == nullptr){
+		fx_channels[channel_id].size = 2048 * SOUND_FREQ / 44100;
+		fx_channels[channel_id].buffer = (int8_t*) new uint32_t[fx_channels[channel_id].size / 4]; // Wierd cast so buffer is 32bit aligned
+		memset(fx_channels[channel_id].buffer, 0, fx_channels[channel_id].size);
+		fx_channels[channel_id].index = 0;
+		fx_channels[channel_id].handler = new Sound_Handler_FX(&fx_channels[channel_id]);
 	}
+}
 
+void Sound::fx(const Sound_FX & fx) {
+	init_fx_channel(0);
 	fx_channels[0].handler->play(fx);
 }
 
 
-void Sound::fx(const Sound_FX * const fx)
-{
-	if (fx_channels[0].handler == nullptr)
-	{
-		fx_channels[0].size = 2048 / (44100 / SOUND_FREQ);
-		fx_channels[0].buffer = (int8_t*) new uint32_t[fx_channels[0].size / 4]; // Wierd cast so buffer is 32bit aligned
-		memset(fx_channels[0].buffer, 0, fx_channels[0].size);
-		fx_channels[0].index = 0;
-		fx_channels[0].handler = new Sound_Handler_FX(&fx_channels[0]);
-	}
-
+void Sound::fx(const Sound_FX * const fx) {
+	init_fx_channel(0);
 	fx_channels[0].handler->play(fx,0);
-	
 }
 
 

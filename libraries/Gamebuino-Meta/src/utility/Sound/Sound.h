@@ -30,8 +30,7 @@ Authors:
 
 namespace Gamebuino_Meta {
 
-enum class Sound_FX_Wave : int32_t // so we can cast Sound_FX as an int32_t array
-{
+enum class Sound_FX_Wave : int32_t { // so we can cast Sound_FX as an int32_t array
 	CONTINUE_FLAG = (1 << 31),
 	NOISE = 0,
 	SQUARE,
@@ -89,8 +88,7 @@ protected:
 class Sound_Handler_FX;
 
 struct FX_Channel {
-public:
-	int8_t * buffer; // Just so we are sure it's 
+	int8_t * buffer;
 	uint16_t index;
 	Sound_Handler_FX * handler;
 	uint16_t size;
@@ -115,10 +113,10 @@ public:
 	};
 	
 	int8_t play(Sound_Handler* handler, bool loop = false);
+
 	void fx(const Sound_FX & fx);
 	void fx(const Sound_FX * const fx);
-	//int8_t play(const Gamebuino_Meta::Sound_FX & sound_fx);
-	//int8_t play(const Gamebuino_Meta::Sound_FX * const chain);
+
 	int8_t tone(uint32_t frequency, int32_t duration = 0);
 	int8_t playOK();
 	int8_t playCancel();

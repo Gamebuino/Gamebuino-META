@@ -23,68 +23,13 @@ Authors:
 #ifndef _GAMEBUINO_META_SOUND_FX_H_
 #define	_GAMEBUINO_META_SOUND_FX_H_
 
-
-//#include <Gamebuino-Meta.h>
 #include "Sound.h"
 #include <cstdint>
 #include "../../config/config.h"
 
-
-/*class GSSound_FX
-{
-public:
-
-
-static const int32_t CONTINUE_FLAG = (1 << 31);
-
-
-// Users create and use these
-union Sound_FX {
-struct {
-GSSound_FX::Sound_FX_Wave type; // Type of the wave that will be played
-int32_t volume_start; // Volume amplitude as a 8 bit fixed point
-int32_t volume_sweep; // How much the volume change for each sample (8 bit fixed point)
-
-int32_t period_start;
-int32_t period_sweep;
-
-int32_t length;
-};
-int32_t params[6];
-};
-
-GSSound_FX();
-~GSSound_FX();
-
-// Init the sSound_FX library so it can play sound
-int8_t init();
-
-// Plays the given Sound_FX structure
-void play(const GSSound_FX::Sound_FX & Sound_FX);
-
-// Plays pattern array (Will finish if wave type does not contain the CONTINUE_FLAG flag)
-void play(const GSSound_FX::Sound_FX * const pattern);
-
-// DEPRECATED : Plays a Sound_FX array containing length Sound_FXs
-void play(const GSSound_FX::Sound_FX * const pattern, uint8_t length);
-void play(const GSSound_FX::Sound_FX * const pattern, uint8_t length, uint16_t pitch_scale);
-
-
-private:
-bool is_init;
-int8_t _channel_id;
-
-
-
-Sound_Handler_GSSound_FX _handler;
-
-};*/
-
-
 namespace Gamebuino_Meta {
 
-	class Sound_Handler_FX //: public Gamebuino_Meta::Sound_Handler
-	{
+	class Sound_Handler_FX {
 	public:
 		static const uint8_t FPP = 8; // Fixed point precision
 		static const uint8_t SR_DIVIDER = 44100 / SOUND_FREQ;

@@ -23,75 +23,10 @@ Authors:
 #include "Sound_FX.h"
 #include <Gamebuino-Meta.h>
 
-#if 0
-Gamebuino_Meta::GSSound_FX() : _handler(this)
-{
-
-}
-
-Gamebuino_Meta::~GSSound_FX()
-{
-
-}
-
-int8_t Gamebuino_Meta::init()
-{
-	_channel_id = gb.sound.play(&_handler, true);
-	is_init = (_channel_id != -1);
-	if (is_init)
-	{
-		_handler.init();
-	}
-	return _channel_id;
-}
-
-void Gamebuino_Meta::play(const Gamebuino_Meta::Sound_FX & Sound_FX)
-{
-	_handler.play(Sound_FX);
-}
-
-void Gamebuino_Meta::play(const Gamebuino_Meta::Sound_FX * const pattern)
-{
-	_handler.play(pattern, 0);
-}
-
-void Gamebuino_Meta::play(const Gamebuino_Meta::Sound_FX * const pattern, uint8_t length)
-{
-	_handler.play(pattern, length);
-}
-
-void Gamebuino_Meta::play(const Gamebuino_Meta::Sound_FX * const pattern, uint8_t length, uint16_t pitch_scale)
-{
-	_handler.play(pattern, length, pitch_scale);
-}
-
-
-// SOUND HANDLER
-
-Sound_Handler_FX::Sound_Handler_FX(GSSound_FX * parent) : Gamebuino_Meta::Sound_Handler(NULL), _parent(parent)
-{
-
-}
-
-Sound_Handler_FX::~Sound_Handler_FX()
-{
-
-}
-#endif
-
 namespace Gamebuino_Meta
 {
 	void Sound_Handler_FX::init()
 	{
-		// init buffer to 0 volume
-		//memset(_buffer, 0x80, 2048);
-		/*channel->index = 0;
-		channel->total = 2048;
-		channel->last = false;
-		
-		channel->buffer;*/
-		//_current_Sound_FX_time = UINT32_MAX;
-		//_current_Sound_FX = { Gamebuino_Meta::Sound_FX_Wave::NOISE, 0xFFFF,-80,0,0,10000 };
 		_current_Sound_FX_volume = 0;
 		_current_Sound_FX_freq = 0;
 		_noise_period = 0;
@@ -108,9 +43,9 @@ namespace Gamebuino_Meta
 	void Sound_Handler_FX::update()
 	{
 		// Check if we should advance in the pattern
-		if (_current_Sound_FX_time >= _current_Sound_FX.length){
+		if (_current_Sound_FX_time >= _current_Sound_FX.length) {
 			// Check if there is still fx to play
-			if ((_current_pattern_length != 0 && _current_pattern_Sound_FX < _current_pattern_length - 1) || (_current_pattern_length == 0 && ((uint32_t)_current_pattern[_current_pattern_Sound_FX].type & (uint32_t) Sound_FX_Wave::CONTINUE_FLAG))){
+			if ((_current_pattern_length != 0 && _current_pattern_Sound_FX < _current_pattern_length - 1) || (_current_pattern_length == 0 && ((uint32_t)_current_pattern[_current_pattern_Sound_FX].type & (uint32_t) Sound_FX_Wave::CONTINUE_FLAG))) {
 				_current_pattern_Sound_FX++;
 				play(_current_pattern[_current_pattern_Sound_FX]);
 			}
@@ -118,8 +53,8 @@ namespace Gamebuino_Meta
 
 
 		// Generate sound
-		if (_current_Sound_FX_time < _current_Sound_FX.length){
-			switch (_current_Sound_FX.type){
+		if (_current_Sound_FX_time < _current_Sound_FX.length) {
+			switch (_current_Sound_FX.type) {
 			case Sound_FX_Wave::NOISE:
 			case Sound_FX_Wave::NOISE_CONTIUE:
 				generateNoise();
@@ -133,7 +68,7 @@ namespace Gamebuino_Meta
 				break;
 			}
 		}
-		else if (_current_Sound_FX_time != UINT32_MAX){
+		else if (_current_Sound_FX_time != UINT32_MAX) {
 			memset(parent_channel->buffer, 0, parent_channel->size);
 			_current_Sound_FX_time = UINT32_MAX;
 		}
@@ -142,15 +77,15 @@ namespace Gamebuino_Meta
 		}
 	}
 
-	void Sound_Handler_FX::rewind(){
+	void Sound_Handler_FX::rewind() {
 		//rewind stuff
 	}
 
-	uint32_t Sound_Handler_FX::getPos(){
+	uint32_t Sound_Handler_FX::getPos() {
 		return UINT32_MAX;
 	}
 
-	void Sound_Handler_FX::play(const Sound_FX & Sound_FX){
+	void Sound_Handler_FX::play(const Sound_FX & Sound_FX) {
 		_current_Sound_FX = Sound_FX;
 		_current_Sound_FX_time = 0;
 		_current_Sound_FX_volume = Sound_FX.volume_start;
@@ -158,14 +93,14 @@ namespace Gamebuino_Meta
 		resetGenerators();
 	}
 
-	void Sound_Handler_FX::play(const Sound_FX * const pattern, uint8_t length){
+	void Sound_Handler_FX::play(const Sound_FX * const pattern, uint8_t length) {
 		_current_pattern = pattern;
 		_current_pattern_Sound_FX = 0;
 		_current_pattern_length = length;
 		play(_current_pattern[_current_pattern_Sound_FX]);
 	}
 
-	void Sound_Handler_FX::play(const Sound_FX * const pattern, uint8_t length, uint16_t pitch_scale){
+	void Sound_Handler_FX::play(const Sound_FX * const pattern, uint8_t length, uint16_t pitch_scale) {
 		_current_pattern = pattern;
 		_current_pattern_Sound_FX = 0;
 		_current_pattern_length = length;
@@ -173,20 +108,19 @@ namespace Gamebuino_Meta
 		_pitch_scale = pitch_scale;
 	}
 
-	void Sound_Handler_FX::resetGenerators(){
+	void Sound_Handler_FX::resetGenerators() {
 		_square_period = 0;
 		_noise_period = 0;
 		_square_polarity = 1;
-		//memset(channel->sharedBuffer->buffer, 0, channel->sharedBuffer->size);
 	}
 
-	void Sound_Handler_FX::generateNoise(){
+	void Sound_Handler_FX::generateNoise() {
 		uint32_t target = parent_channel->index;
 		static uint16_t lfsr = 1;
 		do{
 			int8_t volume = getVolume();
 
-			if (--_noise_period <= 0){
+			if (--_noise_period <= 0) {
 				_noise_period = max((getFrequency() >> (FPP + 4)) / SR_DIVIDER, 0);
 				bool bit = (lfsr ^ (lfsr >> 1)) & 1;
 				lfsr = (lfsr >> 1) ^ (bit << 14);
@@ -201,12 +135,12 @@ namespace Gamebuino_Meta
 		} while (_head_index != target >> 2);
 	}
 
-	void Sound_Handler_FX::generateSquare(){
+	void Sound_Handler_FX::generateSquare() {
 		uint32_t target = parent_channel->index;
 		do{
 			int8_t volume = getVolume();
 			_square_period -= 256;
-			if (_square_period <= 0){
+			if (_square_period <= 0) {
 				_square_period += max(getFrequency() / SR_DIVIDER, 0);
 				_square_polarity = -_square_polarity;
 			}
