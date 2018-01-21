@@ -1,6 +1,6 @@
 /*
 This file is part of the Gamebuino-Meta library,
-Copyright (c) Valden 2018
+Copyright (c) Aadalie 2017
 
 This is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License (LGPL)
@@ -17,7 +17,7 @@ License (LGPL) along with the library.
 If not, see <http://www.gnu.org/licenses/>.
 
 Authors:
-- Valden
+ - Sorunome
 */
 
 #ifndef _GAMEBUINO_META_PATTERN_H_

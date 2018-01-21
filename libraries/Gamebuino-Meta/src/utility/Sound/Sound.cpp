@@ -25,7 +25,6 @@ Authors:
 #include "Pattern.h"
 #include "Tone.h"
 #include "Raw.h"
-#include "Sound_FX.h"
 #include "../Sound-SD.h"
 #include "../../config/config.h"
 
