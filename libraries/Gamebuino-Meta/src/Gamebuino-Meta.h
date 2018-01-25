@@ -144,7 +144,8 @@ private:
 #endif
 };
 
-extern const uint16_t buttonsIconsBuff[];
+extern const uint16_t buttonsIconsData[];
+extern const uint16_t arrowsIconsData[];
 
 } // namespace Gamebuino_Meta
 

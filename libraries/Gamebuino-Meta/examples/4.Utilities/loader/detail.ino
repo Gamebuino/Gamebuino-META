@@ -1,5 +1,5 @@
 
-const uint8_t starBuf[] = {
+const uint8_t starData[] = {
 	15, 15,
 	1, 0,
 	0,
@@ -22,7 +22,7 @@ const uint8_t starBuf[] = {
 	0x00, 0x7F, 0x90, 0x00, 0x00, 0xFA, 0x90, 0x00,
 	0x00, 0xF9, 0x00, 0x00, 0x00, 0x09, 0xA0, 0x00,
 };
-Image star(starBuf);
+Image star(starData);
 
 
 bool titleScreenImageExists;
@@ -99,7 +99,7 @@ void loadGame() {
 
 void detailedView() {
 	loadDetailedView();
-	Image buttonsIcons = Image(Gamebuino_Meta::buttonsIconsBuff);
+	Image buttonsIcons = Image(Gamebuino_Meta::buttonsIconsData);
 	while (1) {
 		if (!gb.update()) {
 			continue;
