@@ -142,7 +142,7 @@ void Gamebuino::begin() {
 		display.setColor(Color::red, Color::black);
 		display.println("FAILED!");
 		updateDisplay();
-		delay(1000);
+		delay(100);
 	} else {
 		display.setColor(Color::lightgreen, Color::black);
 		display.println("OK!");
