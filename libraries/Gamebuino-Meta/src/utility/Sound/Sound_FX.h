@@ -58,7 +58,6 @@ union Sound_FX {
 class Sound_Handler_FX {
 public:
 	static const uint8_t FPP = 16; // Fixed point precision
-	//static const uint8_t FPP = 16; // Fixed point precision volume
 	static const uint8_t SR_DIVIDER = 44100 / SOUND_FREQ;
 	inline Sound_Handler_FX(FX_Channel* _channel) : parent_channel(_channel)  {
 		init();
