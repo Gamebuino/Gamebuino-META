@@ -125,21 +125,38 @@ void Sound_Handler_FX::generateNoise() {
 
 void Sound_Handler_FX::generateSquare() {
 	uint32_t target = parent_channel->index;
-	do{
+	uint32_t * buffer_ptr = ((uint32_t*)(&parent_channel->buffer[0]));
+
+	do {
+		uint32_t sample = 0;
 		int8_t volume = getVolume();
-		_square_period -= 256;
-		if (_square_period <= 0) {
-			_square_period += max(getFrequency() / SR_DIVIDER, 0);
-			_square_polarity = -_square_polarity;
+		if (_square_period <= (4 << FPP))
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				_square_period -= (1 << FPP);
+				if (_square_period <= 0) {
+					_square_period += max(getFrequency() / SR_DIVIDER, 0);
+					_square_polarity = !_square_polarity;
+				}
+				int8_t vol = _square_polarity ? volume : -volume;
+				uint8_t v = (uint8_t)vol;
+				sample |= (v << (8 * i));
+			}
 		}
-		volume =  _square_polarity * volume;
-		uint8_t v = (uint8_t)volume;
-		uint32_t sample = (v << 24) | (v << 16) | (v << 8) | v;
+		else
+		{
+			_square_period -= (4 << FPP);
+			volume = _square_polarity ? volume : -volume;
+			uint8_t v = (uint8_t)volume;
+			sample = (v << 24) | (v << 16) | (v << 8) | v;
+		}
 
 		_head_index = (_head_index + 1) % (parent_channel->size >> 2);
 		_current_Sound_FX_time += 4 * SR_DIVIDER;
-		((uint32_t*)(&parent_channel->buffer[0]))[_head_index] = sample;
+		buffer_ptr[_head_index] = sample;
 	} while (_head_index != target >> 2);
+
 }
 
 

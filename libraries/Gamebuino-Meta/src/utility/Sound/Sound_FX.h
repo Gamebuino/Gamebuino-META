@@ -29,8 +29,6 @@ Authors:
 
 namespace Gamebuino_Meta {
 
-
-// Pre declare Sound_FX_Channel
 struct FX_Channel;
 
 enum class Sound_FX_Wave : int32_t { // so we can cast Sound_FX as an int32_t array
@@ -59,7 +57,7 @@ union Sound_FX {
 
 class Sound_Handler_FX {
 public:
-	static const uint8_t FPP = 8; // Fixed point precision
+	static const uint8_t FPP = 16; // Fixed point precision
 	static const uint8_t SR_DIVIDER = 44100 / SOUND_FREQ;
 	inline Sound_Handler_FX(FX_Channel* _channel) : parent_channel(_channel)  {
 		init();
@@ -99,7 +97,7 @@ public:
 
 	inline int32_t getFrequency() {
 		_current_Sound_FX_freq += _current_Sound_FX.period_sweep * SR_DIVIDER;
-		return ((_current_Sound_FX_freq * _pitch_scale) >> FPP);
+		return ((_current_Sound_FX_freq));
 	} __attribute__((optimize("-O3")));
 
 	FX_Channel * parent_channel;
