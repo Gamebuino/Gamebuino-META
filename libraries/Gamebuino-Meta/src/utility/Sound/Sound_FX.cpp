@@ -39,7 +39,7 @@ void Sound_Handler_FX::init() {
 
 void Sound_Handler_FX::update() {
 	// Check if we should advance in the pattern
-	if (_current_Sound_FX_time >= _current_Sound_FX.length) {
+	if (_current_Sound_FX_time != UINT32_MAX && _current_Sound_FX_time >= _current_Sound_FX.length) {
 		// Check if there is still fx to play
 		if ((_current_pattern_length != 0 && _current_pattern_Sound_FX < _current_pattern_length - 1) || (_current_pattern_length == 0 && ((uint32_t)_current_pattern[_current_pattern_Sound_FX].type & (uint32_t) Sound_FX_Wave::CONTINUE_FLAG))) {
 			_current_pattern_Sound_FX++;
