@@ -21,6 +21,7 @@ Authors:
 */
 
 #include "Sound_FX.h"
+#include <Gamebuino-Meta.h>
 
 namespace Gamebuino_Meta {
 void Sound_Handler_FX::init() {
@@ -65,7 +66,7 @@ void Sound_Handler_FX::update() {
 		}
 	}
 	else if (_current_Sound_FX_time != UINT32_MAX) {
-		memset(parent_channel->buffer, 0, parent_channel->size);
+		memset(parent_channel->buffer, 0x80, parent_channel->size);
 		_current_Sound_FX_time = UINT32_MAX;
 	}
 	else{
