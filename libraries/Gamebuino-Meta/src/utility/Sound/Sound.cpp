@@ -213,10 +213,13 @@ int8_t Sound::play(Sound_Handler* handler, bool loop) {
 #endif // SOUND_CHANNELS
 }
 
+// Get optimized away if fx is not used
+uint32_t fx_sound_buffer[SOUND_BUFFERSIZE/4];
+
 void init_fx_channel() {
 	if (fx_channel.handler == nullptr){
 		fx_channel.size = SOUND_BUFFERSIZE;
-		fx_channel.buffer = (int8_t*) new uint32_t[fx_channel.size / 4]; // Wierd cast so buffer is 32bit aligned
+		fx_channel.buffer = (int8_t*)fx_sound_buffer;
 		memset(fx_channel.buffer, 0, fx_channel.size);
 		fx_channel.index = 0;
 		fx_channel.handler = new Sound_Handler_FX(&fx_channel);
