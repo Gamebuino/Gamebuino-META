@@ -40,12 +40,12 @@ namespace Sound_FX_Wave {
 };
 
 struct Sound_FX {
-	Sound_FX_Wave::type	type		: 7;
+	uint8_t	type		: 7;
 	uint8_t			continue_flag	: 1;
 	uint8_t			volume_start;
 	int8_t			volume_sweep;
-	uint16_t		period_start;
 	int8_t			period_sweep;
+	uint16_t		period_start;
 	uint16_t		length;
 };
 
