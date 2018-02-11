@@ -56,7 +56,7 @@ public:
 
 private:
 	// Numbers of bitshifts to apply to the data to get the true value
-	static const uint8_t VOLUME_START_SCALE = FPP;
+	static const uint8_t VOLUME_START_SCALE = FPP - 1;
 	static const uint8_t VOLUME_SWEEP_SCALE = 8;
 	static const uint8_t PERIOD_START_SCALE = FPP;
 	static const uint8_t PERIOD_SWEEP_SCALE = 7;
