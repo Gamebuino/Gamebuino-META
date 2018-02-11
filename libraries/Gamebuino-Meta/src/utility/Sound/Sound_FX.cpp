@@ -25,7 +25,7 @@ Authors:
 namespace Gamebuino_Meta {
 void Sound_Handler_FX::init() {
 	_current_Sound_FX_volume = 0;
-	_current_Sound_FX_freq = 0;
+	_current_Sound_FX_period = 0;
 	_noise_period = 0;
 
 	_current_pattern_Sound_FX = UINT8_MAX;
@@ -39,9 +39,10 @@ void Sound_Handler_FX::init() {
 
 void Sound_Handler_FX::update() {
 	// Check if we should advance in the pattern
-	if (_current_Sound_FX_time != UINT32_MAX && _current_Sound_FX_time >= _current_Sound_FX.length) {
+	if (_current_Sound_FX_time != UINT32_MAX && _current_Sound_FX_time >= _current_Sound_FX_length) {
 		// Check if there is still fx to play
-		if ((_current_pattern_length != 0 && _current_pattern_Sound_FX < _current_pattern_length - 1) || (_current_pattern_length == 0 && ((uint32_t)_current_pattern[_current_pattern_Sound_FX].type & (uint32_t) Sound_FX_Wave::CONTINUE_FLAG))) {
+		if ((_current_pattern_length != 0 && _current_pattern_Sound_FX < _current_pattern_length - 1) 
+			|| (_current_pattern_length == 0 && (_current_pattern[_current_pattern_Sound_FX].continue_flag))) {
 			_current_pattern_Sound_FX++;
 			play(_current_pattern[_current_pattern_Sound_FX]);
 		}
@@ -49,14 +50,12 @@ void Sound_Handler_FX::update() {
 
 
 	// Generate sound
-	if (_current_Sound_FX_time < _current_Sound_FX.length) {
+	if (_current_Sound_FX_time < _current_Sound_FX_length) {
 		switch (_current_Sound_FX.type) {
 		case Sound_FX_Wave::NOISE:
-		case Sound_FX_Wave::NOISE_CONTIUE:
 			generateNoise();
 			break;
 		case Sound_FX_Wave::SQUARE:
-		case Sound_FX_Wave::SQUARE_CONTINUE:
 			generateSquare();
 			break;
 		default:
@@ -76,8 +75,11 @@ void Sound_Handler_FX::update() {
 void Sound_Handler_FX::play(const Sound_FX & Sound_FX) {
 	_current_Sound_FX = Sound_FX;
 	_current_Sound_FX_time = 0;
-	_current_Sound_FX_volume = Sound_FX.volume_start;
-	_current_Sound_FX_freq = Sound_FX.period_start;
+	_current_Sound_FX_volume = Sound_FX.volume_start << VOLUME_START_SCALE;
+	_current_Sound_FX_volume_sweep = (Sound_FX.volume_sweep << VOLUME_SWEEP_SCALE) * SR_DIVIDER;
+	_current_Sound_FX_period = Sound_FX.period_start << PERIOD_START_SCALE;
+	_current_Sound_FX_period_sweep = (Sound_FX.period_sweep << PERIOD_SWEEP_SCALE) * SR_DIVIDER;
+	_current_Sound_FX_length = Sound_FX.length * LENGTH_SCALE;
 	resetGenerators();
 }
 
