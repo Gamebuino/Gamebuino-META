@@ -31,34 +31,40 @@ namespace Gamebuino_Meta {
 
 struct FX_Channel;
 
-enum class Sound_FX_Wave : int32_t { // so we can cast Sound_FX as an int32_t array
-	CONTINUE_FLAG = (1 << 31),
-	NOISE = 0,
-	SQUARE,
-	WAVE_COUNT,
-
-	NOISE_CONTIUE = NOISE | CONTINUE_FLAG,
-	SQUARE_CONTINUE = SQUARE | CONTINUE_FLAG,
+namespace Sound_FX_Wave {
+	enum type {
+		NOISE = 0,
+		SQUARE,
+		MAX
+	};
 };
 
-union Sound_FX {
-	struct {
-		Sound_FX_Wave type;		// Type of the wave that will be played
-		int32_t volume_start;	// Volume amplitude as a 8 bit fixed point 
-		int32_t volume_sweep;	// How much the volume change for each sample (8 bit fixed point)
-
-		int32_t period_start;	// Period (inverse of frequency) for the sound to be played
-		int32_t period_sweep;	// Hom much the period change for each 4 sample (8 bit fixed point)
-
-		int32_t length;			// Length of the sound in samples
-	};
-	int32_t params[6];
+struct Sound_FX {
+	uint8_t			type			: 7;
+	uint8_t			continue_flag	: 1;
+	uint8_t			volume_start;
+	int8_t			volume_sweep;
+	int8_t			period_sweep;
+	uint16_t		period_start;
+	uint16_t		length;
 };
 
 class Sound_Handler_FX {
 public:
 	static const uint8_t FPP = 16; // Fixed point precision
 	static const uint8_t SR_DIVIDER = 44100 / SOUND_FREQ;
+
+private:
+	// Numbers of bitshifts to apply to the data to get the true value
+	static const uint8_t VOLUME_START_SCALE = FPP - 1;
+	static const uint8_t VOLUME_SWEEP_SCALE = 8;
+	static const uint8_t PERIOD_START_SCALE = FPP;
+	static const uint8_t PERIOD_SWEEP_SCALE = 7;
+	static const int32_t LENGTH_SCALE = 441 * 2 / SR_DIVIDER;
+public:
+
+
+
 	inline Sound_Handler_FX(FX_Channel* _channel) : parent_channel(_channel)  {
 		init();
 	};
@@ -80,7 +86,12 @@ public:
 
 	uint32_t _current_Sound_FX_time;
 	int32_t _current_Sound_FX_volume;
-	int32_t _current_Sound_FX_freq;
+	int32_t _current_Sound_FX_period;
+	int32_t _current_Sound_FX_volume_sweep;
+	int32_t _current_Sound_FX_period_sweep;
+	uint32_t _current_Sound_FX_length;
+
+
 	uint16_t _head_index;
 	int16_t _pitch_scale;
 
@@ -88,16 +99,17 @@ public:
 	int32_t _square_period;
 	int32_t _square_polarity;
 
+
 	void resetGenerators();
 
 	inline uint8_t getVolume() {
-		_current_Sound_FX_volume += _current_Sound_FX.volume_sweep * SR_DIVIDER;
+		_current_Sound_FX_volume += _current_Sound_FX_volume_sweep;
 		return (min(127, max(0, (_current_Sound_FX_volume >> FPP))));
 	} __attribute__((optimize("-O3")));
 
 	inline int32_t getFrequency() {
-		_current_Sound_FX_freq += _current_Sound_FX.period_sweep * SR_DIVIDER;
-		return ((_current_Sound_FX_freq));
+		_current_Sound_FX_period += _current_Sound_FX_period_sweep;
+		return ((_current_Sound_FX_period));
 	} __attribute__((optimize("-O3")));
 
 	FX_Channel * parent_channel;

@@ -61,7 +61,7 @@ protected:
 
 // Pre declare Sound_Handler_FX for the FX_Channel
 class Sound_Handler_FX;
-union Sound_FX;
+struct Sound_FX;
 
 struct FX_Channel {
 	int8_t * buffer;
