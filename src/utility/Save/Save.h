@@ -56,11 +56,11 @@ public:
 	Save(Display_ST7735 *_tft, const char* _savefile, const char* _checkbytes);
 	void config(const SaveDefault* _defaults, uint16_t _num_defaults);
 	void config(uint16_t _blocks, const SaveDefault* _defaults, uint16_t _num_defaults);
-	template<uint8_t N>
+	template<uint16_t N>
 	void config(const SaveDefault (&_defaults)[N]) {
 		config(_defaults, N);
 	}
-	template<uint8_t N>
+	template<uint16_t N>
 	void config(uint16_t _blocks, const SaveDefault (&_defaults)[N]) {
 		config(_blocks, _defaults, N);
 	}
