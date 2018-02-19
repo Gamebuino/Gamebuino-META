@@ -13,35 +13,35 @@ bool lightsOn = false;
 bool redLight = false;
 
 void loop() {
-  if (gb.update()) {
-    // clear the previous screen
-    gb.display.clear();
-    
-    // clear the previous state of the lights
-    gb.lights.clear();
-    
-    if (lightsOn) {
-      // if we want the lights to be on, let's turn all lights white!
-      gb.lights.fill(WHITE);
-    }
-    
-    if (redLight) {
-      // if we want the red light, let's set the lower-left light red
-      // if lightsOn is true we will just over-write the lower-left light, and thus the lower-left light **WILL** be red for sure!
-      gb.lights.drawPixel(0, 3, RED);
-    }
-    
-    if (gb.buttons.pressed(BUTTON_A)) {
-      // toggle lightsOn
-      lightsOn = !lightsOn;
-    }
-    
-    if (gb.buttons.pressed(BUTTON_B)) {
-      // toggle redLight
-      redLight = !redLight;
-    }
-    
-    // now let's just display our controls
-    gb.display.println("A: lights on\nB: red light");
+  while(!gb.update());
+  
+  // clear the previous screen
+  gb.display.clear();
+  
+  // clear the previous state of the lights
+  gb.lights.clear();
+  
+  if (lightsOn) {
+    // if we want the lights to be on, let's turn all lights white!
+    gb.lights.fill(WHITE);
   }
+  
+  if (redLight) {
+    // if we want the red light, let's set the lower-left light red
+    // if lightsOn is true we will just over-write the lower-left light, and thus the lower-left light **WILL** be red for sure!
+    gb.lights.drawPixel(0, 3, RED);
+  }
+  
+  if (gb.buttons.pressed(BUTTON_A)) {
+    // toggle lightsOn
+    lightsOn = !lightsOn;
+  }
+  
+  if (gb.buttons.pressed(BUTTON_B)) {
+    // toggle redLight
+    redLight = !redLight;
+  }
+  
+  // now let's just display our controls
+  gb.display.println("A: lights on\nB: red light");
 }

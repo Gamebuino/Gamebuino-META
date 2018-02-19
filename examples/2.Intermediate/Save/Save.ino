@@ -24,48 +24,48 @@ void setup() {
 }
 
 void loop() {
-  if (gb.update()) {
-    // clear the previous screen
-    gb.display.clear();
+  while(!gb.update());
+  
+  // clear the previous screen
+  gb.display.clear();
+  
+  // let's first output our cached stuff
+  gb.display.println("Number:");
+  gb.display.println(number);
+  gb.display.println("String:");
+  gb.display.println(string);
+  
+  if (gb.buttons.pressed(BUTTON_UP)) {
+    // first increase our cached variable
+    number++;
+    // now save it to our save slot!
+    gb.save.set(SAVE_NUMBER, number);
+    gb.sound.playTick();
+  }
+  if (gb.buttons.pressed(BUTTON_DOWN)) {
+    // first decrease our cached variable
+    number--;
+    // now save it to our save slot!
+    gb.save.set(SAVE_NUMBER, number);
+    gb.sound.playTick();
+  }
+  
+  if (gb.buttons.pressed(BUTTON_A)) {
+    // okay, let's let the user modify our cached string variable
+    gb.keyboard(string, 40);
+    // aaaaaand now save it to its slot!
+    gb.save.set(SAVE_STRING, string);
+  }
+  
+  if (gb.buttons.pressed(BUTTON_B)) {
+    // first we delete both of our save slots
+    gb.save.del(SAVE_NUMBER);
+    gb.save.del(SAVE_STRING);
     
-    // let's first output our cached stuff
-    gb.display.println("Number:");
-    gb.display.println(number);
-    gb.display.println("String:");
-    gb.display.println(string);
-    
-    if (gb.buttons.pressed(BUTTON_UP)) {
-      // first increase our cached variable
-      number++;
-      // now save it to our save slot!
-      gb.save.set(SAVE_NUMBER, number);
-      gb.sound.playTick();
-    }
-    if (gb.buttons.pressed(BUTTON_DOWN)) {
-      // first decrease our cached variable
-      number--;
-      // now save it to our save slot!
-      gb.save.set(SAVE_NUMBER, number);
-      gb.sound.playTick();
-    }
-    
-    if (gb.buttons.pressed(BUTTON_A)) {
-      // okay, let's let the user modify our cached string variable
-      gb.keyboard(string, 40);
-      // aaaaaand now save it to its slot!
-      gb.save.set(SAVE_STRING, string);
-    }
-    
-    if (gb.buttons.pressed(BUTTON_B)) {
-      // first we delete both of our save slots
-      gb.save.del(SAVE_NUMBER);
-      gb.save.del(SAVE_STRING);
-      
-      // and now we reset our cached variables
-      // alternatively we could fetch the defaults with gb.save.get, too
-      number = 0;
-      memset(string, 0, sizeof(string));
-      gb.sound.playCancel();
-    }
+    // and now we reset our cached variables
+    // alternatively we could fetch the defaults with gb.save.get, too
+    number = 0;
+    memset(string, 0, sizeof(string));
+    gb.sound.playCancel();
   }
 }

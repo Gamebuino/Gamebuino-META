@@ -25,9 +25,7 @@ void galleryView(int8_t direction) {
 	
 	bool loaded = false;
 	while(1) {
-		if (!gb.update()) {
-			continue;
-		}
+		while(!gb.update());
 		gb.display.nextFrame();
 		if (!loaded) {
 			do {

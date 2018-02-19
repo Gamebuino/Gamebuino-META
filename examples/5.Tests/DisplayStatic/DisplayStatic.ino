@@ -70,48 +70,44 @@ boolean skip() {
 
 void drawMyImage() {
   while (1) {
-    if (gb.update()) {
-      gb.display.clear();
-      gb.display.drawImage(0,0,myImage);
-      if (skip()) {
-        return;
-      }
+    while(!gb.update());
+    gb.display.clear();
+    gb.display.drawImage(0,0,myImage);
+    if (skip()) {
+      return;
     }
   }
 }
 
 void drawMyImageIndex() {
   while (1) {
-    if (gb.update()) {
-      gb.display.clear();
-      gb.display.drawImage(0,0,myImageIndex);
-      if (skip()) {
-        return;
-      }
+    while(!gb.update());
+    gb.display.clear();
+    gb.display.drawImage(0,0,myImageIndex);
+    if (skip()) {
+      return;
     }
   }
 }
 
 void drawAnimation() {
   while (1) {
-    if (gb.update()) {
-      gb.display.clear();
-      gb.display.drawImage(0,0,animation);
-      if (skip()) {
-        return;
-      }
+    while(!gb.update());
+    gb.display.clear();
+    gb.display.drawImage(0,0,animation);
+    if (skip()) {
+      return;
     }
   }
 }
 
 void donothing() {
   while (1) {
-    if (gb.update()) {
-      // clear the previous screen
-      gb.display.clear();
-      if (skip()) {
-        return;
-      }
+    while(!gb.update());
+    // clear the previous screen
+    gb.display.clear();
+    if (skip()) {
+      return;
     }
   }
 }
@@ -120,33 +116,32 @@ void screenBenchmark() {
   //Screen update benchmark
   unsigned long timeBenchmark = 20;
   while (1) {
-    if (gb.update()) {
-      // clear the previous screen
-      gb.display.clear();
+    while(!gb.update());
+    // clear the previous screen
+    gb.display.clear();
 
-      gb.display.setColor(WHITE);
-      gb.display.print(1000 / (timeBenchmark));
-      gb.display.print(" FPS");
-      gb.display.setColor(BROWN);
-      gb.display.print(" (");
-      gb.display.print(timeBenchmark);
-      gb.display.println("ms)");
-      gb.display.setColor(WHITE);
-      gb.display.print(gb.display.getBufferSize() / 1024);
-      gb.display.print(" KB");
-      gb.display.setColor(BROWN);
-      gb.display.println(" BUFFER");
+    gb.display.setColor(WHITE);
+    gb.display.print(1000 / (timeBenchmark));
+    gb.display.print(" FPS");
+    gb.display.setColor(BROWN);
+    gb.display.print(" (");
+    gb.display.print(timeBenchmark);
+    gb.display.println("ms)");
+    gb.display.setColor(WHITE);
+    gb.display.print(gb.display.getBufferSize() / 1024);
+    gb.display.print(" KB");
+    gb.display.setColor(BROWN);
+    gb.display.println(" BUFFER");
 
-      drawBottomLine();
-      uint16_t startTime = millis();
-      PORT->Group[0].OUTSET.reg = (1 << 17);  // set PORTA.17 high  "digitalWrite(13, HIGH)"
-      gb.tft.drawImage(0, 0, gb.display, gb.tft.width(), gb.tft.height());
-      PORT->Group[0].OUTCLR.reg = (1 << 17);  // clear PORTA.17 high "digitalWrite(13, LOW)"
-      uint16_t endTime = millis();
-      timeBenchmark = endTime - startTime;
-      if (skip()) {
-        return;
-      }
+    drawBottomLine();
+    uint16_t startTime = millis();
+    PORT->Group[0].OUTSET.reg = (1 << 17);  // set PORTA.17 high  "digitalWrite(13, HIGH)"
+    gb.tft.drawImage(0, 0, gb.display, gb.tft.width(), gb.tft.height());
+    PORT->Group[0].OUTCLR.reg = (1 << 17);  // clear PORTA.17 high "digitalWrite(13, LOW)"
+    uint16_t endTime = millis();
+    timeBenchmark = endTime - startTime;
+    if (skip()) {
+      return;
     }
   }
 }
@@ -154,57 +149,56 @@ void screenBenchmark() {
 void colors() {
   //Colors test 1/2
   while (1) {
-    if (gb.update()) {
-      // clear the previous screen
-      gb.display.clear();
+    while(!gb.update());
+    // clear the previous screen
+    gb.display.clear();
 
-      //first column
-      gb.display.setColor(WHITE);
-      gb.display.println("WHITE");
-      gb.display.setColor(GRAY);
-      gb.display.println("GRAY");
-      gb.display.setColor(DARKGRAY);
-      gb.display.println("DARKGRAY");
-      gb.display.setColor(BLACK, DARKGRAY);
-      gb.display.println("BLACK");
-      gb.display.setColor(PURPLE);
-      gb.display.println("PURPLE");
-      gb.display.setColor(PINK);
-      gb.display.println("PINK");
-      gb.display.setColor(RED);
-      gb.display.println("RED");
-      gb.display.setColor(ORANGE);
-      gb.display.println("ORANGE");
+    //first column
+    gb.display.setColor(WHITE);
+    gb.display.println("WHITE");
+    gb.display.setColor(GRAY);
+    gb.display.println("GRAY");
+    gb.display.setColor(DARKGRAY);
+    gb.display.println("DARKGRAY");
+    gb.display.setColor(BLACK, DARKGRAY);
+    gb.display.println("BLACK");
+    gb.display.setColor(PURPLE);
+    gb.display.println("PURPLE");
+    gb.display.setColor(PINK);
+    gb.display.println("PINK");
+    gb.display.setColor(RED);
+    gb.display.println("RED");
+    gb.display.setColor(ORANGE);
+    gb.display.println("ORANGE");
 
-      //second column
-      gb.display.cursorY = 0;
-      gb.display.cursorX = 36;
-      gb.display.setColor(BROWN);
-      gb.display.println("BROWN");
-      gb.display.cursorX = 36;
-      gb.display.setColor(BEIGE);
-      gb.display.println("BEIGE");
-      gb.display.cursorX = 36;
-      gb.display.setColor(YELLOW);
-      gb.display.println("YELLOW");
-      gb.display.cursorX = 36;
-      gb.display.setColor(LIGHTGREEN);
-      gb.display.println("LIGHTGREEN");
-      gb.display.cursorX = 36;
-      gb.display.setColor(GREEN);
-      gb.display.println("GREEN");
-      gb.display.cursorX = 36;
-      gb.display.setColor(DARKBLUE);
-      gb.display.println("DARKBLUE");
-      gb.display.cursorX = 36;
-      gb.display.setColor(BLUE);
-      gb.display.println("BLUE");
-      gb.display.cursorX = 36;
-      gb.display.setColor(LIGHTBLUE);
-      gb.display.println("LIGHTBLUE");
-      if (skip()) {
-        return;
-      }
+    //second column
+    gb.display.cursorY = 0;
+    gb.display.cursorX = 36;
+    gb.display.setColor(BROWN);
+    gb.display.println("BROWN");
+    gb.display.cursorX = 36;
+    gb.display.setColor(BEIGE);
+    gb.display.println("BEIGE");
+    gb.display.cursorX = 36;
+    gb.display.setColor(YELLOW);
+    gb.display.println("YELLOW");
+    gb.display.cursorX = 36;
+    gb.display.setColor(LIGHTGREEN);
+    gb.display.println("LIGHTGREEN");
+    gb.display.cursorX = 36;
+    gb.display.setColor(GREEN);
+    gb.display.println("GREEN");
+    gb.display.cursorX = 36;
+    gb.display.setColor(DARKBLUE);
+    gb.display.println("DARKBLUE");
+    gb.display.cursorX = 36;
+    gb.display.setColor(BLUE);
+    gb.display.println("BLUE");
+    gb.display.cursorX = 36;
+    gb.display.setColor(LIGHTBLUE);
+    gb.display.println("LIGHTBLUE");
+    if (skip()) {
+      return;
     }
   }
 }

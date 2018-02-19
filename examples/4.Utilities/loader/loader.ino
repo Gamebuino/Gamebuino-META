@@ -327,9 +327,7 @@ void setup() {
 			gb.display.print("\n");
 			gb.display.print(lang_press_a_continue);
 			while (1) {
-				if (!gb.update()) {
-					continue;
-				}
+				while(!gb.update());
 				if (gb.buttons.pressed(BUTTON_A)) {
 					break;
 				}

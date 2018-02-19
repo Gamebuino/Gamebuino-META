@@ -14,19 +14,19 @@ void setup() {
 }
 
 void loop() {
-  if (gb.update()) {
-    // clear the previous screen
-    gb.display.clear();
-    
-    // here we get the pointer ot our string, depending on the users language setting
-    const char* lang_fox = gb.language.get(fox);
-    // aaaaand print it to the screen
-    gb.display.println(lang_fox);
-    
-    // we can also combind the two lines above, letting it become:
-    gb.display.println(gb.language.get(fox));
-    
-    // or, if we want to print to the display, we can even do
-    gb.display.println(fox);
-  }
+  while(!gb.update());
+  
+  // clear the previous screen
+  gb.display.clear();
+  
+  // here we get the pointer ot our string, depending on the users language setting
+  const char* lang_fox = gb.language.get(fox);
+  // aaaaand print it to the screen
+  gb.display.println(lang_fox);
+  
+  // we can also combind the two lines above, letting it become:
+  gb.display.println(gb.language.get(fox));
+  
+  // or, if we want to print to the display, we can even do
+  gb.display.println(fox);
 }

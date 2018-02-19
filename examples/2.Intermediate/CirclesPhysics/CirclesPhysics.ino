@@ -12,18 +12,17 @@ void setup()
 
 void loop()
 {
-  if(gb.update()){
-    // clear the previous screen
-    gb.display.clear();
-    
-    //pause the game if C is pressed
-    if(gb.buttons.pressed(BUTTON_C)){
-      initGame();
-    }
-    updateCircles();
-    drawCircles();
-    
+  while(!gb.update());
+  
+  // clear the previous screen
+  gb.display.clear();
+  
+  //pause the game if C is pressed
+  if(gb.buttons.pressed(BUTTON_C)){
+    initGame();
   }
+  updateCircles();
+  drawCircles();
 }
 
 void initGame(){

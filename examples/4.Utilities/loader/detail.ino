@@ -101,9 +101,7 @@ void detailedView() {
 	loadDetailedView();
 	Image buttonsIcons = Image(Gamebuino_Meta::buttonsIconsData);
 	while (1) {
-		if (!gb.update()) {
-			continue;
-		}
+		while(!gb.update());
 		gb.display.fontSize = gb.display.width() == 80 ? 1 : 2;
 
 		uint8_t blockOffset = currentGame / BLOCK_LENGTH;

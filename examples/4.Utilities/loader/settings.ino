@@ -26,9 +26,8 @@ void settingsView() {
 	uint8_t curLangIndex = 0;
 	for (;(curLangIndex < numLangEntries) && (langEntries[curLangIndex].code != gb.language.getCurrentLang()); curLangIndex++);
 	while(1) {
-		if (!gb.update()) {
-			continue;
-		}
+		while(!gb.update());
+		
 		gb.display.clear();
 		const char* s = gb.language.get(lang_settings);
 		gb.display.setColor(WHITE);

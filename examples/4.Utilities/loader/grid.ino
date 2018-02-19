@@ -118,9 +118,7 @@ void gridView() {
 	uint8_t cursorX = 0;
 	uint8_t cursorY = 0;
 	while(1) {
-		if (!gb.update()) {
-			continue;
-		}
+		while(!gb.update());
 		gb.display.clear();
 		if (!totalGames) {
 			gb.display.setColor(WHITE);

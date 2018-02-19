@@ -25,25 +25,24 @@ void setup()
 }
 
 void loop(){
-  if(gb.update()){
-    // clear the previous screen
-    gb.display.clear();
-    
-    //pause the game if C is pressed
-    if(gb.buttons.pressed(BUTTON_C)){
-      initGame();
-    }
-    
-    updatePlayer();
-    updateObstacles();
-    
-    drawObstacles();
-    drawPlayer();
-    //gb.display.print(F("CPU:"));
-    //gb.display.print(gb.getCpuLoad());
-    //gb.display.print(F("%"));
-    
+  while(!gb.update());
+  
+  // clear the previous screen
+  gb.display.clear();
+  
+  //pause the game if C is pressed
+  if(gb.buttons.pressed(BUTTON_C)){
+    initGame();
   }
+  
+  updatePlayer();
+  updateObstacles();
+  
+  drawObstacles();
+  drawPlayer();
+  //gb.display.print(F("CPU:"));
+  //gb.display.print(gb.getCpuLoad());
+  //gb.display.print(F("%"));
 }
 
 void initGame(){

@@ -18,10 +18,9 @@ void setup() {
   root = SD.open("SAMPLES");
   if (!loadNextBitmap()) {
     while (1) {
-      if (gb.update()) {
-        gb.display.clear();
-        gb.display.println("NO BITMAP FOUND");
-      }
+      while(!gb.update());
+      gb.display.clear();
+      gb.display.println("NO BITMAP FOUND");
     }
   }
 }
@@ -53,52 +52,50 @@ boolean loadNextBitmap() {
 }
 
 void loop() {
-  if (gb.update()) {
-    // clear the previous screen
-    gb.display.clear();
-    
-    //if multiple frames
-    if (img.frames > 1) { 
-      //load after the last one
-      if (img.frame == (img.frames - 1)) {
-        loadNextBitmap();
-      }
-      //if single frame, load after a while
-    } else {
-      nextTimer--;
-      if ((nextTimer <= 0 && slideShow)) {
-        loadNextBitmap();
-      }
-    }
-    if (gb.buttons.repeat(BUTTON_A, 10)) {
+  while(!gb.update());
+  // clear the previous screen
+  gb.display.clear();
+  
+  //if multiple frames
+  if (img.frames > 1) { 
+    //load after the last one
+    if (img.frame == (img.frames - 1)) {
       loadNextBitmap();
     }
-    if (gb.buttons.pressed(BUTTON_B)) {
-      slideShow = 1 - slideShow;
-      slideShowTimer = 20;  
-    }
-
-    gb.display.drawImage(0, 0, img);
-    if (popupTimer > 0) {
-      popupTimer--;
-      //show file name
-      gb.display.setColor(WHITE, BLACK);
-      gb.display.cursorX = 0;
-      gb.display.cursorY = 0;
-      gb.display.println(path);
-
-    }
-    if (slideShowTimer > 0) {
-      slideShowTimer--;
-      gb.display.setColor(WHITE, BLACK);
-      gb.display.cursorX = 0;
-      gb.display.cursorY = 58;
-      if (slideShow) {
-        gb.display.println(" Slide show enabled ");
-      } else {
-        gb.display.println("Slide show disabled ");
-      }      
+    //if single frame, load after a while
+  } else {
+    nextTimer--;
+    if ((nextTimer <= 0 && slideShow)) {
+      loadNextBitmap();
     }
   }
-}
+  if (gb.buttons.repeat(BUTTON_A, 10)) {
+    loadNextBitmap();
+  }
+  if (gb.buttons.pressed(BUTTON_B)) {
+    slideShow = 1 - slideShow;
+    slideShowTimer = 20;  
+  }
 
+  gb.display.drawImage(0, 0, img);
+  if (popupTimer > 0) {
+    popupTimer--;
+    //show file name
+    gb.display.setColor(WHITE, BLACK);
+    gb.display.cursorX = 0;
+    gb.display.cursorY = 0;
+    gb.display.println(path);
+
+  }
+  if (slideShowTimer > 0) {
+    slideShowTimer--;
+    gb.display.setColor(WHITE, BLACK);
+    gb.display.cursorX = 0;
+    gb.display.cursorY = 58;
+    if (slideShow) {
+      gb.display.println(" Slide show enabled ");
+    } else {
+      gb.display.println("Slide show disabled ");
+    }      
+  }
+}
