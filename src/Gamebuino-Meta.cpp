@@ -112,7 +112,7 @@ void Gamebuino::begin() {
 	timePerFrame = 40; //25 FPS
 	//nextFrameMillis = 0;
 	//frameCount = 0;
-	frameEndMicros = 1;
+	frameEndFlag = true;
 	startMenuTimer = 255;
 
 	//neoPixels
@@ -300,11 +300,11 @@ void Gamebuino::titleScreen() {
 bool recording_screen = false;
 
 bool Gamebuino::update() {
-	if (((nextFrameMillis - millis()) > timePerFrame) && frameEndMicros) { //if time to render a new frame is reached and the frame end has ran once
+	if (((nextFrameMillis - millis()) > timePerFrame) && frameEndFlag) { //if time to render a new frame is reached and the frame end has ran once
 		nextFrameMillis = millis() + timePerFrame;
 		frameCount++;
 
-		frameEndMicros = 0;
+		frameEndFlag = false;
 		frameStartMicros = micros();
 
 		buttons.update();
@@ -312,7 +312,7 @@ bool Gamebuino::update() {
 		return true;
 
 	}
-	if (frameEndMicros) {
+	if (frameEndFlag) {
 		return false;
 	}
 	// ok, here is the first time after a frame, so we'll better check stuff correctly
@@ -322,8 +322,6 @@ bool Gamebuino::update() {
 	
 	//draw and update popups
 	updatePopup();
-	
-	Graphics_SD::update(); // update screen recordings
 	
 	sound.update(); // update sound stuff once per frame
 	
@@ -349,17 +347,15 @@ bool Gamebuino::update() {
 	}
 	//show a red blinking pixel on recording screen
 	if (recording_screen) {
-		if ((frameCount % 10) < 5) {
-			neoPixels.setPixelColor(px_map[0], 0xFF, 0, 0);
-		} else {
-			neoPixels.setPixelColor(px_map[0], 0, 0, 0);
-		}
+		neoPixels.setPixelColor(px_map[0], (frameCount % 10) < 5 ? 0xFF : 0, 0, 0);
 	}
 	neoPixels.show();
 	neoPixels.clear();
 
-	frameEndMicros = micros(); //measure the frame's end time
-	frameDurationMicros = frameEndMicros - frameStartMicros;
+	frameDurationMicros = micros() - frameStartMicros;
+	Graphics_SD::update(); // update screen recordings
+	
+	frameEndFlag = true; // we are at end of frame
 	return false;
 }
 
@@ -1113,7 +1109,7 @@ void noTone(uint32_t outputPin) {
 }
 
 void yield() {
-	if (gb.inited && (gb.frameEndMicros || gb.frameStartMicros)) {
+	if (gb.inited && (gb.frameEndFlag || gb.frameStartMicros)) {
 		gb.update();
 	}
 }

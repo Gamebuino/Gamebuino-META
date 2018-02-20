@@ -104,7 +104,8 @@ public:
 	uint8_t getCpuLoad();
 	uint16_t getFreeRam();
 	uint32_t frameDurationMicros;
-	uint32_t frameStartMicros, frameEndMicros;
+	uint32_t frameStartMicros;
+	bool frameEndFlag;
 	
 	int8_t menu(const char* const* items, uint8_t length);
 	void checkHomeMenu();
