@@ -37,8 +37,8 @@ enum class Button : uint8_t {
 	up,
 	a,
 	b,
-	c,
-	d,
+	menu,
+	home,
 };
 
 class Buttons {
@@ -63,9 +63,9 @@ const Button BUTTON_RIGHT = Button::right;
 const Button BUTTON_UP = Button::up;
 const Button BUTTON_A = Button::a;
 const Button BUTTON_B = Button::b;
-const Button BUTTON_MENU = Button::c;
-const Button BUTTON_HOME = Button::d;
-const Button BUTTON_C = Button::c;
-const Button BUTTON_D = Button::d;
+const Button BUTTON_MENU = Button::menu;
+const Button BUTTON_HOME = Button::home;
+const Button BUTTON_C = Button::menu;
+const Button BUTTON_D = Button::home;
 
 #endif	// _GAMEBUINO_META_BUTTONS_H_

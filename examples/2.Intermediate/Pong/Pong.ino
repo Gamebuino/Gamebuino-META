@@ -43,8 +43,8 @@ void loop() {
   // clear the previous screen
   gb.display.clear();
   
-  //pause the game if C is pressed
-  if(gb.buttons.pressed(BUTTON_C)){
+  //pause the game if MENU is pressed
+  if(gb.buttons.pressed(BUTTON_MENU)){
     gb.titleScreen("Pong Solo");
     //gb.battery.show = false;
     //gb.display.fontSize = 2;

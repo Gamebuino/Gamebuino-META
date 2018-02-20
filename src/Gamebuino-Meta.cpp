@@ -394,7 +394,7 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 		display.setColor(WHITE);
 		display.fill();
 		display.setColor(BLACK, WHITE);
-		if (buttons.pressed(Button::a) || buttons.pressed(Button::b) || buttons.pressed(Button::c)) {
+		if (buttons.pressed(Button::a) || buttons.pressed(Button::b) || buttons.pressed(Button::menu)) {
 			exit = true; //time to exit menu !
 			targetY = - display.fontHeight * length - 2; //send the menu out of the screen
 			if (buttons.pressed(Button::a)) {
@@ -476,13 +476,13 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 
 void Gamebuino::checkHomeMenu() {
 	//get back to game list when "HOME is held
-	if (buttons.held(Button::d, 25)){
+	if (buttons.held(Button::home, 25)){
 		changeGame();
 	}
 	if (framesDisplayRecording != -1) {
 		framesDisplayRecording--;
 	}
-	if (buttons.released(Button::d) || (framesDisplayRecording == 0 && recording_screen)) {
+	if (buttons.released(Button::home) || (framesDisplayRecording == 0 && recording_screen)) {
 		if (recording_screen) {
 			// stop the recording
 			HOME_MENU_SAVE_STATE;
@@ -621,13 +621,13 @@ void Gamebuino::homeMenu(){
 			//clear noPixels
 			neoPixels.clear();
 			
-			if(buttons.released(Button::d) || buttons.released(Button::b) || buttons.released(Button::c)){
+			if(buttons.released(Button::home) || buttons.released(Button::b) || buttons.released(Button::menu)){
 				sound.stopEfxOnly();
 				HOME_MENU_RESTORE_STATE;
 				Hook_ExitHomeMenu();
 				return;
 			}
-			if(buttons.held(Button::d, 25)){
+			if(buttons.held(Button::home, 25)){
 				changeGame();
 			}
 			
@@ -934,7 +934,7 @@ void Gamebuino::keyboard(char* text, uint8_t length) {
 			activeChar = 0;
 		}
 		//leave menu
-		if (buttons.pressed(Button::c)) {
+		if (buttons.pressed(Button::menu)) {
 			sound.playOK();
 			while (1) {
 				if (update()) {
