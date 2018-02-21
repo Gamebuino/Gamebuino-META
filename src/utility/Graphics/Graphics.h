@@ -102,6 +102,8 @@ public:
 	virtual void invertDisplay(boolean i);
 	virtual void drawImage(int16_t x, int16_t y, Image& img);
 	virtual void drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);
+	virtual void drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y2, int16_t w2, int16_t h2);
+	void drawImageCrop(int16_t x, int16_t y, int16_t w1, int16_t i2offset, int16_t w2cropped, int16_t j2offset, int16_t h2cropped, Image& img);
 	virtual void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap);
 	virtual void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip);
 

@@ -114,6 +114,7 @@ public:
 	
 	void drawImage(int16_t x, int16_t y, Image& img);
 	void drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);
+	void drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y2, int16_t w2, int16_t h2);
 	
 	//`frame_looping` holds every how many frames it should get updated
 	//`frame_loopcounter` is the counter for that.

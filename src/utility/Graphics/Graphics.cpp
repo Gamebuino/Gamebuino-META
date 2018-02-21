@@ -644,7 +644,161 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 	} else if ((y + h1) > _height) {
 		h2cropped = _height - y;
 	}
+	
+	drawImageCrop(x, y, w1, i2offset, w2cropped, j2offset, h2cropped, img);
+}
 
+void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2) {
+	img.nextFrame();
+	if ((x > _width) || ((x + abs(w2)) < 0) || (y > _height) || ((y + abs(h2)) < 0) || (w2 == 0) || (h2 == 0)) return;
+
+	int16_t w = img._width;
+	int16_t h = img._height;
+
+	//no scaling, fall back to the regular function
+	if ((w == w2) && (h == h2)) {
+		drawImage(x, y, img);
+		return;
+	}
+
+	bool invertX = (w2 < 0);
+	bool invertY = (h2 < 0);
+	w2 = abs(w2);
+	h2 = abs(h2);
+
+
+	//horizontal cropping
+	int16_t w2cropped = w2; //width of the cropped buffer
+	int16_t i2offset = 0;
+	if (x < 0) {
+		i2offset = -x;
+		w2cropped = w2 + x;
+	} else if ((x + w2) > _width) {
+		w2cropped = _width - x;
+	}
+
+	//vertical cropping
+	int16_t h2cropped = h2;
+	int16_t j2offset = 0;
+	if (y < 0) {
+		j2offset = -y;
+		h2cropped = h2 + y;
+	} else if ((y + h2) > _height) {
+		h2cropped = _height - y;
+	}
+	
+	if (colorMode == ColorMode::rgb565) {
+		uint16_t bufferLine[w2];
+		uint16_t transparent_backup = img.transparentColor;
+		if (img.colorMode == ColorMode::index) {
+			if (img.useTransparentIndex) {
+				img.transparentColor = (uint16_t)colorIndex[img.transparentColorIndex];
+			} else {
+				img.transparentColor = 1;
+			}
+			
+		}
+		for (int16_t j2 = 0; j2 < h2cropped; j2++) { //j2: offseted vertical coordinate in destination
+			uint16_t j = h * (j2 + j2offset) / h2; //j: vertical coordinate in source image
+			j = invertY ? h - 1 - j : j;
+			for (int16_t i2 = 0; i2 < w2cropped; i2++) { //i2: offseted horizontal coordinate in desination
+				uint16_t i = w * (i2 + i2offset) / w2; //i: horizontal coordinate in original image
+				i = invertX ? w - 1 - i : i;
+				if (img.colorMode == ColorMode::rgb565) {
+					// draw RGB => RGB
+					bufferLine[i2] = img._buffer[(j * w) + i];
+				} else if (img.colorMode == ColorMode::index) {
+					//draw INDEX => RGB
+					uint8_t b = ((uint8_t*)img._buffer)[((w+1)/2)*j + (i/2)];
+					if (!(i % 2)) {
+						b >>= 4;
+					}
+					bufferLine[i2] = (uint16_t)colorIndex[b & 0x0F];
+				}
+			}
+			drawBufferedLine(x + i2offset, y + j2 + j2offset, bufferLine, w2cropped, img);
+		}
+		img.transparentColor = transparent_backup;
+		return;
+	}
+	if (colorMode == ColorMode::index) {
+		if (img.colorMode == ColorMode::rgb565) {
+			return;
+		}
+		uint8_t bufferLine[w2 + 1];
+		for (int16_t j2 = 0; j2 < h2cropped; j2++) { //j2: offseted vertical coordinate in destination
+			uint8_t* dst = bufferLine;
+			uint16_t j = h * (j2 + j2offset) / h2; //j: vertical coordinate in source image
+			j = invertY ? h - 1 - j : j;
+			for (int16_t i2 = 0; i2 < w2cropped; i2++) { //i2: offseted horizontal coordinate in desination
+				uint16_t i = w * (i2 + i2offset) / w2; //i: horizontal coordinate in original image
+				i = invertX ? w - 1 - i : i;
+				
+				//draw INDEX => INDEX
+				uint8_t b = ((uint8_t*)img._buffer)[((w+1)/2)*j + (i/2)];
+				if (!(i % 2)) {
+					b >>= 4;
+				}
+				b &= 0x0F;
+				if ((x + i2 + i2offset) % 2) {
+					*dst = (*dst & 0xF0) | b;
+					dst++;
+				} else {
+					*dst = (*dst & 0x0F) | (b << 4);
+				}
+			}
+			drawBufferedLine(x + i2offset, y + j2 + j2offset, (uint16_t*)bufferLine, w2cropped, img);
+		}
+		return;
+	}
+}
+
+void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y2, int16_t w2, int16_t h2) {
+	img.nextFrame();
+	int16_t w1 = img._width; //width of the source image
+	int16_t h1 = img._height; //height of the source image
+	if (w2 == 0 || w1 == 0 || (x > _width) || ((x + w1) < 0) || (y > _height) || ((y + h1) < 0)) return;
+
+	//no scaling, fall back to the regular function
+	if ((x2 == 0) && (y2 == 0) && (w1 == w2) && (h1 == h2)) {
+		drawImage(x, y, img);
+		return;
+	}
+	w2 = min(w2, w1 - y2);
+	h2 = min(h2, h1 - y2);
+	
+	//horizontal cropping
+	int16_t i2offset = x2;
+	int16_t w2cropped = w2;
+	if (x < 0) {
+		i2offset = x2 - x;
+		w2cropped = w2 + x;
+		if (w2cropped > _width) {
+			w2cropped = _width;
+		}
+	} else if ((x + w2) > _width) {
+		w2cropped = _width - x;
+	}
+	x -= x2;
+	
+	//vertical cropping
+	int16_t j2offset = y2;
+	int16_t h2cropped = h2;
+	if (y < 0) {
+		j2offset = y2 - y;
+		h2cropped = h2 + y;
+		if (h2cropped > _height) {
+			h2cropped = _height;
+		}
+	} else if ((y + h2) > _height) {
+		h2cropped = _height - y;
+	}
+	y -= y2;
+	
+	drawImageCrop(x, y, w1, i2offset, w2cropped, j2offset, h2cropped, img);
+}
+
+void Graphics::drawImageCrop(int16_t x, int16_t y, int16_t w1, int16_t i2offset, int16_t w2cropped, int16_t j2offset, int16_t h2cropped, Image& img) {
 	//draw INDEX => RGB
 	if ((img.colorMode == ColorMode::index) && (colorMode == ColorMode::rgb565)) {
 		uint16_t transparent_backup = img.transparentColor;
@@ -739,111 +893,6 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 			drawPixel(x + i, y + j);
 		}
 	}*/
-}
-
-void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2) {
-	img.nextFrame();
-	if ((x > _width) || ((x + abs(w2)) < 0) || (y > _height) || ((y + abs(h2)) < 0) || (w2 == 0) || (h2 == 0)) return;
-
-	int16_t w = img._width;
-	int16_t h = img._height;
-
-	//no scaling, fall back to the regular function
-	if ((w == w2) && (h == h2)) {
-		drawImage(x, y, img);
-		return;
-	}
-
-	boolean invertX = (w2 < 0);
-	boolean invertY = (h2 < 0);
-	w2 = abs(w2);
-	h2 = abs(h2);
-
-
-	//horizontal cropping
-	int16_t w2cropped = w2; //width of the cropped buffer
-	int16_t i2offset = 0;
-	if (x < 0) {
-		i2offset = -x;
-		w2cropped = w2 + x;
-	} else if ((x + w2) > _width) {
-		w2cropped = _width - x;
-	}
-
-	//vertical cropping
-	int16_t h2cropped = h2;
-	int16_t j2offset = 0;
-	if (y < 0) {
-		j2offset = -y;
-		h2cropped = h2 + y;
-	} else if ((y + h2) > _height) {
-		h2cropped = _height - y;
-	}
-	
-	if (colorMode == ColorMode::rgb565) {
-		uint16_t bufferLine[w2];
-		uint16_t transparent_backup = img.transparentColor;
-		if (img.colorMode == ColorMode::index) {
-			if (img.useTransparentIndex) {
-				img.transparentColor = (uint16_t)colorIndex[img.transparentColorIndex];
-			} else {
-				img.transparentColor = 1;
-			}
-			
-		}
-		for (int16_t j2 = 0; j2 < h2cropped; j2++) { //j2: offseted vertical coordinate in destination
-			uint16_t j = h * (j2 + j2offset) / h2; //j: vertical coordinate in source image
-			j = invertY ? h - 1 - j : j;
-			for (int16_t i2 = 0; i2 < w2cropped; i2++) { //i2: offseted horizontal coordinate in desination
-				uint16_t i = w * (i2 + i2offset) / w2; //i: horizontal coordinate in original image
-				i = invertX ? w - 1 - i : i;
-				if (img.colorMode == ColorMode::rgb565) {
-					// draw RGB => RGB
-					bufferLine[i2] = img._buffer[(j * w) + i];
-				} else if (img.colorMode == ColorMode::index) {
-					//draw INDEX => RGB
-					uint8_t b = ((uint8_t*)img._buffer)[((w+1)/2)*j + (i/2)];
-					if (!(i % 2)) {
-						b >>= 4;
-					}
-					bufferLine[i2] = (uint16_t)colorIndex[b & 0x0F];
-				}
-			}
-			drawBufferedLine(x + i2offset, y + j2 + j2offset, bufferLine, w2cropped, img);
-		}
-		img.transparentColor = transparent_backup;
-		return;
-	}
-	if (colorMode == ColorMode::index) {
-		if (img.colorMode == ColorMode::rgb565) {
-			return;
-		}
-		uint8_t bufferLine[w2 + 1];
-		for (int16_t j2 = 0; j2 < h2cropped; j2++) { //j2: offseted vertical coordinate in destination
-			uint8_t* dst = bufferLine;
-			uint16_t j = h * (j2 + j2offset) / h2; //j: vertical coordinate in source image
-			j = invertY ? h - 1 - j : j;
-			for (int16_t i2 = 0; i2 < w2cropped; i2++) { //i2: offseted horizontal coordinate in desination
-				uint16_t i = w * (i2 + i2offset) / w2; //i: horizontal coordinate in original image
-				i = invertX ? w - 1 - i : i;
-				
-				//draw INDEX => INDEX
-				uint8_t b = ((uint8_t*)img._buffer)[((w+1)/2)*j + (i/2)];
-				if (!(i % 2)) {
-					b >>= 4;
-				}
-				b &= 0x0F;
-				if ((x + i2 + i2offset) % 2) {
-					*dst = (*dst & 0xF0) | b;
-					dst++;
-				} else {
-					*dst = (*dst & 0x0F) | (b << 4);
-				}
-			}
-			drawBufferedLine(x + i2offset, y + j2 + j2offset, (uint16_t*)bufferLine, w2cropped, img);
-		}
-		return;
-	}
 }
 
 
