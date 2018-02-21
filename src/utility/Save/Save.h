@@ -67,7 +67,8 @@ public:
 	
 	int32_t get(uint16_t i);
 	bool get(uint16_t i, void* buf, uint32_t bufsize);
-	template< typename T > bool get(uint16_t i, T& obj) {
+	template< typename T >
+	bool get(uint16_t i, T& obj) {
 		return get(i, &obj, sizeof(T));
 	};
 	bool set(uint16_t i, int32_t num);
@@ -75,10 +76,11 @@ public:
 	bool set(uint16_t i, const char* buf);
 	bool set(uint16_t i, void* buf, uint32_t bufsize);
 	bool set(uint16_t i, const void* buf, uint32_t bufsize);
-	template< typename T > bool set(uint16_t i, T& obj) {
-		if (std::is_arithmetic<T>::value) {
-			return set(i, (int32_t)obj);
-		}
+	template<
+		typename T,
+		typename = typename std::enable_if<!(std::is_arithmetic<T>::value), T>::type
+	>
+	bool set(uint16_t i, T& obj) {
 		return set(i, &obj, sizeof(T));
 	};
 	void del(uint16_t i);
