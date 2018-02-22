@@ -10,6 +10,15 @@ void setup() {
 int8_t music = -1;
 int8_t fx = -1;
 
+/*
+ Files will be opened relative to the sketch folder,
+ so in this case this would be the "Audio"-folder.
+ So, you will have to place the test.wav as
+ "/Audio/test.wav" into the SD card, and NOT in the
+ root folder!
+ */
+
+
 void loop() {
   while(!gb.update());
 
@@ -44,7 +53,7 @@ void loop() {
   
   // bottom line indications
   // this just prints the lower bar for what button does what
-  gb.display.setCursors(0, gb.display.height() - 5);
+  gb.display.setCursor(0, gb.display.height() - 5);
   gb.display.setColor(GREEN);
   gb.display.print("A");
   gb.display.setColor(BROWN);
