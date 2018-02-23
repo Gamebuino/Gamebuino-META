@@ -30,10 +30,6 @@ extern const byte font5x7[]; //get the default large font
 ///////////////////////////////////// SETUP
 void setup() {
   gb.begin();
-  //gb.display.setFont(font5x7); //change the font to the large one
-  gb.titleScreen("Pong Solo");
-  gb.pickRandomSeed(); //pick a different random seed each time for games to be different
-  //gb.battery.show = false; //hide the battery indicator
 }
 
 ///////////////////////////////////// LOOP
@@ -45,7 +41,15 @@ void loop() {
   
   //pause the game if MENU is pressed
   if(gb.buttons.pressed(BUTTON_MENU)){
-    gb.titleScreen("Pong Solo");
+    while(1) {
+      while(!gb.update());
+      gb.display.clear();
+      gb.display.println("Game Paused");
+      gb.display.println("Press MENU to unpause");
+      if (gb.buttons.pressed(BUTTON_MENU)) {
+        break;
+      }
+    }
     //gb.battery.show = false;
     //gb.display.fontSize = 2;
     delay(500);
