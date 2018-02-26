@@ -1,16 +1,17 @@
-// import the Gamebuino library
-#include <Gamebuino-Meta.h>
-
-// gamebuino setup
-void setup() {
-  gb.begin();
-}
-
+// === LIGHTS === //
 // gb.light is a 2x4 pixel image to which we can draw to
 // drawing stuff to it will automatically update the lights in the background
 
+// import the Gamebuino library
+#include <Gamebuino-Meta.h>
+
+
 bool lightsOn = false;
 bool redLight = false;
+
+void setup() {
+  gb.begin();
+}
 
 void loop() {
   while(!gb.update());
@@ -43,5 +44,5 @@ void loop() {
   }
   
   // now let's just display our controls
-  gb.display.println("A: lights on\nB: red light");
+  gb.display.println("LIGHTS\nA: TOGGLE ALL\nB: TOGGLE RED");
 }
