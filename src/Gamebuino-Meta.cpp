@@ -107,6 +107,21 @@ const uint8_t homeIcons[] = {80,12,
 	0b00000001,0b00000000,0b00000000,0b00000000,0b00000000,0b11000000,0b00000000,0b00000000,0b00000000,0b00000000,
 };
 
+const uint8_t volumeUnmuted[] = {8,12,
+	0b00000000,
+	0b00000000,
+	0b00010000,
+	0b00001000,
+	0b01000100,
+	0b00100100,
+	0b00100100,
+	0b01000100,
+	0b00001000,
+	0b00010000,
+	0b00000000,
+	0b00000000,
+};
+
 const uint16_t startSound[] = {0x0005,0x338,0x3FC,0x254,0x1FC,0x25C,0x3FC,0x368,0x0000};
 
 void Gamebuino::begin() {
@@ -574,11 +589,7 @@ void Gamebuino::homeMenu(){
 	int currentItem = 2; //default on center item
 	unsigned long lastMillis = 0;
 	//3 text lines vertical coordinates
-	const int yOffset1 = 42;
-	const int yOffset2 = 42+16;
-	const int yOffset3 = 42+16+16;
-	//main text offset
-	const int xOffset = 40;
+	const int yOffset = 52;
 	boolean changed = true;
 	int frameCounter = 0;
 	
@@ -596,39 +607,44 @@ void Gamebuino::homeMenu(){
 	uint8_t neoPixelsIntensity = 0;
 	for (;(neoPixelsIntensity < 5) && (neoPixels.getBrightness() > neoPixelsIntensities[neoPixelsIntensity]);neoPixelsIntensity++);
 	
-	//icons
+	//static screen content
+	//draw icons first as it's where the user is focused
 	{ //local scope to free RAM used by the buffer
 		tft.setColor(DARKGRAY);
-		tft.fillRect(0,50,160,32);
+		tft.fillRect(0,yOffset,160,32);
 		tft.setColor(WHITE);
 		Image icons(80, 12, ColorMode::index);
 		icons.clear();
 		icons.fill(DARKGRAY);
 		icons.setColor(WHITE);
 		icons.drawBitmap(0, 0, homeIcons);
-		tft.drawImage(0, 54, icons, 80*2, 12*2);
+		tft.drawImage(0, yOffset + 4, icons, 80*2, 12*2);
+		//erase soundwaves if muted
+		if(!sound.getVolume()){
+			tft.setColor(DARKGRAY);
+			tft.fillRect(50, yOffset + 8, 10, 16);
+		}
 	}
 	
-	//static screen content
 	//logo
 	{ //local scope to free RAM used by the buffer
 		tft.setColor(BLACK);
-		tft.fillRect(0,0,160,24);
+		tft.fillRect(0,0,160,28);
 		Image logo(80, 10, ColorMode::index);
 		logo.clear();
 		logo.setColor(WHITE);
 		logo.drawBitmap(0, 0, gamebuinoLogo);
-		tft.drawImage(0, 0, logo, 80*2, 10*2);
+		tft.drawImage(0, 4, logo, 80*2, 10*2);
 	}
 
 	//horizontal stripes top
 	tft.setColor(DARKGRAY);
-	for (int i = 22; i < 50; i+=4){
+	for (int i = 28; i < yOffset; i+=4){
 		tft.fillRect(0, i, tft.width(), 2);
 	}
 	
 	//horizontal stripes bottom
-	for (int i = 84; i < tft.height(); i+=4){
+	for (int i = yOffset + 34; i < tft.height(); i+=4){
 		tft.fillRect(0, i, tft.width(), 2);
 	}
 		
@@ -736,27 +752,35 @@ void Gamebuino::homeMenu(){
 				break;
 				////VOLUME
 				case 1:
+					//toggle mute/unmute
 					if (buttons.released(Button::a)) {
-						if (sound.isMute()) {
-							sound.unmute();
+						if (sound.getVolume()) {
+							sound.setVolume(0);
+							settings.set(SETTING_VOLUME_MUTE, 1);
+						} else {
 							sound.setVolume(6);
 							sound.playTick();
 							settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
-						} else {
-							sound.mute();
-							settings.set(SETTING_VOLUME_MUTE, 1);
 						}
 						changed = true;
 					}
+					//increase volume
 					if ((buttons.repeat(Button::up, 4) && (sound.getVolume() < 8))){
 						sound.setVolume(sound.getVolume() + 1);
 						settings.set(SETTING_VOLUME, sound.getVolume());
 						changed = true;
 					}
+					//reduce volume
 					if (buttons.repeat(Button::down, 4) && sound.getVolume() && !sound.isMute()){
 						sound.setVolume(sound.getVolume() - 1);
 						settings.set(SETTING_VOLUME, sound.getVolume());
 						changed = true;
+					}
+					//update mute/unmute status
+					if(sound.getVolume()){
+						sound.unmute();
+					} else {
+						sound.mute();
 					}
 					if(buttons.repeat(Button::up, 4) || buttons.repeat(Button::down, 4)){
 						sound.playTick();
@@ -772,8 +796,8 @@ void Gamebuino::homeMenu(){
 				case 3:
 					if (buttons.released(Button::a)){
 						tft.setColor(WHITE);
-						tft.drawRect(currentItem*32, 50, 32, 32);
-						tft.drawRect(1 + currentItem*32, 51, 30, 30);
+						tft.drawRect(currentItem*32, yOffset, 32, 32);
+						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
 						/*
 						tft.print(language._get(lang_homeMenu_SAVING));
 						*/
@@ -794,8 +818,8 @@ void Gamebuino::homeMenu(){
 							tft.print(language._get(lang_homeMenu_SAVED));
 							*/
 							tft.setColor(LIGHTGREEN);
-							tft.drawRect(currentItem*32, 50, 32, 32);
-							tft.drawRect(1 + currentItem*32, 51, 30, 30);
+							tft.drawRect(currentItem*32, yOffset, 32, 32);
+							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
 							delay(400);
 							changed = true;
 						} else {
@@ -805,8 +829,8 @@ void Gamebuino::homeMenu(){
 							tft.print(language._get(lang_homeMenu_ERROR));
 							*/
 							tft.setColor(RED);
-							tft.drawRect(currentItem*32, 50, 32, 32);
-							tft.drawRect(1 + currentItem*32, 51, 30, 30);
+							tft.drawRect(currentItem*32, yOffset, 32, 32);
+							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
 							delay(400);
 							changed = true;
 						}
@@ -820,8 +844,8 @@ void Gamebuino::homeMenu(){
 						tft.print(language._get(lang_homeMenu_READY));
 						*/
 						tft.setColor(WHITE	);
-						tft.drawRect(currentItem*32, 50, 32, 32);
-						tft.drawRect(1 + currentItem*32, 51, 30, 30);
+						tft.drawRect(currentItem*32, yOffset, 32, 32);
+						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
 						char name[] = "REC/00000.GMV";
 						bool success = homeMenuGetUniquePath(name, 4, 5);
 						bool infinite = buttons.held(Button::a, 25);
@@ -849,8 +873,8 @@ void Gamebuino::homeMenu(){
 							tft.print(language._get(lang_homeMenu_GO));
 							*/
 							tft.setColor(LIGHTGREEN);
-							tft.drawRect(currentItem*32, 50, 32, 32);
-							tft.drawRect(1 + currentItem*32, 51, 30, 30);
+							tft.drawRect(currentItem*32, yOffset, 32, 32);
+							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
 							delay(400);
 							inited = true;
 							sound.stopEfxOnly();
@@ -864,8 +888,8 @@ void Gamebuino::homeMenu(){
 							tft.print(language._get(lang_homeMenu_ERROR));
 							*/
 							tft.setColor(RED);
-							tft.drawRect(currentItem*32, 50, 32, 32);
-							tft.drawRect(1 + currentItem*32, 51, 30, 30);
+							tft.drawRect(currentItem*32, yOffset, 32, 32);
+							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
 							delay(400);
 							changed = true;
 						}
@@ -875,25 +899,42 @@ void Gamebuino::homeMenu(){
 			}
 			
 			//draw blinking selector
-			if((frameCounter % 8) < 4){
+			if((frameCounter % 8) >= 4){
 				tft.setColor(BROWN);
 			} else {
 				tft.setColor(DARKGRAY);
 			}
-			tft.drawRect(currentItem*32, 50, 32, 32);
-			tft.drawRect(1 + currentItem*32, 51, 30, 30);
+			tft.drawRect(currentItem*32, yOffset, 32, 32);
+			tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
 			
 			
 			if(changed == true){
 				//erase previous selector position
 				tft.setColor(DARKGRAY);
 				if(buttons.repeat(Button::left, 8)){
-					tft.drawRect((currentItem+1)*32, 50, 32, 32);
-					tft.drawRect(1 + (currentItem+1)*32, 51, 30, 30);
+					tft.drawRect((currentItem+1)*32, yOffset, 32, 32);
+					tft.drawRect(1 + (currentItem+1)*32, yOffset+1, 30, 30);
 				}
 				if(buttons.repeat(Button::right, 8)){
-					tft.drawRect((currentItem-1)*32, 50, 32, 32);
-					tft.drawRect(1 + (currentItem-1)*32, 51, 30, 30);
+					tft.drawRect((currentItem-1)*32, yOffset, 32, 32);
+					tft.drawRect(1 + (currentItem-1)*32, yOffset+1, 30, 30);
+				}
+				
+					
+				////VOLUME
+				if(currentItem == 1){
+					//erase waveform if muted
+					if(sound.getVolume()){
+						Image volume(8, 16, ColorMode::index);
+						volume.clear();
+						volume.fill(DARKGRAY);
+						volume.setColor(WHITE);
+						volume.drawBitmap(0, 0, volumeUnmuted);
+						tft.drawImage(48, yOffset + 4, volume, 8*2, 16*2);
+					} else {
+						tft.setColor(DARKGRAY);
+						tft.fillRect(50, yOffset + 8, 10, 16);
+					}
 				}
 			
 			
