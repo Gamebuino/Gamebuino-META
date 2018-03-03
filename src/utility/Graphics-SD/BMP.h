@@ -46,6 +46,7 @@ public:
 	void writeBuffer(uint16_t* buffer, uint16_t transparentColor, File* file);
 	void writeFrame(uint16_t frame, uint16_t* buffer, uint16_t transparentColor, File* file);
 	uint8_t depth;
+	bool upside_down;
 private:
 	bool valid;
 	uint8_t image_offset;

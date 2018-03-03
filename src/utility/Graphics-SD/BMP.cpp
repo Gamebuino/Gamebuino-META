@@ -35,6 +35,7 @@ void writeAsRGB(uint16_t b, File* f) {
 
 BMP::BMP() {
 	valid = false;
+	upside_down = false;
 }
 
 BMP::BMP(Image* img, uint16_t _frames) {
@@ -48,6 +49,7 @@ BMP::BMP(Image* img, uint16_t _frames) {
 	width = img->_width;
 	height = img->_height;
 	frames = _frames;
+	upside_down = false;
 }
 
 BMP::BMP(File* file, Image* img) {
@@ -69,8 +71,12 @@ BMP::BMP(File* file, Image* img) {
 	}
 #endif
 	img->_width = width;
-	uint32_t pixel_height = f_read32(file);
-	
+	int32_t pixel_height = (int32_t)f_read32(file);
+	upside_down = false;
+	if (pixel_height < 0) {
+		upside_down = true;
+		pixel_height = -pixel_height;
+	}
 	
 	if (f_read16(file) != 1) { // # planes, must always be 1
 		return;
@@ -254,7 +260,12 @@ uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentCol
 		uint8_t dif = rowSize - ((width + 1) / 2);
 		
 		for (uint16_t i = 0; i < height; i++) {
-			uint8_t* rambuffer = (uint8_t*)buf + (height - 1 - i) * ((width + 1) / 2);
+			uint8_t* rambuffer;
+			if (upside_down) {
+				rambuffer = (uint8_t*)buf + i * ((width + 1) / 2);
+			} else {
+				rambuffer = (uint8_t*)buf + (height - 1 - i) * ((width + 1) / 2);
+			}
 			
 			
 			for (uint16_t j = 0; j < (width + 1)/2; j++) {
@@ -270,7 +281,12 @@ uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentCol
 	} else {
 		uint8_t dif = rowSize - (width * 3);
 		for (uint16_t i = 0; i < height; i++) {
-			uint16_t* rambuffer = buf + (height - 1 - i) * width;
+			uint16_t* rambuffer;
+			if (upside_down) {
+				rambuffer = buf + i * width;
+			} else {
+				rambuffer = buf + (height - 1 - i) * width;
+			}
 			
 			for (uint16_t j = 0; j < width; j++) {
 				uint8_t c[4];
@@ -309,7 +325,12 @@ uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentCol
 
 uint16_t BMP::readFrame(uint16_t frame, uint16_t* buf, uint16_t transparentColor, File* file) {
 	uint32_t size = getRowSize() * height;
-	uint32_t offset = size * (frames - frame - 1);
+	uint32_t offset;
+	if (upside_down) {
+		offset = size * frame;
+	} else {
+		offset = size * (frames - frame - 1);
+	}
 	return readBuffer(buf, image_offset + offset, transparentColor, file);
 }
 
