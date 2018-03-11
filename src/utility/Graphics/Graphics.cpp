@@ -764,7 +764,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y
 		drawImage(x, y, img);
 		return;
 	}
-	w2 = min(w2, w1 - y2);
+	w2 = min(w2, w1 - x2);
 	h2 = min(h2, h1 - y2);
 	
 	//horizontal cropping
