@@ -620,7 +620,7 @@ void Gamebuino::homeMenu(){
 		icons.drawBitmap(0, 0, homeIcons);
 		tft.drawImage(0, yOffset + 4, icons, 80*2, 12*2);
 		//erase soundwaves if muted
-		if(!sound.getVolume()){
+		if (!sound.getVolume() || sound.isMute()) {
 			tft.setColor(DARKGRAY);
 			tft.fillRect(50, yOffset + 8, 10, 16);
 		}
@@ -754,47 +754,54 @@ void Gamebuino::homeMenu(){
 				case 1:
 					//toggle mute/unmute
 					if (buttons.released(Button::a)) {
-						if (sound.getVolume()) {
-							sound.setVolume(0);
+						if (sound.isMute()) {
+							sound.unmute();
+							settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
+							if (!sound.getVolume()) {
+								sound.setVolume(6);
+								settings.set(SETTING_VOLUME, 6);
+							}
+						} else if (sound.getVolume()) {
+							sound.mute();
 							settings.set(SETTING_VOLUME_MUTE, 1);
 						} else {
 							sound.setVolume(6);
-							sound.playTick();
-							settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
+							settings.set(SETTING_VOLUME, 6);
 						}
 						changed = true;
 					}
 					//increase volume
-					if ((buttons.repeat(Button::up, 4) && (sound.getVolume() < 8))){
-						sound.setVolume(sound.getVolume() + 1);
+					if ((buttons.repeat(Button::up, 4) && (sound.getVolume() < 8))) {
+						if (sound.isMute()) {
+							sound.unmute();
+							settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
+							sound.setVolume(1);
+						} else {
+							sound.setVolume(sound.getVolume() + 1);
+						}
 						settings.set(SETTING_VOLUME, sound.getVolume());
 						changed = true;
 					}
 					//reduce volume
-					if (buttons.repeat(Button::down, 4) && sound.getVolume() && !sound.isMute()){
+					if (buttons.repeat(Button::down, 4) && sound.getVolume() && !sound.isMute()) {
 						sound.setVolume(sound.getVolume() - 1);
 						settings.set(SETTING_VOLUME, sound.getVolume());
 						changed = true;
 					}
-					//update mute/unmute status
-					if(sound.getVolume()){
-						sound.unmute();
-					} else {
-						sound.mute();
-					}
-					if(buttons.repeat(Button::up, 4) || buttons.repeat(Button::down, 4)){
+					
+					if (changed) {
 						sound.playTick();
 					}
 				break;
 				////EXIT
 				case 2:
-					if (buttons.pressed(Button::a)){
+					if (buttons.pressed(Button::a)) {
 						changeGame();
 					}
 				break;
 				////SCREENSHOT
 				case 3:
-					if (buttons.released(Button::a)){
+					if (buttons.released(Button::a)) {
 						tft.setColor(WHITE);
 						tft.drawRect(currentItem*32, yOffset, 32, 32);
 						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
@@ -811,7 +818,7 @@ void Gamebuino::homeMenu(){
 						}
 						// we temp. set inited to false so that delay() won't re-draw the screen
 						inited = false;
-						if (success){
+						if (success) {
 							/*
 							tft.setColor(LIGHTGREEN, BROWN);
 							tft.cursorX = xOffset;
@@ -839,7 +846,7 @@ void Gamebuino::homeMenu(){
 				break;
 				////RECORD SCREEN
 				case 4:
-					if (buttons.released(Button::a) || buttons.held(Button::a, 25)){
+					if (buttons.released(Button::a) || buttons.held(Button::a, 25)) {
 						/*
 						tft.print(language._get(lang_homeMenu_READY));
 						*/
@@ -899,7 +906,7 @@ void Gamebuino::homeMenu(){
 			}
 			
 			//draw blinking selector
-			if((frameCounter % 8) >= 4){
+			if ((frameCounter % 8) >= 4) {
 				tft.setColor(BROWN);
 			} else {
 				tft.setColor(DARKGRAY);
@@ -908,23 +915,23 @@ void Gamebuino::homeMenu(){
 			tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
 			
 			
-			if(changed == true){
+			if (changed) {
 				//erase previous selector position
 				tft.setColor(DARKGRAY);
-				if(buttons.repeat(Button::left, 8)){
+				if (buttons.repeat(Button::left, 8)) {
 					tft.drawRect((currentItem+1)*32, yOffset, 32, 32);
 					tft.drawRect(1 + (currentItem+1)*32, yOffset+1, 30, 30);
 				}
-				if(buttons.repeat(Button::right, 8)){
+				if (buttons.repeat(Button::right, 8)) {
 					tft.drawRect((currentItem-1)*32, yOffset, 32, 32);
 					tft.drawRect(1 + (currentItem-1)*32, yOffset+1, 30, 30);
 				}
 				
 					
 				////VOLUME
-				if(currentItem == 1){
+				if (currentItem == 1) {
 					//erase waveform if muted
-					if(sound.getVolume()){
+					if (sound.getVolume() && !sound.isMute()) {
 						Image volume(8, 16, ColorMode::index);
 						volume.clear();
 						volume.fill(DARKGRAY);
@@ -936,67 +943,10 @@ void Gamebuino::homeMenu(){
 						tft.fillRect(50, yOffset + 8, 10, 16);
 					}
 				}
-			
-			
 			}
 			
 			//updated nopixels
 			neoPixels.show();
-			
-			/*
-			if(changed == true){
-				//bottom text first to feel snappy when you are seeking down
-				tft.cursorX = xOffset;
-				tft.cursorY = yOffset3;
-				tft.setColor(BROWN, DARKGRAY);
-				tft.print(language.get(menuText[wrap(currentItem+1, numItems)], NUMBER_SYSTEM_LANGUAGES));
-				//primary text
-				tft.cursorX = xOffset;
-				tft.cursorY = yOffset2;
-				tft.setColor(WHITE, BROWN);
-				tft.print(language.get(menuText[currentItem], NUMBER_SYSTEM_LANGUAGES));
-				tft.print("  ");
-				//complementary text if needed
-				tft.setColor(WHITE, BROWN);
-				tft.cursorY = yOffset2;
-				switch(currentItem){
-					////VOLUME
-					case 1:
-						tft.cursorX -= 4*2*4;
-						if(!sound.isMute() && sound.getVolume()) {
-							tft.setColor(WHITE, BROWN);
-							tft.print("\23\24");
-							if(sound.getVolume() > 6){
-								tft.setColor(RED, BROWN);
-							}
-							tft.print(sound.getVolume());
-						} else {
-							tft.setColor(DARKGRAY, BROWN);
-							tft.print("\23x");
-						}
-					break;
-					////NEOPIXELS
-					case 4:
-						tft.cursorX -= 4*2*6;
-						for(int i = 0; i < 4; i++){
-							if(neoPixelsIntensity <= i){
-								tft.setColor(DARKGRAY, BROWN);
-							} else {
-								tft.setColor(WHITE, BROWN);
-							}
-							tft.print("*");
-						}
-					break;
-					
-				}
-				//upper text
-				tft.cursorX = xOffset;
-				tft.cursorY = yOffset1;
-				tft.setColor(BROWN, DARKGRAY);
-				tft.print(language.get(menuText[wrap(currentItem-1, numItems)], NUMBER_SYSTEM_LANGUAGES));
-			}
-			*/
-			
 			
 			changed = false;
 		}
