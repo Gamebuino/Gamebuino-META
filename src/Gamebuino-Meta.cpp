@@ -593,14 +593,6 @@ void Gamebuino::homeMenu(){
 	boolean changed = true;
 	int frameCounter = 0;
 	
-	const MultiLang* menuText[numItems] = {
-		lang_homeMenu_exit,
-		lang_homeMenu_volume,
-		lang_homeMenu_save_image,
-		lang_homeMenu_save_video,
-		lang_homeMenu_light,
-	};
-	
 	neoPixels.clear();
 	neoPixels.show();
 	// determine the neoPixel color index
@@ -805,9 +797,7 @@ void Gamebuino::homeMenu(){
 						tft.setColor(WHITE);
 						tft.drawRect(currentItem*32, yOffset, 32, 32);
 						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
-						/*
-						tft.print(language._get(lang_homeMenu_SAVING));
-						*/
+						
 						char name[] = "REC/00000.GMV";
 						// now `name` will be a unique thing
 						// 9 because "REC/" is 4 long, 5 because "00000" is 4 chars
@@ -819,22 +809,12 @@ void Gamebuino::homeMenu(){
 						// we temp. set inited to false so that delay() won't re-draw the screen
 						inited = false;
 						if (success) {
-							/*
-							tft.setColor(LIGHTGREEN, BROWN);
-							tft.cursorX = xOffset;
-							tft.print(language._get(lang_homeMenu_SAVED));
-							*/
 							tft.setColor(LIGHTGREEN);
 							tft.drawRect(currentItem*32, yOffset, 32, 32);
 							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
 							delay(400);
 							changed = true;
 						} else {
-							/*
-							tft.setColor(RED, BROWN);
-							tft.cursorX = xOffset;
-							tft.print(language._get(lang_homeMenu_ERROR));
-							*/
 							tft.setColor(RED);
 							tft.drawRect(currentItem*32, yOffset, 32, 32);
 							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
@@ -847,9 +827,6 @@ void Gamebuino::homeMenu(){
 				////RECORD SCREEN
 				case 4:
 					if (buttons.released(Button::a) || buttons.held(Button::a, 25)) {
-						/*
-						tft.print(language._get(lang_homeMenu_READY));
-						*/
 						tft.setColor(WHITE	);
 						tft.drawRect(currentItem*32, yOffset, 32, 32);
 						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
@@ -875,10 +852,6 @@ void Gamebuino::homeMenu(){
 									buttons.update();
 								} while (!buttons.released(Button::a));
 							}
-							/*
-							tft.cursorX = xOffset;
-							tft.print(language._get(lang_homeMenu_GO));
-							*/
 							tft.setColor(LIGHTGREEN);
 							tft.drawRect(currentItem*32, yOffset, 32, 32);
 							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
@@ -889,11 +862,6 @@ void Gamebuino::homeMenu(){
 							Hook_ExitHomeMenu();
 							return;
 						} else {
-							/*
-							tft.setColor(RED, BROWN);
-							tft.cursorX = xOffset;
-							tft.print(language._get(lang_homeMenu_ERROR));
-							*/
 							tft.setColor(RED);
 							tft.drawRect(currentItem*32, yOffset, 32, 32);
 							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
