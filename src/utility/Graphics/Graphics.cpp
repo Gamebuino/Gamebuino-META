@@ -53,7 +53,7 @@ namespace Gamebuino_Meta {
 //uint16_t Graphics::transparentColor = 0xF81F; //magenta is the default transparent color
 uint16_t Graphics::tint = 0xFFFF;
 uint8_t Graphics::alpha = 255;
-const Color _colorIndex[16] = {
+const Color defaultColorPalette[16] = {
 	Color::black,
 	Color::darkblue,
 	Color::purple,
@@ -71,7 +71,7 @@ const Color _colorIndex[16] = {
 	Color::pink,
 	Color::beige,
 };
-Color* Graphics::colorIndex = (Color*)_colorIndex;
+Color* Graphics::colorIndex = (Color*)defaultColorPalette;
 BlendMode Graphics::blendMode = BlendMode::blend;
 Graphics::ColorUnion Graphics::color = {(Color)0};
 Graphics::BgcolorUnion Graphics::bgcolor = {(Color)0};
@@ -1467,6 +1467,18 @@ int16_t Graphics::height(void) const {
 
 void Graphics::invertDisplay(boolean i) {
 	// Do nothing, must be subclassed if supported by hardware
+}
+
+void Graphics::setPalette(Color* p) {
+	colorIndex = p;
+}
+
+void Graphics::setPalette(const Color* p) {
+	colorIndex = (Color*)p;
+}
+
+Color* Graphics::getPalette() {
+	return colorIndex;
 }
 
 } // namespace Gamebuino_Meta

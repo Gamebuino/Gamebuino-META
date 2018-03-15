@@ -189,6 +189,10 @@ public:
 	int16_t getCursorY(void) const;
 	uint8_t getFontWidth(void) const;
 	uint8_t getFontHeight(void) const;
+	
+	void setPalette(Color* p);
+	void setPalette(const Color* p);
+	Color* getPalette();
 
  //protected:
 	const int16_t
@@ -221,6 +225,9 @@ public:
 	static uint8_t* font; //gamebuino legacy font
 	static uint8_t fontWidth, fontHeight; //gamebuino legacy font size
 };
+
+// make the default index available to programs
+extern const Color defaultColorPalette[];
 
 } // namespace Gamebuino_Meta
 
