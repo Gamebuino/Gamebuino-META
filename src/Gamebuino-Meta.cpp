@@ -162,7 +162,7 @@ void Gamebuino::begin() {
 	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
 	
 	display.setColor(Color::white);
-	drawLogo(2, 0);
+	drawLogo(display, 2, 0, display.fontSize);
 	display.setColor(Color::brown, Color::black);
 	display.setCursor(0,display.height() - (display.getFontHeight()*display.fontSize));
 	display.print("SD INIT... ");
@@ -218,11 +218,11 @@ void Gamebuino::begin() {
 	display.clear();
 }
 
-void Gamebuino::drawLogo(int8_t x, int8_t y) {
+void Gamebuino::drawLogo(Graphics& g, int8_t x, int8_t y, uint8_t scale) {
 	Image logo(78, 10, ColorMode::index);
 	logo.clear();
 	logo.drawBitmap(-2, 0, gamebuinoLogo);
-	display.drawImage(x*display.fontSize, y*display.fontSize, logo, 78*display.fontSize, 10*display.fontSize);
+	g.drawImage(x*scale, y*scale, logo, 78*scale, 10*scale);
 }
 
 void Gamebuino::startScreen(){
@@ -236,7 +236,7 @@ void Gamebuino::startScreen(){
 		i--;
 		display.clear();
 		Image logo(78, 10, ColorMode::index);
-		drawLogo(2, min(0, i-10));
+		drawLogo(display, 2, min(0, i-10), display.fontSize);
 		lights.drawImage(0, 0, startLights);
 	}
 	lights.clear();
@@ -590,7 +590,7 @@ void Gamebuino::homeMenu(){
 	unsigned long lastMillis = 0;
 	//3 text lines vertical coordinates
 	const int yOffset = 52;
-	boolean changed = true;
+	bool changed = true;
 	int frameCounter = 0;
 	
 	neoPixels.clear();
@@ -603,10 +603,9 @@ void Gamebuino::homeMenu(){
 	//draw icons first as it's where the user is focused
 	{ //local scope to free RAM used by the buffer
 		tft.setColor(DARKGRAY);
-		tft.fillRect(0,yOffset,160,32);
+		tft.fillRect(0, yOffset, 160, 32);
 		tft.setColor(WHITE);
 		Image icons(80, 12, ColorMode::index);
-		icons.clear();
 		icons.fill(DARKGRAY);
 		icons.setColor(WHITE);
 		icons.drawBitmap(0, 0, homeIcons);
@@ -619,15 +618,9 @@ void Gamebuino::homeMenu(){
 	}
 	
 	//logo
-	{ //local scope to free RAM used by the buffer
-		tft.setColor(BLACK);
-		tft.fillRect(0,0,160,28);
-		Image logo(80, 10, ColorMode::index);
-		logo.clear();
-		logo.setColor(WHITE);
-		logo.drawBitmap(0, 0, gamebuinoLogo);
-		tft.drawImage(0, 4, logo, 80*2, 10*2);
-	}
+	tft.setColor(BLACK);
+	tft.fillRect(0, 0, 160, 28);
+	drawLogo(tft, 2, 1, 2);
 
 	//horizontal stripes top
 	tft.setColor(DARKGRAY);
@@ -639,285 +632,237 @@ void Gamebuino::homeMenu(){
 	for (int i = yOffset + 34; i < tft.height(); i+=4){
 		tft.fillRect(0, i, tft.width(), 2);
 	}
-		
-	/*
-	//text settings
-	display.setFont(font3x5);
-	tft.fontSize = 2;
-	tft.textWrap = false;
 	
-	tft.setColor(DARKGRAY);
-	//first row
-	tft.fillRect(xOffset-8, yOffset1 - 2, tft.width() - 2*(xOffset-8), 14);
-	//main text
-	tft.fillRect(xOffset-18, yOffset2 - 4, tft.width()- 2*(xOffset-18), 18);
-	tft.setColor(BROWN);
-	tft.fillRect(xOffset-16, yOffset2 - 4, tft.width()- 2*(xOffset-16), 18);
-	//last row
-	tft.setColor(DARKGRAY);
-	tft.fillRect(xOffset-8, yOffset3 - 2, tft.width() - 2*(xOffset-8), 14);
-	*/
-	
-	while(1){
+	while(1) {
 		//Ensure constant framerate using millis (40ms = 25FPS)
-		if((millis() - lastMillis) > 40){
-			sound.update(); // we still need sound...
-			lastMillis = millis();
-			buttons.update();
-			frameCounter++;
-			
-			//clear noPixels
-			neoPixels.clear();
-			
-			if(buttons.released(Button::home) || buttons.released(Button::b) || buttons.released(Button::menu)){
-				sound.stopEfxOnly();
-				HOME_MENU_RESTORE_STATE;
-				Hook_ExitHomeMenu();
-				return;
-			}
-			
-			if(buttons.repeat(Button::right, 8)){
-				if(currentItem < (numItems - 1)){
-					currentItem++;
+		while(!((millis() - lastMillis) > 40));
+		
+		sound.update(); // we still need sound...
+		lastMillis = millis();
+		buttons.update();
+		frameCounter++;
+		
+		//clear noPixels
+		neoPixels.clear();
+		
+		if (buttons.released(Button::home) || buttons.released(Button::b) || buttons.released(Button::menu)) {
+			sound.stopEfxOnly();
+			HOME_MENU_RESTORE_STATE;
+			Hook_ExitHomeMenu();
+			return;
+		}
+		
+		if (buttons.repeat(Button::right, 8) && (currentItem < (numItems - 1))) {
+			currentItem++;
+			changed = true;
+		}
+		
+		if (buttons.repeat(Button::left, 8) && (currentItem > 0)) {
+			currentItem--;
+			changed = true;
+		}
+		
+		switch(currentItem){
+			//// NEOPIXELS
+			case 0:
+				if (buttons.repeat(Button::up, 4) && (neoPixelsIntensity < 4)){
+					neoPixelsIntensity ++;
 					changed = true;
 				}
-			}
-			
-			if(buttons.repeat(Button::left, 8)){
-				if(currentItem > 0){
-					currentItem--;
+				if (buttons.repeat(Button::down, 4) && (neoPixelsIntensity > 0)){
+					neoPixelsIntensity--;
 					changed = true;
 				}
-			}
-			
-			/*
-			//blinking arrow
-			if((frameCounter%10) < 5){
-				tft.setColor(BROWN);
-			} else {
-				tft.setColor(WHITE, BROWN);
-			}
-			tft.cursorX = xOffset - 12;
-			tft.cursorY = yOffset2;
-			tft.print(">");
-			
-			tft.cursorX = xOffset;
-			tft.cursorY = yOffset2;
-			tft.setColor(WHITE, BROWN);
-			
-			tft.setColor(WHITE, BROWN);
-			*/
-			
-			switch(currentItem){
-				//// NEOPIXELS
-				case 0:
-					if (buttons.repeat(Button::up, 4)){
-						if( neoPixelsIntensity < 3){
-							neoPixelsIntensity ++;
-							changed = true;
-						}
+				//toggle with "A"
+				if (buttons.released(Button::a)){
+					if(neoPixelsIntensity > 0){
+						neoPixelsIntensity = 0;
+					} else {
+						neoPixelsIntensity = 4;
 					}
-					if (buttons.repeat(Button::down, 4)){
-						if(neoPixelsIntensity > 0){
-							neoPixelsIntensity--;
-							changed = true;
-						}
-					}
-					//toggle with "A"
-					if (buttons.released(Button::a)){
-						if(neoPixelsIntensity > 0){
-							neoPixelsIntensity = 0;
-						} else {
-							neoPixelsIntensity = 4;
-						}
-						changed = true;
-					}
-					//update and save settings
-					if(changed == true){
-						neoPixels.setBrightness(neoPixelsIntensities[neoPixelsIntensity]);
-						settings.set(SETTING_NEOPIXELS_INTENSITY, neoPixelsIntensity);
-					}
-					//light up neopixels according to intensity
-					for(uint8_t i = 0; i < neoPixels.numPixels(); i++){
-						neoPixels.setPixelColor(i, 0xFF, 0xFF, 0xFF);
-					}
+					changed = true;
+				}
+				//update and save settings
+				if(changed == true){
+					neoPixels.setBrightness(neoPixelsIntensities[neoPixelsIntensity]);
+					settings.set(SETTING_NEOPIXELS_INTENSITY, neoPixelsIntensity);
+				}
+				//light up neopixels according to intensity
+				for(uint8_t i = 0; i < neoPixels.numPixels(); i++){
+					neoPixels.setPixelColor(i, 0xFF, 0xFF, 0xFF);
+				}
 				break;
-				////VOLUME
-				case 1:
-					//toggle mute/unmute
-					if (buttons.released(Button::a)) {
-						if (sound.isMute()) {
-							sound.unmute();
-							settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
-							if (!sound.getVolume()) {
-								sound.setVolume(6);
-								settings.set(SETTING_VOLUME, 6);
-							}
-						} else if (sound.getVolume()) {
-							sound.mute();
-							settings.set(SETTING_VOLUME_MUTE, 1);
-						} else {
+			////VOLUME
+			case 1:
+				//toggle mute/unmute
+				if (buttons.released(Button::a)) {
+					if (sound.isMute()) {
+						sound.unmute();
+						settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
+						if (!sound.getVolume()) {
 							sound.setVolume(6);
 							settings.set(SETTING_VOLUME, 6);
 						}
-						changed = true;
+					} else if (sound.getVolume()) {
+						sound.mute();
+						settings.set(SETTING_VOLUME_MUTE, 1);
+					} else {
+						sound.setVolume(6);
+						settings.set(SETTING_VOLUME, 6);
 					}
-					//increase volume
-					if ((buttons.repeat(Button::up, 4) && (sound.getVolume() < 8))) {
-						if (sound.isMute()) {
-							sound.unmute();
-							settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
-							sound.setVolume(1);
-						} else {
-							sound.setVolume(sound.getVolume() + 1);
-						}
-						settings.set(SETTING_VOLUME, sound.getVolume());
-						changed = true;
-					}
-					//reduce volume
-					if (buttons.repeat(Button::down, 4) && sound.getVolume() && !sound.isMute()) {
-						sound.setVolume(sound.getVolume() - 1);
-						settings.set(SETTING_VOLUME, sound.getVolume());
-						changed = true;
-					}
-					
-					if (changed) {
-						sound.playTick();
-					}
-				break;
-				////EXIT
-				case 2:
-					if (buttons.pressed(Button::a)) {
-						changeGame();
-					}
-				break;
-				////SCREENSHOT
-				case 3:
-					if (buttons.released(Button::a)) {
-						tft.setColor(WHITE);
-						tft.drawRect(currentItem*32, yOffset, 32, 32);
-						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
-						
-						char name[] = "REC/00000.GMV";
-						// now `name` will be a unique thing
-						// 9 because "REC/" is 4 long, 5 because "00000" is 4 chars
-						bool success = homeMenuGetUniquePath(name, 4, 5);
-						if (success) {
-							fileEndingGmvToBmp(name);
-							success = display.save(name);
-						}
-						// we temp. set inited to false so that delay() won't re-draw the screen
-						inited = false;
-						if (success) {
-							tft.setColor(LIGHTGREEN);
-							tft.drawRect(currentItem*32, yOffset, 32, 32);
-							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
-							delay(400);
-							changed = true;
-						} else {
-							tft.setColor(RED);
-							tft.drawRect(currentItem*32, yOffset, 32, 32);
-							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
-							delay(400);
-							changed = true;
-						}
-						inited = true;
-					}
-				break;
-				////RECORD SCREEN
-				case 4:
-					if (buttons.released(Button::a) || buttons.held(Button::a, 25)) {
-						tft.setColor(WHITE	);
-						tft.drawRect(currentItem*32, yOffset, 32, 32);
-						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
-						char name[] = "REC/00000.GMV";
-						bool success = homeMenuGetUniquePath(name, 4, 5);
-						bool infinite = buttons.held(Button::a, 25);
-						if (success) {
-							if (!infinite) {
-								fileEndingGmvToBmp(name);
-								framesDisplayRecording = (1000 / timePerFrame) * 3;
-							} else {
-								framesDisplayRecording = -1;
-							}
-							success = display.startRecording(name);
-						}
-						// we temp. set inited to false so that delay() won't re-draw the screen
-						inited = false;
-						if (success) {
-							recording_screen = true;
-							if (infinite) {
-								do {
-									delay(10);
-									buttons.update();
-								} while (!buttons.released(Button::a));
-							}
-							tft.setColor(LIGHTGREEN);
-							tft.drawRect(currentItem*32, yOffset, 32, 32);
-							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
-							delay(400);
-							inited = true;
-							sound.stopEfxOnly();
-							HOME_MENU_RESTORE_STATE;
-							Hook_ExitHomeMenu();
-							return;
-						} else {
-							tft.setColor(RED);
-							tft.drawRect(currentItem*32, yOffset, 32, 32);
-							tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
-							delay(400);
-							changed = true;
-						}
-						inited = true;
-					}
-				break;
-			}
-			
-			//draw blinking selector
-			if ((frameCounter % 8) >= 4) {
-				tft.setColor(BROWN);
-			} else {
-				tft.setColor(DARKGRAY);
-			}
-			tft.drawRect(currentItem*32, yOffset, 32, 32);
-			tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
-			
-			
-			if (changed) {
-				//erase previous selector position
-				tft.setColor(DARKGRAY);
-				if (buttons.repeat(Button::left, 8)) {
-					tft.drawRect((currentItem+1)*32, yOffset, 32, 32);
-					tft.drawRect(1 + (currentItem+1)*32, yOffset+1, 30, 30);
+					changed = true;
 				}
-				if (buttons.repeat(Button::right, 8)) {
-					tft.drawRect((currentItem-1)*32, yOffset, 32, 32);
-					tft.drawRect(1 + (currentItem-1)*32, yOffset+1, 30, 30);
+				//increase volume
+				if ((buttons.repeat(Button::up, 4) && (sound.getVolume() < 8))) {
+					if (sound.isMute()) {
+						sound.unmute();
+						settings.set(SETTING_VOLUME_MUTE, (int32_t)0);
+						sound.setVolume(1);
+					} else {
+						sound.setVolume(sound.getVolume() + 1);
+					}
+					settings.set(SETTING_VOLUME, sound.getVolume());
+					changed = true;
+				}
+				//reduce volume
+				if (buttons.repeat(Button::down, 4) && sound.getVolume() && !sound.isMute()) {
+					sound.setVolume(sound.getVolume() - 1);
+					settings.set(SETTING_VOLUME, sound.getVolume());
+					changed = true;
 				}
 				
-					
-				////VOLUME
-				if (currentItem == 1) {
-					//erase waveform if muted
-					if (sound.getVolume() && !sound.isMute()) {
-						Image volume(8, 16, ColorMode::index);
-						volume.clear();
-						volume.fill(DARKGRAY);
-						volume.setColor(WHITE);
-						volume.drawBitmap(0, 0, volumeUnmuted);
-						tft.drawImage(48, yOffset + 4, volume, 8*2, 16*2);
-					} else {
-						tft.setColor(DARKGRAY);
-						tft.fillRect(50, yOffset + 8, 10, 16);
-					}
+				if (changed) {
+					sound.playTick();
 				}
+				break;
+			////EXIT
+			case 2:
+				if (buttons.pressed(Button::a)) {
+					changeGame();
+				}
+				break;
+			////SCREENSHOT
+			case 3:
+				if (buttons.released(Button::a)) {
+					tft.setColor(WHITE);
+					tft.drawRect(currentItem*32, yOffset, 32, 32);
+					tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+					
+					char name[] = "REC/00000.GMV";
+					// now `name` will be a unique thing
+					// 9 because "REC/" is 4 long, 5 because "00000" is 4 chars
+					bool success = homeMenuGetUniquePath(name, 4, 5);
+					if (success) {
+						fileEndingGmvToBmp(name);
+						success = display.save(name);
+					}
+					// we temp. set inited to false so that delay() won't re-draw the screen
+					inited = false;
+					if (success) {
+						tft.setColor(LIGHTGREEN);
+						tft.drawRect(currentItem*32, yOffset, 32, 32);
+						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+						delay(400);
+						changed = true;
+					} else {
+						tft.setColor(RED);
+						tft.drawRect(currentItem*32, yOffset, 32, 32);
+						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+						delay(400);
+						changed = true;
+					}
+					inited = true;
+				}
+				break;
+			////RECORD SCREEN
+			case 4:
+				if (buttons.released(Button::a) || buttons.held(Button::a, 25)) {
+					tft.setColor(WHITE	);
+					tft.drawRect(currentItem*32, yOffset, 32, 32);
+					tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+					char name[] = "REC/00000.GMV";
+					bool success = homeMenuGetUniquePath(name, 4, 5);
+					bool infinite = buttons.held(Button::a, 25);
+					if (success) {
+						if (!infinite) {
+							fileEndingGmvToBmp(name);
+							framesDisplayRecording = (1000 / timePerFrame) * 3;
+						} else {
+							framesDisplayRecording = -1;
+						}
+						success = display.startRecording(name);
+					}
+					// we temp. set inited to false so that delay() won't re-draw the screen
+					inited = false;
+					if (success) {
+						recording_screen = true;
+						if (infinite) {
+							do {
+								delay(10);
+								buttons.update();
+							} while (!buttons.released(Button::a));
+						}
+						tft.setColor(LIGHTGREEN);
+						tft.drawRect(currentItem*32, yOffset, 32, 32);
+						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+						delay(400);
+						inited = true;
+						sound.stopEfxOnly();
+						HOME_MENU_RESTORE_STATE;
+						Hook_ExitHomeMenu();
+						return;
+					} else {
+						tft.setColor(RED);
+						tft.drawRect(currentItem*32, yOffset, 32, 32);
+						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+						delay(400);
+						changed = true;
+					}
+					inited = true;
+				}
+				break;
+		}
+		
+		//draw blinking selector
+		tft.setColor((frameCounter % 8) >= 4 ? BROWN : DARKGRAY);
+		tft.drawRect(currentItem*32, yOffset, 32, 32);
+		tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+		
+		
+		if (changed) {
+			//erase previous selector position
+			tft.setColor(DARKGRAY);
+			if (buttons.repeat(Button::left, 8)) {
+				tft.drawRect((currentItem+1)*32, yOffset, 32, 32);
+				tft.drawRect(1 + (currentItem+1)*32, yOffset+1, 30, 30);
+			}
+			if (buttons.repeat(Button::right, 8)) {
+				tft.drawRect((currentItem-1)*32, yOffset, 32, 32);
+				tft.drawRect(1 + (currentItem-1)*32, yOffset+1, 30, 30);
 			}
 			
-			//updated nopixels
-			neoPixels.show();
-			
-			changed = false;
+				
+			////VOLUME
+			if (currentItem == 1) {
+				//erase waveform if muted
+				if (sound.getVolume() && !sound.isMute()) {
+					Image volume(8, 16, ColorMode::index);
+					volume.clear();
+					volume.fill(DARKGRAY);
+					volume.setColor(WHITE);
+					volume.drawBitmap(0, 0, volumeUnmuted);
+					tft.drawImage(48, yOffset + 4, volume, 8*2, 16*2);
+				} else {
+					tft.setColor(DARKGRAY);
+					tft.fillRect(50, yOffset + 8, 10, 16);
+				}
+			}
 		}
+		
+		//updated nopixels
+		neoPixels.show();
+		
+		changed = false;
 	}
 }
 

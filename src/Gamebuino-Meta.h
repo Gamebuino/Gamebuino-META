@@ -134,7 +134,7 @@ private:
 	uint8_t timePerFrame;
 	uint32_t nextFrameMillis;
 	void updatePopup();
-	void drawLogo(int8_t x, int8_t y);
+	void drawLogo(Graphics& g, int8_t x, int8_t y, uint8_t scale);
 	const char* popupText;
 	uint8_t popupTimeLeft;
 	int16_t framesDisplayRecording = -1;
