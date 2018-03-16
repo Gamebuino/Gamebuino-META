@@ -26,7 +26,7 @@ Authors:
 
 namespace Gamebuino_Meta {
 
-#define NUMBER_SYSTEM_LANGUAGES 4
+#define NUMBER_SYSTEM_LANGUAGES 5
 
 //////////
 // Keyboard
@@ -37,6 +37,7 @@ const MultiLang lang_keyboard_type[] = {
 	{LangCode::de, "tippen"},
 	{LangCode::fr, "écrire"},
 	{LangCode::es, "tipo"},
+	{LangCode::nl, "typ"},
 };
 
 const MultiLang lang_keyboard_back[] = {
@@ -44,6 +45,7 @@ const MultiLang lang_keyboard_back[] = {
 	{LangCode::de, "zurück"},
 	{LangCode::fr, "retour"},
 	{LangCode::es, "espald"},
+	{LangCode::nl, "terug"},
 };
 
 const MultiLang lang_keyboard_save[] = {
@@ -51,6 +53,7 @@ const MultiLang lang_keyboard_save[] = {
 	{LangCode::de, "fertig"},
 	{LangCode::fr, "enreg."},
 	{LangCode::es, "salvar"},
+	{LangCode::nl, "OK"},
 };
 
 }; // namespace Gamebuino_Meta
