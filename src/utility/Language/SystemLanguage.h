@@ -50,7 +50,7 @@ const MultiLang lang_keyboard_save[] = {
 	{LangCode::en, "save"},
 	{LangCode::de, "fertig"},
 	{LangCode::fr, "enreg."},
-	{LangCode::es, "guardar"},
+	{LangCode::es, "salvar"},
 };
 
 }; // namespace Gamebuino_Meta
