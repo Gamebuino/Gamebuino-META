@@ -26,7 +26,7 @@ Authors:
 
 namespace Gamebuino_Meta {
 
-#define NUMBER_SYSTEM_LANGUAGES 3
+#define NUMBER_SYSTEM_LANGUAGES 4
 
 //////////
 // Keyboard
@@ -43,7 +43,7 @@ const MultiLang lang_keyboard_back[] = {
 	{LangCode::en, "back"},
 	{LangCode::de, "zurück"},
 	{LangCode::fr, "retour"},
-	{LangCode::es, "volver"},
+	{LangCode::es, "espald"},
 };
 
 const MultiLang lang_keyboard_save[] = {
