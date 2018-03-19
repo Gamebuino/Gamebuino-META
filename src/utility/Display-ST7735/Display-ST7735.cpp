@@ -72,26 +72,12 @@ inline uint16_t swapcolor(uint16_t x) {
 	static uint8_t mySPCR;
 #endif
 
-
-
-// Constructor when using software SPI.	All output pins are configurable.
-Display_ST7735::Display_ST7735(int8_t cs, int8_t rs, int8_t sid, int8_t sclk, int8_t rst) : Graphics(ST7735_TFTWIDTH, ST7735_TFTHEIGHT_18) {
-	_cs	 = cs;
-	_rs	 = rs;
-	_sid	= sid;
-	_sclk = sclk;
-	_rst	= rst;
-	hwSPI = false;
-}
-
-
 // Constructor when using hardware SPI.	Faster, but must use SPI pins
 // specific to each board type (e.g. 11,13 for Uno, 51,52 for Mega, etc.)
 Display_ST7735::Display_ST7735(int8_t cs, int8_t rs, int8_t rst)  : Graphics(ST7735_TFTWIDTH, ST7735_TFTHEIGHT_18) {
 	_cs	 = cs;
 	_rs	 = rs;
 	_rst	= rst;
-	hwSPI = true;
 	_sid	= _sclk = 0;
 
 }
@@ -101,33 +87,7 @@ Display_ST7735::Display_ST7735(int8_t cs, int8_t rs, int8_t rst)  : Graphics(ST7
 #endif
 
 inline void Display_ST7735::spiwrite(uint8_t c) {
-
-	//Serial.println(c, HEX);
-
-	if (hwSPI) {
-#if defined (SPI_HAS_TRANSACTION)
-		SPI.transfer(c);
-#elif defined (__AVR__)
-		SPCRbackup = SPCR;
-		SPCR = mySPCR;
-		SPI.transfer(c);
-		SPCR = SPCRbackup;
-//		SPDR = c;
-//		while(!(SPSR & _BV(SPIF)));
-#elif defined (__arm__)
-		SPI.setClockDivider(21); //4MHz
-		SPI.setDataMode(SPI_MODE0);
-		SPI.transfer(c);
-#endif
-	} else {
-		// Fast SPI bitbang swiped from LPD8806 library
-		for(uint8_t bit = 0x80; bit; bit >>= 1) {
-			if(c & bit) *dataport |=	datapinmask;
-			else				*dataport &= ~datapinmask;
-			*clkport |=	clkpinmask;
-			*clkport &= ~clkpinmask;
-		}
-	}
+	SPI.transfer(c);
 }
 
 
@@ -168,66 +128,7 @@ void Display_ST7735::writedata(uint8_t c) {
 // formatting -- storage-wise this is hundreds of bytes more compact
 // than the equivalent code.	Companion function follows.
 #define DELAY 0x80
-static const uint8_t PROGMEM
-	Bcmd[] = {                      // Initialization commands for 7735B screens
-		18,                         // 18 commands in list:
-		ST7735_SWRESET, DELAY,      //  1: Software reset, no args, w/delay
-			50,                     //     50 ms delay
-		ST7735_SLPOUT, DELAY,       //  2: Out of sleep mode, no args, w/delay
-			255,                    //     255 = 500 ms delay
-		ST7735_COLMOD, 1+DELAY,     //  3: Set color mode, 1 arg + delay:
-			0x05,                   //     16-bit color
-			10,                     //     10 ms delay
-		ST7735_FRMCTR1, 3+DELAY,    //  4: Frame rate control, 3 args + delay:
-			0x00,                   //     fastest refresh
-			0x06,                   //     6 lines front porch
-			0x03,                   //     3 lines back porch
-			10,                     //     10 ms delay
-		ST7735_MADCTL, 1,           //  5: Memory access ctrl (directions), 1 arg:
-			0x08,                   //     Row addr/col addr, bottom to top refresh
-		ST7735_DISSET5, 2,          //  6: Display settings #5, 2 args, no delay:
-			0x15,                   //     1 clk cycle nonoverlap, 2 cycle gate
-			                        //     rise, 3 cycle osc equalize
-			0x02,                   //     Fix on VTL
-		ST7735_INVCTR, 1,           //  7: Display inversion control, 1 arg:
-			0x0,                    //     Line inversion
-		ST7735_PWCTR1, 2+DELAY,     //  8: Power control, 2 args + delay:
-			0x02,                   //     GVDD = 4.7V
-			0x70,                   //     1.0uA
-			10,                     //     10 ms delay
-		ST7735_PWCTR2, 1,           //  9: Power control, 1 arg, no delay:
-			0x05,                   //     VGH = 14.7V, VGL = -7.35V
-		ST7735_PWCTR3, 2,           // 10: Power control, 2 args, no delay:
-			0x01,                   //     Opamp current small
-			0x02,                   //     Boost frequency
-		ST7735_VMCTR1, 2+DELAY,     // 11: Power control, 2 args + delay:
-			0x3C,                   //     VCOMH = 4V
-			0x38,                   //     VCOML = -1.1V
-			10,                     //     10 ms delay
-		ST7735_PWCTR6, 2,           // 12: Power control, 2 args, no delay:
-			0x11, 0x15,
-		ST7735_GMCTRP1, 16,         // 13: Magical unicorn dust, 16 args, no delay:
-			0x09, 0x16, 0x09, 0x20, //     (seriously though, not sure what
-			0x21, 0x1B, 0x13, 0x19, //      these config values represent)
-			0x17, 0x15, 0x1E, 0x2B,
-			0x04, 0x05, 0x02, 0x0E,
-		ST7735_GMCTRN1, 16+DELAY,   // 14: Sparkles and rainbows, 16 args + delay:
-			0x0B, 0x14, 0x08, 0x1E, //     (ditto)
-			0x22, 0x1D, 0x18, 0x1E,
-			0x1B, 0x1A, 0x24, 0x2B,
-			0x06, 0x06, 0x02, 0x0F,
-			10,                     //     10 ms delay
-		ST7735_CASET, 4,            // 15: Column addr set, 4 args, no delay:
-			0x00, 0x02,             //     XSTART = 2
-			0x00, 0x81,             //     XEND = 129
-		ST7735_RASET, 4,            // 16: Row addr set, 4 args, no delay:
-			0x00, 0x02,             //     XSTART = 1
-			0x00, 0x81,             //     XEND = 160
-		ST7735_NORON, DELAY,        // 17: Normal display on, no args, w/delay
-			10,                     //     10 ms delay
-		ST7735_DISPON, DELAY,       // 18: Main screen turn on, no args, w/delay
-			255 },                  //     255 = 500 ms delay
-
+static const uint8_t
 	Rcmd1[] = {                     // Init for 7735R, part 1 (red or green tab)
 		15,                         // 15 commands in list:
 		ST7735_SWRESET, DELAY,      //  1: Software reset, 0 args, w/delay
@@ -265,14 +166,6 @@ static const uint8_t PROGMEM
 		ST7735_COLMOD, 1,           // 15: set color mode, 1 arg, no delay:
 			0x05 },                 //     16-bit color
 
-	Rcmd2green[] = {                // Init for 7735R, part 2 (green tab only)
-		2,                          //  2 commands in list:
-		ST7735_CASET, 4,            //  1: Column addr set, 4 args, no delay:
-			0x00, 0x02,             //     XSTART = 0
-			0x00, 0x7F+0x02,        //     XEND = 127
-		ST7735_RASET, 4,            //  2: Row addr set, 4 args, no delay:
-			0x00, 0x01,             //     XSTART = 0
-			0x00, 0x9F+0x01 },      //     XEND = 159
 	Rcmd2red[] = {                  // Init for 7735R, part 2 (red tab only)
 		2,                          //  2 commands in list:
 		ST7735_CASET, 4,            //  1: Column addr set, 4 args, no delay:
@@ -281,15 +174,6 @@ static const uint8_t PROGMEM
 		ST7735_RASET, 4,            //  2: Row addr set, 4 args, no delay:
 			0x00, 0x00,             //     XSTART = 0
 			0x00, 0x9F },           //     XEND = 159
-
-	Rcmd2green144[] = {             // Init for 7735R, part 2 (green 1.44 tab)
-		2,                          //  2 commands in list:
-		ST7735_CASET, 4,            //  1: Column addr set, 4 args, no delay:
-			0x00, 0x00,             //     XSTART = 0
-			0x00, 0x7F,             //     XEND = 127
-		ST7735_RASET, 4,            //  2: Row addr set, 4 args, no delay:
-			0x00, 0x00,             //     XSTART = 0
-			0x00, 0x7F },           //     XEND = 127
 
 	Rcmd3[] = {                     // Init for 7735R, part 3 (red or green tab)
 		4,                          //  4 commands in list:
@@ -346,35 +230,8 @@ void Display_ST7735::commonInit(const uint8_t *cmdList) {
 	cspinmask = digitalPinToBitMask(_cs);
 	rspinmask = digitalPinToBitMask(_rs);
 
-	if(hwSPI) { // Using hardware SPI
-#if defined (SPI_HAS_TRANSACTION)
-		SPI.begin();
-	
-		mySPISettings = SPISettings(24000000, MSBFIRST, SPI_MODE0);
-
-#elif defined (__AVR__)
-		SPCRbackup = SPCR;
-		SPI.begin();
-		SPI.setClockDivider(SPI_CLOCK_DIV4);
-		SPI.setDataMode(SPI_MODE0);
-		mySPCR = SPCR; // save our preferred state
-		//Serial.print("mySPCR = 0x"); Serial.println(SPCR, HEX);
-		SPCR = SPCRbackup;	// then restore
-#elif defined (__SAM3X8E__)
-		SPI.begin();
-		SPI.setClockDivider(21); //4MHz
-		SPI.setDataMode(SPI_MODE0);
-#endif
-	} else {
-		pinMode(_sclk, OUTPUT);
-		pinMode(_sid , OUTPUT);
-		clkport = portOutputRegister(digitalPinToPort(_sclk));
-		dataport = portOutputRegister(digitalPinToPort(_sid));
-		clkpinmask = digitalPinToBitMask(_sclk);
-		datapinmask = digitalPinToBitMask(_sid);
-		*clkport &= ~clkpinmask;
-		*dataport &= ~datapinmask;
-	}
+	SPI.begin();
+	mySPISettings = SPISettings(24000000, MSBFIRST, SPI_MODE0);
 
 	// toggle RST low to reset; CS low so it'll listen to us
 	*csport &= ~cspinmask;
@@ -392,37 +249,16 @@ void Display_ST7735::commonInit(const uint8_t *cmdList) {
 }
 
 
-// Initialization for ST7735B screens
-void Display_ST7735::initB(void) {
-	commonInit(Bcmd);
-}
-
-
 // Initialization for ST7735R screens (green or red tabs)
-void Display_ST7735::initR(uint8_t options) {
+void Display_ST7735::init() {
 	commonInit(Rcmd1);
-	if(options == INITR_GREENTAB) {
-		commandList(Rcmd2green);
-		colstart = 2;
-		rowstart = 1;
-	} else if(options == INITR_144GREENTAB) {
-		_height = ST7735_TFTHEIGHT_144;
-		commandList(Rcmd2green144);
-		colstart = 2;
-		rowstart = 3;
-	} else {
-		// colstart, rowstart left at default '0' values
-		commandList(Rcmd2red);
-	}
+	// colstart, rowstart left at default '0' values
+	commandList(Rcmd2red);
+	
 	commandList(Rcmd3);
 
-	// if black, change MADCTL color filter
-	if (options == INITR_BLACKTAB) {
-		writecommand(ST7735_MADCTL);
-		writedata(0xC0);
-	}
-
-	tabcolor = options;
+	writecommand(ST7735_MADCTL);
+	writedata(0xC0);
 }
 
 
@@ -972,60 +808,26 @@ void Display_ST7735::setRotation(Rotation m) {
 	writecommand(ST7735_MADCTL);
 	rotation = m;
 	switch (rotation) {
-	case Rotation::left:
-		if (tabcolor == INITR_BLACKTAB) {
+		case Rotation::left:
 			writedata(MADCTL_MX | MADCTL_MY | MADCTL_RGB);
-		} else {
-			writedata(MADCTL_MX | MADCTL_MY | MADCTL_BGR);
-		}
-		_width = ST7735_TFTWIDTH;
-
-		if (tabcolor == INITR_144GREENTAB) {
-			_height = ST7735_TFTHEIGHT_144;
-		} else {
+			_width = ST7735_TFTWIDTH;
 			_height = ST7735_TFTHEIGHT_18;
-		}
-		break;
-	case Rotation::up:
-		if (tabcolor == INITR_BLACKTAB) {
+			break;
+		case Rotation::up:
 			writedata(MADCTL_MY | MADCTL_MV | MADCTL_RGB);
-		} else {
-			writedata(MADCTL_MY | MADCTL_MV | MADCTL_BGR);
-		}
-
-		if (tabcolor == INITR_144GREENTAB) {
-			_width = ST7735_TFTHEIGHT_144;
-		} else {
 			_width = ST7735_TFTHEIGHT_18;
-		}
-		_height = ST7735_TFTWIDTH;
-		break;
-	case Rotation::right:
-		if (tabcolor == INITR_BLACKTAB) {
+			_height = ST7735_TFTWIDTH;
+			break;
+		case Rotation::right:
 			writedata(MADCTL_RGB);
-		} else {
-			writedata(MADCTL_BGR);
-		}
-		_width	= ST7735_TFTWIDTH;
-		if (tabcolor == INITR_144GREENTAB) {
-			_height = ST7735_TFTHEIGHT_144;
-		} else {
+			_width	= ST7735_TFTWIDTH;
 			_height = ST7735_TFTHEIGHT_18;
-		}
-		break;
-	case Rotation::down:
-		if (tabcolor == INITR_BLACKTAB) {
+			break;
+		case Rotation::down:
 			writedata(MADCTL_MX | MADCTL_MV | MADCTL_RGB);
-		} else {
-			writedata(MADCTL_MX | MADCTL_MV | MADCTL_BGR);
-		}
-		if (tabcolor == INITR_144GREENTAB) {
-			_width = ST7735_TFTHEIGHT_144;
-		} else {
 			_width = ST7735_TFTHEIGHT_18;
-		}
-		_height = ST7735_TFTWIDTH;
-		break;
+			_height = ST7735_TFTWIDTH;
+			break;
 	}
 }
 

@@ -134,61 +134,43 @@ enum class Rotation : uint8_t {
 
 class Display_ST7735 : public Graphics {
 public:
-	Display_ST7735(int8_t CS, int8_t RS, int8_t SID, int8_t SCLK, int8_t RST = -1);
 	Display_ST7735(int8_t CS, int8_t RS, int8_t RST = -1);
 
-	void initB(void),                             // for ST7735B displays
-		initR(uint8_t options = INITR_GREENTAB), // for ST7735R
-		setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1),
-		pushColor(uint16_t c),
-		_drawPixel(int16_t x, int16_t y),
-		drawFastVLine(int16_t x, int16_t y, int16_t h),
-		drawFastHLine(int16_t x, int16_t y, int16_t w),
-		drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img),
-		drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h),
-		sendBuffer(uint16_t *buffer, uint16_t n),
-		dataMode(),
-		commandMode(),
-		idleMode(),
-		drawImage(int16_t x, int16_t y, Image& img),
-		drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2),
-		drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y2, int16_t w2, int16_t h2),
-		fillRect(int16_t x, int16_t y, int16_t w, int16_t h),
-		setRotation(Rotation r),
-		invertDisplay(boolean i);
+	void init();
+	void setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
+	void pushColor(uint16_t c);
+	void _drawPixel(int16_t x, int16_t y);
+	void drawFastVLine(int16_t x, int16_t y, int16_t h);
+	void drawFastHLine(int16_t x, int16_t y, int16_t w);
+	void drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img);
+	void drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h);
+	void sendBuffer(uint16_t *buffer, uint16_t n);
+	void dataMode();
+	void commandMode();
+	void idleMode();
+	void drawImage(int16_t x, int16_t y, Image& img);
+	void drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);
+	void drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y2, int16_t w2, int16_t h2);
+	void fillRect(int16_t x, int16_t y, int16_t w, int16_t h);
+	void setRotation(Rotation r);
+	void invertDisplay(boolean i);
 	ColorMode colorMode = ColorMode::rgb565;
 
 	Rotation getRotation();
 private:
 	Rotation rotation;
-	uint8_t  tabcolor;
 
-	void     spiwrite(uint8_t),
-		writecommand(uint8_t c),
-		writedata(uint8_t d),
-		commandList(const uint8_t *addr),
-		commonInit(const uint8_t *cmdList);
-//	uint8_t  spiread(void);
+	void spiwrite(uint8_t);
+	void writecommand(uint8_t c);
+	void writedata(uint8_t d);
+	void commandList(const uint8_t *addr);
+	void commonInit(const uint8_t *cmdList);
 
-	boolean  hwSPI;
-
-#if defined(__AVR__) || defined(CORE_TEENSY)
-	volatile uint8_t *dataport, *clkport, *csport, *rsport;
-	uint8_t  _cs, _rs, _rst, _sid, _sclk,
-		datapinmask, clkpinmask, cspinmask, rspinmask,
-		colstart, rowstart; // some displays need this changed
-#elif defined(__arm__)
 	volatile RwReg  *dataport, *clkport, *csport, *rsport;
 	uint32_t  _cs, _rs, _sid, _sclk,
 		datapinmask, clkpinmask, cspinmask, rspinmask,
 		colstart, rowstart; // some displays need this changed
 	int32_t _rst;  // Must use signed type since a -1 sentinel is assigned.
-#elif defined(ESP8266)
-	volatile uint32_t *dataport, *clkport, *csport, *rsport;
-	uint32_t  _cs, _rs, _rst, _sid, _sclk,
-	datapinmask, clkpinmask, cspinmask, rspinmask,
-	colstart, rowstart; // some displays need this changed
-#endif
 
 };
 

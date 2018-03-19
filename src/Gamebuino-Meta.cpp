@@ -154,7 +154,7 @@ void Gamebuino::begin() {
 	buttons.update();
 	
 	//tft
-	tft.initR(INITR_BLACKTAB);
+	tft.init();
 	tft.setRotation(Rotation::down);
 	
 	
@@ -491,7 +491,9 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 	bool hm_save_textWrap = display.textWrap; \
 	uint8_t* hm_save_font = display.font; \
 	uint8_t hm_save_fontWidth = display.fontWidth; \
-	uint8_t hm_save_fontHeight = display.fontHeight;
+	uint8_t hm_save_fontHeight = display.fontHeight; \
+	Rotation hm_save_rotation = tft.getRotation(); \
+	tft.setRotation(Rotation::down);
 
 #define HOME_MENU_RESTORE_STATE \
 	display.cursorX = hm_save_cursorX; \
@@ -502,7 +504,8 @@ int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
 	display.textWrap = hm_save_textWrap; \
 	display.font = hm_save_font; \
 	display.fontWidth = hm_save_fontWidth; \
-	display.fontHeight = hm_save_fontHeight;
+	display.fontHeight = hm_save_fontHeight; \
+	tft.setRotation(hm_save_rotation);
 
 void Gamebuino::checkHomeMenu() {
 	//get back to game list when "HOME is held
