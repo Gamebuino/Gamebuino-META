@@ -65,12 +65,7 @@ inline uint16_t swapcolor(uint16_t x) {
 	return (x << 11) | (x & 0x07E0) | (x >> 11);
 }
 
-#if defined (SPI_HAS_TRANSACTION)
-	static SPISettings mySPISettings;
-#elif defined (__AVR__)
-	static uint8_t SPCRbackup;
-	static uint8_t mySPCR;
-#endif
+static SPISettings mySPISettings;
 
 // Constructor when using hardware SPI.	Faster, but must use SPI pins
 // specific to each board type (e.g. 11,13 for Uno, 51,52 for Mega, etc.)
@@ -92,34 +87,25 @@ inline void Display_ST7735::spiwrite(uint8_t c) {
 
 
 void Display_ST7735::writecommand(uint8_t c) {
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
-#endif
 	commandMode();
 
-	//Serial.print("C ");
 	spiwrite(c);
 
 	idleMode();
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
-#endif
 }
 
 
 void Display_ST7735::writedata(uint8_t c) {
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
-#endif
 	dataMode();
 		
 	//Serial.print("D ");
 	spiwrite(c);
 
 	idleMode();
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
-#endif
 }
 
 // Rather than a bazillion writecommand() and writedata() calls, screen
@@ -571,18 +557,18 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 
 	//x2 upscaling to full screen
 	if ((w2 == (w * 2)) && (h2 == (h * 2)) && (_width == w2) && (_height == h2)) {
+		uint16_t preBufferLineArray[w2 * 2];
+		uint16_t sendBufferLineArray[w2 * 2];
+		uint16_t *preBufferLine = preBufferLineArray;
+		uint16_t *sendBufferLine = sendBufferLineArray;
+		
+		//set the window to the whole screen
+		setAddrWindow(0, 0, _width - 1, _height - 1);
+		
+		//initiate SPI
+		SPI.beginTransaction(mySPISettings);
+		dataMode();
 		if (img.colorMode == ColorMode::rgb565) {
-			uint16_t preBufferLineArray[w2 * 2];
-			uint16_t sendBufferLineArray[w2 * 2];
-			uint16_t *preBufferLine = preBufferLineArray;
-			uint16_t *sendBufferLine = sendBufferLineArray;
-
-			//set the window to the whole screen
-			setAddrWindow(0, 0, _width - 1, _height - 1);
-
-			//initiate SPI
-			SPI.beginTransaction(mySPISettings);
-			dataMode();
 
 			//prepare the first line
 			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
@@ -629,17 +615,6 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 			return;
 		}
 		if (img.colorMode == ColorMode::index) {
-			uint16_t preBufferLineArray[w2 * 2];
-			uint16_t sendBufferLineArray[w2 * 2];
-			uint16_t *preBufferLine = preBufferLineArray;
-			uint16_t *sendBufferLine = sendBufferLineArray;
-
-			//set the window to the whole screen
-			setAddrWindow(0, 0, _width - 1, _height - 1);
-
-			//initiate SPI
-			SPI.beginTransaction(mySPISettings);
-			dataMode();
 			bufferIndexLineDouble(preBufferLine, img._buffer, w, 0);
 
 			//start sending lines and processing them in parallel using DMA
@@ -687,18 +662,14 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int
 
 
 void Display_ST7735::pushColor(uint16_t c) {
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
-#endif
 	dataMode();
 	
 	spiwrite(c >> 8);
 	spiwrite(c);
 
 	idleMode();
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
-#endif
 }
 
 void Display_ST7735::_drawPixel(int16_t x, int16_t y) {
@@ -707,18 +678,14 @@ void Display_ST7735::_drawPixel(int16_t x, int16_t y) {
 
 	setAddrWindow(x,y,x+1,y+1);
 
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
-#endif
 	dataMode();
 	
 	spiwrite((uint16_t)color.c >> 8);
 	spiwrite((uint16_t)color.c);
 
 	idleMode();
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
-#endif
 }
 
 
@@ -729,19 +696,15 @@ void Display_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h) {
 	setAddrWindow(x, y, x, y+h-1);
 
 	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
-		
-#if defined (SPI_HAS_TRANSACTION)
+	
 	SPI.beginTransaction(mySPISettings);
-#endif
 	dataMode();
 	while (h--) {
 		spiwrite(hi);
 		spiwrite(lo);
 	}
 	idleMode();
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
-#endif
 }
 
 
@@ -753,18 +716,14 @@ void Display_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w) {
 
 	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
 
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.beginTransaction(mySPISettings);
-#endif
 	dataMode();
 	while (w--) {
 		spiwrite(hi);
 		spiwrite(lo);
 	}
 	idleMode();
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
-#endif
 }
 
 // fill a rectangle
@@ -777,10 +736,8 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 	setAddrWindow(x, y, x+w-1, y+h-1);
 
 	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
-		
-#if defined (SPI_HAS_TRANSACTION)
+	
 	SPI.beginTransaction(mySPISettings);
-#endif
 	dataMode();
 	for(y=h; y>0; y--) {
 		for(x=w; x>0; x--) {
@@ -790,9 +747,7 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 	}
 
 	idleMode();
-#if defined (SPI_HAS_TRANSACTION)
 	SPI.endTransaction();
-#endif
 }
 
 
