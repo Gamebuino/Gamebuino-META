@@ -164,7 +164,7 @@ void Gamebuino::begin() {
 	display.setColor(Color::white);
 	drawLogo(display, 2, 0, display.fontSize);
 	display.setColor(Color::brown, Color::black);
-	display.setCursor(0,display.height() - (display.getFontHeight()*display.fontSize));
+	display.setCursor(0, display.height() - (display.getFontHeight()*display.fontSize));
 	display.print("SD INIT... ");
 	updateDisplay();
 	

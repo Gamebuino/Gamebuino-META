@@ -66,7 +66,6 @@ extern SdFat SD;
 
 namespace Gamebuino_Meta {
 #define TFT_CS		(30u)
-#define TFT_RST		(0u)
 #define TFT_DC		(31u)
 #define SD_CS		(26u)
 #define NEOPIX_PIN	(38u)
@@ -84,7 +83,7 @@ public:
 	Image display = DISPLAY_CONSTRUCTOR;
 	Sound sound;
 #endif
-	Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC, TFT_RST);
+	Display_ST7735 tft = Display_ST7735(TFT_CS, TFT_DC);
 	Image lights = Image(2, 4, ColorMode::rgb565);
 	Save save;
 	Save settings;
@@ -131,7 +130,6 @@ public:
 	// unfortunatelly the arduino platform.txt doesn't allow us to change the order of object files, which would be the prefered way
 	// as the Gamebuino constructor would be called then first, for sure
 	bool inited = true;
-
 private:
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 	uint8_t timePerFrame;

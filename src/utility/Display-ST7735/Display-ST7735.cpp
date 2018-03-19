@@ -69,11 +69,10 @@ static SPISettings mySPISettings;
 
 // Constructor when using hardware SPI.	Faster, but must use SPI pins
 // specific to each board type (e.g. 11,13 for Uno, 51,52 for Mega, etc.)
-Display_ST7735::Display_ST7735(int8_t cs, int8_t rs, int8_t rst)  : Graphics(ST7735_TFTWIDTH, ST7735_TFTHEIGHT_18) {
-	_cs	 = cs;
-	_rs	 = rs;
-	_rst	= rst;
-	_sid	= _sclk = 0;
+Display_ST7735::Display_ST7735(int8_t cs, int8_t rs)  : Graphics(ST7735_TFTWIDTH, ST7735_TFTHEIGHT_18) {
+	// we use the pinmask vars as we don't need cs / rs after we have the pinmask
+	cspinmask = cs;
+	rspinmask = rs;
 
 }
 
@@ -116,11 +115,11 @@ void Display_ST7735::writedata(uint8_t c) {
 #define DELAY 0x80
 static const uint8_t
 	Rcmd1[] = {                     // Init for 7735R, part 1 (red or green tab)
-		15,                         // 15 commands in list:
-		ST7735_SWRESET, DELAY,      //  1: Software reset, 0 args, w/delay
-			150,                    //     150 ms delay
+		14,//15,                         // 15 commands in list:
+//		ST7735_SWRESET, DELAY,      //  1: Software reset, 0 args, w/delay
+//			150,                    //     150 ms delay
 		ST7735_SLPOUT, DELAY,       //  2: Out of sleep mode, 0 args, w/delay
-			255,                    //     500 ms delay
+			150,                    //     150 ms delay
 		ST7735_FRMCTR1, 3,          //  3: Frame rate ctrl - normal mode, 3 args:
 			0x01, 0x2C, 0x2D,       //     Rate = fosc/(1x2+40) * (LINE+2C+2D)
 		ST7735_FRMCTR2, 3,          //  4: Frame rate control - idle mode, 3 args:
@@ -173,10 +172,8 @@ static const uint8_t
 			0x2E, 0x2C, 0x29, 0x2D,
 			0x2E, 0x2E, 0x37, 0x3F,
 			0x00, 0x00, 0x02, 0x10,
-		ST7735_NORON, DELAY,        //  3: Normal display on, no args, w/delay
-			10,                     //     10 ms delay
-		ST7735_DISPON, DELAY,       //  4: Main screen turn on, no args w/delay
-			100 };                  //     100 ms delay
+		ST7735_NORON, 0,            //  3: Normal display on, no args, no delay
+		ST7735_DISPON, 0, };        //  4: Main screen turn on, no args, no delay
 
 
 // Companion code to the above tables.	Reads and issues
@@ -186,19 +183,19 @@ void Display_ST7735::commandList(const uint8_t *addr) {
 	uint8_t	numCommands, numArgs;
 	uint16_t ms;
 
-	numCommands = pgm_read_byte(addr++);	 // Number of commands to follow
-	while(numCommands--) {								 // For each command...
-		writecommand(pgm_read_byte(addr++)); //	 Read, issue command
-		numArgs	= pgm_read_byte(addr++);		//	 Number of args to follow
-		ms			 = numArgs & DELAY;					//	 If hibit set, delay follows args
-		numArgs &= ~DELAY;									 //	 Mask out delay bit
-		while(numArgs--) {									 //	 For each argument...
-			writedata(pgm_read_byte(addr++));	//		 Read, issue argument
+	numCommands = *(addr++);      // Number of commands to follow
+	while (numCommands--) {       // For each command...
+		writecommand(*(addr++));  //   Read, issue command
+		numArgs	= *(addr++);      //   Number of args to follow
+		ms = numArgs & DELAY;     //   If hibit set, delay follows args
+		numArgs &= ~DELAY;        //   Mask out delay bit
+		while (numArgs--) {       //   For each argument...
+			writedata(*(addr++)); //     Read, issue argument
 		}
 
-		if(ms) {
-			ms = pgm_read_byte(addr++); // Read post-command delay time (ms)
-			if(ms == 255) ms = 500;		 // If 255, delay for 500 ms
+		if (ms) {
+			ms = *(addr++); // Read post-command delay time (ms)
+			
 			delay(ms);
 		}
 	}
@@ -207,29 +204,18 @@ void Display_ST7735::commandList(const uint8_t *addr) {
 
 // Initialization code common to both 'B' and 'R' type displays
 void Display_ST7735::commonInit(const uint8_t *cmdList) {
-	colstart	= rowstart = 0; // May be overridden in init func
-
-	pinMode(_rs, OUTPUT);
-	pinMode(_cs, OUTPUT);
-	csport = portOutputRegister(digitalPinToPort(_cs));
-	rsport = portOutputRegister(digitalPinToPort(_rs));
-	cspinmask = digitalPinToBitMask(_cs);
-	rspinmask = digitalPinToBitMask(_rs);
+	pinMode(cspinmask, OUTPUT);
+	pinMode(rspinmask, OUTPUT);
+	csport = portOutputRegister(digitalPinToPort(cspinmask));
+	rsport = portOutputRegister(digitalPinToPort(rspinmask));
+	cspinmask = digitalPinToBitMask(cspinmask);
+	rspinmask = digitalPinToBitMask(rspinmask);
 
 	SPI.begin();
 	mySPISettings = SPISettings(24000000, MSBFIRST, SPI_MODE0);
 
 	// toggle RST low to reset; CS low so it'll listen to us
 	*csport &= ~cspinmask;
-	if (_rst) {
-		pinMode(_rst, OUTPUT);
-		digitalWrite(_rst, HIGH);
-		delay(500);
-		digitalWrite(_rst, LOW);
-		delay(500);
-		digitalWrite(_rst, HIGH);
-		delay(500);
-	}
 
 	if(cmdList) commandList(cmdList);
 }
@@ -238,7 +224,6 @@ void Display_ST7735::commonInit(const uint8_t *cmdList) {
 // Initialization for ST7735R screens (green or red tabs)
 void Display_ST7735::init() {
 	commonInit(Rcmd1);
-	// colstart, rowstart left at default '0' values
 	commandList(Rcmd2red);
 	
 	commandList(Rcmd3);
@@ -252,15 +237,15 @@ void Display_ST7735::setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y
 
 	writecommand(ST7735_CASET); // Column addr set
 	writedata(0x00);
-	writedata(x0+colstart);		 // XSTART 
+	writedata(x0);		 // XSTART 
 	writedata(0x00);
-	writedata(x1+colstart);		 // XEND
+	writedata(x1);		 // XEND
 
 	writecommand(ST7735_RASET); // Row addr set
 	writedata(0x00);
-	writedata(y0+rowstart);		 // YSTART
+	writedata(y0);		 // YSTART
 	writedata(0x00);
-	writedata(y1+rowstart);		 // YEND
+	writedata(y1);		 // YEND
 
 	writecommand(ST7735_RAMWR); // write to RAM
 }

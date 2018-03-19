@@ -134,7 +134,7 @@ enum class Rotation : uint8_t {
 
 class Display_ST7735 : public Graphics {
 public:
-	Display_ST7735(int8_t CS, int8_t RS, int8_t RST = -1);
+	Display_ST7735(int8_t CS, int8_t RS);
 
 	void init();
 	void setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
@@ -167,10 +167,7 @@ private:
 	void commonInit(const uint8_t *cmdList);
 
 	volatile RwReg  *dataport, *clkport, *csport, *rsport;
-	uint32_t  _cs, _rs, _sid, _sclk,
-		datapinmask, clkpinmask, cspinmask, rspinmask,
-		colstart, rowstart; // some displays need this changed
-	int32_t _rst;  // Must use signed type since a -1 sentinel is assigned.
+	uint32_t  datapinmask, clkpinmask, cspinmask, rspinmask;
 
 };
 
