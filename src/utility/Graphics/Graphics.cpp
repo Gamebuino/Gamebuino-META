@@ -78,7 +78,7 @@ Graphics::BgcolorUnion Graphics::bgcolor = {(Color)0};
 int16_t Graphics::cursorX = 0;
 int16_t Graphics::cursorY = 0;
 uint8_t Graphics::fontSize = 0;
-uint8_t Graphics::rotation = NOROT;
+
 bool Graphics::textWrap = true;
 bool Graphics::_cp437 = false;
 GFXfont* Graphics::gfxFont = 0;
@@ -162,10 +162,9 @@ ColorIndex Graphics::rgb565ToIndex(Color rgb) {
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
 #endif
 
-Graphics::Graphics(int16_t w, int16_t h) : WIDTH(w), HEIGHT(h) {
-	_width    = WIDTH;
-	_height   = HEIGHT;
-	rotation  = 0;
+Graphics::Graphics(int16_t w, int16_t h) {
+	_width    = w;
+	_height   = h;
 	cursorY  = cursorX    = 0;
 	fontSize  = 1;
 	setColor(Color::white);
@@ -1202,26 +1201,6 @@ void Graphics::setTextWrap(bool w) {
 	textWrap = w;
 }
 
-uint8_t Graphics::getRotation(void) const {
-	return rotation;
-}
-
-void Graphics::setRotation(uint8_t x) {
-	rotation = (x & 3);
-	switch(rotation) {
-	case 0:
-	case 2:
-		_width  = WIDTH;
-		_height = HEIGHT;
-		break;
-	case 1:
-	case 3:
-		_width  = HEIGHT;
-		_height = WIDTH;
-		break;
-	}
-}
-
 // Enable (or disable) Code Page 437-compatible charset.
 // There was an error in glcdfont.c for the longest time -- one character
 // (#176, the 'light shade' block) was missing -- this threw off the index
@@ -1438,7 +1417,7 @@ void Graphics::getTextBounds(const __FlashStringHelper *str,
 	} // End classic vs custom font
 }
 
-// Return the size of the display (per current rotation)
+// Return the size of the display
 int16_t Graphics::width(void) const {
 	if (gb.inited || _width) {
 		// we are inited

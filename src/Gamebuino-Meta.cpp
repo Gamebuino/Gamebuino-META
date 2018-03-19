@@ -155,7 +155,7 @@ void Gamebuino::begin() {
 	
 	//tft
 	tft.initR(INITR_BLACKTAB);
-	tft.setRotation(3);
+	tft.setRotation(Rotation::down);
 	
 	
 	display.fill(Color::black);
@@ -1093,6 +1093,21 @@ Color Gamebuino::createColor(uint8_t r, uint8_t g, uint8_t b) {
 
 uint8_t Gamebuino::getTimePerFrame() {
 	return timePerFrame;
+}
+
+void Gamebuino::setScreenRotation(Rotation r) {
+	Rotation rr = tft.getRotation();
+	if (((uint8_t)r - (uint8_t)rr) % 2) {
+		// we need to swap width/height of gb.display
+		int16_t tmp = gb.display._width;
+		gb.display._width = gb.display._height;
+		gb.display._height = tmp;
+	}
+	tft.setRotation(r);
+}
+
+Rotation Gamebuino::getScreenRotation() {
+	return tft.getRotation();
 }
 
 int8_t tone_identifier = -1;

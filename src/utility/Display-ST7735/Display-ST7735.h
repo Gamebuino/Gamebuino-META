@@ -124,6 +124,13 @@ namespace Gamebuino_Meta {
 #define ST7735_YELLOW  0xFFE0
 #define ST7735_WHITE   0xFFFF
 
+enum class Rotation : uint8_t {
+	left,
+	up,
+	right,
+	down,
+};
+
 
 class Display_ST7735 : public Graphics {
 public:
@@ -147,19 +154,13 @@ public:
 		drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2),
 		drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y2, int16_t w2, int16_t h2),
 		fillRect(int16_t x, int16_t y, int16_t w, int16_t h),
-		setRotation(uint8_t r),
+		setRotation(Rotation r),
 		invertDisplay(boolean i);
 	ColorMode colorMode = ColorMode::rgb565;
 
-/* These are not for current use, 8-bit protocol only!
-	uint8_t  readdata(void),
-		readcommand8(uint8_t);
-	uint16_t readcommand16(uint8_t);
-	uint32_t readcommand32(uint8_t);
-	void     dummyclock(void);
-*/
-
+	Rotation getRotation();
 private:
+	Rotation rotation;
 	uint8_t  tabcolor;
 
 	void     spiwrite(uint8_t),
@@ -192,5 +193,12 @@ private:
 };
 
 } // namespace Gamebuino_Meta
+
+using Gamebuino_Meta::Rotation;
+
+const Rotation ROTATION_LEFT = Rotation::left;
+const Rotation ROTATION_UP = Rotation::up;
+const Rotation ROTATION_RIGHT = Rotation::right;
+const Rotation ROTATION_DOWN = Rotation::down;
 
 #endif // _GAMEBUINO_META_GRAPHICS_ST7735_H_

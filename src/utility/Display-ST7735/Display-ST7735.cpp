@@ -968,11 +968,11 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 #define MADCTL_BGR 0x08
 #define MADCTL_MH	0x04
 
-void Display_ST7735::setRotation(uint8_t m) {
+void Display_ST7735::setRotation(Rotation m) {
 	writecommand(ST7735_MADCTL);
-	rotation = m % 4; // can't be higher than 3
+	rotation = m;
 	switch (rotation) {
-	case 0:
+	case Rotation::left:
 		if (tabcolor == INITR_BLACKTAB) {
 			writedata(MADCTL_MX | MADCTL_MY | MADCTL_RGB);
 		} else {
@@ -986,7 +986,7 @@ void Display_ST7735::setRotation(uint8_t m) {
 			_height = ST7735_TFTHEIGHT_18;
 		}
 		break;
-	case 1:
+	case Rotation::up:
 		if (tabcolor == INITR_BLACKTAB) {
 			writedata(MADCTL_MY | MADCTL_MV | MADCTL_RGB);
 		} else {
@@ -1000,7 +1000,7 @@ void Display_ST7735::setRotation(uint8_t m) {
 		}
 		_height = ST7735_TFTWIDTH;
 		break;
-	case 2:
+	case Rotation::right:
 		if (tabcolor == INITR_BLACKTAB) {
 			writedata(MADCTL_RGB);
 		} else {
@@ -1013,7 +1013,7 @@ void Display_ST7735::setRotation(uint8_t m) {
 			_height = ST7735_TFTHEIGHT_18;
 		}
 		break;
-	case 3:
+	case Rotation::down:
 		if (tabcolor == INITR_BLACKTAB) {
 			writedata(MADCTL_MX | MADCTL_MV | MADCTL_RGB);
 		} else {
@@ -1027,6 +1027,10 @@ void Display_ST7735::setRotation(uint8_t m) {
 		_height = ST7735_TFTWIDTH;
 		break;
 	}
+}
+
+Rotation Display_ST7735::getRotation() {
+	return rotation;
 }
 
 
