@@ -35,16 +35,16 @@ namespace Gamebuino_Meta {
 const MultiLang lang_keyboard_type[] = {
 	{LangCode::en, "type"},
 	{LangCode::de, "tippen"},
-	{LangCode::fr, "écrire"},
+	{LangCode::fr, "Ã©crire"},
 	{LangCode::es, "tipo"},
 	{LangCode::nl, "typ"},
 };
 
 const MultiLang lang_keyboard_back[] = {
 	{LangCode::en, "back"},
-	{LangCode::de, "zurück"},
+	{LangCode::de, "zurÃ¼ck"},
 	{LangCode::fr, "retour"},
-	{LangCode::es, "espald"},
+	{LangCode::es, "atras"},
 	{LangCode::nl, "terug"},
 };
 
@@ -52,7 +52,7 @@ const MultiLang lang_keyboard_save[] = {
 	{LangCode::en, "save"},
 	{LangCode::de, "fertig"},
 	{LangCode::fr, "enreg."},
-	{LangCode::es, "salvar"},
+	{LangCode::es, "grabar"},
 	{LangCode::nl, "OK"},
 };
 
