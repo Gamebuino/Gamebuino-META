@@ -44,7 +44,7 @@ const MultiLang lang_keyboard_back[] = {
 	{LangCode::en, "back"},
 	{LangCode::de, "zurück"},
 	{LangCode::fr, "retour"},
-	{LangCode::es, "regresar"},
+	{LangCode::es, "atras"},
 	{LangCode::nl, "terug"},
 };
 
@@ -52,7 +52,7 @@ const MultiLang lang_keyboard_save[] = {
 	{LangCode::en, "save"},
 	{LangCode::de, "fertig"},
 	{LangCode::fr, "enreg."},
-	{LangCode::es, "guardar"},
+	{LangCode::es, "grabar"},
 	{LangCode::nl, "OK"},
 };
 
