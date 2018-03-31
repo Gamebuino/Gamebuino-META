@@ -862,7 +862,21 @@ void Gamebuino::homeMenu(){
 			}
 		}
 		
-		//updated nopixels
+		//draw light level
+		if (currentItem == 0) {			
+			tft.setColor(WHITE);
+			int lightHeight = neoPixelsIntensity * 32 / 4;
+			tft.drawRect(currentItem*32 + 30, yOffset + (32 - lightHeight), 2, lightHeight);
+		}
+		
+		//draw volume level
+		if (currentItem == 1) {			
+			tft.setColor(WHITE);
+			int volumeHeight = sound.getVolume() * 32 / 8;
+			tft.drawRect(currentItem*32 + 30, yOffset + (32 - volumeHeight), 2, volumeHeight);
+		}
+		
+		//updated neopixels
 		neoPixels.show();
 		
 		changed = false;
