@@ -292,13 +292,6 @@ void Gamebuino::titleScreen() {
 			// center bar
 			display.setColor(BROWN);
 			display.fillRect(0, 15*display.fontSize, 80*display.fontSize, 9*display.fontSize);
-			display.setColor(DARKGRAY);
-			display.drawFastHLine(0, 14*display.fontSize, 80*display.fontSize);
-			display.drawFastHLine(0, 24*display.fontSize, 80*display.fontSize);
-			if (display.fontSize > 1) {
-				display.drawFastHLine(0, 14*display.fontSize + 1, 80*display.fontSize);
-				display.drawFastHLine(0, 24*display.fontSize + 1, 80*display.fontSize);
-			}
 			
 			// game name
 			display.setColor(WHITE);
@@ -306,8 +299,12 @@ void Gamebuino::titleScreen() {
 			display.println(folder_name);
 		}
 		
+		//blinking border
+		gb.display.setColor((gb.frameCount % 8) >= 4 ? BROWN : BLACK);
+		gb.display.drawRect(0, 0, gb.display.width(), gb.display.height());
+		
 		//blinking A button icon
-		if((gb.frameCount%8) < 4){
+		if((gb.frameCount%8) >= 4){
 			buttonsIcons.setFrame(1); //button A pressed
 		} else {
 			buttonsIcons.setFrame(0); //button A released
@@ -315,8 +312,8 @@ void Gamebuino::titleScreen() {
 		uint8_t scale = gb.display.width() == 80 ? 1 : 2;
 		uint8_t w = buttonsIcons.width() * scale;
 		uint8_t h = buttonsIcons.height() * scale;
-		uint8_t x = gb.display.width() - w - (2 * scale);
-		uint8_t y = gb.display.height() - h - (2 * scale);
+		uint8_t x = gb.display.width() - w;
+		uint8_t y = gb.display.height() - h;
 		gb.display.drawImage(x, y, buttonsIcons, w, h);
 		
 		if (gb.buttons.pressed(Button::a)) {
