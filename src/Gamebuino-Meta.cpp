@@ -844,15 +844,14 @@ void Gamebuino::homeMenu(){
 				
 			////VOLUME
 			if (currentItem == 1) {
-				//erase waveform if muted
 				if (sound.getVolume() && !sound.isMute()) {
-					Image volume(8, 16, ColorMode::index);
+					Image volume(8, 12, ColorMode::index);
 					volume.clear();
 					volume.fill(DARKGRAY);
 					volume.setColor(WHITE);
 					volume.drawBitmap(0, 0, volumeUnmuted);
-					tft.drawImage(48, yOffset + 4, volume, 8*2, 16*2);
-				} else {
+					tft.drawImage(48, yOffset + 4, volume, 8*2, 12*2);
+				} else { //erase waveform if muted
 					tft.setColor(DARKGRAY);
 					tft.fillRect(50, yOffset + 8, 10, 16);
 				}
@@ -860,14 +859,14 @@ void Gamebuino::homeMenu(){
 		}
 		
 		//draw light level
-		if (currentItem == 0) {			
+		if ((currentItem == 0) && neoPixelsIntensity) {			
 			tft.setColor(WHITE);
 			int lightHeight = neoPixelsIntensity * 32 / 4;
 			tft.drawRect(currentItem*32 + 30, yOffset + (32 - lightHeight), 2, lightHeight);
 		}
 		
 		//draw volume level
-		if (currentItem == 1) {			
+		if ((currentItem == 1) && (sound.getVolume())) {			
 			tft.setColor(WHITE);
 			int volumeHeight = sound.getVolume() * 32 / 8;
 			tft.drawRect(currentItem*32 + 30, yOffset + (32 - volumeHeight), 2, volumeHeight);
