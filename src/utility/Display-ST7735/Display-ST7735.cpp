@@ -28,36 +28,17 @@ as well as Adafruit raw 1.8" TFT display
 #include <SPI.h>
 #include "../Image.h"
 
-
-#include "../Adafruit_ASFcore.h"
-#include "../Adafruit_ASFcore/status_codes.h"
 #include "../Adafruit_ZeroDMA.h"
-#include "../Adafruit_ZeroDMA/utility/dmac.h"
-#include "../Adafruit_ZeroDMA/utility/dma.h"
 
 namespace Gamebuino_Meta {
 
 
 Adafruit_ZeroDMA myDMA;
-status_code stat; // we'll use this to read and print out the DMA status codes
 // are we done yet?
 volatile bool transfer_is_done = false;
 // If you like, a callback can be used
-void dma_callback(struct dma_resource* const resource) {
+void dma_callback(Adafruit_ZeroDMA *dma) {
 	transfer_is_done = true;
-}
-void printStatus(status_code stat) {
-	Serial.print("Status ");
-	switch (stat) {
-	case STATUS_OK:
-		Serial.println("OK"); break;
-	case STATUS_BUSY:
-		Serial.println("BUSY"); break;
-	case STATUS_ERR_INVALID_ARG:
-		Serial.println("Invalid Arg."); break;
-	default:
-		Serial.print("Unknown 0x"); Serial.println(stat); break;
-	}
 }
 
 
@@ -277,30 +258,23 @@ void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, ui
 	setAddrWindow(x, y, x + w - 1, y + 1);
 
 	//configure DMA
-	myDMA.configure_peripheraltrigger(SERCOM4_DMAC_ID_TX);	// SERMCOM4 == SPI native SERCOM
-	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
+	myDMA.setTrigger(SERCOM4_DMAC_ID_TX);	// SERMCOM4 == SPI native SERCOM
+	myDMA.setAction(DMA_TRIGGER_ACTON_BEAT);
 
 	//allocate DMA
 	myDMA.allocate();
-	//printStatus(stat);
 
 	//set up transfer 
-	myDMA.setup_transfer_descriptor(bufferedLine,// move data from here
+	myDMA.addDescriptor(bufferedLine,// move data from here
 		(void *)(&SERCOM4->SPI.DATA.reg),		// to here
 		w * 2,								// this many...
 		DMA_BEAT_SIZE_BYTE,						// 8 bits bytes
 		true,									// increment source addr?
 		false);									// increment dest addr?
 
-	//add descriptor
-	//Serial.print("Adding descriptor...");
-	myDMA.add_descriptor();
-	//printStatus(stat);
-
 	//register and enable call back
 	transfer_is_done = false;
-	myDMA.register_callback(dma_callback); // by default, called when xfer done
-	myDMA.enable_callback(); // by default, for xfer done registers
+	myDMA.setCallback(dma_callback); // by default, called when xfer done
 
 	//start transfer
 	// once started, we dont need to trigger it because it will autorun
@@ -308,7 +282,7 @@ void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, ui
 	SPI.beginTransaction(mySPISettings);
 	dataMode();
 
-	myDMA.start_transfer_job();
+	myDMA.startJob();
 
 	while (!transfer_is_done); //chill
 
@@ -328,38 +302,28 @@ void Display_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t
 
 	setAddrWindow(x, y, x + w - 1, y + h - 1);
 
-	myDMA.configure_peripheraltrigger(SERCOM4_DMAC_ID_TX); // SERMCOM4 == SPI native SERCOM
-	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
+	myDMA.setTrigger(SERCOM4_DMAC_ID_TX); // SERMCOM4 == SPI native SERCOM
+	myDMA.setAction(DMA_TRIGGER_ACTON_BEAT);
 
 	//allocate DMA
 	myDMA.allocate();
-	//printStatus(stat);
 
 	//set up transfer 
-	myDMA.setup_transfer_descriptor(buffer,// move data from here
+	myDMA.addDescriptor(buffer,// move data from here
 		(void *)(&SERCOM4->SPI.DATA.reg),		// to here
 		w * h * 2,								// this many...
 		DMA_BEAT_SIZE_BYTE,						// 8 bits bytes
 		true,									// increment source addr?
 		false);									// increment dest addr?
 
-	//add descriptor
-	//Serial.print("Adding descriptor...");
-	myDMA.add_descriptor();
-	//printStatus(stat);
-
 	//register and enable call back
 	transfer_is_done = false;
-	myDMA.register_callback(dma_callback); // by default, called when xfer done
-	myDMA.enable_callback(); // by default, for xfer done registers
-
-							 //start transfer
-							 // once started, we dont need to trigger it because it will autorun
-							 //Serial.println("Starting transfer job");
+	myDMA.setCallback(dma_callback); // by default, called when xfer done
+	
 	SPI.beginTransaction(mySPISettings);
 	dataMode();
 
-	myDMA.start_transfer_job();
+	myDMA.startJob();
 
 	while (!transfer_is_done); //chill
 
@@ -374,36 +338,26 @@ void Display_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t
 void Display_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 
 	//configure DMA
-	myDMA.configure_peripheraltrigger(SERCOM4_DMAC_ID_TX); // SERMCOM4 == SPI native SERCOM
-	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
+	myDMA.setTrigger(SERCOM4_DMAC_ID_TX); // SERMCOM4 == SPI native SERCOM
+	myDMA.setAction(DMA_TRIGGER_ACTON_BEAT);
 
 	//allocate DMA
 	myDMA.allocate();
-	//printStatus(stat);
 
 	//set up transfer 
-	myDMA.setup_transfer_descriptor(buffer,// move data from here
+	myDMA.addDescriptor(buffer,// move data from here
 		(void *)(&SERCOM4->SPI.DATA.reg),		// to here
 		n * 2,								// this many...
 		DMA_BEAT_SIZE_BYTE,						// 8 bits bytes
 		true,									// increment source addr?
 		false);									// increment dest addr?
 
-	//add descriptor
-	//Serial.print("Adding descriptor...");
-	myDMA.add_descriptor();
-	//printStatus(stat);
-
 	//register and enable call back
 	transfer_is_done = false;
 
-	myDMA.register_callback(dma_callback); // by default, called when xfer done
-	myDMA.enable_callback();// by default, for xfer done registers
+	myDMA.setCallback(dma_callback); // by default, called when xfer done
 
-	//start transfer
-	// once started, we dont need to trigger it because it will autorun
-	//Serial.println("Starting transfer job");
-	myDMA.start_transfer_job();
+	myDMA.startJob();
 }
 
 uint16_t swap_endians_16(uint16_t b) {

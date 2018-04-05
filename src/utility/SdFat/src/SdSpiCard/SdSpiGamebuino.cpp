@@ -23,8 +23,6 @@ Authors:
 #include "SdSpi.h"
 
 #include "../../../Adafruit_ZeroDMA.h"
-#include "../../../Adafruit_ZeroDMA/utility/dmac.h"
-#include "../../../Adafruit_ZeroDMA/utility/dma.h"
 
 Gamebuino_Meta::Adafruit_ZeroDMA myDMA;
 Gamebuino_Meta::Adafruit_ZeroDMA myDMA2;
@@ -32,10 +30,10 @@ Gamebuino_Meta::Adafruit_ZeroDMA myDMA2;
 volatile bool transfer_rx_done = false;
 volatile bool transfer_tx_done = false;
 // If you like, a callback can be used
-void dma_callback_rx(struct dma_resource* const resource) {
+void dma_callback_rx(Gamebuino_Meta::Adafruit_ZeroDMA *dma) {
 	transfer_rx_done = true;
 }
-void dma_callback_tx(struct dma_resource* const resource) {
+void dma_callback_tx(Gamebuino_Meta::Adafruit_ZeroDMA *dma) {
 	transfer_tx_done = true;
 }
 
@@ -90,41 +88,37 @@ uint8_t SdSpi::receive() {
 }
 
 uint8_t SdSpi::receive(uint8_t* buf, size_t n) {
-	myDMA.configure_peripheraltrigger(SERCOM4_DMAC_ID_TX);
-	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
+	myDMA.setTrigger(SERCOM4_DMAC_ID_TX);
+	myDMA.setAction(Gamebuino_Meta::DMA_TRIGGER_ACTON_BEAT);
 	myDMA.allocate();
 	uint8_t b = 0xFF;
-	myDMA.setup_transfer_descriptor(
+	myDMA.addDescriptor(
 		&b, // from here
 		(void *)(&SERCOM4->SPI.DATA.reg), // to here
 		n, // this many
-		DMA_BEAT_SIZE_BYTE, // 8 bits
+		Gamebuino_Meta::DMA_BEAT_SIZE_BYTE, // 8 bits
 		false, // increment source addr?
 		false // increment dest addr?
 	);
-	myDMA.add_descriptor();
-	myDMA.register_callback(dma_callback_tx);
-	myDMA.enable_callback();
+	myDMA.setCallback(dma_callback_tx);
 	
-	myDMA2.configure_peripheraltrigger(SERCOM4_DMAC_ID_RX);
-	myDMA2.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
+	myDMA2.setTrigger(SERCOM4_DMAC_ID_RX);
+	myDMA2.setAction(Gamebuino_Meta::DMA_TRIGGER_ACTON_BEAT);
 	myDMA2.allocate();
-	myDMA2.setup_transfer_descriptor(
+	myDMA2.addDescriptor(
 		(void *)(&SERCOM4->SPI.DATA.reg), // from here
 		buf, // to here
 		n, // this many
-		DMA_BEAT_SIZE_BYTE, // 8 bits
+		Gamebuino_Meta::DMA_BEAT_SIZE_BYTE, // 8 bits
 		false, // increment source addr?
 		true // increment dest addr?
 	);
-	myDMA2.add_descriptor();
-	myDMA2.register_callback(dma_callback_rx);
-	myDMA2.enable_callback();
+	myDMA2.setCallback(dma_callback_rx);
 	
 	
 	transfer_tx_done = transfer_rx_done = false;
-	myDMA2.start_transfer_job();
-	myDMA.start_transfer_job();
+	myDMA2.startJob();
+	myDMA.startJob();
 	while (!(transfer_tx_done && transfer_rx_done)); // chill
 	myDMA.free();
 	myDMA2.free();
@@ -137,22 +131,20 @@ void SdSpi::send(uint8_t b) {
 }
 
 void SdSpi::send(const uint8_t* buf, size_t n) {
-	myDMA.configure_peripheraltrigger(SERCOM4_DMAC_ID_TX);
-	myDMA.configure_triggeraction(DMA_TRIGGER_ACTON_BEAT);
+	myDMA.setTrigger(SERCOM4_DMAC_ID_TX);
+	myDMA.setAction(Gamebuino_Meta::DMA_TRIGGER_ACTON_BEAT);
 	myDMA.allocate();
-	myDMA.setup_transfer_descriptor(
+	myDMA.addDescriptor(
 		(void *)buf, // from here
 		(void *)(&SERCOM4->SPI.DATA.reg), // to here
 		n, // this many
-		DMA_BEAT_SIZE_BYTE, // 8 bits
+		Gamebuino_Meta::DMA_BEAT_SIZE_BYTE, // 8 bits
 		true, // increment source addr?
 		false // increment dest addr?
 	);
-	myDMA.add_descriptor();
 	transfer_tx_done = false;
-	myDMA.register_callback(dma_callback_tx);
-	myDMA.enable_callback();
-	myDMA.start_transfer_job();
+	myDMA.setCallback(dma_callback_tx);
+	myDMA.startJob();
 	while (!transfer_tx_done); // chill
 	myDMA.free();
 }
