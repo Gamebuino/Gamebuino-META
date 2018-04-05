@@ -33,12 +33,13 @@ as well as Adafruit raw 1.8" TFT display
 namespace Gamebuino_Meta {
 
 
-Adafruit_ZeroDMA myDMA;
+Adafruit_ZeroDMA tftDMA;
+DmacDescriptor* tftDesc;
 // are we done yet?
-volatile bool transfer_is_done = false;
+volatile bool tft_dma_transfer_is_done = false;
 // If you like, a callback can be used
-void dma_callback(Adafruit_ZeroDMA *dma) {
-	transfer_is_done = true;
+void dma_tft_callback(Adafruit_ZeroDMA *dma) {
+	tft_dma_transfer_is_done = true;
 }
 
 
@@ -46,7 +47,7 @@ inline uint16_t swapcolor(uint16_t x) {
 	return (x << 11) | (x & 0x07E0) | (x >> 11);
 }
 
-static SPISettings mySPISettings;
+static SPISettings tftSPISettings;
 
 // Constructor when using hardware SPI.	Faster, but must use SPI pins
 // specific to each board type (e.g. 11,13 for Uno, 51,52 for Mega, etc.)
@@ -67,7 +68,7 @@ inline void Display_ST7735::spiwrite(uint8_t c) {
 
 
 void Display_ST7735::writecommand(uint8_t c) {
-	SPI.beginTransaction(mySPISettings);
+	SPI.beginTransaction(tftSPISettings);
 	commandMode();
 
 	spiwrite(c);
@@ -78,7 +79,7 @@ void Display_ST7735::writecommand(uint8_t c) {
 
 
 void Display_ST7735::writedata(uint8_t c) {
-	SPI.beginTransaction(mySPISettings);
+	SPI.beginTransaction(tftSPISettings);
 	dataMode();
 		
 	//Serial.print("D ");
@@ -203,7 +204,7 @@ void Display_ST7735::commonInit() {
 	rspinmask = digitalPinToBitMask(rspinmask);
 
 	SPI.begin();
-	mySPISettings = SPISettings(24000000, MSBFIRST, SPI_MODE0);
+	tftSPISettings = SPISettings(24000000, MSBFIRST, SPI_MODE0);
 
 	// toggle RST low to reset; CS low so it'll listen to us
 	*csport &= ~cspinmask;
@@ -220,6 +221,19 @@ void Display_ST7735::init() {
 
 	writecommand(ST7735_MADCTL);
 	writedata(0xC0);
+	
+	// initialize DMA
+	tftDMA.setTrigger(SERCOM4_DMAC_ID_TX);
+	tftDMA.setAction(DMA_TRIGGER_ACTON_BEAT);
+	tftDMA.allocate();
+	tftDesc = tftDMA.addDescriptor(
+	    0,                                // move data from here
+	    (void *)(&SERCOM4->SPI.DATA.reg), // to here
+	    0,                                // this many...
+	    DMA_BEAT_SIZE_BYTE,               // bytes/hword/words
+	    true,                             // increment source addr?
+	    false);                           // increment dest addr?
+	tftDMA.setCallback(dma_tft_callback);
 }
 
 
@@ -257,38 +271,17 @@ void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, ui
 
 	setAddrWindow(x, y, x + w - 1, y + 1);
 
-	//configure DMA
-	myDMA.setTrigger(SERCOM4_DMAC_ID_TX);	// SERMCOM4 == SPI native SERCOM
-	myDMA.setAction(DMA_TRIGGER_ACTON_BEAT);
+	tftDMA.changeDescriptor(tftDesc, bufferedLine, NULL, w*2);
 
-	//allocate DMA
-	myDMA.allocate();
-
-	//set up transfer 
-	myDMA.addDescriptor(bufferedLine,// move data from here
-		(void *)(&SERCOM4->SPI.DATA.reg),		// to here
-		w * 2,								// this many...
-		DMA_BEAT_SIZE_BYTE,						// 8 bits bytes
-		true,									// increment source addr?
-		false);									// increment dest addr?
-
-	//register and enable call back
-	transfer_is_done = false;
-	myDMA.setCallback(dma_callback); // by default, called when xfer done
-
-	//start transfer
-	// once started, we dont need to trigger it because it will autorun
-	//Serial.println("Starting transfer job");
-	SPI.beginTransaction(mySPISettings);
+	SPI.beginTransaction(tftSPISettings);
 	dataMode();
+	tft_dma_transfer_is_done = false;
+	tftDMA.startJob();
 
-	myDMA.startJob();
-
-	while (!transfer_is_done); //chill
+	while (!tft_dma_transfer_is_done); //chill
 
 	idleMode();
 	SPI.endTransaction();
-	myDMA.free(); //free the DMA channel
 
 	PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
 }
@@ -302,62 +295,27 @@ void Display_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t
 
 	setAddrWindow(x, y, x + w - 1, y + h - 1);
 
-	myDMA.setTrigger(SERCOM4_DMAC_ID_TX); // SERMCOM4 == SPI native SERCOM
-	myDMA.setAction(DMA_TRIGGER_ACTON_BEAT);
+	tftDMA.changeDescriptor(tftDesc, buffer, NULL, w*h*2);
 
-	//allocate DMA
-	myDMA.allocate();
-
-	//set up transfer 
-	myDMA.addDescriptor(buffer,// move data from here
-		(void *)(&SERCOM4->SPI.DATA.reg),		// to here
-		w * h * 2,								// this many...
-		DMA_BEAT_SIZE_BYTE,						// 8 bits bytes
-		true,									// increment source addr?
-		false);									// increment dest addr?
-
-	//register and enable call back
-	transfer_is_done = false;
-	myDMA.setCallback(dma_callback); // by default, called when xfer done
-	
-	SPI.beginTransaction(mySPISettings);
+	SPI.beginTransaction(tftSPISettings);
 	dataMode();
+	tft_dma_transfer_is_done = false;
+	tftDMA.startJob();
 
-	myDMA.startJob();
-
-	while (!transfer_is_done); //chill
+	while (!tft_dma_transfer_is_done); //chill
 
 	idleMode();
 	SPI.endTransaction();
-	myDMA.free(); //free the DMA channel
 }
 
 //fast method to quickly push a buffered line of pixels
 //boundary check must be made prior to this function
 //the color must be formated as the destination
 void Display_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
+	tftDMA.changeDescriptor(tftDesc, buffer, NULL, n*2);
 
-	//configure DMA
-	myDMA.setTrigger(SERCOM4_DMAC_ID_TX); // SERMCOM4 == SPI native SERCOM
-	myDMA.setAction(DMA_TRIGGER_ACTON_BEAT);
-
-	//allocate DMA
-	myDMA.allocate();
-
-	//set up transfer 
-	myDMA.addDescriptor(buffer,// move data from here
-		(void *)(&SERCOM4->SPI.DATA.reg),		// to here
-		n * 2,								// this many...
-		DMA_BEAT_SIZE_BYTE,						// 8 bits bytes
-		true,									// increment source addr?
-		false);									// increment dest addr?
-
-	//register and enable call back
-	transfer_is_done = false;
-
-	myDMA.setCallback(dma_callback); // by default, called when xfer done
-
-	myDMA.startJob();
+	tft_dma_transfer_is_done = false;
+	tftDMA.startJob();
 }
 
 uint16_t swap_endians_16(uint16_t b) {
@@ -397,7 +355,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 		setAddrWindow(0, 0, _width - 1, _height - 1);
 
 		//initiate SPI
-		SPI.beginTransaction(mySPISettings);
+		SPI.beginTransaction(tftSPISettings);
 		dataMode();
 
 		//prepare the first line
@@ -440,15 +398,12 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 
 			PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
 
-			while (!transfer_is_done); //chill
-
-			myDMA.free(); //free the DMA channel
+			while (!tft_dma_transfer_is_done); //chill
 		}
 
 		//send the last line
 		sendBuffer(preBufferLine, w); //start DMA send
-		while (!transfer_is_done); //chill
-		myDMA.free(); //free the DMA channel
+		while (!tft_dma_transfer_is_done); //chill
 
 		//finish SPI
 		idleMode();
@@ -514,7 +469,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 		setAddrWindow(0, 0, _width - 1, _height - 1);
 		
 		//initiate SPI
-		SPI.beginTransaction(mySPISettings);
+		SPI.beginTransaction(tftSPISettings);
 		dataMode();
 		if (img.colorMode == ColorMode::rgb565) {
 
@@ -546,15 +501,12 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 
 				PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
 
-				while (!transfer_is_done); //chill
-
-				myDMA.free(); //free the DMA channel
+				while (!tft_dma_transfer_is_done); //chill
 			}
 
 			//send the last line
 			sendBuffer(preBufferLine, _width * 2); //start DMA send
-			while (!transfer_is_done); //chill
-			myDMA.free(); //free the DMA channel
+			while (!tft_dma_transfer_is_done); //chill
 
 			//finish SPI
 			idleMode();
@@ -582,15 +534,12 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 
 				PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
 
-				while (!transfer_is_done); //chill
-
-				myDMA.free(); //free the DMA channel
+				while (!tft_dma_transfer_is_done); //chill
 			}
 
 			//send the last line
 			sendBuffer(preBufferLine, _width * 2); //start DMA send
-			while (!transfer_is_done); //chill
-			myDMA.free(); //free the DMA channel
+			while (!tft_dma_transfer_is_done); //chill
 
 			//finish SPI
 			idleMode();
@@ -610,7 +559,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int
 
 
 void Display_ST7735::pushColor(uint16_t c) {
-	SPI.beginTransaction(mySPISettings);
+	SPI.beginTransaction(tftSPISettings);
 	dataMode();
 	
 	spiwrite(c >> 8);
@@ -626,7 +575,7 @@ void Display_ST7735::_drawPixel(int16_t x, int16_t y) {
 
 	setAddrWindow(x,y,x+1,y+1);
 
-	SPI.beginTransaction(mySPISettings);
+	SPI.beginTransaction(tftSPISettings);
 	dataMode();
 	
 	spiwrite((uint16_t)color.c >> 8);
@@ -645,7 +594,7 @@ void Display_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h) {
 
 	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
 	
-	SPI.beginTransaction(mySPISettings);
+	SPI.beginTransaction(tftSPISettings);
 	dataMode();
 	while (h--) {
 		spiwrite(hi);
@@ -664,7 +613,7 @@ void Display_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w) {
 
 	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
 
-	SPI.beginTransaction(mySPISettings);
+	SPI.beginTransaction(tftSPISettings);
 	dataMode();
 	while (w--) {
 		spiwrite(hi);
@@ -685,7 +634,7 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 
 	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
 	
-	SPI.beginTransaction(mySPISettings);
+	SPI.beginTransaction(tftSPISettings);
 	dataMode();
 	for(y=h; y>0; y--) {
 		for(x=w; x>0; x--) {

@@ -72,6 +72,8 @@ Adafruit_ZeroDMA::Adafruit_ZeroDMA(void) {
 	memset(callback, 0, sizeof(callback));
 }
 
+} // namespace Gamebuino_Meta
+
 // TODO: add destructor? Should stop job, delete descriptors, free channel.
 
 // INTERRUPT SERVICE ROUTINE -----------------------------------------------
@@ -84,12 +86,12 @@ Adafruit_ZeroDMA::Adafruit_ZeroDMA(void) {
 // next function after this, being part of the ZeroDMA class, can.)
 
 void DMAC_Handler(void) {
-	cpu_irq_enter_critical();
+	Gamebuino_Meta::cpu_irq_enter_critical();
 
 	uint8_t channel = DMAC->INTPEND.bit.ID; // Channel # triggered interrupt
 	if(channel < DMAC_CH_NUM) {
-		Adafruit_ZeroDMA *dma;
-		if((dma = _dmaPtr[channel])) { // -> Channel's ZeroDMA object
+		Gamebuino_Meta::Adafruit_ZeroDMA *dma;
+		if((dma = Gamebuino_Meta::_dmaPtr[channel])) { // -> Channel's ZeroDMA object
 #ifdef __SAMD51__
 			// Call IRQ handler with channel #
 			dma->_IRQhandler(channel);
@@ -101,7 +103,7 @@ void DMAC_Handler(void) {
 		}
 	}
 
-	cpu_irq_leave_critical();
+	Gamebuino_Meta::cpu_irq_leave_critical();
 }
 
 #ifdef __SAMD51__
@@ -121,6 +123,8 @@ void DMAC_4_Handler(void){
 	DMAC_Handler();
 }
 #endif
+
+namespace Gamebuino_Meta {
 
 void Adafruit_ZeroDMA::_IRQhandler(uint8_t flags) {
 #ifdef __SAMD51__

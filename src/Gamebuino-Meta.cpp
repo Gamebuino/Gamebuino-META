@@ -216,6 +216,8 @@ void Gamebuino::begin() {
 	}
 	pickRandomSeed();
 	display.clear();
+	
+	inited = true;
 }
 
 void Gamebuino::drawLogo(Graphics& g, int8_t x, int8_t y, uint8_t scale) {

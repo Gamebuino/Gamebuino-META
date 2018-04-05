@@ -24,8 +24,10 @@ Authors:
 
 #include "../../../Adafruit_ZeroDMA.h"
 
-Gamebuino_Meta::Adafruit_ZeroDMA myDMA;
-Gamebuino_Meta::Adafruit_ZeroDMA myDMA2;
+Gamebuino_Meta::Adafruit_ZeroDMA txDMA;
+Gamebuino_Meta::Adafruit_ZeroDMA rxDMA;
+DmacDescriptor* txDesc;
+DmacDescriptor* rxDesc;
 // are we done yet?
 volatile bool transfer_rx_done = false;
 volatile bool transfer_tx_done = false;
@@ -37,21 +39,54 @@ void dma_callback_tx(Gamebuino_Meta::Adafruit_ZeroDMA *dma) {
 	transfer_tx_done = true;
 }
 
-static SPISettings mySPISettings;
+static SPISettings sdFatSPISettings;
 
 uint8_t chipSelectPin;
+
+
+void initRxDMA() {
+	rxDMA.setTrigger(SERCOM4_DMAC_ID_RX);
+	rxDMA.setAction(Gamebuino_Meta::DMA_TRIGGER_ACTON_BEAT);
+	rxDMA.allocate();
+	rxDesc = rxDMA.addDescriptor(
+		(void *)(&SERCOM4->SPI.DATA.reg), // from here
+		0, // to here
+		0, // this many
+		Gamebuino_Meta::DMA_BEAT_SIZE_BYTE, // 8 bits
+		false, // increment source addr?
+		true // increment dest addr?
+	);
+	rxDMA.setCallback(dma_callback_rx);
+}
+
+void initTxDMA() {
+	txDMA.setTrigger(SERCOM4_DMAC_ID_TX);
+	txDMA.setAction(Gamebuino_Meta::DMA_TRIGGER_ACTON_BEAT);
+	txDMA.allocate();
+	txDesc = txDMA.addDescriptor(
+		0, // from here
+		(void *)(&SERCOM4->SPI.DATA.reg), // to here
+		0, // this many
+		Gamebuino_Meta::DMA_BEAT_SIZE_BYTE, // 8 bits
+		true, // increment source addr?
+		false // increment dest addr?
+	);
+	txDMA.setCallback(dma_callback_tx);
+}
 
 void SdSpi::begin(uint8_t _chipSelectPin) {
 	chipSelectPin = _chipSelectPin;
 	pinMode(chipSelectPin, OUTPUT);
 	digitalWrite(chipSelectPin, HIGH);
 	SPI.begin();
-	mySPISettings = SPISettings(12000000, MSBFIRST, SPI_MODE0);
+	sdFatSPISettings = SPISettings(12000000, MSBFIRST, SPI_MODE0);
+	initRxDMA();
+	initTxDMA();
 }
 
 void SdSpi::beginTransaction(uint8_t divisor) {
 #if ENABLE_SPI_TRANSACTIONS
-	SPI.beginTransaction(mySPISettings);
+	SPI.beginTransaction(sdFatSPISettings);
 #endif  // ENABLE_SPI_TRANSACTIONS
 #ifndef SPI_CLOCK_DIV128
 	SPI.setClockDivider(divisor);
@@ -88,40 +123,16 @@ uint8_t SdSpi::receive() {
 }
 
 uint8_t SdSpi::receive(uint8_t* buf, size_t n) {
-	myDMA.setTrigger(SERCOM4_DMAC_ID_TX);
-	myDMA.setAction(Gamebuino_Meta::DMA_TRIGGER_ACTON_BEAT);
-	myDMA.allocate();
 	uint8_t b = 0xFF;
-	myDMA.addDescriptor(
-		&b, // from here
-		(void *)(&SERCOM4->SPI.DATA.reg), // to here
-		n, // this many
-		Gamebuino_Meta::DMA_BEAT_SIZE_BYTE, // 8 bits
-		false, // increment source addr?
-		false // increment dest addr?
-	);
-	myDMA.setCallback(dma_callback_tx);
+	txDesc->BTCTRL.bit.SRCINC = false;
+	txDMA.changeDescriptor(txDesc, &b, NULL, n);
 	
-	myDMA2.setTrigger(SERCOM4_DMAC_ID_RX);
-	myDMA2.setAction(Gamebuino_Meta::DMA_TRIGGER_ACTON_BEAT);
-	myDMA2.allocate();
-	myDMA2.addDescriptor(
-		(void *)(&SERCOM4->SPI.DATA.reg), // from here
-		buf, // to here
-		n, // this many
-		Gamebuino_Meta::DMA_BEAT_SIZE_BYTE, // 8 bits
-		false, // increment source addr?
-		true // increment dest addr?
-	);
-	myDMA2.setCallback(dma_callback_rx);
-	
+	rxDMA.changeDescriptor(rxDesc, NULL, buf, n);
 	
 	transfer_tx_done = transfer_rx_done = false;
-	myDMA2.startJob();
-	myDMA.startJob();
+	rxDMA.startJob();
+	txDMA.startJob();
 	while (!(transfer_tx_done && transfer_rx_done)); // chill
-	myDMA.free();
-	myDMA2.free();
 	return 0; // we just assume this worked.... (probably not too good an idea)
 	// TODO: check for stuff
 }
@@ -131,20 +142,10 @@ void SdSpi::send(uint8_t b) {
 }
 
 void SdSpi::send(const uint8_t* buf, size_t n) {
-	myDMA.setTrigger(SERCOM4_DMAC_ID_TX);
-	myDMA.setAction(Gamebuino_Meta::DMA_TRIGGER_ACTON_BEAT);
-	myDMA.allocate();
-	myDMA.addDescriptor(
-		(void *)buf, // from here
-		(void *)(&SERCOM4->SPI.DATA.reg), // to here
-		n, // this many
-		Gamebuino_Meta::DMA_BEAT_SIZE_BYTE, // 8 bits
-		true, // increment source addr?
-		false // increment dest addr?
-	);
+	txDesc->BTCTRL.bit.SRCINC = true;
+	txDMA.changeDescriptor(txDesc, (uint8_t*)buf, NULL, n);
+	
 	transfer_tx_done = false;
-	myDMA.setCallback(dma_callback_tx);
-	myDMA.startJob();
+	txDMA.startJob();
 	while (!transfer_tx_done); // chill
-	myDMA.free();
 }

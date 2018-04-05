@@ -61,6 +61,6 @@ class Adafruit_ZeroDMA {
   void                      (*callback[DMA_CALLBACK_N])(Adafruit_ZeroDMA *);
 };
 
-}
+} // namespace Gamebuino_Meta
 
 #endif // _ADAFRUIT_ZERODMA_H_
