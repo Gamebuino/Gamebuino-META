@@ -42,6 +42,29 @@ void dma_tft_callback(Adafruit_ZeroDMA *dma) {
 	tft_dma_transfer_is_done = true;
 }
 
+#define ENABLE_PROFILE_BUSYWAIT (1)
+#define ENABLE_IDLE_TOGGLE_PIN (17)
+
+
+#if defined(ENABLE_PROFILE_BUSYWAIT) || defined(ENABLE_IDLE_TOGGLE_PIN)
+
+static inline void wait_for_transfer_complete(void) {
+#if defined(ENABLE_IDLE_TOGGLE_PIN)
+	PORT->Group[0].OUTSET.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
+#endif /* ENABLE_IDLE_TOGGLE_PIN */
+	while (!tft_dma_transfer_is_done);
+#if defined(ENABLE_IDLE_TOGGLE_PIN)
+	PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
+#endif /* ENABLE_IDLE_TOGGLE_PIN */
+}
+
+#else /* defined(ENABLE_PROFILE_BUSYWAIT) || defined(ENABLE_IDLE_TOGGLE_PIN) */
+
+static inline void wait_for_transfer_complete(void) {
+	while (!tft_dma_transfer_is_done);
+}
+
+#endif /* defined(ENABLE_PROFILE_BUSYWAIT) || defined(ENABLE_IDLE_TOGGLE_PIN) */
 
 inline uint16_t swapcolor(uint16_t x) { 
 	return (x << 11) | (x & 0x07E0) | (x >> 11);
@@ -203,6 +226,10 @@ void Display_ST7735::commonInit() {
 	cspinmask = digitalPinToBitMask(cspinmask);
 	rspinmask = digitalPinToBitMask(rspinmask);
 
+#if defined(ENABLE_IDLE_TOGGLE_PIN)
+	PORT->Group[0].DIR.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
+#endif /* ENABLE_IDLE_TOGGLE_PIN */
+
 	SPI.begin();
 	tftSPISettings = SPISettings(24000000, MSBFIRST, SPI_MODE0);
 
@@ -259,8 +286,6 @@ void Display_ST7735::setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y
 //the color must be formated as the destination
 void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, Image& img) {
 
-	PORT->Group[0].OUTSET.reg = (1 << 17);	// set PORTA.17 high	"digitalWrite(13, HIGH)"
-
 	//create a local buffer line not to mess up the source
 	uint16_t bufferedLine[w];
 	for (uint16_t i = 0; i < w; i++) {
@@ -278,20 +303,16 @@ void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, ui
 	tft_dma_transfer_is_done = false;
 	tftDMA.startJob();
 
-	while (!tft_dma_transfer_is_done); //chill
+	wait_for_transfer_complete();
 
 	idleMode();
 	SPI.endTransaction();
-
-	PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
 }
 
 //fast method to quickly push a buffered line of pixels
 //boundary check must be made prior to this function
 //the color must be formated as the destination
 void Display_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h) {
-
-	PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
 
 	setAddrWindow(x, y, x + w - 1, y + h - 1);
 
@@ -302,7 +323,7 @@ void Display_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t
 	tft_dma_transfer_is_done = false;
 	tftDMA.startJob();
 
-	while (!tft_dma_transfer_is_done); //chill
+	wait_for_transfer_complete();
 
 	idleMode();
 	SPI.endTransaction();
@@ -373,7 +394,6 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 			preBufferLine = sendBufferLine;
 			sendBufferLine = temp;
 			
-			PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
 			sendBuffer(sendBufferLine, w); //start DMA send
 
 
@@ -396,14 +416,12 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 				dest[(i * 4) + 3] = swap_endians_16((uint16_t)index[index4]);
 			}
 
-			PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
-
-			while (!tft_dma_transfer_is_done); //chill
+			wait_for_transfer_complete();
 		}
 
 		//send the last line
 		sendBuffer(preBufferLine, w); //start DMA send
-		while (!tft_dma_transfer_is_done); //chill
+		wait_for_transfer_complete();
 
 		//finish SPI
 		idleMode();
@@ -488,8 +506,6 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 				preBufferLine = sendBufferLine;
 				sendBufferLine = temp;
 
-				PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
-
 				sendBuffer(sendBufferLine, _width * 2); //start DMA send
 
 				//prepare the next line while the current one is being transferred
@@ -499,14 +515,12 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 				}
 				memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
 
-				PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
-
-				while (!tft_dma_transfer_is_done); //chill
+				wait_for_transfer_complete();
 			}
 
 			//send the last line
 			sendBuffer(preBufferLine, _width * 2); //start DMA send
-			while (!tft_dma_transfer_is_done); //chill
+			wait_for_transfer_complete();
 
 			//finish SPI
 			idleMode();
@@ -525,21 +539,17 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 				preBufferLine = sendBufferLine;
 				sendBufferLine = temp;
 				
-				PORT->Group[0].OUTSET.reg = (1 << 17); // set PORTA.17 high	"digitalWrite(13, HIGH)"
-
 				sendBuffer(sendBufferLine, _width * 2); //start DMA send
 
 				// prepare the next line while we'r at it
 				bufferIndexLineDouble(preBufferLine, img._buffer, w, j);
 
-				PORT->Group[0].OUTCLR.reg = (1 << 17); // clear PORTA.17 high "digitalWrite(13, LOW)"
-
-				while (!tft_dma_transfer_is_done); //chill
+				wait_for_transfer_complete();
 			}
 
 			//send the last line
 			sendBuffer(preBufferLine, _width * 2); //start DMA send
-			while (!tft_dma_transfer_is_done); //chill
+			wait_for_transfer_complete();
 
 			//finish SPI
 			idleMode();
