@@ -162,7 +162,7 @@ void Gamebuino::begin() {
 	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
 	
 	display.setColor(Color::white);
-	drawLogo(display, 2, 0, display.fontSize);
+	drawLogo(display, 2, 2, display.fontSize);
 	display.setColor(Color::brown, Color::black);
 	display.setCursor(0, display.height() - (display.getFontHeight()*display.fontSize));
 	display.print("SD INIT... ");
