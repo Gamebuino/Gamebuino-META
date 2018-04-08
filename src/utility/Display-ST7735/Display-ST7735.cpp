@@ -187,22 +187,28 @@ void Display_ST7735::commandList(const uint8_t *addr) {
 	uint8_t	numCommands, numArgs;
 	uint8_t ms;
 
+	SPI.beginTransaction(SPISettings(12000000, MSBFIRST, SPI_MODE0));
+
 	numCommands = *(addr++);      // Number of commands to follow
 	while (numCommands--) {       // For each command...
-		writecommand(*(addr++));  //   Read, issue command
+		commandMode();
+		spiwrite(*(addr++));  //   Read, issue command
 		numArgs	= *(addr++);      //   Number of args to follow
 		ms = numArgs & DELAY;     //   If hibit set, delay follows args
 		numArgs &= ~DELAY;        //   Mask out delay bit
+		dataMode();
 		while (numArgs--) {       //   For each argument...
-			writedata(*(addr++)); //     Read, issue argument
+			spiwrite(*(addr++)); //     Read, issue argument
 		}
 
 		if (ms) {
 			ms = *(addr++); // Read post-command delay time (ms)
-			
 			delay(ms);
 		}
 	}
+	
+	idleMode();
+	SPI.endTransaction();
 }
 
 
