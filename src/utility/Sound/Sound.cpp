@@ -96,11 +96,6 @@ void tcConfigure(uint32_t sampleRate) {
 	while (tcIsSyncing());
 }
 
-void dacConfigure(void) {
-	analogWriteResolution(10);
-	analogWrite(A0, 0);
-}
-
 int8_t findEmptyChannel() {
 	for (uint8_t i = 0; i < SOUND_CHANNELS; i++) {
 		if (!channels[i].use) {
@@ -129,14 +124,6 @@ uint32_t Sound_Handler::getPos() {
 
 void Sound_Handler::setChannel(Sound_Channel* _channel) {
 	channel = _channel;
-}
-
-void Sound::begin() {
-#if SOUND_CHANNELS > 0
-	dacConfigure();
-	tcConfigure(SOUND_FREQ);
-	tcStart();
-#endif
 }
 
 int8_t Sound::play(const char* filename, bool loop) {
@@ -438,6 +425,19 @@ void TC5_Handler (void) __attribute__ ((alias("Audio_Handler")));
 #ifdef __cplusplus
 }
 #endif
+
+void dacConfigure(void) {
+	flowdown = analogRead(A0); // initial flowdown to prevent popping sound
+	analogWriteResolution(10);
+}
+
+void Sound::begin() {
+#if SOUND_CHANNELS > 0
+	dacConfigure();
+	tcConfigure(SOUND_FREQ);
+	tcStart();
+#endif
+}
 
 #endif // SOUND_CHANNELS
 
