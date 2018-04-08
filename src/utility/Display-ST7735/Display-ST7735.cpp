@@ -114,12 +114,16 @@ void Display_ST7735::writedata(uint8_t c) {
 // than the equivalent code.	Companion function follows.
 #define DELAY 0x80
 static const uint8_t
-	Rcmd1[] = {                     // Init for 7735R, part 1 (red or green tab)
-		14,//15,                         // 15 commands in list:
-//		ST7735_SWRESET, DELAY,      //  1: Software reset, 0 args, w/delay
-//			150,                    //     150 ms delay
+	RcmdReset[] = {
+		2,
+		ST7735_SWRESET, DELAY,      //  1: Software reset, 0 args, w/delay
+		150,                    //     150 ms delay
 		ST7735_SLPOUT, DELAY,       //  2: Out of sleep mode, 0 args, w/delay
-			150,                    //     150 ms delay
+		150,                    //     150 ms delay
+	};
+static const uint8_t
+	Rcmd[] = {                      // Init for 7735R, part 1 (red or green tab)
+		19,                         // 15 commands in list:
 		ST7735_FRMCTR1, 3,          //  3: Frame rate ctrl - normal mode, 3 args:
 			0x01, 0x2C, 0x2D,       //     Rate = fosc/(1x2+40) * (LINE+2C+2D)
 		ST7735_FRMCTR2, 3,          //  4: Frame rate control - idle mode, 3 args:
@@ -149,19 +153,19 @@ static const uint8_t
 		ST7735_MADCTL, 1,           // 14: Memory access control (directions), 1 arg:
 			0xC8,                   //     row addr/col addr, bottom to top refresh
 		ST7735_COLMOD, 1,           // 15: set color mode, 1 arg, no delay:
-			0x05 },                 //     16-bit color
+			0x05,                   //     16-bit color
 
-	Rcmd2red[] = {                  // Init for 7735R, part 2 (red tab only)
-		2,                          //  2 commands in list:
+		                            // Init for 7735R, part 2 (red tab only)
+		                            //  2 commands in list:
 		ST7735_CASET, 4,            //  1: Column addr set, 4 args, no delay:
 			0x00, 0x00,             //     XSTART = 0
 			0x00, 0x7F,             //     XEND = 127
 		ST7735_RASET, 4,            //  2: Row addr set, 4 args, no delay:
 			0x00, 0x00,             //     XSTART = 0
-			0x00, 0x9F },           //     XEND = 159
+			0x00, 0x9F,             //     XEND = 159
 
-	Rcmd3[] = {                     // Init for 7735R, part 3 (red or green tab)
-		4,                          //  4 commands in list:
+		                            // Init for 7735R, part 3 (red or green tab)
+		                            //  4 commands in list:
 		ST7735_GMCTRP1, 16,         //  1: Magical unicorn dust, 16 args, no delay:
 			0x02, 0x1c, 0x07, 0x12,
 			0x37, 0x32, 0x29, 0x2d,
@@ -203,7 +207,7 @@ void Display_ST7735::commandList(const uint8_t *addr) {
 
 
 // Initialization code common to both 'B' and 'R' type displays
-void Display_ST7735::commonInit(const uint8_t *cmdList) {
+void Display_ST7735::commonInit() {
 	pinMode(cspinmask, OUTPUT);
 	pinMode(rspinmask, OUTPUT);
 	csport = portOutputRegister(digitalPinToPort(cspinmask));
@@ -216,17 +220,16 @@ void Display_ST7735::commonInit(const uint8_t *cmdList) {
 
 	// toggle RST low to reset; CS low so it'll listen to us
 	*csport &= ~cspinmask;
-
-	if(cmdList) commandList(cmdList);
 }
 
 
 // Initialization for ST7735R screens (green or red tabs)
 void Display_ST7735::init() {
-	commonInit(Rcmd1);
-	commandList(Rcmd2red);
-	
-	commandList(Rcmd3);
+	commonInit();
+	if (!PM->RCAUSE.bit.SYST) {
+		commandList(RcmdReset);
+	}
+	commandList(Rcmd);
 
 	writecommand(ST7735_MADCTL);
 	writedata(0xC0);

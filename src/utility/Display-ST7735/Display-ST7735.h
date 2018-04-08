@@ -164,7 +164,7 @@ private:
 	void writecommand(uint8_t c);
 	void writedata(uint8_t d);
 	void commandList(const uint8_t *addr);
-	void commonInit(const uint8_t *cmdList);
+	void commonInit();
 
 	volatile RwReg  *dataport, *clkport, *csport, *rsport;
 	uint32_t  datapinmask, clkpinmask, cspinmask, rspinmask;
