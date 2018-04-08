@@ -185,7 +185,7 @@ static const uint8_t
 void Display_ST7735::commandList(const uint8_t *addr) {
 
 	uint8_t	numCommands, numArgs;
-	uint16_t ms;
+	uint8_t ms;
 
 	numCommands = *(addr++);      // Number of commands to follow
 	while (numCommands--) {       // For each command...
