@@ -299,10 +299,13 @@ Image::~Image() {
 
 void Image::drawFastHLine(int16_t x, int16_t y, int16_t w) {
 	// Don't draw if we are outside the screen
-	if (x + w <= 0 || x >= _width || y < 0 || y >= _height) return;
+	if (x + w < 0 || x >= _width || y < 0 || y >= _height) return;
 	
 	if (colorMode == ColorMode::rgb565) {
-
+		if (w < 0) {
+			x += w + 1;
+			w = abs(w);
+		}
 		
 		// Clamp value so we don't go outside the buffer
 		uint16_t new_x = max(x,0);
