@@ -33,38 +33,78 @@ as well as Adafruit raw 1.8" TFT display
 namespace Gamebuino_Meta {
 
 
-Adafruit_ZeroDMA tftDMA;
-DmacDescriptor* tftDesc;
+static Adafruit_ZeroDMA tftDMA;
+#define DMA_DESC_COUNT (3)
+DmacDescriptor* tftDesc[DMA_DESC_COUNT];
+DmacDescriptor* next_desc = NULL;
 // are we done yet?
-volatile bool tft_dma_transfer_is_done = false;
-// If you like, a callback can be used
-void dma_tft_callback(Adafruit_ZeroDMA *dma) {
-	tft_dma_transfer_is_done = true;
-}
+volatile uint32_t dma_desc_free_count = DMA_DESC_COUNT;
 
-#define ENABLE_PROFILE_BUSYWAIT (1)
-#define ENABLE_IDLE_TOGGLE_PIN (17)
+//#define ENABLE_IDLE_TOGGLE_PIN (17)
+//#define ENABLE_IRQ_TOGGLE_PIN1 (19)
+//#define ENABLE_IRQ_TOGGLE_PIN2 (16)
 
+#if defined(ENABLE_IDLE_TOGGLE_PIN)
 
-#if defined(ENABLE_PROFILE_BUSYWAIT) || defined(ENABLE_IDLE_TOGGLE_PIN)
-
-static inline void wait_for_transfer_complete(void) {
+static inline void wait_for_desc_available(const uint32_t min_desc_num) {
 #if defined(ENABLE_IDLE_TOGGLE_PIN)
 	PORT->Group[0].OUTSET.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
 #endif /* ENABLE_IDLE_TOGGLE_PIN */
-	while (!tft_dma_transfer_is_done);
+	while (dma_desc_free_count < min_desc_num);
 #if defined(ENABLE_IDLE_TOGGLE_PIN)
 	PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
 #endif /* ENABLE_IDLE_TOGGLE_PIN */
 }
 
-#else /* defined(ENABLE_PROFILE_BUSYWAIT) || defined(ENABLE_IDLE_TOGGLE_PIN) */
-
-static inline void wait_for_transfer_complete(void) {
-	while (!tft_dma_transfer_is_done);
+static inline void wait_for_transfers_done(void) {
+#if defined(ENABLE_IDLE_TOGGLE_PIN)
+	PORT->Group[0].OUTSET.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
+#endif /* ENABLE_IDLE_TOGGLE_PIN */
+	while (dma_desc_free_count < DMA_DESC_COUNT) {
+		PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
+		PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
+	}
+#if defined(ENABLE_IDLE_TOGGLE_PIN)
+	PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
+#endif /* ENABLE_IDLE_TOGGLE_PIN */
 }
 
-#endif /* defined(ENABLE_PROFILE_BUSYWAIT) || defined(ENABLE_IDLE_TOGGLE_PIN) */
+#else /* defined(ENABLE_IDLE_TOGGLE_PIN) */
+
+static inline void wait_for_desc_available(const uint32_t min_desc_num) {
+	while (dma_desc_free_count < min_desc_num);
+}
+
+static inline void wait_for_transfers_done(void) {
+	while (dma_desc_free_count < DMA_DESC_COUNT);
+}
+
+#endif /* defined(ENABLE_IDLE_TOGGLE_PIN) */
+
+void dma_tft_suspend_callback(Adafruit_ZeroDMA *dma) {
+	#if defined(ENABLE_IRQ_TOGGLE_PIN1)
+	PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IRQ_TOGGLE_PIN1);
+	#endif
+	if (dma_desc_free_count < DMA_DESC_COUNT)
+		DMAC->CHCTRLB.reg |= DMAC_CHCTRLB_CMD_RESUME;
+}
+
+void dma_tft_done_callback(Adafruit_ZeroDMA *dma) {
+	#if defined(ENABLE_IRQ_TOGGLE_PIN2)
+	PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IRQ_TOGGLE_PIN2);
+	#endif
+	dma_desc_free_count++;
+	// resume unconditionally if there are pending buffers
+	if (dma_desc_free_count < DMA_DESC_COUNT-1)
+		DMAC->CHCTRLB.reg |= DMAC_CHCTRLB_CMD_RESUME;
+}
+
+void dma_tft_error_callback(Adafruit_ZeroDMA *dma) {
+	#if defined(ENABLE_IRQ_TOGGLE_PIN1) && defined(ENABLE_IRQ_TOGGLE_PIN2)
+	PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IRQ_TOGGLE_PIN1);
+	PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IRQ_TOGGLE_PIN2);
+	#endif
+}
 
 inline uint16_t swapcolor(uint16_t x) { 
 	return (x << 11) | (x & 0x07E0) | (x >> 11);
@@ -211,7 +251,7 @@ void Display_ST7735::commandList(const uint8_t *addr) {
 			delay(ms);
 		}
 	}
-	
+
 	idleMode();
 	SPI.endTransaction();
 }
@@ -227,8 +267,16 @@ void Display_ST7735::commonInit() {
 	rspinmask = digitalPinToBitMask(rspinmask);
 
 #if defined(ENABLE_IDLE_TOGGLE_PIN)
-	PORT->Group[0].DIR.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
+	PORT->Group[0].DIR.reg |= (1 << ENABLE_IDLE_TOGGLE_PIN);
 #endif /* ENABLE_IDLE_TOGGLE_PIN */
+
+#if defined(ENABLE_IRQ_TOGGLE_PIN1)
+	PORT->Group[0].DIR.reg |= (1 << ENABLE_IRQ_TOGGLE_PIN1);
+#endif /* ENABLE_IRQ_TOGGLE_PIN1 */
+
+#if defined(ENABLE_IRQ_TOGGLE_PIN2)
+	PORT->Group[0].DIR.reg |= (1 << ENABLE_IRQ_TOGGLE_PIN2);
+#endif /* ENABLE_IRQ_TOGGLE_PIN2 */
 
 	SPI.begin();
 	tftSPISettings = SPISettings(24000000, MSBFIRST, SPI_MODE0);
@@ -252,15 +300,30 @@ void Display_ST7735::init() {
 	// initialize DMA
 	tftDMA.setTrigger(SERCOM4_DMAC_ID_TX);
 	tftDMA.setAction(DMA_TRIGGER_ACTON_BEAT);
+	tftDMA.loop(true);
 	tftDMA.allocate();
-	tftDesc = tftDMA.addDescriptor(
+	tftDesc[0] = tftDMA.addDescriptor(
 	    0,                                // move data from here
 	    (void *)(&SERCOM4->SPI.DATA.reg), // to here
 	    0,                                // this many...
 	    DMA_BEAT_SIZE_BYTE,               // bytes/hword/words
 	    true,                             // increment source addr?
 	    false);                           // increment dest addr?
-	tftDMA.setCallback(dma_tft_callback);
+	tftDesc[0]->BTCTRL.bit.BLOCKACT = DMA_BLOCK_ACTION_BOTH;
+
+	tftDesc[1] = tftDMA.addDescriptor(
+	    0,                                // move data from here
+	    (void *)(&SERCOM4->SPI.DATA.reg), // to here
+	    0,                                // this many...
+	    DMA_BEAT_SIZE_BYTE,               // bytes/hword/words
+	    true,                             // increment source addr?
+	    false);                           // increment dest addr?
+	tftDesc[1]->BTCTRL.bit.BLOCKACT = DMA_BLOCK_ACTION_BOTH;
+
+	next_desc = tftDesc[0];
+	tftDMA.setCallback(dma_tft_done_callback, DMA_CALLBACK_TRANSFER_DONE);
+	tftDMA.setCallback(dma_tft_suspend_callback, DMA_CALLBACK_CHANNEL_SUSPEND);
+	tftDMA.setCallback(dma_tft_error_callback, DMA_CALLBACK_TRANSFER_ERROR);
 }
 
 
@@ -295,16 +358,10 @@ void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, ui
 	}
 
 	setAddrWindow(x, y, x + w - 1, y + 1);
-
-	tftDMA.changeDescriptor(tftDesc, bufferedLine, NULL, w*2);
-
 	SPI.beginTransaction(tftSPISettings);
 	dataMode();
-	tft_dma_transfer_is_done = false;
-	tftDMA.startJob();
-
-	wait_for_transfer_complete();
-
+	sendBuffer(bufferedLine, w);
+	wait_for_transfers_done();
 	idleMode();
 	SPI.endTransaction();
 }
@@ -313,18 +370,11 @@ void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, ui
 //boundary check must be made prior to this function
 //the color must be formated as the destination
 void Display_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h) {
-
 	setAddrWindow(x, y, x + w - 1, y + h - 1);
-
-	tftDMA.changeDescriptor(tftDesc, buffer, NULL, w*h*2);
-
 	SPI.beginTransaction(tftSPISettings);
 	dataMode();
-	tft_dma_transfer_is_done = false;
-	tftDMA.startJob();
-
-	wait_for_transfer_complete();
-
+	sendBuffer(buffer, w*h);
+	wait_for_transfers_done();
 	idleMode();
 	SPI.endTransaction();
 }
@@ -333,10 +383,33 @@ void Display_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t
 //boundary check must be made prior to this function
 //the color must be formated as the destination
 void Display_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
-	tftDMA.changeDescriptor(tftDesc, buffer, NULL, n*2);
+	bool start = false;
 
-	tft_dma_transfer_is_done = false;
-	tftDMA.startJob();
+	wait_for_desc_available(1);
+	tftDMA.changeDescriptor(next_desc, buffer, NULL, n*2);
+	cpu_irq_enter_critical();
+	dma_desc_free_count--;
+
+	DMAC->CHID.bit.ID    = tftDMA.channel;
+	DMAC->CHCTRLB.reg |= DMAC_CHCTRLB_CMD_RESUME;
+	start = !(DMAC->CHCTRLA.bit.ENABLE);
+
+	cpu_irq_leave_critical();
+	next_desc = (DmacDescriptor *)next_desc->DESCADDR.reg;
+
+	if (start) {
+#if defined(ENABLE_IRQ_TOGGLE_PIN1)
+		PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IRQ_TOGGLE_PIN1);
+		PORT->Group[0].OUTSET.reg = (1 << ENABLE_IRQ_TOGGLE_PIN1);
+		PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IRQ_TOGGLE_PIN1);
+#endif
+#if defined(ENABLE_IRQ_TOGGLE_PIN2)
+		PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IRQ_TOGGLE_PIN2);
+		PORT->Group[0].OUTSET.reg = (1 << ENABLE_IRQ_TOGGLE_PIN2);
+		PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IRQ_TOGGLE_PIN2);
+#endif
+		tftDMA.startJob();
+	}
 }
 
 uint16_t swap_endians_16(uint16_t b) {
@@ -379,25 +452,8 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 		SPI.beginTransaction(tftSPISettings);
 		dataMode();
 
-		//prepare the first line
-		indexTo565(preBufferLine, (uint8_t*)img._buffer, Graphics::colorIndex, w, false);
-		for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
-			uint16_t color = preBufferLine[i];
-			preBufferLine[i] = swap_endians_16(color);
-		}
-
 		//start sending lines and processing them in parallel using DMA
-		for (uint16_t j = 1; j < h; j++) { //vertical coordinate in source image, start from the second line
-
-			//swap buffers pointers
-			uint16_t *temp = preBufferLine;
-			preBufferLine = sendBufferLine;
-			sendBufferLine = temp;
-			
-			sendBuffer(sendBufferLine, w); //start DMA send
-
-
-			//prepare the next line while the current one is being transferred
+		for (uint16_t j = 0; j < h; j++) { //vertical coordinate in source image, start from the second line
 
 			//length is the number of destination pixels
 			uint16_t *dest = preBufferLine;
@@ -416,12 +472,18 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 				dest[(i * 4) + 3] = swap_endians_16((uint16_t)index[index4]);
 			}
 
-			wait_for_transfer_complete();
-		}
+			//swap buffers pointers
+			uint16_t *temp = preBufferLine;
+			preBufferLine = sendBufferLine;
+			sendBufferLine = temp;
+			sendBuffer(sendBufferLine, w); //start DMA send
+			// prepare the next line while the current one is being transferred
+			// wait for at least one desctriptor to be available to avoid overwriting already posted buffer
+			wait_for_desc_available(2);
 
-		//send the last line
-		sendBuffer(preBufferLine, w); //start DMA send
-		wait_for_transfer_complete();
+		}
+		// wait for the last line to be done
+		wait_for_transfers_done();
 
 		//finish SPI
 		idleMode();
@@ -433,8 +495,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 	Graphics::drawImage(x, y, img); //fallback to the usual
 }
 
-void bufferIndexLineDouble(uint16_t* preBufferLine, uint16_t* img_buffer, int16_t w, uint16_t j) {
-	int16_t w2 = w*2;
+void bufferIndexLine(uint16_t* preBufferLine, uint16_t* img_buffer, int16_t w, uint16_t j) {
 	uint16_t *dest = preBufferLine;
 	uint16_t *src = img_buffer + ((j * w) / 4);
 	Color *index = Graphics::colorIndex;
@@ -455,8 +516,6 @@ void bufferIndexLineDouble(uint16_t* preBufferLine, uint16_t* img_buffer, int16_
 		*(dest++) = swap_endians_16((uint16_t)index[index4]);
 		*(dest++) = swap_endians_16((uint16_t)index[index4]);
 	}
-	
-	memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
 }
 
 void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2) {
@@ -478,8 +537,8 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 
 	//x2 upscaling to full screen
 	if ((w2 == (w * 2)) && (h2 == (h * 2)) && (_width == w2) && (_height == h2)) {
-		uint16_t preBufferLineArray[w2 * 2];
-		uint16_t sendBufferLineArray[w2 * 2];
+		uint16_t preBufferLineArray[w2];
+		uint16_t sendBufferLineArray[w2];
 		uint16_t *preBufferLine = preBufferLineArray;
 		uint16_t *sendBufferLine = sendBufferLineArray;
 		
@@ -491,36 +550,28 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 		dataMode();
 		if (img.colorMode == ColorMode::rgb565) {
 
-			//prepare the first line
-			for (uint16_t i = 0; i < w; i++) { //horizontal coordinate in source image
-				uint16_t color = img._buffer[i];
-				preBufferLine[i * 2] = preBufferLine[(i * 2) + 1] = swap_endians_16(color);
-			}
-			memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
-
 			//start sending lines and processing them in parallel using DMA
-			for (uint16_t j = 1; j < h; j ++) { //vertical coordinate in source image, start from the second line
+			for (uint16_t j = 0; j < h; j ++) { //vertical coordinate in source image, start from the second line
+				//prepare the next line while the current one is being transferred
+				for (uint16_t i = 0; i < w; i ++) { //horizontal coordinate in source image
+					uint16_t color = img._buffer[(j * w) + i];
+					preBufferLine[i * 2] = preBufferLine[(i * 2) + 1] = swap_endians_16(color);
+				}
 
 				//swap buffers pointers
 				uint16_t *temp = preBufferLine;
 				preBufferLine = sendBufferLine;
 				sendBufferLine = temp;
 
-				sendBuffer(sendBufferLine, _width * 2); //start DMA send
-
-				//prepare the next line while the current one is being transferred
-				for (uint16_t i = 0; i < w; i ++) { //horizontal coordinate in source image
-					uint16_t color = img._buffer[(j * w) + i];
-					preBufferLine[i * 2] = preBufferLine[(i * 2) + 1] = swap_endians_16(color);
-				}
-				memcpy(&preBufferLine[w2], preBufferLine, w2 * 2); //double the line on the second half of the buffer
-
-				wait_for_transfer_complete();
+				// send the same buffer twice for 2x line upscaling
+				sendBuffer(sendBufferLine, _width); //start DMA send
+				sendBuffer(sendBufferLine, _width); //start DMA send
+				// wait for at least one desctriptor to be available to avoid overwriting already posted buffer
+				wait_for_desc_available(1);
 			}
 
-			//send the last line
-			sendBuffer(preBufferLine, _width * 2); //start DMA send
-			wait_for_transfer_complete();
+			// wait for the last line to be done
+			wait_for_transfers_done();
 
 			//finish SPI
 			idleMode();
@@ -529,27 +580,26 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 			return;
 		}
 		if (img.colorMode == ColorMode::index) {
-			bufferIndexLineDouble(preBufferLine, img._buffer, w, 0);
-
 			//start sending lines and processing them in parallel using DMA
-			for (uint16_t j = 1; j < h; j++) { //vertical coordinate in source image, start from the second line
+			for (uint16_t j = 0; j < h; j++) { //vertical coordinate in source image, start from the second line
+
+				// prepare the next line while we'r at it
+				bufferIndexLine(preBufferLine, img._buffer, w, j);
 
 				//swap buffers pointers
 				uint16_t *temp = preBufferLine;
 				preBufferLine = sendBufferLine;
 				sendBufferLine = temp;
 				
-				sendBuffer(sendBufferLine, _width * 2); //start DMA send
+				sendBuffer(sendBufferLine, _width); //start DMA send
+				sendBuffer(sendBufferLine, _width); //start DMA send
 
-				// prepare the next line while we'r at it
-				bufferIndexLineDouble(preBufferLine, img._buffer, w, j);
-
-				wait_for_transfer_complete();
+				// wait for at least one desctriptor to be available to avoid overwriting already posted buffer
+				wait_for_desc_available(1);
 			}
 
-			//send the last line
-			sendBuffer(preBufferLine, _width * 2); //start DMA send
-			wait_for_transfer_complete();
+			// wait for the last line to be done
+			wait_for_transfers_done();
 
 			//finish SPI
 			idleMode();

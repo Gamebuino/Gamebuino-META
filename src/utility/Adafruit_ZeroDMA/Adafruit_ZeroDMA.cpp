@@ -22,7 +22,7 @@ static Adafruit_ZeroDMA *_dmaPtr[DMAC_CH_NUM] = {0}; // Init to NULL
 static volatile unsigned long cpu_irq_critical_section_counter = 0;
 static volatile unsigned char cpu_irq_prev_interrupt_state     = 0;
 
-static void cpu_irq_enter_critical(void) {
+void cpu_irq_enter_critical(void) {
 	if(!cpu_irq_critical_section_counter) {
 		if(__get_PRIMASK() == 0) { // IRQ enabled?
 			__disable_irq();   // Disable it
@@ -38,7 +38,7 @@ static void cpu_irq_enter_critical(void) {
 	cpu_irq_critical_section_counter++;
 }
 
-static void cpu_irq_leave_critical(void) {
+void cpu_irq_leave_critical(void) {
 	// Check if the user is trying to leave a critical section
 	// when not in a critical section
 	if(cpu_irq_critical_section_counter > 0) {

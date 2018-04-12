@@ -6,6 +6,9 @@
 
 namespace Gamebuino_Meta {
 
+void cpu_irq_enter_critical(void);
+void cpu_irq_leave_critical(void);
+
 // Status codes returned by some DMA functions and/or held in
 // a channel's jobStatus variable.
 enum ZeroDMAstatus {
@@ -51,8 +54,9 @@ class Adafruit_ZeroDMA {
 
   void            _IRQhandler(uint8_t flags); // DO NOT TOUCH
 
- protected:  
   uint8_t                     channel;
+
+ protected:
   volatile enum ZeroDMAstatus jobStatus;
   bool                        hasDescriptors;
   bool                        loopFlag;
