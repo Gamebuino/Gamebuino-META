@@ -40,6 +40,7 @@ extern SdFat SD;
 #include "utility/Sound.h"
 #include "utility/Save.h"
 #include "utility/Bootloader.h"
+#include "utility/Gui.h"
 
 #include "utility/Adafruit_NeoPixel.h"
 #include "utility/Display-ST7735.h"
@@ -89,6 +90,7 @@ public:
 	Save settings;
 	Language language;
 	Bootloader bootloader;
+	Gui gui;
 
 	void begin();
 	void startScreen();
