@@ -32,6 +32,10 @@ public:
 	void keyboard(const char* title, char* text, uint8_t length);
 #if LANGUAGE_DEFAULT_SIZE
 	void keyboard(const MultiLang* title, char* text, uint8_t length, uint8_t numLang = LANGUAGE_DEFAULT_SIZE);
+	template<uint8_t M>
+	void keyboard(const MultiLang* title, char (&text) [M]) {
+		keyboard(title, text, M-1, LANGUAGE_DEFAULT_SIZE);
+	}
 #else
 	void keyboard(const MultiLang* title, char* text, uint8_t length, uint8_t numLang);
 #endif

@@ -131,6 +131,7 @@ public:
 	// unfortunatelly the arduino platform.txt doesn't allow us to change the order of object files, which would be the prefered way
 	// as the Gamebuino constructor would be called then first, for sure
 	bool inited = true;
+	bool sdInited = false;
 private:
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 	uint8_t timePerFrame;

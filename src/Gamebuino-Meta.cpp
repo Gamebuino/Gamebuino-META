@@ -168,7 +168,7 @@ void Gamebuino::begin() {
 	display.print("SD INIT... ");
 	updateDisplay();
 	
-	if (!SD.begin(SD_CS)) {
+	if (!(sdInited = SD.begin(SD_CS))) {
 		display.setColor(Color::red, Color::black);
 		display.println("FAILED!");
 		updateDisplay();
