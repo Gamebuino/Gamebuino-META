@@ -30,6 +30,7 @@ as well as Adafruit raw 1.8" TFT display
 #else
 	#include "WProgram.h"
 #endif
+#include "../Adafruit_ZeroDMA.h"
 
 #include "../Image.h"
 
