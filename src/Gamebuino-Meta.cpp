@@ -39,6 +39,7 @@ const SaveDefault settingsDefaults [] = {
 	{ SETTING_DEFAULTNAME, SAVETYPE_BLOB, {.ptr="gamebuinian"}, 13 },
 	{ SETTING_LANGUAGE, SAVETYPE_INT, (int)LangCode::en, 0 },
 	{ SETTING_NEOPIXELS_INTENSITY, SAVETYPE_INT, 4, 0 },
+	{ SETTING_SETUP, SAVETYPE_INT, 0, 0 },
 };
 // neoPixel intensity is quadratic
 // 0 is min, 255 is max
