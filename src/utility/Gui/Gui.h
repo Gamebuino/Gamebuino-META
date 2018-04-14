@@ -23,12 +23,22 @@ Authors:
 #define _GAMEBUINO_META_GUI_H_
 
 #include <Arduino.h>
+#include "../Language.h"
 
 namespace Gamebuino_Meta {
 
 class Gui {
 public:
 	void keyboard(const char* title, char* text, uint8_t length);
+#if LANGUAGE_DEFAULT_SIZE
+	void keyboard(const MultiLang* title, char* text, uint8_t length, uint8_t numLang = LANGUAGE_DEFAULT_SIZE);
+#else
+	void keyboard(const MultiLang* title, char* text, uint8_t length, uint8_t numLang);
+#endif
+	template<uint8_t N>
+	void keyboard(const MultiLang (&title) [N], char* text, uint8_t length) {
+		keyboard(title, text, length, N);
+	}
 };
 
 }; // namespace Gamebuino_Meta

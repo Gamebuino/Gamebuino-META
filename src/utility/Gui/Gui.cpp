@@ -49,15 +49,16 @@ void keyboardDrawKey(uint8_t x, uint8_t y, char c) {
 }
 
 void keyboardDrawLayout(const char* layout) {
-	gb.display.setColor(WHITE);
 	for (uint8_t y = 0; y < 4; y++) {
 		for (uint8_t x = 0; x < 13; x++) {
 			if (y == 0 && x >= 10) {
+				// we skip the backspace key
 				break;
 			}
 			keyboardDrawKey(x*6, y*8 + keyboardYOffset, *(layout++));
 		}
 	}
+	// last we draw the new layout switch
 	gb.display.setColor(DARKGRAY);
 	gb.display.fillRect(7, keyboardYOffset + 1 + 4*8, 11, 7);
 	gb.display.setColor(GRAY);
@@ -155,12 +156,12 @@ char keyboardGetChar(int8_t x, int8_t y, const char* layout) {
 }
 
 void Gui::keyboard(const char* title, char* text, uint8_t length) {
-	gb.display.fill(BLACK);
 	bool reInitAsIndexed = false;
 	if (gb.display.width() == 160) {
 		reInitAsIndexed = true;
 		gb.display.init(80, 64, ColorMode::rgb565);
 	}
+	gb.display.fill(BLACK);
 	gb.display.setColor(DARKGRAY);
 	gb.display.fillRect(0, 0, gb.display.width(), 7);
 	gb.display.setCursor(1, 1);
@@ -260,6 +261,10 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 	if (reInitAsIndexed) {
 		gb.display.init(160, 128, ColorMode::index);
 	}
+}
+
+void Gui::keyboard(const MultiLang* title, char* text, uint8_t length, uint8_t numLang) {
+	keyboard(gb.language.get(title, numLang), text, length);
 }
 
 ///////////////////////
