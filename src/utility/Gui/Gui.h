@@ -39,6 +39,14 @@ public:
 	void keyboard(const MultiLang (&title) [N], char* text, uint8_t length) {
 		keyboard(title, text, length, N);
 	}
+	template<uint8_t M>
+	void keyboard(const char* title, char (&text) [M]) {
+		keyboard(title, text, M-1);
+	}
+	template<uint8_t N, uint8_t M>
+	void keyboard(const MultiLang (&title) [N], char (&text) [M]) {
+		keyboard(title, text, M-1, N);
+	}
 };
 
 }; // namespace Gamebuino_Meta
