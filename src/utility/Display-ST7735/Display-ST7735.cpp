@@ -44,32 +44,24 @@ volatile uint32_t dma_desc_free_count = DMA_DESC_COUNT;
 //#define ENABLE_IRQ_TOGGLE_PIN1 (19)
 //#define ENABLE_IRQ_TOGGLE_PIN2 (16)
 
-#if defined(ENABLE_IDLE_TOGGLE_PIN)
+#ifdef ENABLE_IDLE_TOGGLE_PIN
 
 static inline void wait_for_desc_available(const uint32_t min_desc_num) {
-#if defined(ENABLE_IDLE_TOGGLE_PIN)
 	PORT->Group[0].OUTSET.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
-#endif /* ENABLE_IDLE_TOGGLE_PIN */
 	while (dma_desc_free_count < min_desc_num);
-#if defined(ENABLE_IDLE_TOGGLE_PIN)
 	PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
-#endif /* ENABLE_IDLE_TOGGLE_PIN */
 }
 
 static inline void wait_for_transfers_done(void) {
-#if defined(ENABLE_IDLE_TOGGLE_PIN)
 	PORT->Group[0].OUTSET.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
-#endif /* ENABLE_IDLE_TOGGLE_PIN */
 	while (dma_desc_free_count < DMA_DESC_COUNT) {
 		PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
 		PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
 	}
-#if defined(ENABLE_IDLE_TOGGLE_PIN)
 	PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IDLE_TOGGLE_PIN);
-#endif /* ENABLE_IDLE_TOGGLE_PIN */
 }
 
-#else /* defined(ENABLE_IDLE_TOGGLE_PIN) */
+#else // defined(ENABLE_IDLE_TOGGLE_PIN)
 
 static inline void wait_for_desc_available(const uint32_t min_desc_num) {
 	while (dma_desc_free_count < min_desc_num);
@@ -79,32 +71,32 @@ static inline void wait_for_transfers_done(void) {
 	while (dma_desc_free_count < DMA_DESC_COUNT);
 }
 
-#endif /* defined(ENABLE_IDLE_TOGGLE_PIN) */
+#endif // defined(ENABLE_IDLE_TOGGLE_PIN)
 
 void dma_tft_suspend_callback(Adafruit_ZeroDMA *dma) {
-	#if defined(ENABLE_IRQ_TOGGLE_PIN1)
+#ifdef ENABLE_IRQ_TOGGLE_PIN1
 	PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IRQ_TOGGLE_PIN1);
-	#endif
+#endif // ENABLE_IRQ_TOGGLE_PIN1
 	if (dma_desc_free_count < DMA_DESC_COUNT)
 		DMAC->CHCTRLB.reg |= DMAC_CHCTRLB_CMD_RESUME;
 }
 
 void dma_tft_done_callback(Adafruit_ZeroDMA *dma) {
-	#if defined(ENABLE_IRQ_TOGGLE_PIN2)
+#if ENABLE_IRQ_TOGGLE_PIN2
 	PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IRQ_TOGGLE_PIN2);
-	#endif
+#endif
 	dma_desc_free_count++;
 	// resume unconditionally if there are pending buffers
 	if (dma_desc_free_count < DMA_DESC_COUNT-1)
 		DMAC->CHCTRLB.reg |= DMAC_CHCTRLB_CMD_RESUME;
 }
 
+#if defined(ENABLE_IRQ_TOGGLE_PIN1) && defined(ENABLE_IRQ_TOGGLE_PIN2)
 void dma_tft_error_callback(Adafruit_ZeroDMA *dma) {
-	#if defined(ENABLE_IRQ_TOGGLE_PIN1) && defined(ENABLE_IRQ_TOGGLE_PIN2)
 	PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IRQ_TOGGLE_PIN1);
 	PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IRQ_TOGGLE_PIN2);
-	#endif
 }
+#endif
 
 inline uint16_t swapcolor(uint16_t x) { 
 	return (x << 11) | (x & 0x07E0) | (x >> 11);
@@ -266,17 +258,17 @@ void Display_ST7735::commonInit() {
 	cspinmask = digitalPinToBitMask(cspinmask);
 	rspinmask = digitalPinToBitMask(rspinmask);
 
-#if defined(ENABLE_IDLE_TOGGLE_PIN)
+#ifdef ENABLE_IDLE_TOGGLE_PIN
 	PORT->Group[0].DIR.reg |= (1 << ENABLE_IDLE_TOGGLE_PIN);
-#endif /* ENABLE_IDLE_TOGGLE_PIN */
+#endif // ENABLE_IDLE_TOGGLE_PIN
 
-#if defined(ENABLE_IRQ_TOGGLE_PIN1)
+#ifdef ENABLE_IRQ_TOGGLE_PIN1
 	PORT->Group[0].DIR.reg |= (1 << ENABLE_IRQ_TOGGLE_PIN1);
-#endif /* ENABLE_IRQ_TOGGLE_PIN1 */
+#endif // ENABLE_IRQ_TOGGLE_PIN1
 
-#if defined(ENABLE_IRQ_TOGGLE_PIN2)
+#ifdef ENABLE_IRQ_TOGGLE_PIN2
 	PORT->Group[0].DIR.reg |= (1 << ENABLE_IRQ_TOGGLE_PIN2);
-#endif /* ENABLE_IRQ_TOGGLE_PIN2 */
+#endif // ENABLE_IRQ_TOGGLE_PIN2
 
 	SPI.begin();
 	tftSPISettings = SPISettings(24000000, MSBFIRST, SPI_MODE0);
@@ -323,7 +315,9 @@ void Display_ST7735::init() {
 	next_desc = tftDesc[0];
 	tftDMA.setCallback(dma_tft_done_callback, DMA_CALLBACK_TRANSFER_DONE);
 	tftDMA.setCallback(dma_tft_suspend_callback, DMA_CALLBACK_CHANNEL_SUSPEND);
+#if defined(ENABLE_IRQ_TOGGLE_PIN1) && defined(ENABLE_IRQ_TOGGLE_PIN2)
 	tftDMA.setCallback(dma_tft_error_callback, DMA_CALLBACK_TRANSFER_ERROR);
+#endif
 }
 
 
@@ -398,12 +392,12 @@ void Display_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 	next_desc = (DmacDescriptor *)next_desc->DESCADDR.reg;
 
 	if (start) {
-#if defined(ENABLE_IRQ_TOGGLE_PIN1)
+#ifdef ENABLE_IRQ_TOGGLE_PIN1
 		PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IRQ_TOGGLE_PIN1);
 		PORT->Group[0].OUTSET.reg = (1 << ENABLE_IRQ_TOGGLE_PIN1);
 		PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IRQ_TOGGLE_PIN1);
 #endif
-#if defined(ENABLE_IRQ_TOGGLE_PIN2)
+#ifdef ENABLE_IRQ_TOGGLE_PIN2
 		PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IRQ_TOGGLE_PIN2);
 		PORT->Group[0].OUTSET.reg = (1 << ENABLE_IRQ_TOGGLE_PIN2);
 		PORT->Group[0].OUTCLR.reg = (1 << ENABLE_IRQ_TOGGLE_PIN2);
