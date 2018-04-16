@@ -29,13 +29,7 @@ namespace Gamebuino_Meta {
 // GUI keyboard start
 ///////////////////////
 
-
-const char keyboardLayoutPage0[] = "1234567890azertyuiop+-=qsdfghjklm*/.<>wxcvbn_?';,AB";
-const char keyboardLayoutPage1[] = "1234567890AZERTYUIOP+-=QSDFGHJKLM*/.<>WXCVBN_?';,ab";
-const char* keyboardLayout[] = {
-	keyboardLayoutPage0,
-	keyboardLayoutPage1,
-};
+extern const char* keyboardLayout[];
 const uint8_t keyboardLayoutPages = 2;
 
 const uint8_t keyboardYOffset = 23;
