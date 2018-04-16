@@ -29,6 +29,7 @@ namespace Gamebuino_Meta {
 
 class Gui {
 public:
+// keyboard functions
 	void keyboard(const char* title, char* text, uint8_t length);
 #if LANGUAGE_DEFAULT_SIZE
 	void keyboard(const MultiLang* title, char* text, uint8_t length, uint8_t numLang = LANGUAGE_DEFAULT_SIZE);
@@ -51,8 +52,28 @@ public:
 	void keyboard(const MultiLang (&title) [N], char (&text) [M]) {
 		keyboard(title, text, M-1, N);
 	}
+
+// menu functions
+	uint8_t menu(const char* title, const char** items, uint8_t length, uint8_t numLang = 0);
+#if LANGUAGE_DEFAULT_SIZE
+	uint8_t menu(const MultiLang* title, const MultiLang** items, uint8_t length, uint8_t numLang = LANGUAGE_DEFAULT_SIZE);
+	template<uint8_t O>
+	uint8_t menu(const MultiLang* title, const MultiLang* (&items) [O]) {
+		return menu(title, items, O);
+	}
+#else
+	uint8_t menu(const MultiLang* title, const MultiLang** items, uint8_t length, uint8_t numLang);
+#endif
+	template<uint8_t O, uint8_t N>
+	uint8_t menu(const MultiLang (&title) [N], const MultiLang* (&items) [O]) {
+		return menu(title, items, O, N);
+	}
+	template<uint8_t O>
+	uint8_t menu(const char* title, const char* (&items) [O]) {
+		return menu(title, items, O);
+	}
 };
 
 }; // namespace Gamebuino_Meta
 
-#endif // _GAMEBUINO_META_MISC_H_
+#endif // _GAMEBUINO_META_GUI_H_
