@@ -108,7 +108,6 @@ public:
 	uint32_t frameStartMicros;
 	bool frameEndFlag;
 	
-	int8_t menu(const char* const* items, uint8_t length);
 	void checkHomeMenu();
 	void homeMenu();
 	void popup(const char* text, uint8_t duration);
