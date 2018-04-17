@@ -72,6 +72,19 @@ public:
 	uint8_t menu(const char* title, const char* (&items) [O]) {
 		return menu(title, items, O);
 	}
+
+// popup functions
+	void popup(const char* text, uint8_t duration);
+#if LANGUAGE_DEFAULT_SIZE
+	void popup(const MultiLang* text, uint8_t duration, uint8_t numLang = LANGUAGE_DEFAULT_SIZE);
+#else
+	void popup(const MultiLang* text, uint8_t duration, uint8_t numLang);
+#endif
+	template<uint8_t N>
+	void popup(const MultiLang (&text) [N], uint8_t duration) {
+		popup(text, duration, N);
+	}
+	void updatePopup();
 };
 
 }; // namespace Gamebuino_Meta

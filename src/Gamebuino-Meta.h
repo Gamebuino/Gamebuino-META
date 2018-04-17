@@ -110,7 +110,6 @@ public:
 	
 	void checkHomeMenu();
 	void homeMenu();
-	void popup(const char* text, uint8_t duration);
 	
 	void changeGame();
 	void getDefaultName(char* string);
@@ -135,10 +134,7 @@ private:
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 	uint8_t timePerFrame;
 	uint32_t nextFrameMillis;
-	void updatePopup();
 	void drawLogo(Graphics& g, int8_t x, int8_t y, uint8_t scale);
-	const char* popupText;
-	uint8_t popupTimeLeft;
 	int16_t framesDisplayRecording = -1;
 #ifdef FOLDER_NAME
 	const char folder_name[sizeof FOLDER_NAME] = FOLDER_NAME;

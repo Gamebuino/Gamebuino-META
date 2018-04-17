@@ -373,7 +373,52 @@ uint8_t Gui::menu(const MultiLang* title, const MultiLang** items, uint8_t lengt
 }
 
 ///////////////////////
-// GUI menu start
+// GUI menu end
 ///////////////////////
 
+
+///////////////////////
+// GUI popup start
+///////////////////////
+
+const char* popupText;
+uint8_t popupTimeLeft;
+uint8_t popupTotalTime;
+
+void Gui::popup(const char* text, uint8_t duration) {
+	popupText = text;
+	popupTotalTime = popupTimeLeft = duration + 16;
+}
+
+void Gui::updatePopup() {
+	if (!popupTimeLeft) {
+		return;
+	}
+	uint8_t scale = gb.display.fontSize;
+	uint8_t yOffset = 0;
+	if (popupTimeLeft >= popupTotalTime-8) {
+		yOffset = (8-(popupTotalTime - popupTimeLeft))*scale;
+	}
+	if (popupTimeLeft<8){
+		yOffset = (8-popupTimeLeft)*scale;
+	}
+	
+	gb.display.setColor(DARKGRAY);
+	gb.display.fillRect(0, gb.display.height()-(7*scale)+yOffset, gb.display.width(), 7*scale);
+	gb.display.setColor(BROWN);
+	gb.display.fillRect(0, gb.display.height()-(8*scale)+yOffset, gb.display.width(), scale);
+	gb.display.setColor(WHITE);
+	gb.display.setCursor(1, gb.display.height()-(6*scale)+yOffset);
+	gb.display.print(popupText);
+	
+	popupTimeLeft--;
+}
+
+void Gui::popup(const MultiLang* text, uint8_t duration, uint8_t numLang) {
+	popup(gb.language.get(text, numLang), duration);
+}
+
+///////////////////////
+// GUI popup end
+///////////////////////
 }; // namespace Gamebuino_Meta

@@ -348,7 +348,7 @@ bool Gamebuino::update() {
 	checkHomeMenu();
 	
 	//draw and update popups
-	updatePopup();
+	gui.updatePopup();
 	
 	sound.update(); // update sound stuff once per frame
 	
@@ -809,31 +809,6 @@ void Gamebuino::homeMenu(){
 		neoPixels.show();
 		
 		changed = false;
-	}
-}
-
-void Gamebuino::popup(const char* text, uint8_t duration){
-	popupText = text;
-	popupTimeLeft = duration+12;
-}
-
-void Gamebuino::updatePopup(){
-	if (popupTimeLeft){
-		uint8_t yOffset = 0;
-		if(popupTimeLeft<12){
-			yOffset = 12-popupTimeLeft;
-		}
-		display.setFontSize(1);
-		display.setColor(DISPLAY_DEFAULT_BACKGROUND_COLOR);
-		display.fillRoundRect(0,display.height()-display.getFontHeight()+yOffset-3,display.width(),display.getFontHeight()+3,3);
-		display.setColor(DISPLAY_DEFAULT_COLOR);
-		display.drawRoundRect(0,display.height()-display.getFontHeight()+yOffset-3,display.width(),display.getFontHeight()+3,3);
-		display.setCursor(
-			4,
-			display.height()-display.getFontHeight()+yOffset-1
-		);
-		display.print(popupText);
-		popupTimeLeft--;
 	}
 }
 
