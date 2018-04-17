@@ -346,9 +346,11 @@ bool Gamebuino::update() {
 	
 	//Home menu
 	checkHomeMenu();
-	
+
+#if GUI_ENABLE_POPUP
 	//draw and update popups
 	gui.updatePopup();
+#endif // GUI_ENABLE_POPUP
 	
 	sound.update(); // update sound stuff once per frame
 	

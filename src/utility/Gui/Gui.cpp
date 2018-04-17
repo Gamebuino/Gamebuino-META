@@ -381,6 +381,8 @@ uint8_t Gui::menu(const MultiLang* title, const MultiLang** items, uint8_t lengt
 // GUI popup start
 ///////////////////////
 
+#if GUI_ENABLE_POPUP
+
 const char* popupText;
 uint8_t popupTimeLeft;
 uint8_t popupTotalTime;
@@ -417,6 +419,8 @@ void Gui::updatePopup() {
 void Gui::popup(const MultiLang* text, uint8_t duration, uint8_t numLang) {
 	popup(gb.language.get(text, numLang), duration);
 }
+
+#endif // GUI_ENABLE_POPUP
 
 ///////////////////////
 // GUI popup end

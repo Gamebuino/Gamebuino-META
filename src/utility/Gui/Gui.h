@@ -24,6 +24,7 @@ Authors:
 
 #include <Arduino.h>
 #include "../Language.h"
+#include "../../config/config.h"
 
 namespace Gamebuino_Meta {
 
@@ -74,6 +75,7 @@ public:
 	}
 
 // popup functions
+#if GUI_ENABLE_POPUP
 	void popup(const char* text, uint8_t duration);
 #if LANGUAGE_DEFAULT_SIZE
 	void popup(const MultiLang* text, uint8_t duration, uint8_t numLang = LANGUAGE_DEFAULT_SIZE);
@@ -85,6 +87,7 @@ public:
 		popup(text, duration, N);
 	}
 	void updatePopup();
+#endif // GUI_ENABLE_POPUP
 };
 
 }; // namespace Gamebuino_Meta
