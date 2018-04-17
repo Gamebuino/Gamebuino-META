@@ -95,3 +95,11 @@
 #ifndef HARDFAULT_DEBUG_HANDLER
 #define HARDFAULT_DEBUG_HANDLER 0
 #endif
+
+///////////////
+// GUI defines
+///////////////
+
+#ifndef GUI_ENABLE_POPUP
+#define GUI_ENABLE_POPUP 1
+#endif

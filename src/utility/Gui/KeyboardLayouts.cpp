@@ -1,8 +1,6 @@
-// This file is ISO-8859-1 encoded, or anything compatible, such as Windows-1252
-
 /*
 This file is part of the Gamebuino-Meta library,
-Copyright (c) Aadalie 2017
+Copyright (c) Aadalie 2018
 
 This is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License (LGPL)
@@ -19,41 +17,21 @@ License (LGPL) along with the library.
 If not, see <http://www.gnu.org/licenses/>.
 
 Authors:
- - Aurelien Rodot
  - Sorunome
- - Drakker
 */
+
+// This file is ISO-8859-1 encoded, or anything compatible, such as Windows-1252
+
+#include <Arduino.h>
 
 namespace Gamebuino_Meta {
 
-#define NUMBER_SYSTEM_LANGUAGES 5
-
-//////////
-// Keyboard
-//////////
-
-const MultiLang lang_keyboard_type[] = {
-	{LangCode::en, "type"},
-	{LangCode::de, "tippen"},
-	{LangCode::fr, "écrire"},
-	{LangCode::es, "tipo"},
-	{LangCode::nl, "typ"},
+const char keyboardLayoutPage0[] = "1234567890qwertyuiop[]*asdfghjkl;'\\*zxcvbnm,./-=*AB";
+const char keyboardLayoutPage1[] = "!@*$%^&*()QWERTYUIOP{}*ASDFGHJKL:\"|*ZXCVBNM<>?_+*ab";
+const char* keyboardLayout[] = {
+	keyboardLayoutPage0,
+	keyboardLayoutPage1,
 };
-
-const MultiLang lang_keyboard_back[] = {
-	{LangCode::en, "back"},
-	{LangCode::de, "zurück"},
-	{LangCode::fr, "retour"},
-	{LangCode::es, "atras"},
-	{LangCode::nl, "terug"},
-};
-
-const MultiLang lang_keyboard_save[] = {
-	{LangCode::en, "save"},
-	{LangCode::de, "fertig"},
-	{LangCode::fr, "enreg."},
-	{LangCode::es, "grabar"},
-	{LangCode::nl, "OK"},
-};
+const uint8_t keyboardLayoutPages = 2;
 
 }; // namespace Gamebuino_Meta

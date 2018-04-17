@@ -24,7 +24,6 @@ Authors:
 #include "Gamebuino-Meta.h"
 #include "utility/Graphics-SD.h"
 #include "utility/Misc.h"
-#include "utility/Language/SystemLanguage.h"	
 SdFat SD;
 
 // a 3x5 font table
@@ -40,6 +39,7 @@ const SaveDefault settingsDefaults [] = {
 	{ SETTING_DEFAULTNAME, SAVETYPE_BLOB, {.ptr="gamebuinian"}, 13 },
 	{ SETTING_LANGUAGE, SAVETYPE_INT, (int)LangCode::en, 0 },
 	{ SETTING_NEOPIXELS_INTENSITY, SAVETYPE_INT, 4, 0 },
+	{ SETTING_SETUP, SAVETYPE_INT, 0, 0 },
 };
 // neoPixel intensity is quadratic
 // 0 is min, 255 is max
@@ -168,7 +168,7 @@ void Gamebuino::begin() {
 	display.print("SD INIT... ");
 	updateDisplay();
 	
-	if (!SD.begin(SD_CS)) {
+	if (!(sdInited = SD.begin(SD_CS))) {
 		display.setColor(Color::red, Color::black);
 		display.println("FAILED!");
 		updateDisplay();
@@ -348,9 +348,11 @@ bool Gamebuino::update() {
 	
 	//Home menu
 	checkHomeMenu();
-	
+
+#if GUI_ENABLE_POPUP
 	//draw and update popups
-	updatePopup();
+	gui.updatePopup();
+#endif // GUI_ENABLE_POPUP
 	
 	sound.update(); // update sound stuff once per frame
 	
@@ -409,76 +411,6 @@ uint16_t Gamebuino::getFreeRam() {
 	// from https://github.com/mpflaga/Arduino-MemoryFree/blob/master/MemoryFree.cpp
 	char top;
 	return &top - reinterpret_cast<char*>(sbrk(0));
-}
-
-int8_t Gamebuino::menu(const char* const* items, uint8_t length) {
-	//display.persistence = false;
-	int8_t activeItem = 0;
-	int8_t currentY = display.height();
-	int8_t targetY = 0;
-	bool exit = false;
-	int8_t answer = -1;
-	while (1) {
-		while(!update());
-		display.setColor(WHITE);
-		display.fill();
-		display.setColor(BLACK, WHITE);
-		if (buttons.pressed(Button::a) || buttons.pressed(Button::b) || buttons.pressed(Button::menu)) {
-			exit = true; //time to exit menu !
-			targetY = - display.fontHeight * length - 2; //send the menu out of the screen
-			if (buttons.pressed(Button::a)) {
-				answer = activeItem;
-				sound.playOK();
-			} else {
-				sound.playCancel();
-			}
-		}
-		if (exit == false) {
-			if (buttons.repeat(Button::down,4)) {
-				activeItem++;
-				sound.playTick();
-			}
-			if (buttons.repeat(Button::up,4)) {
-				activeItem--;
-				sound.playTick();
-			}
-			//don't go out of the menu
-			if (activeItem == length) activeItem = 0;
-			if (activeItem < 0) activeItem = length - 1;
-
-			targetY = -display.fontHeight * activeItem + (display.fontHeight+4); //center the menu on the active item
-		} else { //exit :
-			if ((currentY - targetY) <= 1)
-			return (answer);
-		}
-		//draw a fancy menu
-		currentY = (currentY + targetY) / 2;
-		display.cursorX = 0;
-		display.cursorY = currentY;
-		display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
-		display.textWrap = false;
-		for (byte i = 0; i < length; i++) {
-			if (i == activeItem){
-				display.cursorX = 3;
-				display.cursorY = currentY + display.fontHeight * activeItem;
-			}
-			display.println((const char*)items[i]);
-		}
-
-		//display.fillRect(0, currentY + 3 + 8 * activeItem, 2, 2, BLACK);
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-		display.setColor(Color::white);
-#else
-		display.setColor(ColorIndex::white);
-#endif
-		display.drawFastHLine(0, currentY + display.fontHeight * activeItem - 1, display.width());
-#if DISPLAY_MODE == DISPLAY_MODE_RGB565
-		display.setColor(Color::black);
-#else
-		display.setColor(ColorIndex::black);
-#endif
-		display.drawRoundRect(0, currentY + display.fontHeight * activeItem - 2, display.width(), (display.fontHeight+3), 3);
-	}
 }
 
 #define HOME_MENU_SAVE_STATE \
@@ -881,176 +813,6 @@ void Gamebuino::homeMenu(){
 		neoPixels.show();
 		
 		changed = false;
-	}
-}
-
-#define KEYBOARD_W 16
-#define KEYBOARD_H 14
-void Gamebuino::keyboard(char* text, uint8_t length) {
-	//display.persistence = false;
-	//memset(text, 0, length); //clear the text
-	text[length-1] = '\0';
-	//active character in the typing area
-	int8_t activeChar = 0;
-	//selected char on the keyboard
-	int8_t activeX = 0;
-	int8_t activeY = 2;
-	//position of the keyboard on the screen
-	int8_t currentX = display.width();
-	int8_t currentY = display.height();
-	int8_t targetX = 0;
-	int8_t targetY = 0;
-
-	while (1) {
-		while(!update());
-		display.clear();
-		//move the character selector
-		if (buttons.repeat(Button::down, 4)) {
-			activeY++;
-			sound.playTick();
-		}
-		if (buttons.repeat(Button::up, 4)) {
-			activeY--;
-			sound.playTick();
-		}
-		if (buttons.repeat(Button::right, 4)) {
-			activeX++;
-			sound.playTick();
-		}
-		if (buttons.repeat(Button::left, 4)) {
-			activeX--;
-			sound.playTick();
-		}
-		//don't go out of the keyboard
-		if (activeX == KEYBOARD_W) activeX = 0;
-		if (activeX < 0) activeX = KEYBOARD_W - 1;
-		if (activeY == KEYBOARD_H) activeY = 0;
-		if (activeY < 0) activeY = KEYBOARD_H - 1;
-		//set the keyboard position on screen
-		targetX = -(display.fontWidth+1) * activeX + display.width() / 2 - 3;
-		targetY = -(display.fontHeight+1) * activeY + display.height() / 2 - 4 - display.fontHeight;
-		//smooth the keyboard displacement
-		currentX = (targetX + currentX) / 2;
-		currentY = (targetY + currentY) / 2;
-		//type character
-		if (buttons.pressed(Button::a)) {
-			if (activeChar < (length-1)) {
-				byte thisChar = activeX + KEYBOARD_W * activeY;
-				if (thisChar >= 0x80) {
-					thisChar += 0x20;
-				}
-				if((thisChar == 0)||(thisChar == 10)||(thisChar == 13)) //avoid line feed and carriage return
-				continue;
-				text[activeChar] = thisChar;
-				text[activeChar+1] = '\0';
-			}
-			activeChar++;
-			sound.playOK();
-			if (activeChar > length)
-			activeChar = length;
-		}
-		//erase character
-		if (buttons.pressed(Button::b)) {
-			activeChar--;
-			sound.playCancel();
-			if (activeChar >= 0)
-			text[activeChar] = 0;
-			else
-			activeChar = 0;
-		}
-		//leave menu
-		if (buttons.pressed(Button::menu)) {
-			sound.playOK();
-			while (1) {
-				if (update()) {
-					display.clear();
-					//display.setCursor(0,0);
-					display.println("You entered\n");
-					display.print(text);
-					display.println("\n\n\n\x15:okay \x16:edit");
-					if(buttons.pressed(Button::a)){
-						sound.playOK();
-						return;
-					}
-					if(buttons.pressed(Button::b)){
-						sound.playCancel();
-						break;
-					}
-				}
-			}
-		}
-		//draw the keyboard
-		for (int8_t y = 0; y < KEYBOARD_H; y++) {
-			for (int8_t x = 0; x < KEYBOARD_W; x++) {
-				byte c = x + y * KEYBOARD_W;
-				if (c >= 0x80) {
-					c += 0x20;
-				}
-				display.drawChar(currentX + x * (display.fontWidth+1), currentY + y * (display.fontHeight+1), c, 1);
-			}
-		}
-		//draw instruction
-		display.cursorX = currentX-display.fontWidth*7-2;
-		display.cursorY = currentY+1*(display.fontHeight+1);
-		display.print("\25");
-		display.print(language._get(lang_keyboard_type));
-		
-		display.cursorX = currentX-display.fontWidth*7-2;
-		display.cursorY = currentY+2*(display.fontHeight+1);
-		display.print("\26");
-		display.print(language._get(lang_keyboard_back));
-		
-		display.cursorX = currentX-display.fontWidth*7-2;
-		display.cursorY = currentY+3*(display.fontHeight+1);
-		display.print("\27");
-		display.print(language._get(lang_keyboard_save));
-		
-		//erase some pixels around the selected character
-		display.setColor(DISPLAY_DEFAULT_BACKGROUND_COLOR);
-		display.drawFastHLine(currentX + activeX * (display.fontWidth+1) - 1, currentY + activeY * (display.fontHeight+1) - 2, 7);
-		//draw the selection rectangle
-		display.setColor(DISPLAY_DEFAULT_COLOR);
-		display.drawRoundRect(currentX + activeX * (display.fontWidth+1) - 2, currentY + activeY * (display.fontHeight+1) - 3, (display.fontWidth+2)+(display.fontWidth-1)%2, (display.fontHeight+5), 3);
-		//draw keyboard outline
-		//display.drawRoundRect(currentX - 6, currentY - 6, KEYBOARD_W * (display.fontWidth+1) + 12, KEYBOARD_H * (display.fontHeight+1) + 12, 8, BLACK);
-		//text field
-		display.drawFastHLine(0, display.height()-display.fontHeight-2, display.width());
-		display.setColor(DISPLAY_DEFAULT_BACKGROUND_COLOR);
-		display.fillRect(0, display.height()-display.fontHeight-1, display.width(), display.fontHeight+1);
-		//typed text
-		display.cursorX = 0;
-		display.cursorY = display.height()-display.fontHeight;
-		display.setColor(DISPLAY_DEFAULT_COLOR);
-		display.print(text);
-		//blinking cursor
-		if (((frameCount % 8) < 4) && (activeChar < (length-1))) {
-			display.drawChar(display.fontWidth * activeChar, display.height()-display.fontHeight, '_',1);
-		}
-	}
-}
-
-void Gamebuino::popup(const char* text, uint8_t duration){
-	popupText = text;
-	popupTimeLeft = duration+12;
-}
-
-void Gamebuino::updatePopup(){
-	if (popupTimeLeft){
-		uint8_t yOffset = 0;
-		if(popupTimeLeft<12){
-			yOffset = 12-popupTimeLeft;
-		}
-		display.setFontSize(1);
-		display.setColor(DISPLAY_DEFAULT_BACKGROUND_COLOR);
-		display.fillRoundRect(0,display.height()-display.getFontHeight()+yOffset-3,display.width(),display.getFontHeight()+3,3);
-		display.setColor(DISPLAY_DEFAULT_COLOR);
-		display.drawRoundRect(0,display.height()-display.getFontHeight()+yOffset-3,display.width(),display.getFontHeight()+3,3);
-		display.setCursor(
-			4,
-			display.height()-display.getFontHeight()+yOffset-1
-		);
-		display.print(popupText);
-		popupTimeLeft--;
 	}
 }
 

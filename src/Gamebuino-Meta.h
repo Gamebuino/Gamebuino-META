@@ -40,6 +40,7 @@ extern SdFat SD;
 #include "utility/Sound.h"
 #include "utility/Save.h"
 #include "utility/Bootloader.h"
+#include "utility/Gui.h"
 
 #include "utility/Adafruit_NeoPixel.h"
 #include "utility/Display-ST7735.h"
@@ -89,6 +90,7 @@ public:
 	Save settings;
 	Language language;
 	Bootloader bootloader;
+	Gui gui;
 
 	void begin();
 	void startScreen();
@@ -106,11 +108,8 @@ public:
 	uint32_t frameStartMicros;
 	bool frameEndFlag;
 	
-	int8_t menu(const char* const* items, uint8_t length);
 	void checkHomeMenu();
 	void homeMenu();
-	void keyboard(char* text, uint8_t length);
-	void popup(const char* text, uint8_t duration);
 	
 	void changeGame();
 	void getDefaultName(char* string);
@@ -130,15 +129,12 @@ public:
 	// unfortunatelly the arduino platform.txt doesn't allow us to change the order of object files, which would be the prefered way
 	// as the Gamebuino constructor would be called then first, for sure
 	bool inited = false;
-
+	bool sdInited = false;
 private:
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 	uint8_t timePerFrame;
 	uint32_t nextFrameMillis;
-	void updatePopup();
 	void drawLogo(Graphics& g, int8_t x, int8_t y, uint8_t scale);
-	const char* popupText;
-	uint8_t popupTimeLeft;
 	int16_t framesDisplayRecording = -1;
 #ifdef FOLDER_NAME
 	const char folder_name[sizeof FOLDER_NAME] = FOLDER_NAME;
