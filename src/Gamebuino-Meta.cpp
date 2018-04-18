@@ -253,25 +253,6 @@ void Gamebuino::titleScreen() {
 	char filename[17] = "TITLESCREEN.BMP";
 	
 	bool titleScreenImageExists = SD.exists(filename);
-	bool displayName = !titleScreenImageExists;
-	if (!titleScreenImageExists && SD.exists("REC")) {
-		strcpy(filename, "REC/");
-		const uint8_t f_offset = 4;
-		File dir_walk = SD.open(filename);
-		File entry;
-		while (entry = dir_walk.openNextFile()) {
-			if (!entry.isFile()) {
-				continue;
-			}
-			entry.getName(filename + f_offset, sizeof(filename) - f_offset);
-			if (!strstr(filename, ".GMV") && !strstr(filename, ".gmv")) {
-				continue;
-			}
-			titleScreenImageExists = true;
-			displayName = true;
-			break;
-		}
-	}
 	if (titleScreenImageExists) {
 		display.init(ts_backup_width, ts_backup_height, filename);
 	}
@@ -290,7 +271,7 @@ void Gamebuino::titleScreen() {
 			display.clear();
 		}
 		
-		if (displayName) {
+		if (!titleScreenImageExists) {
 			// center bar
 			display.setColor(BROWN);
 			display.fillRect(0, 15*display.fontSize, 80*display.fontSize, 9*display.fontSize);
