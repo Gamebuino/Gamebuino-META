@@ -187,7 +187,7 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 				cursorX = 9;
 			} else if (cursorY == 4 && cursorX >= 3) {
 				cursorX = 2;
-			} else if (cursorX == 0 || (cursorX <= 2 && cursorY == 4) {
+			} else if (cursorX == 0 || (cursorX <= 2 && cursorY == 4)) {
 				cursorX = 12;  // Wrap around
 			} else {
 				cursorX--;
@@ -198,7 +198,7 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 				cursorX = 3;
 			} else if (cursorY == 4 && cursorX < 10) {
 				cursorX = 10;
-			} else if (cursorX == 12 || (cursorX >=10 && (cursorY == 0 || cursorY == 4)) {
+			} else if (cursorX == 12 || (cursorX >=10 && (cursorY == 0 || cursorY == 4))) {
 				cursorX = 0;  // Wrap around
 			} else {
 				cursorX++;
