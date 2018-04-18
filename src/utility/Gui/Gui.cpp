@@ -181,11 +181,14 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 		int8_t cursorXPrev = cursorX;
 		int8_t cursorYPrev = cursorY;
 		keyboardEraseCursor(cursorX, cursorY);
+		// cursorX movement
 		if (gb.buttons.repeat(BUTTON_LEFT, 4)) {
 			if ((cursorY == 0 || cursorY == 4) && cursorX >= 10) {
 				cursorX = 9;
 			} else if (cursorY == 4 && cursorX >= 3) {
 				cursorX = 2;
+			} else if (cursorX == 0 || (cursorX <= 2 && cursorY == 4) {
+				cursorX = 12;  // Wrap around
 			} else {
 				cursorX--;
 			}
@@ -195,12 +198,17 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 				cursorX = 3;
 			} else if (cursorY == 4 && cursorX < 10) {
 				cursorX = 10;
+			} else if (cursorX == 12 || (cursorX >=10 && (cursorY == 0 || cursorY == 4)) {
+				cursorX = 0;  // Wrap around
 			} else {
 				cursorX++;
 			}
 		}
-		cursorX = min(12, max(0, cursorX));
-		cursorY = min(4, max(0, cursorY - gb.buttons.repeat(BUTTON_UP, 4) + gb.buttons.repeat(BUTTON_DOWN, 4)));
+		// cursorY movement
+		cursorY += gb.buttons.repeat(BUTTON_DOWN, 4) - gb.buttons.repeat(BUTTON_UP, 4);
+		if (cursorY > 4) cursorY = 0;
+		else if (cursorY < 0) cursorY = 4;
+
 		keyboardDrawCursor(cursorX, cursorY);
 		if (cursorX != cursorXPrev || cursorY != cursorYPrev) {
 			gb.sound.playTick();
