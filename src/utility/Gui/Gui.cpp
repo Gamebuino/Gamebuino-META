@@ -206,8 +206,8 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 		}
 		// cursorY movement
 		cursorY += gb.buttons.repeat(BUTTON_DOWN, 4) - gb.buttons.repeat(BUTTON_UP, 4);
-		if (cursorY == 5) cursorY = 0;
-		else if (cursorY == -1) cursorY = 4;
+		if (cursorY > 4) cursorY = 0;
+		else if (cursorY < 0) cursorY = 4;
 
 		keyboardDrawCursor(cursorX, cursorY);
 		if (cursorX != cursorXPrev || cursorY != cursorYPrev) {
