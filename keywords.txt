@@ -25,6 +25,7 @@ buttons	KEYWORD1
 lights	KEYWORD1
 save	KEYWORD1
 language	KEYWORD1
+gui KEYWORD1
 
 ////////////////////////core
 begin	KEYWORD1
@@ -126,3 +127,8 @@ GREEN	LITERAL1
 DARKBLUE	LITERAL1
 BLUE	LITERAL1
 LIGHTBLUE	LITERAL1
+
+//gui
+keyboard	KEYWORD1
+menu	KEYWORD1
+popup	KEYWORD1
