@@ -49,14 +49,6 @@
 #endif
 
 ///////////////
-// recording defines
-///////////////
-
-#ifndef MAX_IMAGE_RECORDING
-#define MAX_IMAGE_RECORDING 2
-#endif
-
-///////////////
 // sound defines
 ///////////////
 
@@ -78,6 +70,10 @@
 
 #ifndef STRICT_IMAGES
 #define STRICT_IMAGES 0
+#endif
+
+#ifndef MAX_IMAGE_RECORDING
+#define MAX_IMAGE_RECORDING 2
 #endif
 
 ///////////////
@@ -102,4 +98,8 @@
 
 #ifndef GUI_ENABLE_POPUP
 #define GUI_ENABLE_POPUP 1
+#endif
+
+#ifndef HOME_MENU_NO_EXIT
+#define HOME_MENU_NO_EXIT 0
 #endif

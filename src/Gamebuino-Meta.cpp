@@ -501,9 +501,15 @@ void Gamebuino::homeMenu(){
 	sound.startEfxOnly();
 	
 	HOME_MENU_SAVE_STATE;
-	
-	const int numItems = 5;
-	int currentItem = 2; //default on center item
+
+#if HOME_MENU_NO_EXIT
+	const int8_t numItems = 4;
+	const int8_t xOffset = 16;
+#else // HOME_MENU_NO_EXIT
+	const int8_t numItems = 5;
+	const int8_t xOffset = 0;
+#endif // HOME_MENU_NO_EXIT
+	int8_t currentItem = 2; //default on center item
 	unsigned long lastMillis = 0;
 	//3 text lines vertical coordinates
 	const int yOffset = 52;
@@ -526,11 +532,18 @@ void Gamebuino::homeMenu(){
 		icons.fill(DARKGRAY);
 		icons.setColor(WHITE);
 		icons.drawBitmap(0, 0, homeIcons);
+#if HOME_MENU_NO_EXIT
+		icons.drawImage(32, 0, icons, 48, 0, 32, 16);
+		icons.setColor(DARKGRAY);
+		icons.fillRect(64, 0, 16, 16);
+		tft.drawImage(xOffset, yOffset + 4, icons, 80*2, 12*2);
+#else // HOME_MENU_NO_EXIT
 		tft.drawImage(0, yOffset + 4, icons, 80*2, 12*2);
+#endif // HOME_MENU_NO_EXIT
 		//erase soundwaves if muted
 		if (!sound.getVolume() || sound.isMute()) {
 			tft.setColor(DARKGRAY);
-			tft.fillRect(50, yOffset + 8, 10, 16);
+			tft.fillRect(50 + xOffset, yOffset + 8, 10, 16);
 		}
 	}
 	
@@ -569,12 +582,12 @@ void Gamebuino::homeMenu(){
 			return;
 		}
 		
-		if (buttons.repeat(Button::right, 8) && (currentItem < (numItems - 1))) {
+		if (buttons.repeat(Button::right, 4) && (currentItem < (numItems - 1))) {
 			currentItem++;
 			changed = true;
 		}
 		
-		if (buttons.repeat(Button::left, 8) && (currentItem > 0)) {
+		if (buttons.repeat(Button::left, 4) && (currentItem > 0)) {
 			currentItem--;
 			changed = true;
 		}
@@ -652,18 +665,24 @@ void Gamebuino::homeMenu(){
 					sound.playTick();
 				}
 				break;
+#if !HOME_MENU_NO_EXIT
 			////EXIT
 			case 2:
 				if (buttons.pressed(Button::a)) {
 					changeGame();
 				}
 				break;
+#endif // !HOME_MENU_NO_EXIT
 			////SCREENSHOT
+#if HOME_MENU_NO_EXIT
+			case 2:
+#else // HOME_MENU_NO_EXIT
 			case 3:
+#endif // HOME_MENU_NO_EXIT
 				if (buttons.released(Button::a)) {
 					tft.setColor(WHITE);
-					tft.drawRect(currentItem*32, yOffset, 32, 32);
-					tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+					tft.drawRect(currentItem*32 + xOffset, yOffset, 32, 32);
+					tft.drawRect(1 + currentItem*32 + xOffset, yOffset+1, 30, 30);
 					
 					char name[] = "REC/00000.GMV";
 					// now `name` will be a unique thing
@@ -675,28 +694,24 @@ void Gamebuino::homeMenu(){
 					}
 					// we temp. set inited to false so that delay() won't re-draw the screen
 					inited = false;
-					if (success) {
-						tft.setColor(LIGHTGREEN);
-						tft.drawRect(currentItem*32, yOffset, 32, 32);
-						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
-						delay(400);
-						changed = true;
-					} else {
-						tft.setColor(RED);
-						tft.drawRect(currentItem*32, yOffset, 32, 32);
-						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
-						delay(400);
-						changed = true;
-					}
+					tft.setColor(success ? LIGHTGREEN : RED);
+					tft.drawRect(currentItem*32 + xOffset, yOffset, 32, 32);
+					tft.drawRect(1 + currentItem*32 + xOffset, yOffset+1, 30, 30);
+					delay(400);
+					changed = true;
 					inited = true;
 				}
 				break;
 			////RECORD SCREEN
+#if HOME_MENU_NO_EXIT
+			case 3:
+#else // HOME_MENU_NO_EXIT
 			case 4:
+#endif // HOME_MENU_NO_EXIT
 				if (buttons.released(Button::a) || buttons.held(Button::a, 25)) {
-					tft.setColor(WHITE	);
-					tft.drawRect(currentItem*32, yOffset, 32, 32);
-					tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+					tft.setColor(WHITE);
+					tft.drawRect(currentItem*32 + xOffset, yOffset, 32, 32);
+					tft.drawRect(1 + currentItem*32 + xOffset, yOffset+1, 30, 30);
 					char name[] = "REC/00000.GMV";
 					bool success = homeMenuGetUniquePath(name, 4, 5);
 					bool infinite = buttons.held(Button::a, 25);
@@ -720,8 +735,8 @@ void Gamebuino::homeMenu(){
 							} while (!buttons.released(Button::a));
 						}
 						tft.setColor(LIGHTGREEN);
-						tft.drawRect(currentItem*32, yOffset, 32, 32);
-						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+						tft.drawRect(currentItem*32 + xOffset, yOffset, 32, 32);
+						tft.drawRect(1 + currentItem*32 + xOffset, yOffset+1, 30, 30);
 						delay(400);
 						inited = true;
 						sound.stopEfxOnly();
@@ -730,8 +745,8 @@ void Gamebuino::homeMenu(){
 						return;
 					} else {
 						tft.setColor(RED);
-						tft.drawRect(currentItem*32, yOffset, 32, 32);
-						tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+						tft.drawRect(currentItem*32 + xOffset, yOffset, 32, 32);
+						tft.drawRect(1 + currentItem*32 + xOffset, yOffset+1, 30, 30);
 						delay(400);
 						changed = true;
 					}
@@ -742,20 +757,20 @@ void Gamebuino::homeMenu(){
 		
 		//draw blinking selector
 		tft.setColor((frameCounter % 8) >= 4 ? BROWN : DARKGRAY);
-		tft.drawRect(currentItem*32, yOffset, 32, 32);
-		tft.drawRect(1 + currentItem*32, yOffset+1, 30, 30);
+		tft.drawRect(currentItem*32 + xOffset, yOffset, 32, 32);
+		tft.drawRect(1 + currentItem*32 + xOffset, yOffset+1, 30, 30);
 		
 		
 		if (changed) {
 			//erase previous selector position
 			tft.setColor(DARKGRAY);
-			if (buttons.repeat(Button::left, 8)) {
-				tft.drawRect((currentItem+1)*32, yOffset, 32, 32);
-				tft.drawRect(1 + (currentItem+1)*32, yOffset+1, 30, 30);
+			if (buttons.repeat(Button::left, 4)) {
+				tft.drawRect((currentItem+1)*32 + xOffset, yOffset, 32, 32);
+				tft.drawRect(1 + (currentItem+1)*32 + xOffset, yOffset+1, 30, 30);
 			}
-			if (buttons.repeat(Button::right, 8)) {
-				tft.drawRect((currentItem-1)*32, yOffset, 32, 32);
-				tft.drawRect(1 + (currentItem-1)*32, yOffset+1, 30, 30);
+			if (buttons.repeat(Button::right, 4)) {
+				tft.drawRect((currentItem-1)*32 + xOffset, yOffset, 32, 32);
+				tft.drawRect(1 + (currentItem-1)*32 + xOffset, yOffset+1, 30, 30);
 			}
 			
 				
@@ -767,10 +782,10 @@ void Gamebuino::homeMenu(){
 					volume.fill(DARKGRAY);
 					volume.setColor(WHITE);
 					volume.drawBitmap(0, 0, volumeUnmuted);
-					tft.drawImage(48, yOffset + 4, volume, 8*2, 12*2);
+					tft.drawImage(48 + xOffset, yOffset + 4, volume, 8*2, 12*2);
 				} else { //erase waveform if muted
 					tft.setColor(DARKGRAY);
-					tft.fillRect(50, yOffset + 8, 10, 16);
+					tft.fillRect(50 + xOffset, yOffset + 8, 10, 16);
 				}
 			}
 		}
@@ -779,14 +794,14 @@ void Gamebuino::homeMenu(){
 		if ((currentItem == 0) && neoPixelsIntensity) {			
 			tft.setColor(WHITE);
 			int lightHeight = neoPixelsIntensity * 32 / 4;
-			tft.drawRect(currentItem*32 + 30, yOffset + (32 - lightHeight), 2, lightHeight);
+			tft.drawRect(currentItem*32 + 30 + xOffset, yOffset + (32 - lightHeight), 2, lightHeight);
 		}
 		
 		//draw volume level
 		if ((currentItem == 1) && (sound.getVolume())) {			
 			tft.setColor(WHITE);
 			int volumeHeight = sound.getVolume() * 32 / 8;
-			tft.drawRect(currentItem*32 + 30, yOffset + (32 - volumeHeight), 2, volumeHeight);
+			tft.drawRect(currentItem*32 + 30 + xOffset, yOffset + (32 - volumeHeight), 2, volumeHeight);
 		}
 		
 		//updated neopixels
