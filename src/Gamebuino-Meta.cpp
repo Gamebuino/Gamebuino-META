@@ -232,12 +232,11 @@ void Gamebuino::startScreen(){
 	int8_t i = 24;
 	update();
 	sound.play(startSound);
-	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
 	while(i){
 		while(!update());
 		i--;
 		display.clear();
-		Image logo(78, 10, ColorMode::index);
+		display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
 		drawLogo(display, 2, min(0, i-10), display.fontSize);
 		lights.drawImage(0, 0, startLights);
 	}
