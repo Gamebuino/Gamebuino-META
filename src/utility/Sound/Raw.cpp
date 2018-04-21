@@ -34,8 +34,8 @@ void Sound_Handler_Raw::update() {
 	channel->buffer += channel->index;
 	channel->index = 0;
 	
-	uint32_t cursor = (uint32_t)channel->buffer - (uint32_t)buffer;
-	if (cursor + 0xFFFF <= length) {
+	uint32_t cursor = getPos();
+	if (cursor + 0xFFFF > length) {
 		channel->total = length - cursor;
 		channel->last = true;
 	}
@@ -46,12 +46,15 @@ void Sound_Handler_Raw::rewind() {
 	channel->total = length > 0xFFFF ? 0xFFFF : length;
 	channel->buffer = buffer;
 	channel->type = Sound_Channel_Type::raw;
+	if (length <= 0xFFFF) {
+		channel->last = true;
+	}
 	
 	channel->use = true;
 }
 
 uint32_t Sound_Handler_Raw::getPos() {
-	return channel->index;
+	return (uint32_t)channel->buffer - (uint32_t)buffer + channel->index;
 }
 
 }; // namespace Gamebuino_Meta
