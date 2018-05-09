@@ -31,14 +31,13 @@ namespace Gamebuino_Meta {
 class MetaMode {
    public:
 	void update();
-	bool isActive() {
-		handled = true;
-		return active;
-	};
+	bool isActive();
 
    private:
 	bool handled = false;  // False by default. Becomes true the first time "isActive()" is called
 	bool active = false;   // True once MetaMode has been activated. Cannot be turned off
+
+	bool can_deactivate = false;  // Becomes true once holding the MENU and HOME buttons turn MetaMode off.
 
 	// Draws the moving loading lines at the top and bottom of the screen. The lines are horizontal. Should only be called once per frame
 	// and centered 

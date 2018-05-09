@@ -426,7 +426,7 @@ void Gamebuino::checkHomeMenu() {
 	if (framesDisplayRecording != -1) {
 		framesDisplayRecording--;
 	}
-	if (buttons.released(Button::home) || (framesDisplayRecording == 0 && recording_screen)) {
+	if ((buttons.released(Button::home) && !buttons.repeat(Button::menu, 0)) || (framesDisplayRecording == 0 && recording_screen)) {
 		if (recording_screen) {
 			// stop the recording
 			HOME_MENU_SAVE_STATE;
