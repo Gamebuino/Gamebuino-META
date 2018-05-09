@@ -335,8 +335,9 @@ bool Gamebuino::update() {
 #endif // GUI_ENABLE_POPUP
 	
 	sound.update(); // update sound stuff once per frame
-	
-	
+
+	metaMode.update();
+
 	//send buffer to the screen
 	updateDisplay();
 	
@@ -421,11 +422,7 @@ uint16_t Gamebuino::getFreeRam() {
 	tft.setRotation(hm_save_rotation); \
 	tft.setPalette(hm_save_palette);
 
-void Gamebuino::checkHomeMenu() {
-	//get back to game list when "HOME is held
-	if (buttons.held(Button::home, 25)){
-		changeGame();
-	}
+void Gamebuino::checkHomeMenu() {	
 	if (framesDisplayRecording != -1) {
 		framesDisplayRecording--;
 	}
