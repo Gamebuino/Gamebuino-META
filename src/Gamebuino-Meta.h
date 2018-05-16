@@ -41,6 +41,7 @@ extern SdFat SD;
 #include "utility/Save.h"
 #include "utility/Bootloader.h"
 #include "utility/Gui.h"
+#include "utility/MetaMode.h"
 
 #include "utility/Adafruit_NeoPixel.h"
 #include "utility/Display-ST7735.h"
@@ -91,6 +92,7 @@ public:
 	Language language;
 	Bootloader bootloader;
 	Gui gui;
+	MetaMode metaMode;
 
 	void begin();
 	void startScreen();
