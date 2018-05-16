@@ -32,7 +32,7 @@ class MetaMode {
    public:
 	void update();  // Called every frame by gb.update()
 	
-	bool is_using_button_home();  // Returns true if the home button's release can be ignored (so the Gamebuino menu doesn't trigger)
+	bool isUsingHomeButton();  // Returns true if the home button's release can be ignored (so the Gamebuino menu doesn't trigger)
 
 	// Returns TRUE if the player activated MetaMode. To be used by the games using the library. 
 	// Must be called at least once in code for the mode to be able to activate
@@ -42,14 +42,14 @@ class MetaMode {
 	bool handled = false;  // False by default. Becomes true the first time "isActive()" is called
 	bool active = false;   // True once MetaMode has been activated. Cannot be turned off
 
-	bool can_deactivate = false;  // Becomes TRUE once holding the MENU and HOME buttons turn MetaMode off.
-	bool can_activate = true;  // Is FALSE while the user keeps the MENU and HOME buttons held after turning MetaMode off.
+	bool canDeactivate = false;  // Becomes TRUE once holding the MENU and HOME buttons turn MetaMode off.
+	bool canActivate = true;  // Is FALSE while the user keeps the MENU and HOME buttons held after turning MetaMode off.
 	
 	// TRUE when the HOME button is being used by MetaMode. This prevents the Gamebuino menu from opening when launching MetaMode.
 	// This becomes TRUE when the loading time reaches half of the total loading time (while turning on or off the MetaMode)
 	// This then becomes FALSE when HOME is released for the first time
 	// Note: This means that the HOME button is being "used by meta mode" as long as the user keeps the button down
-	bool using_button_home;  
+	bool usingHomeButton;  
 	
 	// Draws the moving loading lines at the top and bottom of the screen. The lines are horizontal and centered 
 	// Parameters :	uint8_t percentage	:	0 is not drawn, 100 takes up the whole width of the screen

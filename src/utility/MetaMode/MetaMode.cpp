@@ -65,93 +65,93 @@ const uint8_t textMode[] = {
 };
 
 const uint8_t NUMBER_OF_COLORS_LINE_PATTERN = 8;
-const Color line_pattern[NUMBER_OF_COLORS_LINE_PATTERN] = {  // Color of the bottom and top bars
+const Color linePattern[NUMBER_OF_COLORS_LINE_PATTERN] = {  // Color of the bottom and top bars
     WHITE, WHITE, WHITE, WHITE, ORANGE, ORANGE, ORANGE, ORANGE};
 
-const Color rects_pattern[4] = {  // Colors of the sliding rectangles during launch animation
+const Color rectsPattern[4] = {  // Colors of the sliding rectangles during launch animation
     WHITE, BEIGE, ORANGE, BROWN};
 
-uint8_t current_pattern = 0;
+uint8_t currentPattern = 0;
 
-bool anim_running = false;
-int16_t anim_timer = 0;
-const uint8_t anim_rect_time_max = 10;  // Time per sliding rect
+bool animRunning = false;
+int16_t animTimer = 0;
+const uint8_t animRectTimeMax = 10;  // Time per sliding rect
 
-const uint8_t anim_h_start = 18;  // Height of the sliding rects when the start in the center
-const uint8_t anim_h_end = 2;     // Their height at the last frame
-const uint8_t anim_interval = 7;  // Frames between 2 sliding rectangles
+const uint8_t animH_start = 18;  // Height of the sliding rects when the start in the center
+const uint8_t animH_end = 2;     // Their height at the last frame
+const uint8_t animInterval = 7;  // Frames between the start of 2 sliding rectangles
 
-uint8_t loading_timer = 0;
-const uint8_t loading_time_max = 40;  // Time in frames you have to hold HOME and MENU
+uint8_t loadingTimer = 0;
+const uint8_t loadingTimeMax = 40;  // Time in frames you have to hold HOME and MENU
 
-bool anim_unhandled_running = false;
-const uint8_t anim_unhandled_time_max = 8;
-uint8_t anim_unhandled_timer = 0;
+bool unhandledAnimRunning = false;
+const uint8_t unhandledAnimTimeMax = 8;
+uint8_t unhandledAnimTimer = 0;
 
 bool MetaMode::isActive() {
 	handled = true;
 	return active;
 };
 
-bool MetaMode::is_using_button_home() {
-	return using_button_home;
+bool MetaMode::isUsingHomeButton() {
+	return usingHomeButton;
 }
 
 void MetaMode::update() {
 	
 	// ================== INPUTS ================== //
 	if (gb.buttons.repeat(Button::home, 0) && gb.buttons.repeat(Button::menu, 0) && !active &&
-	    !anim_running && !anim_unhandled_running && can_activate) {
-		loading_timer++;
-		if (loading_timer >= loading_time_max / 2)
-			using_button_home = true;  // From now on, releasing the home button doesn't open the Gamebuino menu
+	    !animRunning && !unhandledAnimRunning && canActivate) {
+		loadingTimer++;
+		if (loadingTimer >= loadingTimeMax / 2)
+			usingHomeButton = true;  // From now on, releasing the home button doesn't open the Gamebuino menu
 		
-		if (loading_timer == loading_time_max) {  // Once we fully loaded: launch animation, reset
+		if (loadingTimer == loadingTimeMax) {  // Once we fully loaded: launch animation, reset
 			                                      // timer, and activate metaMode
 			if (handled) {
-				anim_timer = 0;
-				anim_running = true;
+				animTimer = 0;
+				animRunning = true;
 			} else {
-				anim_unhandled_running = true;
-				anim_unhandled_timer = 0;
+				unhandledAnimRunning = true;
+				unhandledAnimTimer = 0;
 			}
 		}
 	} else if (gb.buttons.repeat(Button::home, 0) && gb.buttons.repeat(Button::menu, 0) &&
-	           can_deactivate) {
-		loading_timer--;           // De-load (like loading, but backwards)
-		if (loading_timer <= loading_time_max / 2)
-			using_button_home = true;  // From now on, releasing the home button doesn't open the Gamebuino menu
+	           canDeactivate) {
+		loadingTimer--;           // De-load (like loading, but backwards)
+		if (loadingTimer <= loadingTimeMax / 2)
+			usingHomeButton = true;  // From now on, releasing the home button doesn't open the Gamebuino menu
 		
-		if (loading_timer == 0) {  // Once fully de-loaded, deactivate MetaMode
+		if (loadingTimer == 0) {  // Once fully de-loaded, deactivate MetaMode
 			active = false;
-			can_deactivate = false;
-			can_activate = false;  // The user must release then hold the HOME and MENU buttons again to re-activate the mode
+			canDeactivate = false;
+			canActivate = false;  // The user must release then hold the HOME and MENU buttons again to re-activate the mode
 		}
 	} else if (gb.buttons.released(Button::home) || gb.buttons.released(Button::menu)) {
-		can_activate = true;
+		canActivate = true;
 		if (gb.buttons.released(Button::home))  // Only do this when releasing HOME
-			using_button_home = false;  // MetaMode is no longer preventing the Gamebuino menu to open
-		if (!active && !anim_running &&
-		    !anim_unhandled_running)  // If the user lets go while loading
-			loading_timer = 0;
-		else if (can_deactivate)  // If the user lets go while de-loading
-			loading_timer = loading_time_max;
-		else if (active || anim_running) 	// If the user lets go once the MetaMode is armed, it means that they can
+			usingHomeButton = false;  // MetaMode is no longer preventing the Gamebuino menu to open
+		if (!active && !animRunning &&
+		    !unhandledAnimRunning)  // If the user lets go while loading
+			loadingTimer = 0;
+		else if (canDeactivate)  // If the user lets go while de-loading
+			loadingTimer = loadingTimeMax;
+		else if (active || animRunning) 	// If the user lets go once the MetaMode is armed, it means that they can
 											// now press the combination again to deactivate it
-			can_deactivate = true;
+			canDeactivate = true;
 	}
 	
 	// ================== DRAW ================== //
-	if (loading_timer < loading_time_max) {
-		drawLoadingLines(loading_timer * 100 / loading_time_max);
-	} else if (active || anim_running) {
+	if (loadingTimer < loadingTimeMax) {
+		drawLoadingLines(loadingTimer * 100 / loadingTimeMax);
+	} else if (active || animRunning) {
 		drawLoadingLines(100);  // 100%
-	} else if (anim_unhandled_running) {
-		drawLoadingLines((anim_unhandled_time_max - anim_unhandled_timer) * 100 /
-		                 anim_unhandled_time_max);
-		anim_unhandled_timer++;
-		if (anim_unhandled_timer >= anim_unhandled_time_max) {
-			anim_unhandled_running = false;
+	} else if (unhandledAnimRunning) {
+		drawLoadingLines((unhandledAnimTimeMax - unhandledAnimTimer) * 100 /
+		                 unhandledAnimTimeMax);
+		unhandledAnimTimer++;
+		if (unhandledAnimTimer >= unhandledAnimTimeMax) {
+			unhandledAnimRunning = false;
 #if GUI_ENABLE_POPUP
 			gb.gui.popup("Game not META :(", 30);
 #endif  // GUI_ENABLE_POPUP
@@ -159,18 +159,18 @@ void MetaMode::update() {
 	}
 	
 	// ================== Animation ================== //
-	if (anim_running) {
+	if (animRunning) {
 		// Sliding rects animation
 		for (char i = 0; i < 4; i++) {
-			uint16_t anim_percentage = 100 * (anim_timer - anim_interval * i) / anim_rect_time_max;
-			if (anim_percentage >= 100 || anim_percentage < 0) continue;
-			gb.display.setColor(rects_pattern[i]);
-			uint8_t rect_h = anim_h_start - anim_percentage * (anim_h_start - anim_h_end) / 100;
+			uint16_t animPercentage = 100 * (animTimer - animInterval * i) / animRectTimeMax;
+			if (animPercentage >= 100 || animPercentage < 0) continue;
+			gb.display.setColor(rectsPattern[i]);
+			uint8_t rect_h = animH_start - animPercentage * (animH_start - animH_end) / 100;
 			gb.display.fillRect(
-			    0, gb.display.height() / 2 + (anim_percentage * gb.display.height() / 200),
+			    0, gb.display.height() / 2 + (animPercentage * gb.display.height() / 200),
 			    gb.display.width(), rect_h);
 			gb.display.fillRect(
-			    0, gb.display.height() / 2 - (anim_percentage * gb.display.height() / 200) - rect_h,
+			    0, gb.display.height() / 2 - (animPercentage * gb.display.height() / 200) - rect_h,
 			    gb.display.width(), rect_h);
 		}
 
@@ -189,51 +189,51 @@ void MetaMode::update() {
 		// Animation
 		// What is happening? Well, 10 frames to slide in ("Mode" comes in 5 frames after),
 		// 15 fixed (10 for "MODE"), 8 to slide out (both words leave at the same time)
-		if (anim_timer < 5) {  // "META" slides in
-			drawTextMeta(META_start_pos + anim_timer * (META_centered_pos - META_start_pos) / 10,
+		if (animTimer < 5) {  // "META" slides in
+			drawTextMeta(META_start_pos + animTimer * (META_centered_pos - META_start_pos) / 10,
 			             META_y_pos);
-		} else if (anim_timer < 10) {  // "META" and "MODE" slide in
-			drawTextMeta(META_start_pos + anim_timer * (META_centered_pos - META_start_pos) / 10,
+		} else if (animTimer < 10) {  // "META" and "MODE" slide in
+			drawTextMeta(META_start_pos + animTimer * (META_centered_pos - META_start_pos) / 10,
 			             META_y_pos);
 			drawTextMode(
-			    MODE_start_pos - (anim_timer - 5) * (MODE_start_pos - MODE_centered_pos) / 10,
+			    MODE_start_pos - (animTimer - 5) * (MODE_start_pos - MODE_centered_pos) / 10,
 			    MODE_y_pos);
-		} else if (anim_timer < 15) {  // "MODE" slides in "META" fixed
+		} else if (animTimer < 15) {  // "MODE" slides in "META" fixed
 			drawTextMeta(META_centered_pos, META_y_pos);
 			drawTextMode(
-			    MODE_start_pos - (anim_timer - 5) * (MODE_start_pos - MODE_centered_pos) / 10,
+			    MODE_start_pos - (animTimer - 5) * (MODE_start_pos - MODE_centered_pos) / 10,
 			    MODE_y_pos);
-		} else if (anim_timer < 30) {  // "META" and "MODE" fixed
+		} else if (animTimer < 30) {  // "META" and "MODE" fixed
 			drawTextMeta(META_centered_pos, META_y_pos);
 			drawTextMode(MODE_centered_pos, MODE_y_pos);
-		} else if (anim_timer < 38) {  // "META" and "MODE" slide out
+		} else if (animTimer < 38) {  // "META" and "MODE" slide out
 			drawTextMeta(
-			    META_centered_pos + (anim_timer - 30) * (META_finish_pos - META_centered_pos) / 8,
+			    META_centered_pos + (animTimer - 30) * (META_finish_pos - META_centered_pos) / 8,
 			    META_y_pos);
 			drawTextMode(
-			    MODE_centered_pos - (anim_timer - 30) * (MODE_centered_pos - MODE_finish_pos) / 8,
+			    MODE_centered_pos - (animTimer - 30) * (MODE_centered_pos - MODE_finish_pos) / 8,
 			    MODE_y_pos);
 		} else {  // End of animation. Also activate MetaMode and allow the Gamebuino menu to be opened once again
-			anim_running = false;
+			animRunning = false;
 			active = true;
 		}
 
-		anim_timer++;
+		animTimer++;
 	}
 }
 
 void MetaMode::drawLoadingLines(uint8_t percentage) {
-	uint8_t color_offset = gb.frameCount() % NUMBER_OF_COLORS_LINE_PATTERN;
-	uint8_t line_w = percentage * gb.display.width() / 100;
-	uint8_t x_offset = (gb.display.width() - line_w) / 2;  // Offset to center the lines on the screen
+	uint8_t colorOffset = gb.frameCount() % NUMBER_OF_COLORS_LINE_PATTERN;
+	uint8_t lineW = percentage * gb.display.width() / 100;
+	uint8_t xOffset = (gb.display.width() - lineW) / 2;  // Offset to center the lines on the screen
 
-	for (char x = 0; x < line_w; x++) {
+	for (char x = 0; x < lineW; x++) {
 		gb.display.drawPixel(
-		    x_offset + x, 0,
-		    line_pattern[(x + color_offset) % NUMBER_OF_COLORS_LINE_PATTERN]);  // Top line
+		    xOffset + x, 0,
+		    linePattern[(x + colorOffset) % NUMBER_OF_COLORS_LINE_PATTERN]);  // Top line
 		gb.display.drawPixel(
-		    x_offset + x, gb.display.height() - 1,
-		    line_pattern[(x + color_offset) % NUMBER_OF_COLORS_LINE_PATTERN]);  // Bottom line
+		    xOffset + x, gb.display.height() - 1,
+		    linePattern[(x + colorOffset) % NUMBER_OF_COLORS_LINE_PATTERN]);  // Bottom line
 	}
 }
 
