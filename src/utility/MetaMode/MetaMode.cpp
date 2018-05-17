@@ -223,7 +223,7 @@ void MetaMode::update() {
 }
 
 void MetaMode::drawLoadingLines(uint8_t percentage) {
-	uint8_t colorOffset = gb.frameCount() % NUMBER_OF_COLORS_LINE_PATTERN;
+	uint8_t colorOffset = gb.frameCount % NUMBER_OF_COLORS_LINE_PATTERN;
 	uint8_t lineW = percentage * gb.display.width() / 100;
 	uint8_t xOffset = (gb.display.width() - lineW) / 2;  // Offset to center the lines on the screen
 

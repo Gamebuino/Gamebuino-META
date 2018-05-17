@@ -310,6 +310,9 @@ void Image::drawFastHLine(int16_t x, int16_t y, int16_t w) {
 		// Clamp value so we don't go outside the buffer
 		uint16_t new_x = max(x,0);
 		uint32_t bound = new_x + min(w - (new_x - x),_width-new_x);
+		if (!bound) {
+			return;
+		}
 
 		if (new_x%2 == 1){
 			_buffer[y * _width + new_x] = (uint16_t)color.c;
