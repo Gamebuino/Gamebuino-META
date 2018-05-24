@@ -45,7 +45,7 @@ void Buttons::update() {
 	//wait for PL to recover
 	delayMicroseconds(1);
 	//get the buttons states from the shift register
-	byte buttonsData = SPI.transfer(1);
+	buttonsData = SPI.transfer(1);
 	//end SPI
 	digitalWrite(BTN_CS, HIGH);
 	SPI.endTransaction();
@@ -58,7 +58,7 @@ void Buttons::update() {
 		bool pressed = (buttonsData & (1 << thisButton)) == 0;
 		
 		if (pressed) { //if button pressed
-			if (states[thisButton] < 0xFFFD) { // we want 0xFFFE to be max value for the counter
+			if (states[thisButton] < 0xFFFE) { // we want 0xFFFE to be max value for the counter
 				states[thisButton]++; //increase button hold time
 			} else if (states[thisButton] == 0xFFFF) { // if we release / hold again too fast
 				states[thisButton] = 1;
@@ -132,5 +132,6 @@ uint16_t Buttons::timeHeld(Button button){
 		return 0;
 	}
 }
+
 
 } // namespace Gamebuino_Meta

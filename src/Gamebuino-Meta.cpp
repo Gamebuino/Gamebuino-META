@@ -317,7 +317,9 @@ bool Gamebuino::update() {
 		frameStartMicros = micros();
 
 		buttons.update();
-
+		
+		metaMode.update_buttons();  // Checks for relevant buttons actions. Call this right after buttons.update() 
+		
 		return true;
 
 	}
@@ -336,7 +338,7 @@ bool Gamebuino::update() {
 	
 	sound.update(); // update sound stuff once per frame
 
-	metaMode.update();  // Update metaMode. Call checkHomeMenu() before metaMode.update()
+	metaMode.update_animations();  // Update metaMode's animation
 
 	//send buffer to the screen
 	updateDisplay();
@@ -426,7 +428,7 @@ void Gamebuino::checkHomeMenu() {
 	if (framesDisplayRecording != -1) {
 		framesDisplayRecording--;
 	}
-	if ((buttons.released(Button::home) && !metaMode.isUsingHomeButton()) || (framesDisplayRecording == 0 && recording_screen)) {
+	if (buttons.released(Button::home)|| (framesDisplayRecording == 0 && recording_screen)) {
 		if (recording_screen) {
 			// stop the recording
 			HOME_MENU_SAVE_STATE;

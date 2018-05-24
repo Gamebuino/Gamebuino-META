@@ -215,9 +215,9 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 		}
 		
 		// check for other button presses
-		bool backspace = gb.buttons.pressed(BUTTON_B);
-		bool switchLayout = gb.buttons.pressed(BUTTON_MENU);
-		if (gb.buttons.pressed(BUTTON_A)) {
+		bool backspace = gb.buttons.released(BUTTON_B);
+		bool switchLayout = gb.buttons.released(BUTTON_MENU);
+		if (gb.buttons.released(BUTTON_A)) {
 			char c = keyboardGetChar(cursorX, cursorY, keyboardLayout[curLayout]);
 			if (!c) {
 				// other handling
@@ -338,7 +338,7 @@ uint8_t Gui::menu(const char* title, const char** items, uint8_t length, uint8_t
 		gb.display.setColor(BLACK);
 		gb.display.drawFastHLine(0, 7, gb.display.width());
 		
-		if (gb.buttons.pressed(BUTTON_A)) {
+		if (gb.buttons.released(BUTTON_A)) {
 			gb.sound.playOK();
 			break;
 		}
