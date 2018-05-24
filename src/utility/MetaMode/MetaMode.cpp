@@ -93,21 +93,13 @@ bool MetaMode::isActive() {
 	return active;
 };
 
-bool MetaMode::isUsingHomeButton() {
-	return usingHomeButton;
-}
 
-void MetaMode::update() {
-	
-	// ================== INPUTS ================== //
+void MetaMode::update_buttons() {
 	if (gb.buttons.repeat(Button::home, 0) && gb.buttons.repeat(Button::menu, 0) && !active &&
 	    !animRunning && !unhandledAnimRunning && canActivate) {
 		loadingTimer++;
-		if (loadingTimer >= loadingTimeMax / 2)
-			usingHomeButton = true;  // From now on, releasing the home button doesn't open the Gamebuino menu
 		
-		if (loadingTimer == loadingTimeMax) {  // Once we fully loaded: launch animation, reset
-			                                      // timer, and activate metaMode
+		if (loadingTimer == loadingTimeMax) {  // Once we fully loaded: launch animation, reset timer, and activate metaMode
 			if (handled) {
 				animTimer = 0;
 				animRunning = true;
@@ -115,22 +107,33 @@ void MetaMode::update() {
 				unhandledAnimRunning = true;
 				unhandledAnimTimer = 0;
 			}
+		} else  {
+			usingMenuButton = true;
+			usingHomeButton = true;
 		}
 	} else if (gb.buttons.repeat(Button::home, 0) && gb.buttons.repeat(Button::menu, 0) &&
 	           canDeactivate) {
 		loadingTimer--;           // De-load (like loading, but backwards)
-		if (loadingTimer <= loadingTimeMax / 2)
-			usingHomeButton = true;  // From now on, releasing the home button doesn't open the Gamebuino menu
-		
+
 		if (loadingTimer == 0) {  // Once fully de-loaded, deactivate MetaMode
 			active = false;
 			canDeactivate = false;
 			canActivate = false;  // The user must release then hold the HOME and MENU buttons again to re-activate the mode
+		} else {
+			usingMenuButton = true;
+			usingHomeButton = true;
 		}
-	} else if (gb.buttons.released(Button::home) || gb.buttons.released(Button::menu)) {
+	} else {
+		// Inverted logic : button pressed = low state = 0
+		if (usingMenuButton && (gb.buttons.buttonsData & (1 << (uint8_t)Button::menu)) != 0) {
+			usingMenuButton = false;
+		}
+		if (usingHomeButton && (gb.buttons.buttonsData & (1 << (uint8_t)Button::home)) != 0) {
+			usingHomeButton = false;
+		}
+	}
+	if (!usingMenuButton || !usingHomeButton) {
 		canActivate = true;
-		if (gb.buttons.released(Button::home))  // Only do this when releasing HOME
-			usingHomeButton = false;  // MetaMode is no longer preventing the Gamebuino menu to open
 		if (!active && !animRunning &&
 		    !unhandledAnimRunning)  // If the user lets go while loading
 			loadingTimer = 0;
@@ -141,7 +144,17 @@ void MetaMode::update() {
 			canDeactivate = true;
 	}
 	
-	// ================== DRAW ================== //
+	// Ban the buttons we are using
+	if (usingMenuButton) gb.buttons.states[(uint8_t)Button::menu] = 0;
+	if (usingHomeButton) gb.buttons.states[(uint8_t)Button::home] = 0;
+}
+
+void MetaMode::update_animations() {
+	// ================= Logic ======================= // 
+	uint8_t scale = gb.display.width() == 80 ? 1 : 2;  // Also handle full res games
+	const uint8_t DISP_W = 80;
+	const uint8_t DISP_H = 64;
+	
 	if (loadingTimer < loadingTimeMax) {
 		drawLoadingLines(loadingTimer * 100 / loadingTimeMax);
 	} else if (active || animRunning) {
@@ -165,13 +178,13 @@ void MetaMode::update() {
 			uint16_t animPercentage = 100 * (animTimer - animInterval * i) / animRectTimeMax;
 			if (animPercentage >= 100 || animPercentage < 0) continue;
 			gb.display.setColor(rectsPattern[i]);
-			uint8_t rect_h = animH_start - animPercentage * (animH_start - animH_end) / 100;
+			int16_t rect_h = animH_start - animPercentage * (animH_start - animH_end) / 100;
 			gb.display.fillRect(
-			    0, gb.display.height() / 2 + (animPercentage * gb.display.height() / 200),
-			    gb.display.width(), rect_h);
+			    0, (DISP_H / 2 + (animPercentage * DISP_H / 200)) * scale,
+			    DISP_W * scale, rect_h * scale);
 			gb.display.fillRect(
-			    0, gb.display.height() / 2 - (animPercentage * gb.display.height() / 200) - rect_h,
-			    gb.display.width(), rect_h);
+			    0, (DISP_H / 2 - (animPercentage * DISP_H / 200) - rect_h) * scale,
+			    DISP_W * scale, rect_h * scale);
 		}
 
 		// Text animation //
@@ -179,40 +192,40 @@ void MetaMode::update() {
 		const uint8_t META_y_pos = 22;
 		const uint8_t MODE_y_pos = 36;
 		// x pos
-		int8_t META_start_pos = -textMeta_w;
-		int8_t META_centered_pos = 40 - textMeta_w / 2;
-		int8_t META_finish_pos = 80;
-
-		int8_t MODE_start_pos = 80;
-		int8_t MODE_centered_pos = 40 - textMode_w / 2;
-		int8_t MODE_finish_pos = -textMode_w;
+		int16_t META_start_pos = -textMeta_w;
+		int16_t META_centered_pos = (DISP_W / 2 - textMeta_w / 2);
+		int16_t META_finish_pos = DISP_W;
+		
+		int16_t MODE_start_pos = DISP_W;
+		int16_t MODE_centered_pos = (DISP_W / 2 - textMode_w / 2);
+		int16_t MODE_finish_pos = -textMode_w;
 		// Animation
-		// What is happening? Well, 10 frames to slide in ("Mode" comes in 5 frames after),
+		// What's happening you say? Well, there are 10 frames to slide in ("MODE" comes in 5 frames after),
 		// 15 fixed (10 for "MODE"), 8 to slide out (both words leave at the same time)
 		if (animTimer < 5) {  // "META" slides in
-			drawTextMeta(META_start_pos + animTimer * (META_centered_pos - META_start_pos) / 10,
-			             META_y_pos);
+			drawTextMeta((META_start_pos + animTimer * (META_centered_pos - META_start_pos) / 10) * scale,
+			             META_y_pos * scale);
 		} else if (animTimer < 10) {  // "META" and "MODE" slide in
-			drawTextMeta(META_start_pos + animTimer * (META_centered_pos - META_start_pos) / 10,
-			             META_y_pos);
+			drawTextMeta((META_start_pos + animTimer * (META_centered_pos - META_start_pos) / 10) * scale,
+			             META_y_pos * scale);
 			drawTextMode(
-			    MODE_start_pos - (animTimer - 5) * (MODE_start_pos - MODE_centered_pos) / 10,
-			    MODE_y_pos);
+			    (MODE_start_pos - (animTimer - 5) * (MODE_start_pos - MODE_centered_pos) / 10) * scale,
+			    MODE_y_pos * scale);
 		} else if (animTimer < 15) {  // "MODE" slides in "META" fixed
-			drawTextMeta(META_centered_pos, META_y_pos);
+			drawTextMeta(META_centered_pos * scale, META_y_pos * scale);
 			drawTextMode(
-			    MODE_start_pos - (animTimer - 5) * (MODE_start_pos - MODE_centered_pos) / 10,
-			    MODE_y_pos);
+			    (MODE_start_pos - (animTimer - 5) * (MODE_start_pos - MODE_centered_pos) / 10) * scale,
+			    MODE_y_pos * scale);
 		} else if (animTimer < 30) {  // "META" and "MODE" fixed
-			drawTextMeta(META_centered_pos, META_y_pos);
-			drawTextMode(MODE_centered_pos, MODE_y_pos);
+			drawTextMeta(META_centered_pos * scale, META_y_pos * scale);
+			drawTextMode(MODE_centered_pos * scale, MODE_y_pos * scale);
 		} else if (animTimer < 38) {  // "META" and "MODE" slide out
 			drawTextMeta(
-			    META_centered_pos + (animTimer - 30) * (META_finish_pos - META_centered_pos) / 8,
-			    META_y_pos);
+			    (META_centered_pos + (animTimer - 30) * (META_finish_pos - META_centered_pos) / 8) * scale,
+			    META_y_pos * scale);
 			drawTextMode(
-			    MODE_centered_pos - (animTimer - 30) * (MODE_centered_pos - MODE_finish_pos) / 8,
-			    MODE_y_pos);
+			    (MODE_centered_pos - (animTimer - 30) * (MODE_centered_pos - MODE_finish_pos) / 8) * scale,
+			    MODE_y_pos * scale);
 		} else {  // End of animation. Also activate MetaMode and allow the Gamebuino menu to be opened once again
 			animRunning = false;
 			active = true;
@@ -237,21 +250,27 @@ void MetaMode::drawLoadingLines(uint8_t percentage) {
 	}
 }
 
-void MetaMode::drawTextMeta(int8_t x, int8_t y) {
+void MetaMode::drawTextMeta(int16_t x, int16_t y) {
 	Image text(textMeta_w + 1, textMeta_h + 1, ColorMode::index);
 	text.setColor(ColorIndex::brown);
 	text.drawBitmap(1, 1, textMeta);
 	text.setColor(ColorIndex::white);
 	text.drawBitmap(0, 0, textMeta);
-	gb.display.drawImage(x, y, text);
+	if (gb.display.width() == 80)
+		gb.display.drawImage(x, y, text);
+	else
+		gb.display.drawImage(x, y, text, text.width() * 2, text.height() * 2);
 }
 
-void MetaMode::drawTextMode(int8_t x, int8_t y) {
+void MetaMode::drawTextMode(int16_t x, int16_t y) {
 	Image text(textMode_w, textMode_h, ColorMode::index);
 	text.fill(ColorIndex::darkgray);
 	text.setColor(ColorIndex::white);
 	text.drawBitmap(0, 0, textMode);
-	gb.display.drawImage(x, y, text);
+	if (gb.display.width() == 80)
+		gb.display.drawImage(x, y, text);
+	else
+		gb.display.drawImage(x, y, text, text.width() * 2, text.height() * 2);
 }
 
 };  // Namespace Gamebuino_Meta

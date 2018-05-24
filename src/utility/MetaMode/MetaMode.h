@@ -30,9 +30,8 @@ namespace Gamebuino_Meta {
 
 class MetaMode {
    public:
-	void update();  // Called every frame by gb.update()
-	
-	bool isUsingHomeButton();  // Returns true if the home button's release can be ignored (so the Gamebuino menu doesn't trigger)
+    void update_buttons();  // Called in gb.update() directly after buttons.update() as to consume buttons before the user's game has a chance
+	void update_animations();  // Called every frame by gb.update()
 
 	// Returns TRUE if the player activated MetaMode. To be used by the games using the library. 
 	// Must be called at least once in code for the mode to be able to activate
@@ -45,20 +44,17 @@ class MetaMode {
 	bool canDeactivate = false;  // Becomes TRUE once holding the MENU and HOME buttons turn MetaMode off.
 	bool canActivate = true;  // Is FALSE while the user keeps the MENU and HOME buttons held after turning MetaMode off.
 	
-	// TRUE when the HOME button is being used by MetaMode. This prevents the Gamebuino menu from opening when launching MetaMode.
-	// This becomes TRUE when the loading time reaches half of the total loading time (while turning on or off the MetaMode)
-	// This then becomes FALSE when HOME is released for the first time
-	// Note: This means that the HOME button is being "used by meta mode" as long as the user keeps the button down
-	bool usingHomeButton;  
+	bool usingHomeButton = false;  // TRUE when the HOME button is reserved for metaMode. If TRUE, then the button apears as idle to the rest of the code
+	bool usingMenuButton = false;  // See above, but for the MENU button
 	
 	// Draws the moving loading lines at the top and bottom of the screen. The lines are horizontal and centered 
 	// Parameters :	uint8_t percentage	:	0 is not drawn, 100 takes up the whole width of the screen
 	void drawLoadingLines(uint8_t percentage);
 
 	// Draw "META" text to screen with shadow
-	void drawTextMeta(int8_t x, int8_t y);
+	void drawTextMeta(int16_t x, int16_t y);
 	// Draw "MODE" text to screen with shadow
-	void drawTextMode(int8_t x, int8_t y);
+	void drawTextMode(int16_t x, int16_t y);
 };
 
 };  // Namespace Gamebuino_Meta
