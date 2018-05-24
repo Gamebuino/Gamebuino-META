@@ -126,7 +126,7 @@ bool Buttons::repeat(Button button, uint16_t period) {
  * @return The number of frames during which the button has been held.
  */
 uint16_t Buttons::timeHeld(Button button){
-	if(states[(uint8_t)button] < 0xFFFE) {  // if not released or consumed
+	if(states[(uint8_t)button] != 0xFFFF) {
 		return states[(uint8_t)button];
 	} else {
 		return 0;
