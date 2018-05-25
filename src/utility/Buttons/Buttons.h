@@ -51,7 +51,6 @@ public:
 	bool repeat(Button button, uint16_t period);
 	uint16_t timeHeld(Button button);
 	uint16_t states[NUM_BTN];
-	byte buttonsData;
 };
 
 } // namespace Gamebuino_Meta

@@ -318,7 +318,7 @@ bool Gamebuino::update() {
 
 		buttons.update();
 		
-		metaMode.update_buttons();  // Checks for relevant buttons actions. Call this right after buttons.update() 
+		metaMode.updateButtons();  // Checks for relevant buttons actions. Call this right after buttons.update() 
 		
 		return true;
 
@@ -331,6 +331,8 @@ bool Gamebuino::update() {
 	//Home menu
 	checkHomeMenu();
 
+	metaMode.updateAnimations();  // Update metaMode's animation
+
 #if GUI_ENABLE_POPUP
 	//draw and update popups
 	gui.updatePopup();
@@ -338,7 +340,6 @@ bool Gamebuino::update() {
 	
 	sound.update(); // update sound stuff once per frame
 
-	metaMode.update_animations();  // Update metaMode's animation
 
 	//send buffer to the screen
 	updateDisplay();
