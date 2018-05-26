@@ -138,6 +138,7 @@ public:
 	void setColor(ColorIndex c, ColorIndex bg);
 	void setColor(uint8_t c);
 	void setColor(uint8_t c, uint8_t bg);
+	void setColor(uint8_t r, uint8_t g, uint8_t b);
 	void setTransparentColor(Color c);
 	void setTransparentColor(ColorIndex c);
 	void clearTransparentColor();
