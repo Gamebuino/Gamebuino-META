@@ -155,6 +155,9 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 		reInitAsIndexed = true;
 		gb.display.init(80, 64, ColorMode::rgb565);
 	}
+	uint8_t fontSizeBak = gb.display.fontSize;
+	gb.display.setFontSize(1);
+	
 	gb.display.fill(BLACK);
 	gb.display.setColor(DARKGRAY);
 	gb.display.fillRect(0, 0, gb.display.width(), 7);
@@ -263,6 +266,7 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 	if (reInitAsIndexed) {
 		gb.display.init(160, 128, ColorMode::index);
 	}
+	gb.display.setFontSize(fontSizeBak);
 }
 
 void Gui::keyboard(const MultiLang* title, char* text, uint8_t length, uint8_t numLang) {
@@ -309,6 +313,8 @@ uint8_t Gui::menu(const char* title, const char** items, uint8_t length, uint8_t
 		reInitAsIndexed = true;
 		gb.display.init(80, 64, ColorMode::rgb565);
 	}
+	uint8_t fontSizeBak = gb.display.fontSize;
+	gb.display.setFontSize(1);
 	
 	uint8_t cursor = 0;
 	int32_t cameraY = 0;
@@ -373,6 +379,7 @@ uint8_t Gui::menu(const char* title, const char** items, uint8_t length, uint8_t
 	if (reInitAsIndexed) {
 		gb.display.init(160, 128, ColorMode::index);
 	}
+	gb.display.setFontSize(fontSizeBak);
 	return cursor;
 }
 
