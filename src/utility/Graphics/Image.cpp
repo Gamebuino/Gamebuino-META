@@ -644,6 +644,10 @@ void Image::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 		return;
 	
 	if (size == 2 && colorMode == ColorMode::index) {
+		if (x < 0 || y < 0 || x >= _width - fontWidth*size || y >= _height - fontHeight*size) {
+			Graphics::drawChar(x, y, c, size);
+			return;
+		}
 		if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
 		if (c >= 0x80) c -= 0x20;
 		if (!(x % 2)) {
