@@ -84,6 +84,7 @@ class Graphics : public Print_Language {
 public:
 	using Print_Language::print;
 	using Print_Language::println;
+	using Print_Language::printf;
 	using Print_Language::write;
 	Graphics(int16_t w, int16_t h); // Constructor
 	virtual ~Graphics();
