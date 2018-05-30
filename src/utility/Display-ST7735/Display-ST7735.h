@@ -135,6 +135,7 @@ enum class Rotation : uint8_t {
 
 class Display_ST7735 : public Graphics {
 public:
+	using Graphics::drawImage;
 	Display_ST7735(int8_t CS, int8_t RS);
 
 	void init();
@@ -151,7 +152,6 @@ public:
 	void idleMode();
 	void drawImage(int16_t x, int16_t y, Image& img);
 	void drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);
-	void drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y2, int16_t w2, int16_t h2);
 	void fillRect(int16_t x, int16_t y, int16_t w, int16_t h);
 	void setRotation(Rotation r);
 	void invertDisplay(boolean i);

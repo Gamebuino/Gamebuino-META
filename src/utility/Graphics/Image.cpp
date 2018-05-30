@@ -884,20 +884,4 @@ void Image::drawImage(int16_t x, int16_t y, Image& img) {
 	Graphics::drawImage(x, y, img);
 }
 
-void Image::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2) {
-	if ((img._width == w2) && (img._height == h2)) {
-		drawImage(x, y, img);
-		return;
-	}
-	Graphics::drawImage(x, y, img, w2, h2);
-}
-
-void Image::drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y2, int16_t w2, int16_t h2) {
-	if ((x2 == 0) && (y2 == 0) && (img._width == w2) && (img._height == h2)) {
-		drawImage(x, y, img);
-		return;
-	}
-	Graphics::drawImage(x, y, img, x2, y2, w2, h2);
-}
-
 } // namespace Gamebuino_Meta

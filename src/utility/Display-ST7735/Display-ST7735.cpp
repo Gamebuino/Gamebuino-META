@@ -606,10 +606,6 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 	Graphics::drawImage(x, y, img, w2, h2);
 }
 
-void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y2, int16_t w2, int16_t h2) {
-	Graphics::drawImage(x, y, img, x2, y2, w2, h2);
-}
-
 
 
 void Display_ST7735::pushColor(uint16_t c) {
