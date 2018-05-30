@@ -82,7 +82,9 @@ enum class ColorMode : uint8_t {
 class Graphics : public Print_Language {
 
 public:
-
+	using Print_Language::print;
+	using Print_Language::println;
+	using Print_Language::write;
 	Graphics(int16_t w, int16_t h); // Constructor
 	virtual ~Graphics();
 
@@ -142,9 +144,9 @@ public:
 	void setTransparentColor(Color c);
 	void setTransparentColor(ColorIndex c);
 	void clearTransparentColor();
-	void setCursorX(int16_t x);
-	void setCursorY(int16_t y);
-	void setCursor(int16_t x, int16_t y);
+	static void setCursorX(int16_t x);
+	static void setCursorY(int16_t y);
+	static void setCursor(int16_t x, int16_t y);
 	void setFontSize(uint8_t s);
 	void setTextWrap(bool w);
 	void cp437(bool x=true);
@@ -159,6 +161,52 @@ public:
 
 	static void indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length, bool skipFirst);
 	static ColorIndex rgb565ToIndex(Color rgb);
+	
+	// additional coordinate prints
+	
+	template <uint8_t N>
+	void print(int16_t x, int16_t y, const MultiLang (&l) [N]) {
+		setCursor(x, y);
+		print(l, N);
+	};
+	template <typename T>
+	void print(int16_t x, int16_t y, T s) {
+		setCursor(x, y);
+		print(s);
+	};
+	
+	template <uint8_t N>
+	void println(int16_t x, int16_t y, const MultiLang (&l) [N]) {
+		setCursor(x, y);
+		print(l, N);
+	};
+	template <typename T>
+	void println(int16_t x, int16_t y, T s) {
+		setCursor(x, y);
+		print(s);
+	};
+	
+	
+	template <uint8_t N>
+	void printf(int16_t x, int16_t y, const MultiLang (&l) [N], ...) {
+		setCursor(x, y);
+		char buf[PRINTF_BUF];
+		va_list ap;
+		const char* format = Language::get(l, N);
+		va_start(ap, format);
+		vsnprintf(buf, sizeof(buf), format, ap);
+		write(buf);
+		va_end(ap);
+	};
+	void printf(int16_t x, int16_t y, const char format[], ...) {
+		setCursor(x, y);
+		char buf[PRINTF_BUF];
+		va_list ap;
+		va_start(ap, format);
+		vsnprintf(buf, sizeof(buf), format, ap);
+		write(buf);
+		va_end(ap);
+	};
 
 	union {
 		uint16_t transparentColor;
