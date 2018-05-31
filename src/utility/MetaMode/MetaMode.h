@@ -30,8 +30,8 @@ namespace Gamebuino_Meta {
 
 class MetaMode {
    public:
-    void update_buttons();  // Called in gb.update() directly after buttons.update() as to consume buttons before the user's game has a chance
-	void update_animations();  // Called every frame by gb.update()
+    void updateButtons();  // Called in gb.update() directly after buttons.update() as to consume buttons before the user's game has a chance
+	void updateAnimations();  // Called every frame by gb.update()
 
 	// Returns TRUE if the player activated MetaMode. To be used by the games using the library. 
 	// Must be called at least once in code for the mode to be able to activate

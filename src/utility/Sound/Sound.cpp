@@ -427,7 +427,9 @@ void TC5_Handler (void) __attribute__ ((alias("Audio_Handler")));
 #endif
 
 void dacConfigure(void) {
-	flowdown = analogRead(A0); // initial flowdown to prevent popping sound
+	if (PM->RCAUSE.bit.POR) {
+		flowdown = analogRead(A0); // initial flowdown to prevent popping sound
+	}
 	analogWriteResolution(10);
 }
 

@@ -82,7 +82,10 @@ enum class ColorMode : uint8_t {
 class Graphics : public Print_Language {
 
 public:
-
+	using Print_Language::print;
+	using Print_Language::println;
+	using Print_Language::printf;
+	using Print_Language::write;
 	Graphics(int16_t w, int16_t h); // Constructor
 	virtual ~Graphics();
 
@@ -103,6 +106,21 @@ public:
 	virtual void drawImage(int16_t x, int16_t y, Image& img);
 	virtual void drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);
 	virtual void drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y2, int16_t w2, int16_t h2);
+	template <typename T>
+	void drawImage(int16_t x, int16_t y, T img) {
+		Image i(img);
+		drawImage(x, y, i);
+	};
+	template <typename T>
+	void drawImage(int16_t x, int16_t y, T img, int16_t w2, int16_t h2) {
+		Image i(img);
+		drawImage(x, y, i, w2, h2);
+	};
+	template <typename T>
+	void drawImage(int16_t x, int16_t y, T img, int16_t x2, int16_t y2, int16_t w2, int16_t h2) {
+		Image i(img);
+		drawImage(x, y, i, x2, y2, w2, h2);
+	};
 	void drawImageCrop(int16_t x, int16_t y, int16_t w1, int16_t i2offset, int16_t w2cropped, int16_t j2offset, int16_t h2cropped, Image& img);
 	virtual void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap);
 	virtual void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip);
@@ -138,12 +156,13 @@ public:
 	void setColor(ColorIndex c, ColorIndex bg);
 	void setColor(uint8_t c);
 	void setColor(uint8_t c, uint8_t bg);
+	void setColor(uint8_t r, uint8_t g, uint8_t b);
 	void setTransparentColor(Color c);
 	void setTransparentColor(ColorIndex c);
 	void clearTransparentColor();
-	void setCursorX(int16_t x);
-	void setCursorY(int16_t y);
-	void setCursor(int16_t x, int16_t y);
+	static void setCursorX(int16_t x);
+	static void setCursorY(int16_t y);
+	static void setCursor(int16_t x, int16_t y);
 	void setFontSize(uint8_t s);
 	void setTextWrap(bool w);
 	void cp437(bool x=true);
@@ -158,6 +177,52 @@ public:
 
 	static void indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length, bool skipFirst);
 	static ColorIndex rgb565ToIndex(Color rgb);
+	
+	// additional coordinate prints
+	
+	template <uint8_t N>
+	void print(int16_t x, int16_t y, const MultiLang (&l) [N]) {
+		setCursor(x, y);
+		print(l, N);
+	};
+	template <typename T>
+	void print(int16_t x, int16_t y, T s) {
+		setCursor(x, y);
+		print(s);
+	};
+	
+	template <uint8_t N>
+	void println(int16_t x, int16_t y, const MultiLang (&l) [N]) {
+		setCursor(x, y);
+		print(l, N);
+	};
+	template <typename T>
+	void println(int16_t x, int16_t y, T s) {
+		setCursor(x, y);
+		print(s);
+	};
+	
+	
+	template <uint8_t N>
+	void printf(int16_t x, int16_t y, const MultiLang (&l) [N], ...) {
+		setCursor(x, y);
+		char buf[PRINTF_BUF];
+		va_list ap;
+		const char* format = Language::get(l, N);
+		va_start(ap, format);
+		vsnprintf(buf, sizeof(buf), format, ap);
+		write(buf);
+		va_end(ap);
+	};
+	void printf(int16_t x, int16_t y, const char format[], ...) {
+		setCursor(x, y);
+		char buf[PRINTF_BUF];
+		va_list ap;
+		va_start(ap, format);
+		vsnprintf(buf, sizeof(buf), format, ap);
+		write(buf);
+		va_end(ap);
+	};
 
 	union {
 		uint16_t transparentColor;

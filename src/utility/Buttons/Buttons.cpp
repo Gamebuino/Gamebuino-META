@@ -45,7 +45,7 @@ void Buttons::update() {
 	//wait for PL to recover
 	delayMicroseconds(1);
 	//get the buttons states from the shift register
-	buttonsData = SPI.transfer(1);
+	uint8_t buttonsData = SPI.transfer(1);
 	//end SPI
 	digitalWrite(BTN_CS, HIGH);
 	SPI.endTransaction();

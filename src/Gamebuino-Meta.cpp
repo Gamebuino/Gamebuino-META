@@ -152,6 +152,7 @@ void Gamebuino::begin() {
 	//buttons
 	buttons.begin();
 	buttons.update();
+	bool muteSound = buttons.repeat(Button::b, 0);
 	
 	//tft
 	tft.init();
@@ -178,6 +179,8 @@ void Gamebuino::begin() {
 		display.println("OK!");
 		updateDisplay();
 	}
+	buttons.update();
+	muteSound = muteSound || buttons.repeat(Button::b, 0);
 
 	display.setColor(Color::white, Color::black);
 	display.fill(Color::black);
@@ -199,6 +202,11 @@ void Gamebuino::begin() {
 		sound.mute();
 	}
 	sound.setVolume(settings.get(SETTING_VOLUME));
+
+	if (muteSound) {
+		settings.set(SETTING_VOLUME_MUTE, (int32_t)1);
+		sound.mute();
+	}
 	
 	// language
 	language.setCurrentLang((LangCode)settings.get(SETTING_LANGUAGE));
@@ -318,7 +326,7 @@ bool Gamebuino::update() {
 
 		buttons.update();
 		
-		metaMode.update_buttons();  // Checks for relevant buttons actions. Call this right after buttons.update() 
+		metaMode.updateButtons();  // Checks for relevant buttons actions. Call this right after buttons.update() 
 		
 		return true;
 
@@ -331,6 +339,8 @@ bool Gamebuino::update() {
 	//Home menu
 	checkHomeMenu();
 
+	metaMode.updateAnimations();  // Update metaMode's animation
+
 #if GUI_ENABLE_POPUP
 	//draw and update popups
 	gui.updatePopup();
@@ -338,7 +348,6 @@ bool Gamebuino::update() {
 	
 	sound.update(); // update sound stuff once per frame
 
-	metaMode.update_animations();  // Update metaMode's animation
 
 	//send buffer to the screen
 	updateDisplay();

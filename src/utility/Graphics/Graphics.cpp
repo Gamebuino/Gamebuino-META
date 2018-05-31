@@ -39,6 +39,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "Graphics.h"
 #include "Image.h"
 #include "../../config/config.h"
+#include "../Misc.h"
 
 // default 3x5 font table
 extern const uint8_t font3x5[];
@@ -1164,6 +1165,10 @@ void Graphics::setColor(uint8_t c) {
 
 void Graphics::setColor(uint8_t c, uint8_t bg) {
 	setColor((ColorIndex)c, (ColorIndex)bg);
+}
+
+void Graphics::setColor(uint8_t r, uint8_t g, uint8_t b) {
+	setColor((Color)rgb888Torgb565({r, g, b}));
 }
 
 void Graphics::setTransparentColor(Color c) {

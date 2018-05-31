@@ -71,8 +71,6 @@ const Color linePattern[NUMBER_OF_COLORS_LINE_PATTERN] = {  // Color of the bott
 const Color rectsPattern[4] = {  // Colors of the sliding rectangles during launch animation
     WHITE, BEIGE, ORANGE, BROWN};
 
-uint8_t currentPattern = 0;
-
 bool animRunning = false;
 int16_t animTimer = 0;
 const uint8_t animRectTimeMax = 10;  // Time per sliding rect
@@ -94,7 +92,7 @@ bool MetaMode::isActive() {
 };
 
 
-void MetaMode::update_buttons() {
+void MetaMode::updateButtons() {
 	if (gb.buttons.repeat(Button::home, 0) && gb.buttons.repeat(Button::menu, 0) && !active &&
 	    !animRunning && !unhandledAnimRunning && canActivate) {
 		loadingTimer++;
@@ -124,11 +122,10 @@ void MetaMode::update_buttons() {
 			usingHomeButton = true;
 		}
 	} else {
-		// Inverted logic : button pressed = low state = 0
-		if (usingMenuButton && (gb.buttons.buttonsData & (1 << (uint8_t)Button::menu)) != 0) {
+		if (usingMenuButton && !gb.buttons.repeat(Button::menu, 0)) {
 			usingMenuButton = false;
 		}
-		if (usingHomeButton && (gb.buttons.buttonsData & (1 << (uint8_t)Button::home)) != 0) {
+		if (usingHomeButton && !gb.buttons.repeat(Button::home, 0)) {
 			usingHomeButton = false;
 		}
 	}
@@ -149,11 +146,11 @@ void MetaMode::update_buttons() {
 	if (usingHomeButton) gb.buttons.states[(uint8_t)Button::home] = 0;
 }
 
-void MetaMode::update_animations() {
+void MetaMode::updateAnimations() {
 	// ================= Logic ======================= // 
 	uint8_t scale = gb.display.width() == 80 ? 1 : 2;  // Also handle full res games
-	const uint8_t DISP_W = 80;
-	const uint8_t DISP_H = 64;
+	static const uint8_t DISP_W = 80;
+	static const uint8_t DISP_H = 64;
 	
 	if (loadingTimer < loadingTimeMax) {
 		drawLoadingLines(loadingTimer * 100 / loadingTimeMax);
@@ -189,8 +186,8 @@ void MetaMode::update_animations() {
 
 		// Text animation //
 		// The y pos is always constant
-		const uint8_t META_y_pos = 22;
-		const uint8_t MODE_y_pos = 36;
+		static const uint8_t META_y_pos = 22;
+		static const uint8_t MODE_y_pos = 36;
 		// x pos
 		int16_t META_start_pos = -textMeta_w;
 		int16_t META_centered_pos = (DISP_W / 2 - textMeta_w / 2);
