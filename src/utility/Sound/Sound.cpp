@@ -30,9 +30,29 @@ Authors:
 
 namespace Gamebuino_Meta {
 
+#if SOUND_ENABLE_FX
+
+const Gamebuino_Meta::Sound_FX playOKFX[] = {
+  {Gamebuino_Meta::Sound_FX_Wave::SQUARE, 1, 110, -6, 11, 126, 2},
+  {Gamebuino_Meta::Sound_FX_Wave::SQUARE, 0, 150, -25, -3, 47, 3},
+};
+
+const Gamebuino_Meta::Sound_FX playCancelFX[] = {
+  {Gamebuino_Meta::Sound_FX_Wave::SQUARE, 1, 120, 3, 8, 126, 2},
+  {Gamebuino_Meta::Sound_FX_Wave::SQUARE, 0, 130, -13, 10, 169, 3},
+};
+
+const Gamebuino_Meta::Sound_FX playTickFX[] = {
+  {Gamebuino_Meta::Sound_FX_Wave::SQUARE, 0, 196, -35, -3, 142, 1},
+};
+
+#else  // SOUND_ENABLE_FX
+
 const uint16_t playOKPattern[] = {0x0005,0x138,0x168,0x0000};
 const uint16_t playCancelPattern[] = {0x0005,0x168,0x138,0x0000};
 const uint16_t playTickP[] = {0x0045,0x168,0x0000};
+
+#endif  // SOUND_ENABLE_FX
 
 uint8_t globalVolume = 6;
 bool muted = false;
@@ -251,15 +271,30 @@ void Sound::stop(int8_t i) {
 }
 
 int8_t Sound::playOK() {
+#if SOUND_ENABLE_FX
+	fx(playOKFX);
+	return -1;  // There only is one FX_Channel, and playing Sounf_fx cannot fail (the latest sound_fx is played)
+#else  // SOUND_ENABLE_FX
 	return play(playOKPattern);
+#endif  // SOUND_ENABLE_FX
 }
 
 int8_t Sound::playCancel() {
+#if SOUND_ENABLE_FX
+	fx(playCancelFX);
+	return -1;  // There only is one FX_Channel, and playing Sounf_fx cannot fail (the latest sound_fx is played)
+#else  // SOUND_ENABLE_FX
 	return play(playCancelPattern);
+#endif  // SOUND_ENABLE_FX
 }
 
 int8_t Sound::playTick() {
+#if SOUND_ENABLE_FX
+	fx(playTickFX);
+	return -1;  // There only is one FX_Channel, and playing Sounf_fx cannot fail (the latest sound_fx is played)
+#else  // SOUND_ENABLE_FX
 	return play(playTickP);
+#endif  // SOUND_ENABLE_FX
 }
 
 bool efx_only = false;

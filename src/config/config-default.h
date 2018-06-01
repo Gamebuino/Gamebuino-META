@@ -64,6 +64,10 @@
 #define SOUND_BUFFERSIZE (2048 * SOUND_FREQ / 44100)
 #endif
 
+#ifndef SOUND_ENABLE_FX
+#define SOUND_ENABLE_FX 1
+#endif
+
 ///////////////
 // image defines
 ///////////////

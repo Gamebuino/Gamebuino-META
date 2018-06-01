@@ -670,7 +670,7 @@ void Gamebuino::homeMenu(){
 				}
 				
 				if (changed) {
-					sound.playTick();
+					sound.playOK();
 				}
 				break;
 #if !HOME_MENU_NO_EXIT
