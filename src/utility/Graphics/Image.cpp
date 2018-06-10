@@ -290,11 +290,11 @@ Image::~Image() {
 	if (isObjectCopy) {
 		return;
 	}
-	delete frame_handler;
 	if (_buffer && (uint32_t)_buffer >= 0x20000000) {
 		free(_buffer);
 		_buffer = 0;
 	}
+	delete frame_handler;
 }
 
 void Image::drawFastHLine(int16_t x, int16_t y, int16_t w) {

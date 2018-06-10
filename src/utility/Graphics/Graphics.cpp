@@ -563,6 +563,37 @@ void Graphics::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
 	}
 }
 
+void Graphics::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, int8_t scale) {
+	if (scale == 1) {
+		drawBitmap(x, y, bitmap);
+	}
+	uint8_t w = *(bitmap++);
+	uint8_t h = *(bitmap++);
+	
+	uint8_t byteWidth = (w + 7) / 8;
+	uint8_t _x = x;
+	uint8_t dw = 8 - (w%8);
+	for (uint8_t j = 0; j < h; j++) {
+		x = _x;
+		for (uint8_t i = 0; i < byteWidth;) {
+			uint8_t b = *(bitmap++);
+			i++;
+			for (uint8_t k = 0; k < 8; k++) {
+				if (i == byteWidth && k == dw) {
+					x += (w%8)*scale;
+					break;
+				}
+				if (b&0x80) {
+					fillRect(x, y, scale, scale);
+				}
+				b <<= 1;
+				x += scale;
+			}
+		}
+		y += scale;
+	}
+}
+
 void Graphics::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 	uint8_t rotation, uint8_t flip) {
 	if ((rotation == NOROT) && (flip == NOFLIP)) {

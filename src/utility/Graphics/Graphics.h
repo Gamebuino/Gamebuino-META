@@ -123,6 +123,7 @@ public:
 	};
 	void drawImageCrop(int16_t x, int16_t y, int16_t w1, int16_t i2offset, int16_t w2cropped, int16_t j2offset, int16_t h2cropped, Image& img);
 	virtual void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap);
+	virtual void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, int8_t scale);
 	virtual void drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, uint8_t rotation, uint8_t flip);
 
 	// These exist only with Graphics (no subclass overrides)

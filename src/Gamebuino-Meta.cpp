@@ -107,6 +107,21 @@ const uint8_t homeIcons[] = {80,12,
 	0b00000001,0b00000000,0b00000000,0b00000000,0b00000000,0b11000000,0b00000000,0b00000000,0b00000000,0b00000000,
 };
 
+const uint8_t homeIconsNoExit[] = {64,12,
+	0b00000000,0b10000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00011101,0b11000000,
+	0b00001000,0b10000000,0b00000001,0b00000000,0b00001110,0b00000000,0b00111111,0b11100000,
+	0b00000100,0b00001000,0b00000011,0b00010000,0b00011111,0b11111000,0b00110111,0b01100000,
+	0b00000001,0b10010000,0b00000111,0b00001000,0b00100011,0b11000100,0b00111111,0b11100000,
+	0b00000011,0b11000000,0b00111111,0b01000100,0b00100100,0b00100100,0b00011101,0b11001100,
+	0b00110111,0b11100000,0b00111111,0b00100100,0b00111000,0b00011100,0b00100000,0b00110100,
+	0b00000111,0b11101100,0b00111111,0b00100100,0b00111001,0b00011100,0b00100000,0b00100100,
+	0b00000011,0b11000000,0b00111111,0b01000100,0b00111000,0b00011100,0b00100000,0b00100100,
+	0b00001001,0b10000000,0b00000111,0b00001000,0b00111000,0b00011100,0b00100000,0b00110100,
+	0b00010000,0b00100000,0b00000011,0b00010000,0b00111100,0b00111100,0b00100000,0b00101100,
+	0b00000001,0b00010000,0b00000001,0b00000000,0b00011111,0b11111000,0b00011111,0b11000000,
+	0b00000001,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
+};
+
 const uint8_t volumeUnmuted[] = {8,12,
 	0b00000000,
 	0b00000000,
@@ -511,16 +526,16 @@ void Gamebuino::homeMenu(){
 	HOME_MENU_SAVE_STATE;
 
 #if HOME_MENU_NO_EXIT
-	const int8_t numItems = 4;
-	const int8_t xOffset = 16;
+	static const int8_t numItems = 4;
+	static const int8_t xOffset = 16;
 #else // HOME_MENU_NO_EXIT
-	const int8_t numItems = 5;
-	const int8_t xOffset = 0;
+	static const int8_t numItems = 5;
+	static const int8_t xOffset = 0;
 #endif // HOME_MENU_NO_EXIT
 	int8_t currentItem = 2; //default on center item
 	unsigned long lastMillis = 0;
 	//3 text lines vertical coordinates
-	const int yOffset = 52;
+	static const int yOffset = 52;
 	bool changed = true;
 	int frameCounter = 0;
 	
@@ -536,17 +551,10 @@ void Gamebuino::homeMenu(){
 		tft.setColor(DARKGRAY);
 		tft.fillRect(0, yOffset, 160, 32);
 		tft.setColor(WHITE);
-		Image icons(80, 12, ColorMode::index);
-		icons.fill(DARKGRAY);
-		icons.setColor(WHITE);
-		icons.drawBitmap(0, 0, homeIcons);
 #if HOME_MENU_NO_EXIT
-		icons.drawImage(32, 0, icons, 48, 0, 32, 16);
-		icons.setColor(DARKGRAY);
-		icons.fillRect(64, 0, 16, 16);
-		tft.drawImage(xOffset, yOffset + 4, icons, 80*2, 12*2);
+	tft.drawBitmap(xOffset, yOffset + 4, homeIconsNoExit, 2);
 #else // HOME_MENU_NO_EXIT
-		tft.drawImage(0, yOffset + 4, icons, 80*2, 12*2);
+	tft.drawBitmap(xOffset, yOffset + 4, homeIcons, 2);
 #endif // HOME_MENU_NO_EXIT
 		//erase soundwaves if muted
 		if (!sound.getVolume() || sound.isMute()) {
@@ -558,7 +566,8 @@ void Gamebuino::homeMenu(){
 	//logo
 	tft.setColor(BLACK);
 	tft.fillRect(0, 0, 160, 28);
-	drawLogo(tft, 2, 1, 2);
+	tft.setColor(WHITE);
+	tft.drawBitmap(0, 4, gamebuinoLogo, 2);
 
 	//horizontal stripes top
 	tft.setColor(DARKGRAY);
@@ -785,12 +794,8 @@ void Gamebuino::homeMenu(){
 			////VOLUME
 			if (currentItem == 1) {
 				if (sound.getVolume() && !sound.isMute()) {
-					Image volume(8, 12, ColorMode::index);
-					volume.clear();
-					volume.fill(DARKGRAY);
-					volume.setColor(WHITE);
-					volume.drawBitmap(0, 0, volumeUnmuted);
-					tft.drawImage(48 + xOffset, yOffset + 4, volume, 8*2, 12*2);
+					tft.setColor(WHITE);
+					tft.drawBitmap(48 + xOffset, yOffset + 4, volumeUnmuted, 2);
 				} else { //erase waveform if muted
 					tft.setColor(DARKGRAY);
 					tft.fillRect(50 + xOffset, yOffset + 8, 10, 16);
