@@ -28,48 +28,48 @@ namespace Gamebuino_Meta {
 const uint8_t textMeta_w = 51;
 const uint8_t textMeta_h = 15;
 const uint8_t textMeta[] = {
-    textMeta_w, textMeta_h, 
-    0b11111111,0b11111110,0b00111111,0b11100011,0b11111110,0b00111111,0b11100000,
-    0b11111111,0b11111110,0b00111111,0b11100011,0b11111110,0b00111111,0b11100000,
-    0b11111111,0b11111110,0b00111111,0b11100011,0b11111110,0b00111111,0b11100000,
-    0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
-    0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
-    0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
-    0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111111,0b11100000,
-    0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111111,0b11100000,
-    0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111111,0b11100000,
-    0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
-    0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
-    0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
-    0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111000,0b11100000,
-    0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111000,0b11100000,
-    0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111000,0b11100000,
+	textMeta_w, textMeta_h, 
+	0b11111111,0b11111110,0b00111111,0b11100011,0b11111110,0b00111111,0b11100000,
+	0b11111111,0b11111110,0b00111111,0b11100011,0b11111110,0b00111111,0b11100000,
+	0b11111111,0b11111110,0b00111111,0b11100011,0b11111110,0b00111111,0b11100000,
+	0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
+	0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
+	0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
+	0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111111,0b11100000,
+	0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111111,0b11100000,
+	0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111111,0b11100000,
+	0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
+	0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
+	0b11100011,0b10001110,0b00111000,0b00000000,0b01110000,0b00111000,0b11100000,
+	0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111000,0b11100000,
+	0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111000,0b11100000,
+	0b11100011,0b10001110,0b00111111,0b11100000,0b01110000,0b00111000,0b11100000,
 };
 
 const uint8_t textMode_w = 36;
 const uint8_t textMode_h = 12;
 const uint8_t textMode[] = {
-    textMode_w, textMode_h,
-    0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
-    0b01111111,0b11100111,0b11100111,0b10000111,0b11100000,
-    0b01111111,0b11100111,0b11100111,0b10000111,0b11100000,
-    0b01100110,0b01100110,0b01100110,0b01100110,0b00000000,
-    0b01100110,0b01100110,0b01100110,0b01100110,0b00000000,
-    0b01100110,0b01100110,0b01100110,0b01100111,0b11100000,
-    0b01100110,0b01100110,0b01100110,0b01100111,0b11100000,
-    0b01100110,0b01100110,0b01100110,0b01100110,0b00000000,
-    0b01100110,0b01100110,0b01100110,0b01100110,0b00000000,
-    0b01100110,0b01100111,0b11100111,0b10000111,0b11100000,
-    0b01100110,0b01100111,0b11100111,0b10000111,0b11100000,
-    0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
+	textMode_w, textMode_h,
+	0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
+	0b01111111,0b11100111,0b11100111,0b10000111,0b11100000,
+	0b01111111,0b11100111,0b11100111,0b10000111,0b11100000,
+	0b01100110,0b01100110,0b01100110,0b01100110,0b00000000,
+	0b01100110,0b01100110,0b01100110,0b01100110,0b00000000,
+	0b01100110,0b01100110,0b01100110,0b01100111,0b11100000,
+	0b01100110,0b01100110,0b01100110,0b01100111,0b11100000,
+	0b01100110,0b01100110,0b01100110,0b01100110,0b00000000,
+	0b01100110,0b01100110,0b01100110,0b01100110,0b00000000,
+	0b01100110,0b01100111,0b11100111,0b10000111,0b11100000,
+	0b01100110,0b01100111,0b11100111,0b10000111,0b11100000,
+	0b00000000,0b00000000,0b00000000,0b00000000,0b00000000,
 };
 
 const uint8_t NUMBER_OF_COLORS_LINE_PATTERN = 8;
 const Color linePattern[NUMBER_OF_COLORS_LINE_PATTERN] = {  // Color of the bottom and top bars
-    WHITE, WHITE, WHITE, WHITE, ORANGE, ORANGE, ORANGE, ORANGE};
+	WHITE, WHITE, WHITE, WHITE, ORANGE, ORANGE, ORANGE, ORANGE};
 
 const Color rectsPattern[4] = {  // Colors of the sliding rectangles during launch animation
-    WHITE, BEIGE, ORANGE, BROWN};
+	WHITE, BEIGE, ORANGE, BROWN};
 
 bool animRunning = false;
 int16_t animTimer = 0;
@@ -94,7 +94,7 @@ bool MetaMode::isActive() {
 
 void MetaMode::updateButtons() {
 	if (gb.buttons.repeat(Button::home, 0) && gb.buttons.repeat(Button::menu, 0) && !active &&
-	    !animRunning && !unhandledAnimRunning && canActivate) {
+		!animRunning && !unhandledAnimRunning && canActivate) {
 		loadingTimer++;
 		
 		if (loadingTimer == loadingTimeMax) {  // Once we fully loaded: launch animation, reset timer, and activate metaMode
@@ -110,7 +110,7 @@ void MetaMode::updateButtons() {
 			usingHomeButton = true;
 		}
 	} else if (gb.buttons.repeat(Button::home, 0) && gb.buttons.repeat(Button::menu, 0) &&
-	           canDeactivate) {
+			   canDeactivate) {
 		loadingTimer--;           // De-load (like loading, but backwards)
 
 		if (loadingTimer == 0) {  // Once fully de-loaded, deactivate MetaMode
@@ -132,7 +132,7 @@ void MetaMode::updateButtons() {
 	if (!usingMenuButton || !usingHomeButton) {
 		canActivate = true;
 		if (!active && !animRunning &&
-		    !unhandledAnimRunning)  // If the user lets go while loading
+			!unhandledAnimRunning)  // If the user lets go while loading
 			loadingTimer = 0;
 		else if (canDeactivate)  // If the user lets go while de-loading
 			loadingTimer = loadingTimeMax;
@@ -158,7 +158,7 @@ void MetaMode::updateAnimations() {
 		drawLoadingLines(100);  // 100%
 	} else if (unhandledAnimRunning) {
 		drawLoadingLines((unhandledAnimTimeMax - unhandledAnimTimer) * 100 /
-		                 unhandledAnimTimeMax);
+						 unhandledAnimTimeMax);
 		unhandledAnimTimer++;
 		if (unhandledAnimTimer >= unhandledAnimTimeMax) {
 			unhandledAnimRunning = false;
@@ -177,11 +177,11 @@ void MetaMode::updateAnimations() {
 			gb.display.setColor(rectsPattern[i]);
 			int16_t rect_h = animH_start - animPercentage * (animH_start - animH_end) / 100;
 			gb.display.fillRect(
-			    0, (DISP_H / 2 + (animPercentage * DISP_H / 200)) * scale,
-			    DISP_W * scale, rect_h * scale);
+				0, (DISP_H / 2 + (animPercentage * DISP_H / 200)) * scale,
+				DISP_W * scale, rect_h * scale);
 			gb.display.fillRect(
-			    0, (DISP_H / 2 - (animPercentage * DISP_H / 200) - rect_h) * scale,
-			    DISP_W * scale, rect_h * scale);
+				0, (DISP_H / 2 - (animPercentage * DISP_H / 200) - rect_h) * scale,
+				DISP_W * scale, rect_h * scale);
 		}
 
 		// Text animation //
@@ -201,28 +201,28 @@ void MetaMode::updateAnimations() {
 		// 15 fixed (10 for "MODE"), 8 to slide out (both words leave at the same time)
 		if (animTimer < 5) {  // "META" slides in
 			drawTextMeta((META_start_pos + animTimer * (META_centered_pos - META_start_pos) / 10) * scale,
-			             META_y_pos * scale);
+						 META_y_pos * scale);
 		} else if (animTimer < 10) {  // "META" and "MODE" slide in
 			drawTextMeta((META_start_pos + animTimer * (META_centered_pos - META_start_pos) / 10) * scale,
-			             META_y_pos * scale);
+						 META_y_pos * scale);
 			drawTextMode(
-			    (MODE_start_pos - (animTimer - 5) * (MODE_start_pos - MODE_centered_pos) / 10) * scale,
-			    MODE_y_pos * scale);
+				(MODE_start_pos - (animTimer - 5) * (MODE_start_pos - MODE_centered_pos) / 10) * scale,
+				MODE_y_pos * scale);
 		} else if (animTimer < 15) {  // "MODE" slides in "META" fixed
 			drawTextMeta(META_centered_pos * scale, META_y_pos * scale);
 			drawTextMode(
-			    (MODE_start_pos - (animTimer - 5) * (MODE_start_pos - MODE_centered_pos) / 10) * scale,
-			    MODE_y_pos * scale);
+				(MODE_start_pos - (animTimer - 5) * (MODE_start_pos - MODE_centered_pos) / 10) * scale,
+				MODE_y_pos * scale);
 		} else if (animTimer < 30) {  // "META" and "MODE" fixed
 			drawTextMeta(META_centered_pos * scale, META_y_pos * scale);
 			drawTextMode(MODE_centered_pos * scale, MODE_y_pos * scale);
 		} else if (animTimer < 38) {  // "META" and "MODE" slide out
 			drawTextMeta(
-			    (META_centered_pos + (animTimer - 30) * (META_finish_pos - META_centered_pos) / 8) * scale,
-			    META_y_pos * scale);
+				(META_centered_pos + (animTimer - 30) * (META_finish_pos - META_centered_pos) / 8) * scale,
+				META_y_pos * scale);
 			drawTextMode(
-			    (MODE_centered_pos - (animTimer - 30) * (MODE_centered_pos - MODE_finish_pos) / 8) * scale,
-			    MODE_y_pos * scale);
+				(MODE_centered_pos - (animTimer - 30) * (MODE_centered_pos - MODE_finish_pos) / 8) * scale,
+				MODE_y_pos * scale);
 		} else {  // End of animation. Also activate MetaMode and allow the Gamebuino menu to be opened once again
 			animRunning = false;
 			active = true;
@@ -239,35 +239,38 @@ void MetaMode::drawLoadingLines(uint8_t percentage) {
 
 	for (char x = 0; x < lineW; x++) {
 		gb.display.drawPixel(
-		    xOffset + x, 0,
-		    linePattern[(x + colorOffset) % NUMBER_OF_COLORS_LINE_PATTERN]);  // Top line
+			xOffset + x, 0,
+			linePattern[(x + colorOffset) % NUMBER_OF_COLORS_LINE_PATTERN]);  // Top line
 		gb.display.drawPixel(
-		    xOffset + x, gb.display.height() - 1,
-		    linePattern[(x + colorOffset) % NUMBER_OF_COLORS_LINE_PATTERN]);  // Bottom line
+			xOffset + x, gb.display.height() - 1,
+			linePattern[(x + colorOffset) % NUMBER_OF_COLORS_LINE_PATTERN]);  // Bottom line
 	}
 }
 
 void MetaMode::drawTextMeta(int16_t x, int16_t y) {
-	Image text(textMeta_w + 1, textMeta_h + 1, ColorMode::index);
-	text.setColor(ColorIndex::brown);
-	text.drawBitmap(1, 1, textMeta);
-	text.setColor(ColorIndex::white);
-	text.drawBitmap(0, 0, textMeta);
-	if (gb.display.width() == 80)
-		gb.display.drawImage(x, y, text);
-	else
-		gb.display.drawImage(x, y, text, text.width() * 2, text.height() * 2);
+	uint8_t scale = 1;
+	if (gb.display.width() != 80) {
+		x *= 2;
+		y *= 2;
+		scale *= 2;
+	}
+	gb.display.setColor(ColorIndex::brown);
+	gb.display.drawBitmap(x+scale, y+scale, textMeta, scale);
+	gb.display.setColor(ColorIndex::white);
+	gb.display.drawBitmap(x, y, textMeta, scale);
 }
 
 void MetaMode::drawTextMode(int16_t x, int16_t y) {
-	Image text(textMode_w, textMode_h, ColorMode::index);
-	text.fill(ColorIndex::darkgray);
-	text.setColor(ColorIndex::white);
-	text.drawBitmap(0, 0, textMode);
-	if (gb.display.width() == 80)
-		gb.display.drawImage(x, y, text);
-	else
-		gb.display.drawImage(x, y, text, text.width() * 2, text.height() * 2);
+	uint8_t scale = 1;
+	if (gb.display.width() != 80) {
+		x *= 2;
+		y *= 2;
+		scale *= 2;
+	}
+	gb.display.setColor(ColorIndex::darkgray);
+	gb.display.fillRect(x, y, textMode_w*scale, textMode_h*scale);
+	gb.display.setColor(ColorIndex::white);
+	gb.display.drawBitmap(x, y, textMode, scale);
 }
 
 };  // Namespace Gamebuino_Meta

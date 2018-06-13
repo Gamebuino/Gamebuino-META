@@ -64,6 +64,7 @@ public:
 class Image : public Graphics {
 public:
 	using Graphics::drawImage;
+	using Graphics::drawBitmap;
 	Image();
 	~Image();
 	Image(const Image&);
