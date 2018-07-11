@@ -17,6 +17,7 @@ License (LGPL) along with the library.
 If not, see <http://www.gnu.org/licenses/>.
 
 Authors:
+ - Julien Giovinazzo
  - Sorunome
 */
 
