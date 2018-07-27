@@ -206,9 +206,9 @@ void Gamebuino::begin() {
 	}
 	SD.chdir(folder_name);
 	
-	save = Save(&tft, SAVEFILE_NAME, folder_name);
+	save = Save(SAVEFILE_NAME, folder_name);
 	
-	settings = Save(&tft, "/SETTINGS.SAV", "GBMS");
+	settings = Save("/SETTINGS.SAV", "GBMS");
 	settings.config(SETTINGSCONF_NUM_BLOCKS, settingsDefaults);
 	
 	//sound

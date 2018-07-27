@@ -21,6 +21,7 @@ Authors:
 */
 
 #include "Save.h"
+#include <Gamebuino-Meta.h>
 
 namespace Gamebuino_Meta {
 
@@ -29,8 +30,7 @@ namespace Gamebuino_Meta {
 
 #define MIN(x, y) ((x < y) ? x : y)
 
-Save::Save(Display_ST7735 *_tft, const char* _savefile, const char* _checkbytes) {
-	tft = _tft;
+Save::Save(const char* _savefile, const char* _checkbytes) {
 	savefile = _savefile;
 	checkbytes = _checkbytes;
 	
@@ -50,11 +50,11 @@ void Save::config(uint16_t _blocks, const SaveDefault* _defaults, uint16_t _num_
 }
 
 void Save::error(const char *s) {
-	tft->setCursor(0, 0);
-	tft->setColor(Color::red, Color::black);
-	tft->print("SAVE ERROR ");
-	tft->setColor(Color::white, Color::black);
-	tft->print(s);
+	gb.tft.setCursor(0, 0);
+	gb.tft.setColor(Color::red, Color::black);
+	gb.tft.print("SAVE ERROR ");
+	gb.tft.setColor(Color::white, Color::black);
+	gb.tft.print(s);
 	while(1);
 }
 

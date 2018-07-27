@@ -53,7 +53,7 @@ struct SaveDefault {
 class Save {
 public:
 	Save(){};
-	Save(Display_ST7735 *_tft, const char* _savefile, const char* _checkbytes);
+	Save(const char* _savefile, const char* _checkbytes);
 	void config(const SaveDefault* _defaults, uint16_t _num_defaults);
 	void config(uint16_t _blocks, const SaveDefault* _defaults, uint16_t _num_defaults);
 	template<uint16_t N>
@@ -85,7 +85,6 @@ public:
 	};
 	void del(uint16_t i);
 private:
-	Display_ST7735 *tft;
 	File f;
 	bool open = false;
 	bool readOnly = false;
