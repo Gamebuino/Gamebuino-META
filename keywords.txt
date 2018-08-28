@@ -1,21 +1,19 @@
-/*
- * (C) Copyright 2014 Aurélien Rodot. All rights reserved.
- *
- * This file is part of the Gamebuino Library (http://gamebuino.com)
- *
- * The Gamebuino Library is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>
- */
+# (C) Copyright 2014 Aurélien Rodot. All rights reserved.
+#
+# This file is part of the Gamebuino Library (http://gamebuino.com)
+#
+# The Gamebuino Library is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 gb	KEYWORD3
 display	KEYWORD1
@@ -27,7 +25,7 @@ save	KEYWORD1
 language	KEYWORD1
 gui	KEYWORD1
 
-////////////////////////core
+########################core
 begin	KEYWORD1
 update	KEYWORD1
 frameCount	KEYWORD1
@@ -39,7 +37,7 @@ pickRandomSeed	KEYWORD1
 getCpuLoad	KEYWORD1
 getfreeRam	KEYWORD1
 
-////////////////////////buttons
+########################buttons
 pressed	KEYWORD1
 released	KEYWORD1
 held	KEYWORD1
@@ -54,7 +52,7 @@ BUTTON_RIGHT	LITERAL1
 BUTTON_DOWN	LITERAL1
 BUTTON_LEFT	LITERAL1
 
-////////////////////////sound
+########################sound
 play	KEYWORD1
 tone	KEYWORD1
 playOK	KEYWORD1
@@ -63,8 +61,8 @@ playTick	KEYWORD1
 isPlaying	KEYWORD1
 stop	KEYWORD1
 
-////////////////////////Display
-//general
+########################Display
+#general
 drawImage	KEYWORD1
 drawBitmap	KEYWORD1
 drawPixel	KEYWORD1
@@ -80,7 +78,7 @@ getBitmapPixel	KEYWORD1
 height	KEYWORD1
 width	KEYWORD1
 
-//text
+#text
 print	KEYWORD1
 println	KEYWORD1
 printf	KEYWORD1
@@ -97,7 +95,7 @@ getCursorY	KEYWORD1
 getFontWidth	KEYWORD1
 getFontHeight	KEYWORD1
 
-//shapes
+#shapes
 drawLine	KEYWORD1
 drawFastVLine	KEYWORD1
 drawFastHLine	KEYWORD1
@@ -110,7 +108,7 @@ fillTriangle	KEYWORD1
 drawRoundRect	KEYWORD1
 fillRoundRect	KEYWORD1
 
-//colors
+#colors
 WHITE	LITERAL1
 GRAY	LITERAL1
 DARKGRAY	LITERAL1
@@ -128,7 +126,7 @@ DARKBLUE	LITERAL1
 BLUE	LITERAL1
 LIGHTBLUE	LITERAL1
 
-//gui
+#gui
 keyboard	KEYWORD1
 menu	KEYWORD1
 popup	KEYWORD1
