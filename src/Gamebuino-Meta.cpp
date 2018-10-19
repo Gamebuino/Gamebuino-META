@@ -398,7 +398,7 @@ bool Gamebuino::update() {
 }
 
 void Gamebuino::updateDisplay() {
-	tft.drawImage(0, 0, display, tft.width(), tft.height()); //send the buffer to the screen
+	tft.drawImage(0, 0, (Image&)display, tft.width(), tft.height()); //send the buffer to the screen
 }
 
 void Gamebuino::setFrameRate(uint8_t fps) {
