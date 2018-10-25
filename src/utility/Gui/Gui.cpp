@@ -314,7 +314,6 @@ uint8_t Gui::menu(const char* title, const char** items, uint8_t length, uint8_t
 		gb.display.init(80, 64, ColorMode::rgb565);
 	}
 	uint8_t fontSizeBak = gb.display.fontSize;
-	gb.display.setFontSize(1);
 	
 	uint8_t cursor = 0;
 	int32_t cameraY = 0;
@@ -323,6 +322,7 @@ uint8_t Gui::menu(const char* title, const char** items, uint8_t length, uint8_t
 	while(1) {
 		while(!gb.update());
 		gb.display.clear();
+		gb.display.setFontSize(1);
 		
 		cameraY_actual = (cameraY_actual + cameraY) / 2;
 		if (cameraY_actual - cameraY == 1) {
