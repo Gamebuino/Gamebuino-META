@@ -24,6 +24,7 @@ Authors:
 #define _GAMEBUINO_META_TONE_H_
 
 #include "Sound.h"
+#include "../../config/config.h"
 
 namespace Gamebuino_Meta {
 

@@ -23,7 +23,6 @@ Authors:
 #ifndef _GAMEBUINO_META_METAMODE_H_
 #define _GAMEBUINO_META_METAMODE_H_
 
-#include <Arduino.h>
 #include "../../config/config.h"
 #include "../Language.h"
 

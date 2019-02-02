@@ -24,7 +24,7 @@ Authors:
 #ifndef _GAMEBUINO_META_IMAGE_h
 #define _GAMEBUINO_META_IMAGE_h
 
-#include <Arduino.h>
+#include "../../config/config.h"
 #include "Graphics.h"
 
 namespace Gamebuino_Meta {

@@ -23,22 +23,35 @@ Authors:
 
 #include "Buttons.h"
 
+#if CUSTOM_BUTTON_FUNCTIONS
+extern "C" {
+void gamebuino_meta_buttons_init(void);
+uint8_t gamebuino_meta_buttons_update(void);
+}
+#else
 #include <SPI.h>
+#endif
 
 namespace Gamebuino_Meta {
 
 
 void Buttons::begin() {
+#if CUSTOM_BUTTON_FUNCTIONS
+	gamebuino_meta_buttons_init();
+#else // CUSTOM_BUTTON_FUNCTIONS
 	SPI.begin();
 	pinMode(BTN_CS, OUTPUT);
 	digitalWrite(BTN_CS, HIGH);
+#endif // CUSTOM_BUTTON_FUNCTIONS
 }
 
 /*
  * reads each button states and store it
  */
 void Buttons::update() {
-	
+#if CUSTOM_BUTTON_FUNCTIONS
+	uint8_t buttonsData = gamebuino_meta_buttons_update();
+#else // CUSTOM_BUTTON_FUNCTIONS
 	//start SPI
 	SPI.beginTransaction(SPISettings(12000000, MSBFIRST, SPI_MODE0));
 	digitalWrite(BTN_CS, LOW);
@@ -49,6 +62,7 @@ void Buttons::update() {
 	//end SPI
 	digitalWrite(BTN_CS, HIGH);
 	SPI.endTransaction();
+#endif // CUSTOM_BUTTON_FUNCTIONS
 	//Print raw data to native USB
 	//SerialUSB.println(buttonsData,BIN);
   

@@ -25,7 +25,10 @@ Authors:
 #define CONERT_MASK 0xFF000000
 #define CONVERT_MAGIC 0xA1000000
 
-#include <Gamebuino-Meta.h>
+#if USE_SDFAT
+#include "../SdFat.h"
+extern SdFat SD;
+#endif
 
 namespace Gamebuino_Meta {
 
@@ -39,6 +42,7 @@ GMV::GMV(Image* _img) {
 
 GMV::GMV(Image* _img, char* filename) {
 	valid = false;
+#if USE_SDFAT
 	img = _img;
 	img->frames = 1;
 	file = SD.open(filename, FILE_WRITE);
@@ -127,6 +131,7 @@ GMV::GMV(Image* _img, char* filename) {
 	}
 	
 	valid = true;
+#endif // USE_SDFAT
 }
 
 bool GMV::isValid() {
@@ -138,6 +143,7 @@ bool GMV::is(Image* _img) {
 }
 
 bool GMV::initSave(char* filename) {
+#if USE_SDFAT
 	// make sure our file ends in .GMV
 	uint16_t name_len = strlen(filename);
 	char _filename[name_len + 1];
@@ -157,9 +163,13 @@ bool GMV::initSave(char* filename) {
 	}
 	writeHeader();
 	return true;
+#else // USE_SDFAT
+	return false;
+#endif
 }
 
 void GMV::convertFromBMP(BMP& bmp, char* newname) {
+#if USE_SDFAT
 	img->allocateBuffer();
 	if (SD.exists(newname) && !SD.remove(newname)) {
 		return;
@@ -202,16 +212,22 @@ void GMV::convertFromBMP(BMP& bmp, char* newname) {
 	}
 	bmp.setCreatorBits(CONVERT_MAGIC, &file);
 	f.close();
+#endif // USE_SDFAT
 }
 
 void GMV::writeHeader() {
+#if USE_SDFAT
 	writeHeader(&file);
+#endif // USE_SDFAT
 }
 
 void GMV::writeFrame() {
+#if USE_SDFAT
 	writeFrame(&file);
+#endif // USE_SDFAT
 }
 
+#if USE_SDFAT
 void GMV::writeColor(File* f, uint16_t color, uint8_t count) {
 	if (count > 1) {
 		count |= 0x80;
@@ -231,7 +247,9 @@ void GMV::writeColor(File* f, uint16_t color, uint8_t count) {
 	f->write(0x80);
 	f_write16(color, f);
 }
+#endif // USE_SDFAT
 
+#if USE_SDFAT
 void GMV::writeHeader(File* f) {
 	f->rewind();
 	f_write16(0x5647, f); // header "GV"
@@ -255,7 +273,9 @@ void GMV::writeHeader(File* f) {
 	f->flush();
 	f->seekSet(header_size);
 }
+#endif // USE_SDFAT
 
+#if USE_SDFAT
 void GMV::writeFrame(File* f) {
 	if (img->colorMode == ColorMode::index) {
 		uint8_t* buf = (uint8_t*)img->_buffer;
@@ -294,8 +314,10 @@ void GMV::writeFrame(File* f) {
 		writeColor(f, color, count);
 	}
 }
+#endif // USE_SDFAT
 
 void GMV::readFrame() {
+#if USE_SDFAT
 	if (img->colorMode == ColorMode::index) {
 		uint8_t* buf = (uint8_t*)img->_buffer;
 		uint16_t bytes = img->getBufferSize();
@@ -369,9 +391,11 @@ void GMV::readFrame() {
 			}
 		} while (pixels_current < pixels);
 	}
+#endif // USE_SDFAT
 }
 
 void GMV::setFrame(uint16_t frame) {
+#if USE_SDFAT
 	file.seekSet(header_size);
 	if (!frame) {
 		return;
@@ -379,9 +403,11 @@ void GMV::setFrame(uint16_t frame) {
 	for (uint16_t f = 0; f < frame; f++) {
 		readFrame(); // unfortunatelly we don't have a better way
 	}
+#endif // USE_SDFAT
 }
 
 void GMV::finishSave(char* filename, uint16_t frames, bool output, Display_ST7735* tft) {
+#if USE_SDFAT
 	if(output){
 		tft->setColor(Color::brown);
 		tft->drawRect(0, 0, tft->width(), tft->height());
@@ -463,6 +489,7 @@ void GMV::finishSave(char* filename, uint16_t frames, bool output, Display_ST773
 	bmp.setCreatorBits(CONVERT_MAGIC, &f); // ok we know that we have the GMV so why not?
 	f.close();
 	file.close();
+#endif // USE_SDFAT
 }
 
 }

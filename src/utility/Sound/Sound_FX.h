@@ -24,8 +24,15 @@ Authors:
 #define	_GAMEBUINO_META_SOUND_FX_H_
 
 #include "Sound.h"
-#include <cstdint>
 #include "../../config/config.h"
+
+#ifndef max
+#define max(a,b) ((a)>(b)?(a):(b))
+#endif
+
+#ifndef min
+#define min(x,y) ((x)<(y)?(x):(y))
+#endif
 
 namespace Gamebuino_Meta {
 

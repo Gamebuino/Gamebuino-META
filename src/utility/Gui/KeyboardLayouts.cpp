@@ -22,7 +22,7 @@ Authors:
 
 // This file is ISO-8859-1 encoded, or anything compatible, such as Windows-1252
 
-#include <Arduino.h>
+#include "../../config/config.h"
 
 namespace Gamebuino_Meta {
 

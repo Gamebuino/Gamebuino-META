@@ -25,6 +25,14 @@ Authors:
 #include "../Graphics-SD.h"
 #include "../../Gamebuino-Meta.h"
 
+#ifndef max
+#define max(a,b) ((a)>(b)?(a):(b))
+#endif
+
+#ifndef min
+#define min(x, y) ((x < y) ? x : y)
+#endif
+
 namespace Gamebuino_Meta {
 
 Frame_Handler::Frame_Handler(Image* _img) {
@@ -55,9 +63,9 @@ void Frame_Handler::allocateBuffer() {
 		return;
 	}
 	if (buf && (uint32_t)buf >= 0x20000000) {
-		free(buf);
+		gb_free(buf);
 	}
-	if ((buf = (uint16_t *)malloc(bytes))) {
+	if ((buf = (uint16_t *)gb_malloc(bytes))) {
 		memset(buf, 0, bytes);
 		bufferSize = bytes;
 	} else {
@@ -180,7 +188,7 @@ void Image::init(const uint16_t* buffer) {
 	}
 	bufferSize = 0;
 	if (_buffer && (uint32_t)_buffer >= 0x20000000) {
-		free(_buffer);
+		gb_free(_buffer);
 	}
 	uint16_t* buf = (uint16_t*)buffer;
 	_width = *(buf++);
@@ -219,7 +227,7 @@ void Image::init(const uint8_t* buffer) {
 		delete frame_handler;
 	}
 	if (bufferSize && _buffer && (uint32_t)_buffer >= 0x20000000) {
-		free(_buffer);
+		gb_free(_buffer);
 	}
 	
 	uint8_t* buf = (uint8_t*)buffer;
@@ -291,7 +299,7 @@ Image::~Image() {
 		return;
 	}
 	if (_buffer && (uint32_t)_buffer >= 0x20000000) {
-		free(_buffer);
+		gb_free(_buffer);
 		_buffer = 0;
 	}
 	delete frame_handler;
@@ -541,16 +549,16 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w,
 	for (uint8_t i = 0; i < w; i++) {
 		if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 		uint16_t color1 = buffer[i];
-		r1[i] = color1 & B11111;
-		g1[i] = (color1 >> 5) & B111111;
-		b1[i] = (color1 >> 11) & B11111;
+		r1[i] = color1 & 0b11111;
+		g1[i] = (color1 >> 5) & 0b111111;
+		b1[i] = (color1 >> 11) & 0b11111;
 	}
 
 	//Buffer tinting
 	if (tint != 0xFFFF) {
-		int8_t tintR = tint & B11111;
-		int8_t tintG = (tint >> 5) & B111111;
-		int8_t tintB = (tint >> 11) & B11111;
+		int8_t tintR = tint & 0b11111;
+		int8_t tintG = (tint >> 5) & 0b111111;
+		int8_t tintB = (tint >> 11) & 0b11111;
 		for (uint8_t i = 0; i < w; i++) {
 			if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 			r1[i] = r1[i] * tintR / 32;
@@ -567,9 +575,9 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w,
 			for (uint8_t i = 0; i < w; i++) {
 				if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 				uint16_t color2 = thisLine[i];
-				int16_t r2 = color2 & B11111;
-				int16_t g2 = (color2 >> 5) & B111111;
-				int16_t b2 = (color2 >> 11) & B11111;
+				int16_t r2 = color2 & 0b11111;
+				int16_t g2 = (color2 >> 5) & 0b111111;
+				int16_t b2 = (color2 >> 11) & 0b11111;
 				r1[i] = ((r1[i] * alpha) + (r2 * nalpha)) / 256;
 				g1[i] = ((g1[i] * alpha) + (g2 * nalpha)) / 256;
 				b1[i] = ((b1[i] * alpha) + (b2 * nalpha)) / 256;
@@ -580,9 +588,9 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w,
 		for (uint8_t i = 0; i < w; i++) {
 			if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 			uint16_t color2 = thisLine[i];
-			int16_t r2 = color2 & B11111;
-			int16_t g2 = (color2 >> 5) & B111111;
-			int16_t b2 = (color2 >> 11) & B11111;
+			int16_t r2 = color2 & 0b11111;
+			int16_t g2 = (color2 >> 5) & 0b111111;
+			int16_t b2 = (color2 >> 11) & 0b11111;
 			r1[i] = min((r1[i] * alpha + r2 * 255) / 256, 31);
 			g1[i] = min((g1[i] * alpha + g2 * 255) / 256, 63);
 			b1[i] = min((b1[i] * alpha + b2 * 255) / 256, 31);
@@ -592,9 +600,9 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w,
 		for (uint8_t i = 0; i < w; i++) {
 			if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 			uint16_t color2 = thisLine[i];
-			int16_t r2 = color2 & B11111;
-			int16_t g2 = (color2 >> 5) & B111111;
-			int16_t b2 = (color2 >> 11) & B11111;
+			int16_t r2 = color2 & 0b11111;
+			int16_t g2 = (color2 >> 5) & 0b111111;
+			int16_t b2 = (color2 >> 11) & 0b11111;
 			r1[i] = max((r2 * 255 - r1[i] * alpha) / 256, 0);
 			g1[i] = max((g2 * 255 - g1[i] * alpha) / 256, 0);
 			b1[i] = max((b2 * 255 - b1[i] * alpha) / 256, 0);
@@ -604,9 +612,9 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w,
 		for (uint8_t i = 0; i < w; i++) {
 			if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 			uint16_t color2 = thisLine[i];
-			int16_t r2 = color2 & B11111;
-			int16_t g2 = (color2 >> 5) & B111111;
-			int16_t b2 = (color2 >> 11) & B11111;
+			int16_t r2 = color2 & 0b11111;
+			int16_t g2 = (color2 >> 5) & 0b111111;
+			int16_t b2 = (color2 >> 11) & 0b11111;
 			r1[i] = max((r2 * r1[i]) / 32, 0);
 			g1[i] = max((g2 * g1[i]) / 64, 0);
 			b1[i] = max((b2 * b1[i]) / 32, 0);
@@ -616,9 +624,9 @@ void Image::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, uint16_t w,
 		for (uint8_t i = 0; i < w; i++) {
 			if (img.transparentColor && buffer[i] == img.transparentColor) continue;
 			uint16_t color2 = thisLine[i];
-			int16_t r2 = color2 & B11111;
-			int16_t g2 = (color2 >> 5) & B111111;
-			int16_t b2 = (color2 >> 11) & B11111;
+			int16_t r2 = color2 & 0b11111;
+			int16_t g2 = (color2 >> 5) & 0b111111;
+			int16_t b2 = (color2 >> 11) & 0b11111;
 			r1[i] = min(31 - (31 - r2) * (31 - r1[i]) / 32, 31);
 			g1[i] = min(63 - (63 - g2) * (63 - g1[i]) / 64, 63);
 			b1[i] = min(31 - (31 - b2) * (31 - b1[i]) / 32, 31);

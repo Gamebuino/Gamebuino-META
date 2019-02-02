@@ -22,7 +22,6 @@ Authors:
 #ifndef _GAMEBUINO_META_COLLIDE_H_
 #define _GAMEBUINO_META_COLLIDE_H_
 
-#include <Arduino.h>
 #include "../../config/config.h"
 
 namespace Gamebuino_Meta {

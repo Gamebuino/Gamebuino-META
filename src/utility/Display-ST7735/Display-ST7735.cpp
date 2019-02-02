@@ -23,15 +23,35 @@ as well as Adafruit raw 1.8" TFT display
 
 #include "Display-ST7735.h"
 #include <limits.h>
-#include "pins_arduino.h"
-#include "wiring_private.h"
+
+#if CUSTOM_TFT_FUNCTIONS
+extern "C" {
+void gamebuino_meta_tft_spi_begin(void);
+void gamebuino_meta_tft_spi_begin_transaction(void);
+void gamebuino_meta_tft_spi_end_transaction(void);
+void gamebuino_meta_tft_spi_transfer(uint8_t);
+void gamebuino_meta_tft_send_buffer(uint16_t*, uint16_t);
+void gamebuino_meat_tft_wait_for_desc_available(const uint32_t);
+void gamebuino_meta_tft_wait_for_transfers_done(void);
+}
+#else
 #include <SPI.h>
+#include "../Adafruit_ZeroDMA.h"
+#endif
 #include "../Image.h"
 
-#include "../Adafruit_ZeroDMA.h"
 
 namespace Gamebuino_Meta {
 
+#if CUSTOM_TFT_FUNCTIONS
+static inline void wait_for_desc_available(const uint32_t min_desc_num) {
+	gamebuino_meat_tft_wait_for_desc_available(min_desc_num);
+}
+
+static inline void wait_for_transfers_done(void) {
+	gamebuino_meta_tft_wait_for_transfers_done();
+}
+#else // CUSTOM_TFT_FUNCTIONS
 
 static Adafruit_ZeroDMA tftDMA;
 #define DMA_DESC_COUNT (3)
@@ -82,9 +102,11 @@ void dma_tft_suspend_callback(Adafruit_ZeroDMA *dma) {
 }
 
 void dma_tft_done_callback(Adafruit_ZeroDMA *dma) {
+#ifdef ENABLE_IDLE_TOGGLE_PIN
 #if ENABLE_IRQ_TOGGLE_PIN2
 	PORT->Group[0].OUTTGL.reg = (1 << ENABLE_IRQ_TOGGLE_PIN2);
 #endif
+#endif // defined(ENABLE_IDLE_TOGGLE_PIN)
 	dma_desc_free_count++;
 	// resume unconditionally if there are pending buffers
 	if (dma_desc_free_count < DMA_DESC_COUNT-1)
@@ -98,11 +120,15 @@ void dma_tft_error_callback(Adafruit_ZeroDMA *dma) {
 }
 #endif
 
+#endif // CUSTOM_TFT_FUNCTIONS
+
 inline uint16_t swapcolor(uint16_t x) { 
 	return (x << 11) | (x & 0x07E0) | (x >> 11);
 }
 
+#if !CUSTOM_TFT_FUNCTIONS
 static SPISettings tftSPISettings;
+#endif
 
 // Constructor when using hardware SPI.	Faster, but must use SPI pins
 // specific to each board type (e.g. 11,13 for Uno, 51,52 for Mega, etc.)
@@ -118,30 +144,50 @@ Display_ST7735::Display_ST7735(int8_t cs, int8_t rs)  : Graphics(ST7735_TFTWIDTH
 #endif
 
 inline void Display_ST7735::spiwrite(uint8_t c) {
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_transfer(c);
+#else
 	SPI.transfer(c);
+#endif
 }
 
 
 void Display_ST7735::writecommand(uint8_t c) {
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
 	SPI.beginTransaction(tftSPISettings);
+#endif
 	commandMode();
 
 	spiwrite(c);
 
 	idleMode();
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
 	SPI.endTransaction();
+#endif
 }
 
 
 void Display_ST7735::writedata(uint8_t c) {
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
 	SPI.beginTransaction(tftSPISettings);
+#endif
 	dataMode();
 		
 	//Serial.print("D ");
 	spiwrite(c);
 
 	idleMode();
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
 	SPI.endTransaction();
+#endif
 }
 
 // Rather than a bazillion writecommand() and writedata() calls, screen
@@ -224,7 +270,11 @@ void Display_ST7735::commandList(const uint8_t *addr) {
 	uint8_t	numCommands, numArgs;
 	uint8_t ms;
 
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
 	SPI.beginTransaction(SPISettings(12000000, MSBFIRST, SPI_MODE0));
+#endif
 
 	numCommands = *(addr++);      // Number of commands to follow
 	while (numCommands--) {       // For each command...
@@ -245,18 +295,22 @@ void Display_ST7735::commandList(const uint8_t *addr) {
 	}
 
 	idleMode();
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
 	SPI.endTransaction();
+#endif
 }
 
 
 // Initialization code common to both 'B' and 'R' type displays
 void Display_ST7735::commonInit() {
-	pinMode(cspinmask, OUTPUT);
-	pinMode(rspinmask, OUTPUT);
-	csport = portOutputRegister(digitalPinToPort(cspinmask));
-	rsport = portOutputRegister(digitalPinToPort(rspinmask));
-	cspinmask = digitalPinToBitMask(cspinmask);
-	rspinmask = digitalPinToBitMask(rspinmask);
+	csport = (volatile uint32_t*)PORT->Group[1].OUT.reg;
+	rsport = (volatile uint32_t*)PORT->Group[1].OUT.reg;
+	cspinmask = (1 << 22);
+	rspinmask = (1 << 23);
+	PORT->Group[1].DIR.reg |= cspinmask;
+	PORT->Group[1].DIR.reg |= rspinmask;
 
 #ifdef ENABLE_IDLE_TOGGLE_PIN
 	PORT->Group[0].DIR.reg |= (1 << ENABLE_IDLE_TOGGLE_PIN);
@@ -270,8 +324,12 @@ void Display_ST7735::commonInit() {
 	PORT->Group[0].DIR.reg |= (1 << ENABLE_IRQ_TOGGLE_PIN2);
 #endif // ENABLE_IRQ_TOGGLE_PIN2
 
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin();
+#else
 	SPI.begin();
 	tftSPISettings = SPISettings(24000000, MSBFIRST, SPI_MODE0);
+#endif
 
 	// toggle RST low to reset; CS low so it'll listen to us
 	*csport &= ~cspinmask;
@@ -290,6 +348,7 @@ void Display_ST7735::init() {
 	writedata(0xC0);
 	
 	// initialize DMA
+#if !CUSTOM_TFT_FUNCTIONS
 	tftDMA.setTrigger(SERCOM4_DMAC_ID_TX);
 	tftDMA.setAction(DMA_TRIGGER_ACTON_BEAT);
 	tftDMA.loop(true);
@@ -318,6 +377,7 @@ void Display_ST7735::init() {
 #if defined(ENABLE_IRQ_TOGGLE_PIN1) && defined(ENABLE_IRQ_TOGGLE_PIN2)
 	tftDMA.setCallback(dma_tft_error_callback, DMA_CALLBACK_TRANSFER_ERROR);
 #endif
+#endif // !CUSTOM_TFT_FUNCTIONS
 }
 
 
@@ -352,12 +412,20 @@ void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, ui
 	}
 
 	setAddrWindow(x, y, x + w - 1, y + 1);
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
 	SPI.beginTransaction(tftSPISettings);
+#endif
 	dataMode();
 	sendBuffer(bufferedLine, w);
 	wait_for_transfers_done();
 	idleMode();
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
 	SPI.endTransaction();
+#endif
 }
 
 //fast method to quickly push a buffered line of pixels
@@ -365,18 +433,29 @@ void Display_ST7735::drawBufferedLine(int16_t x, int16_t y, uint16_t *buffer, ui
 //the color must be formated as the destination
 void Display_ST7735::drawBuffer(int16_t x, int16_t y, uint16_t *buffer, uint16_t w, uint16_t h) {
 	setAddrWindow(x, y, x + w - 1, y + h - 1);
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
 	SPI.beginTransaction(tftSPISettings);
+#endif
 	dataMode();
 	sendBuffer(buffer, w*h);
 	wait_for_transfers_done();
 	idleMode();
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
 	SPI.endTransaction();
+#endif
 }
 
 //fast method to quickly push a buffered line of pixels
 //boundary check must be made prior to this function
 //the color must be formated as the destination
 void Display_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_send_buffer(buffer, n);
+#else // CUSTOM_TFT_FUNCTIONS
 	bool start = false;
 
 	wait_for_desc_available(1);
@@ -404,6 +483,7 @@ void Display_ST7735::sendBuffer(uint16_t *buffer, uint16_t n) {
 #endif
 		tftDMA.startJob();
 	}
+#endif // CUSTOM_TFT_FUNCTIONS
 }
 
 uint16_t swap_endians_16(uint16_t b) {
@@ -443,7 +523,11 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 		setAddrWindow(0, 0, _width - 1, _height - 1);
 
 		//initiate SPI
-		SPI.beginTransaction(tftSPISettings);
+	#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
+	SPI.beginTransaction(tftSPISettings);
+#endif
 		dataMode();
 
 		//start sending lines and processing them in parallel using DMA
@@ -481,7 +565,11 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 
 		//finish SPI
 		idleMode();
-		SPI.endTransaction();
+	#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
+	SPI.endTransaction();
+#endif
 
 		return;
 	}
@@ -540,7 +628,11 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 		setAddrWindow(0, 0, _width - 1, _height - 1);
 		
 		//initiate SPI
-		SPI.beginTransaction(tftSPISettings);
+	#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
+	SPI.beginTransaction(tftSPISettings);
+#endif
 		dataMode();
 		if (img.colorMode == ColorMode::rgb565) {
 
@@ -569,7 +661,11 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 
 			//finish SPI
 			idleMode();
-			SPI.endTransaction();
+		#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
+	SPI.endTransaction();
+#endif
 
 			return;
 		}
@@ -597,7 +693,11 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 
 			//finish SPI
 			idleMode();
-			SPI.endTransaction();
+		#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
+	SPI.endTransaction();
+#endif
 			return;
 		}
 	}
@@ -609,14 +709,22 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 
 
 void Display_ST7735::pushColor(uint16_t c) {
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
 	SPI.beginTransaction(tftSPISettings);
+#endif
 	dataMode();
 	
 	spiwrite(c >> 8);
 	spiwrite(c);
 
 	idleMode();
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
 	SPI.endTransaction();
+#endif
 }
 
 void Display_ST7735::_drawPixel(int16_t x, int16_t y) {
@@ -625,14 +733,22 @@ void Display_ST7735::_drawPixel(int16_t x, int16_t y) {
 
 	setAddrWindow(x,y,x+1,y+1);
 
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
 	SPI.beginTransaction(tftSPISettings);
+#endif
 	dataMode();
 	
 	spiwrite((uint16_t)color.c >> 8);
 	spiwrite((uint16_t)color.c);
 
 	idleMode();
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
 	SPI.endTransaction();
+#endif
 }
 
 
@@ -644,14 +760,22 @@ void Display_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h) {
 
 	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
 	
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
 	SPI.beginTransaction(tftSPISettings);
+#endif
 	dataMode();
 	while (h--) {
 		spiwrite(hi);
 		spiwrite(lo);
 	}
 	idleMode();
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
 	SPI.endTransaction();
+#endif
 }
 
 
@@ -663,14 +787,22 @@ void Display_ST7735::drawFastHLine(int16_t x, int16_t y, int16_t w) {
 
 	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
 
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
 	SPI.beginTransaction(tftSPISettings);
+#endif
 	dataMode();
 	while (w--) {
 		spiwrite(hi);
 		spiwrite(lo);
 	}
 	idleMode();
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
 	SPI.endTransaction();
+#endif
 }
 
 // fill a rectangle
@@ -684,7 +816,11 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 
 	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
 	
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_begin_transaction();
+#else
 	SPI.beginTransaction(tftSPISettings);
+#endif
 	dataMode();
 	for(y=h; y>0; y--) {
 		for(x=w; x>0; x--) {
@@ -694,7 +830,11 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 	}
 
 	idleMode();
+#if CUSTOM_TFT_FUNCTIONS
+	gamebuino_meta_tft_spi_end_transaction();
+#else
 	SPI.endTransaction();
+#endif
 }
 
 
@@ -738,7 +878,7 @@ Rotation Display_ST7735::getRotation() {
 }
 
 
-void Display_ST7735::invertDisplay(boolean i) {
+void Display_ST7735::invertDisplay(bool i) {
 	writecommand(i ? ST7735_INVON : ST7735_INVOFF);
 }
 

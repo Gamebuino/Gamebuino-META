@@ -30,11 +30,11 @@ Authors:
 
 #include "config/config.h"
 
-#include <Arduino.h>
+#if USE_SDFAT
 #include <SPI.h>
 #include "utility/SdFat.h"
 extern SdFat SD;
-
+#endif
 
 #include "utility/Buttons.h"
 #include "utility/Sound.h"

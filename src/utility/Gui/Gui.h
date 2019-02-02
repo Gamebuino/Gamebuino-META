@@ -22,9 +22,8 @@ Authors:
 #ifndef _GAMEBUINO_META_GUI_H_
 #define _GAMEBUINO_META_GUI_H_
 
-#include <Arduino.h>
-#include "../Language.h"
 #include "../../config/config.h"
+#include "../Language.h"
 
 namespace Gamebuino_Meta {
 

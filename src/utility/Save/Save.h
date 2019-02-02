@@ -25,11 +25,14 @@ Authors:
 
 #include "../../config/config.h"
 #include "../Display-ST7735.h"
+
+#if USE_SDFAT
 #include "../SdFat.h"
+extern SdFat SD;
+#endif
 
 #include <type_traits>
 
-extern SdFat SD;
 
 namespace Gamebuino_Meta {
 
@@ -85,7 +88,9 @@ public:
 	};
 	void del(uint16_t i);
 private:
+#if USE_SDFAT
 	File f;
+#endif
 	bool open = false;
 	bool readOnly = false;
 	const char* checkbytes;

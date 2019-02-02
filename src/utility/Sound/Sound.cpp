@@ -26,7 +26,6 @@ Authors:
 #include "Tone.h"
 #include "Raw.h"
 #include "../Sound-SD.h"
-#include "../../config/config.h"
 
 namespace Gamebuino_Meta {
 
@@ -224,6 +223,7 @@ int8_t Sound::play(Sound_Handler* handler, bool loop) {
 uint32_t fx_sound_buffer[SOUND_BUFFERSIZE/4];
 
 void init_fx_channel() {
+#if SOUND_CHANNELS > 0
 	if (fx_channel.handler == nullptr){
 		fx_channel.size = SOUND_BUFFERSIZE;
 		fx_channel.buffer = (int8_t*)fx_sound_buffer;
@@ -231,17 +231,22 @@ void init_fx_channel() {
 		fx_channel.index = 0;
 		fx_channel.handler = new Sound_Handler_FX(&fx_channel);
 	}
+#endif // SOUND_CHANNELS
 }
 
 void Sound::fx(const Sound_FX & fx) {
+#if SOUND_CHANNELS > 0
 	init_fx_channel();
 	fx_channel.handler->play(fx);
+#endif // SOUND_CHANNELS
 }
 
 
 void Sound::fx(const Sound_FX * const fx) {
+#if SOUND_CHANNELS > 0
 	init_fx_channel();
 	fx_channel.handler->play(fx,0);
+#endif // SOUND_CHANNELS
 }
 
 
@@ -260,6 +265,7 @@ int8_t Sound::tone(uint32_t frequency, int32_t duration) {
 }
 
 void Sound::stop(int8_t i) {
+#if SOUND_CHANNELS > 0
 	if (i >= SOUND_CHANNELS || i < 0) {
 		return;
 	}
@@ -268,6 +274,7 @@ void Sound::stop(int8_t i) {
 		delete handlers[i];
 		handlers[i] = 0;
 	}
+#endif // SOUND_CHANNELS
 }
 
 int8_t Sound::playOK() {
@@ -339,10 +346,14 @@ void Sound::stopEfxOnly() {
 }
 
 bool Sound::isPlaying(int8_t i) {
+#if SOUND_CHANNELS > 0
 	if (i < 0 || i >= SOUND_CHANNELS) {
 		return false;
 	}
 	return channels[i].use;
+#else // SOUND_CHANNELS
+	return false;
+#endif // SOUND_CHANNELS
 }
 
 void Sound::setVolume(uint8_t volume) {
@@ -354,10 +365,14 @@ uint8_t Sound::getVolume() {
 }
 
 uint32_t Sound::getPos(int8_t i) {
+#if SOUND_CHANNELS > 0
 	if (!isPlaying(i) || !(handlers[i])) {
 		return 0xFFFFFFFF;
 	}
 	return handlers[i]->getPos();
+#else // SOUND_CHANNELS
+	return 0xFFFFFFFF;
+#endif // SOUND_CHANNELS
 }
 
 #if SOUND_CHANNELS > 0

@@ -23,7 +23,7 @@ Authors:
 #ifndef _GAMEBUINO_META_BOOTLOADER_H_
 #define _GAMEBUINO_META_BOOTLOADER_H_
 
-#include <Arduino.h>
+#include "../../config/config.h"
 
 namespace Gamebuino_Meta {
 

@@ -23,11 +23,15 @@ Authors:
 #ifndef _GAMEBUINO_GMV_H_
 #define	_GAMEBUINO_GMV_H_
 
+#include "../../config/config.h"
 #include "BMP.h"
 #include "../Image.h"
-#include "../SdFat.h"
 #include "../Display-ST7735.h"
 #include "../Graphics.h"
+
+#if USE_SDFAT
+#include "../SdFat.h"
+#endif
 
 namespace Gamebuino_Meta {
 
@@ -46,12 +50,16 @@ public:
 	void setFrame(uint16_t frame);
 	void finishSave(char* filename, uint16_t frames, bool output, Display_ST7735* tft);
 private:
+#if USE_SDFAT
 	File file;
+#endif
 	Image* img;
 	void convertFromBMP(BMP& bmp, char* newname);
+#if USE_SDFAT
 	void writeColor(File* f, uint16_t color, uint8_t count);
 	void writeHeader(File* f);
 	void writeFrame(File* f);
+#endif
 	bool valid;
 	uint16_t header_size;
 };

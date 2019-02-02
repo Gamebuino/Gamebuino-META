@@ -23,9 +23,12 @@ Authors:
 #ifndef _GAMEBUINO_META_MISC_H_
 #define _GAMEBUINO_META_MISC_H_
 
-#include "../SdFat.h"
+#include "../../config/config.h"
 
+#if USE_SDFAT
+#include "../SdFat.h"
 extern SdFat SD;
+#endif
 
 namespace Gamebuino_Meta {
 
@@ -40,6 +43,7 @@ struct RGB888 {
 uint16_t rgb888Torgb565(RGB888 c);
 RGB888 rgb565Torgb888(uint16_t c);
 
+#if USE_SDFAT
 uint16_t f_read16(File* f);
 
 uint32_t f_read32(File* f);
@@ -47,6 +51,7 @@ uint32_t f_read32(File* f);
 void f_write32(uint32_t b, File* f);
 
 void f_write16(uint16_t b, File* f);
+#endif // USE_SDFAT
 
 } // namespace Gamebuino_Meta
 

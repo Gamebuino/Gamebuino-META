@@ -23,9 +23,12 @@ Authors:
 #ifndef _GAMEBUINO_BMP_H_
 #define	_GAMEBUINO_BMP_H_
 
-#include <Arduino.h>
-#include "../SdFat.h"
+#include "../../config/config.h"
 #include "../Image.h"
+
+#if USE_SDFAT
+#include "../SdFat.h"
+#endif
 
 namespace Gamebuino_Meta {
 
@@ -34,17 +37,23 @@ class BMP {
 public:
 	BMP();
 	BMP(Image* img, uint16_t frames);
+#if USE_SDFAT
 	BMP(File* file, Image* img);
+#endif
 	bool isValid();
 	uint32_t getCreatorBits();
+#if USE_SDFAT
 	void setCreatorBits(uint32_t bits, File* file);
 	uint16_t readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentColor, File* file);
 	uint16_t readFrame(uint16_t frame, uint16_t* buf, uint16_t transparentColor, File* file);
+#endif
 	uint32_t getRowSize();
 	
+#if USE_SDFAT
 	uint32_t writeHeader(File* file);
 	void writeBuffer(uint16_t* buffer, uint16_t transparentColor, File* file);
 	void writeFrame(uint16_t frame, uint16_t* buffer, uint16_t transparentColor, File* file);
+#endif
 	uint8_t depth;
 	bool upside_down;
 private:

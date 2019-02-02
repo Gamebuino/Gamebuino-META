@@ -21,7 +21,6 @@ Authors:
 */
 
 #include "Collide.h"
-#include <Gamebuino-Meta.h>
 
 namespace Gamebuino_Meta {
 	bool Collide::rectRect(int16_t x1, int16_t y1, int16_t w1, int16_t h1, int16_t x2, int16_t y2, int16_t w2, int16_t h2) {

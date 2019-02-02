@@ -7,7 +7,7 @@
 #ifndef _GFXFONT_H_
 #define _GFXFONT_H_
 
-#include "Arduino.h"
+#include "stdint.h"
 
 namespace Gamebuino_Meta {
 

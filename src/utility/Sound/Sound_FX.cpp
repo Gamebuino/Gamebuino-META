@@ -30,7 +30,7 @@ void Sound_Handler_FX::init() {
 
 	_current_pattern_Sound_FX = UINT8_MAX;
 	_current_pattern_length = 0;
-	_current_pattern = NULL;
+	_current_pattern = nullptr;
 
 	_pitch_scale = 1 << FPP;
 
@@ -164,4 +164,3 @@ void Sound_Handler_FX::generateSquare() {
 
 
 } // Namespace Gamebuino_META
-

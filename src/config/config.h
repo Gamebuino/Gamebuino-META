@@ -31,6 +31,60 @@
 #define SYSTEM_DEFAULT_FONT_SIZE 1
 #endif
 
+#if CUSTOM_MALLOC
+#include <stddef.h>
+extern "C" {
+void* gb_malloc(size_t);
+void gb_free(void*);
+}
+inline void* operator new(size_t size) {
+	return gb_malloc(size);
+}
+inline void* operator new[](size_t size) {
+	return gb_malloc(size);
+}
+inline void operator delete(void* ptr) {
+	gb_free(ptr);
+}
+inline void operator delete[](void* ptr) {
+	gb_free(ptr);
+}
+#else
+#include <stdlib.h>
+#define gb_malloc(x) malloc(x)
+#define gb_free(x) free(x)
+#endif
+
+#if NO_ARDUINO
+#include <sam.h>
+#include <stdint.h>
+#include <string.h>
+extern "C" {
+uint32_t millis(void);
+uint32_t micros(void);
+void delay(uint32_t);
+void pickRandomSeed(void);
+}
+#else
+#include <Arduino.h>
+#endif
+
+#ifndef constrain
+#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#endif
+
+#ifndef abs
+#define abs(x) ((x)>0?(x):-(x))
+#endif
+
+#ifndef max
+#define max(a,b) ((a)>(b)?(a):(b))
+#endif
+
+#ifndef min
+#define min(x,y) ((x)<(y)?(x):(y))
+#endif
+
 #define SETTING_VOLUME 0
 #define SETTING_VOLUME_MUTE 1
 #define SETTING_DEFAULTNAME 2

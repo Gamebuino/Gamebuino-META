@@ -24,7 +24,14 @@ Authors:
 #include "Gamebuino-Meta.h"
 #include "utility/Graphics-SD.h"
 #include "utility/Misc.h"
+
+#ifndef min
+#define min(x, y) ((x < y) ? x : y)
+#endif
+
+#if USE_SDFAT
 SdFat SD;
+#endif
 
 // a 3x5 font table
 extern const uint8_t font3x5[];
@@ -183,8 +190,11 @@ void Gamebuino::begin() {
 	display.setCursor(0, display.height() - (display.getFontHeight()*display.fontSize));
 	display.print("SD INIT... ");
 	updateDisplay();
-	
-	if (!(sdInited = SD.begin(SD_CS))) {
+
+#if USE_SDFAT
+	sdInited = SD.begin(SD_CS);
+#endif
+	if (!sdInited) {
 		display.setColor(Color::red, Color::black);
 		display.println("FAILED!");
 		updateDisplay();
@@ -201,10 +211,12 @@ void Gamebuino::begin() {
 	display.fill(Color::black);
 	
 	// SD is initialized, let's switch to the folder!
+#if USE_SDFAT
 	if (!SD.exists(folder_name)) {
 		SD.mkdir(folder_name);
 	}
 	SD.chdir(folder_name);
+#endif
 	
 	save = Save(SAVEFILE_NAME, folder_name);
 	
@@ -272,15 +284,16 @@ void Gamebuino::titleScreen() {
 	uint16_t ts_backup_width = display._width;
 	uint16_t ts_backup_height = display._height;
 	display.fontSize = SYSTEM_DEFAULT_FONT_SIZE;
-	char filename[17] = "TITLESCREEN.BMP";
+	static char filename[17] = "TITLESCREEN.BMP";
 	
+#if USE_SDFAT
 	bool titleScreenImageExists = SD.exists(filename);
+#else
+	bool titleScreenImageExists = false;
+#endif
 	if (titleScreenImageExists) {
 		display.init(ts_backup_width, ts_backup_height, filename);
 	}
-	
-	bool first = true;
-	bool reInitDisplay = false;
 	
 	Image buttonsIcons = Image(buttonsIconsData);
 	
@@ -370,7 +383,7 @@ bool Gamebuino::update() {
 	//neoPixels update
 	uint8_t px_height = lights.height();
 	uint8_t px_width = lights.width();
-	const uint8_t px_map[] = {
+	static const uint8_t px_map[] = {
 		7, 0,
 		6, 1,
 		5, 2,
@@ -406,7 +419,11 @@ void Gamebuino::setFrameRate(uint8_t fps) {
 }
 
 void Gamebuino::pickRandomSeed(){
+#if NO_ARDUINO
+	pickRandomSeed();
+#else
 	randomSeed(micros() * micros() ^ analogRead(1)*analogRead(2)); // can't use analogRad(0) as we have a speaker attached there
+#endif
 }
 
 uint8_t Gamebuino::getCpuLoad(){
@@ -482,10 +499,11 @@ void Hook_ExitHomeMenu() {
 }
 
 bool homeMenuGetUniquePath(char* name, uint8_t offset, uint8_t len) {
+#if USE_SDFAT
 	if(!SD.exists("REC")) {
 		SD.mkdir("REC");
 	}
-	uint32_t start;
+	int32_t start;
 	File cache;
 	if (!SD.exists("REC/REC.CACHE")) {
 		cache = SD.open("REC/REC.CACHE", FILE_WRITE);
@@ -509,6 +527,9 @@ bool homeMenuGetUniquePath(char* name, uint8_t offset, uint8_t len) {
 	f_write32(start, &cache);
 	cache.close();
 	return true;
+#else // USE_SDFAT
+	return false;
+#endif // USE_SDFAT
 }
 
 template<uint8_t N>
@@ -543,7 +564,9 @@ void Gamebuino::homeMenu(){
 	neoPixels.show();
 	// determine the neoPixel color index
 	uint8_t neoPixelsIntensity = 0;
-	for (;(neoPixelsIntensity < 5) && (neoPixels.getBrightness() > neoPixelsIntensities[neoPixelsIntensity]);neoPixelsIntensity++);
+	for (;(neoPixelsIntensity < 5) && (neoPixels.getBrightness() > neoPixelsIntensities[neoPixelsIntensity]);neoPixelsIntensity++) {
+		// do nothing
+	}
 	
 	//static screen content
 	//draw icons first as it's where the user is focused

@@ -21,9 +21,12 @@ Authors:
 */
 
 #include "Graphics-SD.h"
-#include "../SdFat.h"
 #include "../Misc.h"
+
+#if USE_SDFAT
+#include "../SdFat.h"
 extern SdFat SD;
+#endif
 
 namespace Gamebuino_Meta {
 
@@ -95,7 +98,7 @@ Recording_Image::Recording_Image(GMV& _gmv) {
 
 Recording_Image::~Recording_Image() {
 	if (bmp_filename) {
-		free(bmp_filename);
+		gb_free(bmp_filename);
 	}
 }
 
@@ -113,15 +116,18 @@ void Recording_Image::finish(bool output) {
 }
 
 void Recording_Image::setBmpFilename(char* filename) {
-	bmp_filename = (char*)malloc(strlen(filename) + 1);
+#if USE_SDFAT
+	bmp_filename = (char*)gb_malloc(strlen(filename) + 1);
 	strcpy(bmp_filename, filename);
 	File f = SD.open(bmp_filename, FILE_WRITE);
 	f.write((uint8_t)0); // make sure we already create it
 	f.close();
+#endif // USE_SDFAT
 }
 
 
 bool Graphics_SD::startRecording(Image* img, char* filename) {
+#if USE_SDFAT
 	uint8_t i = 0;
 	for (; i < MAX_IMAGE_RECORDING; i++) {
 		if (!recording_images[i]) {
@@ -145,9 +151,13 @@ bool Graphics_SD::startRecording(Image* img, char* filename) {
 	}
 	recording_images[i] = rec;
 	return true;
+#else // USE_SDFAT
+	return false;
+#endif
 }
 
 void Graphics_SD::stopRecording(Image* img, bool output) {
+#if USE_SDFAT
 	uint8_t i = 0;
 	for (; i < MAX_IMAGE_RECORDING; i++) {
 		if (!recording_images[i]) {
@@ -163,9 +173,11 @@ void Graphics_SD::stopRecording(Image* img, bool output) {
 	recording_images[i]->finish(output);
 	delete recording_images[i];
 	recording_images[i] = 0;
+#endif // USE_SDFAT
 }
 
 bool Graphics_SD::save(Image* img, char* filename) {
+#if USE_SDFAT
 	bool convert_bmp = true; // for saving single frames we always convert
 	if (convert_bmp && SD.exists(filename) && !SD.remove(filename)) {
 		return false;
@@ -181,6 +193,9 @@ bool Graphics_SD::save(Image* img, char* filename) {
 	rec.update();
 	rec.finish(false);
 	return true;
+#else // USE_SDFAT
+	return false;
+#endif // USE_SDFAT
 }
 
 void Graphics_SD::update() {

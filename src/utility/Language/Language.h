@@ -25,7 +25,12 @@ Authors:
 
 #include "../../config/config.h"
 #include "LangCode.h"
-#include <Arduino.h>
+
+#if NO_ARDUINO
+#include <Print-Compat.h>
+#else
+#include <Print.h>
+#endif
 
 namespace Gamebuino_Meta {
 
@@ -61,7 +66,9 @@ class Print_Language : public Print {
 public:
 	using Print::print;
 	using Print::println;
+#if USE_PRINTF
 	using Print::printf;
+#endif // USE_PRINTF
 #if LANGUAGE_DEFAULT_SIZE
 	void print(const MultiLang* l, uint8_t num = LANGUAGE_DEFAULT_SIZE);
 	void println(const MultiLang* l, uint8_t num = LANGUAGE_DEFAULT_SIZE);
@@ -77,6 +84,7 @@ public:
 	void println(const MultiLang (&l) [N]) {
 		println(l, N);
 	};
+#if USE_PRINTF
 	template <uint8_t N>
 	void printf(const MultiLang (&l) [N], ...) {
 		char buf[PRINTF_BUF];
@@ -87,6 +95,7 @@ public:
 		write(buf);
 		va_end(ap);
 	};
+#endif // USE_PRINTF
 };
 
 

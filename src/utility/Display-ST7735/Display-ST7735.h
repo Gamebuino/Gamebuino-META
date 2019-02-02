@@ -24,32 +24,9 @@ as well as Adafruit raw 1.8" TFT display
 #ifndef _GAMEBUINO_META_GRAPHICS_ST7735_H_
 #define _GAMEBUINO_META_GRAPHICS_ST7735_H_
 
-#if ARDUINO >= 100
-	#include "Arduino.h"
-	#include "Print.h"
-#else
-	#include "WProgram.h"
-#endif
-#include "../Adafruit_ZeroDMA.h"
+#include "../../config/config.h"
 
 #include "../Image.h"
-
-#if defined(__SAM3X8E__)
-	#include <include/pio.h>
-	#define PROGMEM
-	#define pgm_read_byte(addr) (*(const unsigned char *)(addr))
-	#define pgm_read_word(addr) (*(const unsigned short *)(addr))
-	typedef unsigned char prog_uchar;
-#elif defined(__AVR__)
-	#include <avr/pgmspace.h>
-#elif defined(ESP8266)
-	#include <pgmspace.h>
-#endif
-
-#if defined(__SAM3X8E__)
-	#undef __FlashStringHelper::F(string_literal)
-	#define F(string_literal) string_literal
-#endif
 
 namespace Gamebuino_Meta {
 
@@ -154,7 +131,7 @@ public:
 	void drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);
 	void fillRect(int16_t x, int16_t y, int16_t w, int16_t h);
 	void setRotation(Rotation r);
-	void invertDisplay(boolean i);
+	void invertDisplay(bool i);
 	ColorMode colorMode = ColorMode::rgb565;
 
 	Rotation getRotation();
@@ -167,7 +144,7 @@ private:
 	void commandList(const uint8_t *addr);
 	void commonInit();
 
-	volatile RwReg  *dataport, *clkport, *csport, *rsport;
+	volatile uint32_t  *dataport, *clkport, *csport, *rsport;
 	uint32_t  datapinmask, clkpinmask, cspinmask, rspinmask;
 
 };

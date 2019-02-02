@@ -23,6 +23,7 @@ Authors:
 #ifndef _GAMEBUINO_META_PATTERN_H_
 #define _GAMEBUINO_META_PATTERN_H_
 
+#include "../../config/config.h"
 #include "Sound.h"
 
 namespace Gamebuino_Meta {

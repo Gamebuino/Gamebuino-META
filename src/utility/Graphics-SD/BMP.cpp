@@ -22,16 +22,17 @@ Authors:
 
 #include "BMP.h"
 #include "../Misc.h"
-#include "../../config/config.h"
 
 namespace Gamebuino_Meta {
 
+#if USE_SDFAT
 void writeAsRGB(uint16_t b, File* f) {
 	RGB888 c = rgb565Torgb888(b);
 	f->write(c.b);
 	f->write(c.g);
 	f->write(c.r);
 }
+#endif // USE_SDFAT
 
 BMP::BMP() {
 	valid = false;
@@ -52,6 +53,7 @@ BMP::BMP(Image* img, uint16_t _frames) {
 	upside_down = false;
 }
 
+#if USE_SDFAT
 BMP::BMP(File* file, Image* img) {
 	valid = false;
 	file->rewind();
@@ -171,6 +173,7 @@ BMP::BMP(File* file, Image* img) {
 	file->seekSet(image_offset);
 	valid = true;
 }
+#endif // USE_SDFAT
 
 bool BMP::isValid() {
 	return valid;
@@ -180,11 +183,14 @@ uint32_t BMP::getCreatorBits() {
 	return creatorBits;
 }
 
+#if USE_SDFAT
 void BMP::setCreatorBits(uint32_t bits, File* file) {
 	file->seekSet(6);
 	f_write32(bits, file);
 }
+#endif // USE_SDFAT
 
+#if USE_SDFAT
 uint32_t BMP::writeHeader(File* file) {
 	// lets first create some helpful variables
 	uint16_t header_size = 40;
@@ -241,6 +247,7 @@ uint32_t BMP::writeHeader(File* file) {
 	}
 	return image_size;
 }
+#endif // USE_SDFAT
 
 uint32_t BMP::getRowSize() {
 	if (depth == 4) {
@@ -252,6 +259,7 @@ uint32_t BMP::getRowSize() {
 	return width * 4;
 }
 
+#if USE_SDFAT
 uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentColor, File* file) {
 	
 	uint32_t rowSize = getRowSize();
@@ -322,7 +330,9 @@ uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentCol
 	}
 	return transparentColor;
 }
+#endif // USE_SDFAT
 
+#if USE_SDFAT
 uint16_t BMP::readFrame(uint16_t frame, uint16_t* buf, uint16_t transparentColor, File* file) {
 	uint32_t size = getRowSize() * height;
 	uint32_t offset;
@@ -333,7 +343,9 @@ uint16_t BMP::readFrame(uint16_t frame, uint16_t* buf, uint16_t transparentColor
 	}
 	return readBuffer(buf, image_offset + offset, transparentColor, file);
 }
+#endif // USE_SDFAT
 
+#if USE_SDFAT
 void BMP::writeBuffer(uint16_t* buffer, uint16_t transparentColor, File* file) {
 	if (depth == 4) {
 		uint8_t halfwidth = (width + 1) / 2;
@@ -374,12 +386,15 @@ void BMP::writeBuffer(uint16_t* buffer, uint16_t transparentColor, File* file) {
 		}
 	}
 }
+#endif // USE_SDFAT
 
+#if USE_SDFAT
 void BMP::writeFrame(uint16_t frame, uint16_t* buf, uint16_t transparentColor, File* file) {
 	uint32_t size = getRowSize() * height;
 	uint32_t offset = size * (frames - frame - 1);
 	file->seekSet(image_offset + offset);
 	writeBuffer(buf, transparentColor, file);
 }
+#endif // USE_SDFAT
 
 } // namespace Gamebuino_Meta

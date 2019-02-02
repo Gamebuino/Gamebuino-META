@@ -25,7 +25,6 @@ Authors:
 #include "../../Gamebuino-Meta.h"
 extern Gamebuino gb;
 
-
 // create our custom NMI handler
 void NMI_Handler() {
 	gb.bootloader.error(1);
@@ -120,7 +119,7 @@ uint32_t Bootloader::version() {
 }
 
 void Bootloader::game(const char* filename) {
-	noInterrupts(); // fix for bootloader 1.0.0
+	__disable_irq(); // fix for bootloader 1.0.0
 	((void(*)(const char*))(*((uint32_t*)0x3FF8)))(filename);
 }
 

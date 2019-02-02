@@ -23,8 +23,11 @@ Authors:
 #ifndef _GAMEBUINO_META_SOUND_SD_H_
 #define _GAMEBUINO_META_SOUND_SD_H_
 
+#include "../../config/config.h"
 #include "../Sound.h"
+#if USE_SDFAT
 #include "../SdFat.h"
+#endif
 
 namespace Gamebuino_Meta {
 
@@ -37,7 +40,9 @@ public:
 	void rewind();
 	uint32_t getPos();
 private:
+#if USE_SDFAT
 	File file;
+#endif
 	uint16_t head_index;
 	uint32_t wav_offset;
 	bool rewind_flag;

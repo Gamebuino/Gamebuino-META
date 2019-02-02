@@ -4,6 +4,30 @@
 #endif
 #endif
 
+#ifndef NO_ARDUINO
+#define NO_ARDUINO 0
+#endif
+
+#ifndef USE_SDFAT
+#define USE_SDFAT 1
+#endif
+
+#ifndef CUSTOM_TFT_FUNCTIONS
+#define CUSTOM_TFT_FUNCTIONS 0
+#endif
+
+#ifndef CUSTOM_BUTTON_FUNCTIONS
+#define CUSTOM_BUTTON_FUNCTIONS 0
+#endif
+
+#ifndef USE_PRINTF
+#define USE_PRINTF 1
+#endif
+
+#ifndef CUSTOM_MALLOC
+#define CUSTOM_MALLOC 0
+#endif
+
 ///////////////
 // save defines
 ///////////////

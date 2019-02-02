@@ -172,7 +172,7 @@ void MetaMode::updateAnimations() {
 	// ================== Animation ================== //
 	if (animRunning) {
 		// Sliding rects animation
-		for (char i = 0; i < 4; i++) {
+		for (uint8_t i = 0; i < 4; i++) {
 			uint16_t animPercentage = 100 * (animTimer - animInterval * i) / animRectTimeMax;
 			if (animPercentage >= 100 || animPercentage < 0) continue;
 			gb.display.setColor(rectsPattern[i]);

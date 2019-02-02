@@ -23,11 +23,10 @@ Authors:
 #ifndef _GAMEBUINO_SD_GFX_H_
 #define	_GAMEBUINO_SD_GFX_H_
 
-#include <Arduino.h>
+#include "../../config/config.h"
 #include "../Image.h"
 #include "GMV.h"
 #include "../Display-ST7735.h"
-#include "../../config/config.h"
 
 namespace Gamebuino_Meta {
 

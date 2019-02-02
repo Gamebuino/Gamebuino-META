@@ -21,7 +21,6 @@ Authors:
 */
 
 #include "Pattern.h"
-#include "../../config/config.h"
 
 namespace Gamebuino_Meta {
 

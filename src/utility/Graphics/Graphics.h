@@ -1,12 +1,7 @@
 #ifndef _GAMEBUINO_META_GRAPHICS_H_
 #define _GAMEBUINO_META_GRAPHICS_H_
 
-#if ARDUINO >= 100
-#include "Arduino.h"
-#include "Print.h"
-#else
-#include "WProgram.h"
-#endif
+#include "../../config/config.h"
 
 #include "gfxfont.h"
 
@@ -84,7 +79,9 @@ class Graphics : public Print_Language {
 public:
 	using Print_Language::print;
 	using Print_Language::println;
+#if USE_PRINTF
 	using Print_Language::printf;
+#endif // USE_PRINTF
 	using Print_Language::write;
 	Graphics(int16_t w, int16_t h); // Constructor
 	virtual ~Graphics();
@@ -102,7 +99,7 @@ public:
 	virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h);
 	virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h);
 	virtual void _fill();
-	virtual void invertDisplay(boolean i);
+	virtual void invertDisplay(bool i);
 	virtual void drawImage(int16_t x, int16_t y, Image& img);
 	virtual void drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h2);
 	virtual void drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y2, int16_t w2, int16_t h2);
@@ -170,7 +167,7 @@ public:
 	void setFont(const GFXfont *f = NULL); //adafruit custom font
 	void setFont(const uint8_t* f); //gamebuino legacy font
 	void getTextBounds(char *string, int16_t x, int16_t y, 	int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
-	void getTextBounds(const __FlashStringHelper *s, int16_t x, int16_t y, int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
+	void getTextBounds(const char *s, int16_t x, int16_t y, int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
 
 	//Gamebuino legacy function
 	bool getBitmapPixel(const uint8_t* bitmap, uint8_t x, uint8_t y);
@@ -203,7 +200,7 @@ public:
 		print(s);
 	};
 	
-	
+#if USE_PRINTF
 	template <uint8_t N>
 	void printf(int16_t x, int16_t y, const MultiLang (&l) [N], ...) {
 		setCursor(x, y);
@@ -224,6 +221,7 @@ public:
 		write(buf);
 		va_end(ap);
 	};
+#endif // USE_PRINTF
 
 	union {
 		uint16_t transparentColor;

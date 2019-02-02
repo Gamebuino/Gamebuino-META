@@ -31,14 +31,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifdef __AVR__
-#include <avr/pgmspace.h>
-#elif defined(ESP8266)
-#include <pgmspace.h>
-#endif
 #include "Graphics.h"
 #include "Image.h"
-#include "../../config/config.h"
 #include "../Misc.h"
 
 // default 3x5 font table
@@ -47,6 +41,10 @@ extern const uint8_t font3x5[];
 // gb is only needed to check for the inited state to get proper width() and height() during initialization
 #include "../../Gamebuino-Meta.h"
 extern Gamebuino gb;
+
+#ifndef min
+#define min(x, y) ((x < y) ? x : y)
+#endif
 
 namespace Gamebuino_Meta {
 
@@ -109,7 +107,6 @@ ColorIndex Graphics::rgb565ToIndex(Color rgb) {
 		}
 	}
 	// ok not part of the index, let's try to find the closest match!
-	uint16_t max_diff = 0xFFFF;
 	uint8_t b = (uint8_t)((uint16_t)rgb << 3);
 	uint8_t g = (uint8_t)(((uint16_t)rgb >> 3) & 0xFC);
 	uint8_t r = (uint8_t)(((uint16_t)rgb >> 8) & 0xF8);
@@ -153,10 +150,6 @@ ColorIndex Graphics::rgb565ToIndex(Color rgb) {
  #define pgm_read_pointer(addr) ((void *)pgm_read_dword(addr))
 #else
  #define pgm_read_pointer(addr) ((void *)pgm_read_word(addr))
-#endif
-
-#ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
 #ifndef _swap_int16_t
@@ -613,7 +606,7 @@ void Graphics::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 		byteNum = i / 8;
 		bitNum = i % 8;
 		for (j = 0; j < h; j++) {
-			if (pgm_read_byte(bitmap + j * byteWidth + byteNum) & (B10000000 >> bitNum)) {
+			if (pgm_read_byte(bitmap + j * byteWidth + byteNum) & (0b10000000 >> bitNum)) {
 				switch (rotation) {
 				case NOROT: //no rotation
 					k = i;
@@ -633,10 +626,10 @@ void Graphics::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 					break;
 				}
 				if (flip) {
-					if (flip & B00000001) { //horizontal flip
+					if (flip & 0b00000001) { //horizontal flip
 						k = w - k - 1;
 					}
-					if (flip & B00000010) { //vertical flip
+					if (flip & 0b00000010) { //vertical flip
 						l = h - l;
 					}
 				}
@@ -649,8 +642,8 @@ void Graphics::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap,
 }
 
 
-boolean Graphics::getBitmapPixel(const uint8_t* bitmap, uint8_t x, uint8_t y) {
-	return pgm_read_byte(bitmap + 2 + y * ((pgm_read_byte(bitmap) + 7) / 8) + (x >> 3)) & (B10000000 >> (x % 8));
+bool Graphics::getBitmapPixel(const uint8_t* bitmap, uint8_t x, uint8_t y) {
+	return pgm_read_byte(bitmap + 2 + y * ((pgm_read_byte(bitmap) + 7) / 8) + (x >> 3)) & (0b10000000 >> (x % 8));
 }
 
 void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
@@ -1047,8 +1040,7 @@ void Graphics::drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size) {
 
 		uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
 		uint8_t  w  = pgm_read_byte(&glyph->width),
-					 h  = pgm_read_byte(&glyph->height),
-					 xa = pgm_read_byte(&glyph->xAdvance);
+					 h  = pgm_read_byte(&glyph->height);
 		int8_t   xo = pgm_read_byte(&glyph->xOffset),
 					 yo = pgm_read_byte(&glyph->yOffset);
 		uint8_t  xx, yy, bits, bit = 0;
@@ -1372,93 +1364,9 @@ void Graphics::getTextBounds(char *str, int16_t x, int16_t y,
 }
 
 // Same as above, but for PROGMEM strings
-void Graphics::getTextBounds(const __FlashStringHelper *str,
+void Graphics::getTextBounds(const char *str,
  int16_t x, int16_t y, int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h) {
-	uint8_t *s = (uint8_t *)str, c;
-
-	*x1 = x;
-	*y1 = y;
-	*w  = *h = 0;
-
-	if(gfxFont) {
-
-		GFXglyph *glyph;
-		uint8_t   first = pgm_read_byte(&gfxFont->first),
-				last  = pgm_read_byte(&gfxFont->last),
-				gw, gh, xa;
-		int8_t    xo, yo;
-		int16_t   minx = _width, miny = _height, maxx = -1, maxy = -1,
-				gx1, gy1, gx2, gy2, ts = (int16_t)fontSize,
-				ya = ts * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
-
-		while((c = pgm_read_byte(s++))) {
-			if(c != '\n') { // Not a newline
-				if(c != '\r') { // Not a carriage return, is normal char
-					if((c >= first) && (c <= last)) { // Char present in current font
-						c    -= first;
-						glyph = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
-						gw    = pgm_read_byte(&glyph->width);
-						gh    = pgm_read_byte(&glyph->height);
-						xa    = pgm_read_byte(&glyph->xAdvance);
-						xo    = pgm_read_byte(&glyph->xOffset);
-						yo    = pgm_read_byte(&glyph->yOffset);
-						if(textWrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
-							// Line textWrap
-							x  = 0;  // Reset x to 0
-							y += ya; // Advance y by 1 line
-						}
-						gx1 = x   + xo * ts;
-						gy1 = y   + yo * ts;
-						gx2 = gx1 + gw * ts - 1;
-						gy2 = gy1 + gh * ts - 1;
-						if(gx1 < minx) minx = gx1;
-						if(gy1 < miny) miny = gy1;
-						if(gx2 > maxx) maxx = gx2;
-						if(gy2 > maxy) maxy = gy2;
-						x += xa * ts;
-					}
-				} // Carriage return = do nothing
-			} else { // Newline
-				x  = 0;  // Reset x
-				y += ya; // Advance y by 1 line
-			}
-		}
-		// End of string
-		*x1 = minx;
-		*y1 = miny;
-		if(maxx >= minx) *w  = maxx - minx + 1;
-		if(maxy >= miny) *h  = maxy - miny + 1;
-
-	} else { // Default font
-
-		uint16_t lineWidth = 0, maxWidth = 0; // Width of current, all lines
-
-		while((c = pgm_read_byte(s++))) {
-			if(c != '\n') { // Not a newline
-				if(c != '\r') { // Not a carriage return, is normal char
-					if(textWrap && ((x + fontSize * 6) >= _width)) {
-						x  = 0;            // Reset x to 0
-						y += fontSize * 8; // Advance y by 1 line
-						if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
-						lineWidth  = fontSize * 6; // First char on new line
-							} else { // No line textWrap, just keep incrementing X
-						lineWidth += fontSize * 6; // Includes interchar x gap
-					}
-				} // Carriage return = do nothing
-			} else { // Newline
-				x  = 0;            // Reset x to 0
-				y += fontSize * 8; // Advance y by 1 line
-				if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
-				lineWidth = 0;     // Reset lineWidth for new line
-			}
-		}
-		// End of string
-		if(lineWidth) y += fontSize * 8; // Add height of last (or only) line
-		if(lineWidth > maxWidth) maxWidth = lineWidth; // Is the last or only line the widest?
-		*w = maxWidth - 1;               // Don't include last interchar x gap
-		*h = y - *y1;
-
-	} // End classic vs custom font
+	return getTextBounds((char*)str, x, y, x1, y1, w, h);
 }
 
 // Return the size of the display
@@ -1488,7 +1396,7 @@ int16_t Graphics::height(void) const {
 #endif
 }
 
-void Graphics::invertDisplay(boolean i) {
+void Graphics::invertDisplay(bool i) {
 	// Do nothing, must be subclassed if supported by hardware
 }
 

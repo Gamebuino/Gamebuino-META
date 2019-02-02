@@ -21,14 +21,20 @@ Authors:
 */
 
 #include "Save.h"
-#include <Gamebuino-Meta.h>
+#include "../../Gamebuino-Meta.h"
+
+#ifndef max
+#define max(a,b) ((a)>(b)?(a):(b))
+#endif
+
+#ifndef min
+#define min(x,y) ((x < y) ? x : y)
+#endif
 
 namespace Gamebuino_Meta {
 
 #define SAVEHEADER_SIZE 10
 #define SAVEFILE_PAYLOAD_START (SAVEHEADER_SIZE + (blocks * 5))
-
-#define MIN(x, y) ((x < y) ? x : y)
 
 Save::Save(const char* _savefile, const char* _checkbytes) {
 	savefile = _savefile;
@@ -60,6 +66,7 @@ void Save::error(const char *s) {
 
 
 SaveVar Save::getVarInfo(uint16_t i) {
+#if USE_SDFAT
 	if (readOnly) {
 		return {false, 0};
 	}
@@ -76,9 +83,13 @@ SaveVar Save::getVarInfo(uint16_t i) {
 	s.defined = (b & 0x80) ? true : false;
 	s.type = b & 0x07;
 	return s;
+#else // USE_SDFAT
+	return {false, 0};
+#endif // USE_SDFAT
 }
 
 void Save::openFile() {
+#if USE_SDFAT
 	if (open) {
 		return;
 	}
@@ -97,7 +108,7 @@ void Save::openFile() {
 		f.write(&blocks, 2); // write the amount of blocks
 		
 		// +4 because of 4-byte payload size
-		for (uint32_t i = 0; i < (5*blocks) + 4; i++) {
+		for (uint32_t i = 0; i < (5*(uint32_t)blocks) + 4; i++) {
 			f.write((uint8_t)0);
 		}
 		
@@ -152,7 +163,7 @@ void Save::openFile() {
 		
 		// first we grow the file by the desired amount
 		f.seekSet(SAVEHEADER_SIZE + (blocks_old * 5) + payload_size);
-		for (uint32_t i = 0; i < (blocks_new - blocks_old)*5; i++) {
+		for (uint32_t i = 0; i < (uint32_t)(blocks_new - blocks_old)*5; i++) {
 			f.write((uint8_t)0);
 		}
 		
@@ -185,16 +196,21 @@ void Save::openFile() {
 	f.seekSet(4);
 	f.write(&blocks_new, 2);
 	f.flush();
+#endif // USE_SDFAT
 }
 
 
 
 
 uint32_t Save::_get(uint16_t i) {
+#if USE_SDFAT
 	uint32_t val;
 	f.seekSet(SAVEHEADER_SIZE + blocks + (4*i));
 	f.read(&val, 4);
 	return val;
+#else // USE_SDFAT
+	return 0;
+#endif // USE_SDFAT
 }
 
 int32_t Save::get(uint16_t i) {
@@ -230,7 +246,7 @@ bool Save::get(uint16_t i, void* buf, uint32_t bufsize) {
 					error("trying to get from a non-blob type");
 				}
 				if (defaults[j].length && defaults[j].val.ptr) {
-					memcpy(buf, defaults[j].val.ptr, MIN(bufsize, defaults[j].length));
+					memcpy(buf, defaults[j].val.ptr, min(bufsize, defaults[j].length));
 				}
 				break;
 			}
@@ -240,31 +256,37 @@ bool Save::get(uint16_t i, void* buf, uint32_t bufsize) {
 	if (s.type != SAVETYPE_BLOB) {
 		error("trying to get from a non-blob type");
 	}
-	
+#if USE_SDFAT
 	uint32_t b = _get(i);
 	
 	// determine how many bytes to set
 	uint32_t size;
 	f.seekSet(SAVEFILE_PAYLOAD_START + b);
 	f.read(&size, 4);
-	size = MIN(size, bufsize);
+	size = min(size, bufsize);
 	
 	// wwe already have the file pointer at the start
 	
 	// now finally perform the read
 	f.read(buf, size);
 	return true;
+#else // USE_SDFAT
+	return false;
+#endif // USE_SDFAT
 }
 
 
 
 
 void Save::_set(uint16_t i, uint32_t b) {
+#if USE_SDFAT
 	f.seekSet(SAVEHEADER_SIZE + blocks + (4*i));
 	f.write(&b, 4);
+#endif // USE_SDFAT
 }
 
 bool Save::set(uint16_t i, int32_t num) {
+#if USE_SDFAT
 	openFile();
 	if (readOnly) {
 		return false;
@@ -290,9 +312,13 @@ bool Save::set(uint16_t i, int32_t num) {
 	_set(i, (uint32_t)num);
 	f.flush();
 	return true;
+#else // USE_SDFAT
+	return false;
+#endif // USE_SDFAT
 }
 
 void Save::newBlob(uint16_t i, uint32_t size) {
+#if USE_SDFAT
 	// set the int-table pointer
 	_set(i, payload_size);
 	
@@ -308,6 +334,7 @@ void Save::newBlob(uint16_t i, uint32_t size) {
 	payload_size += size + 4; // +4 because size is stored in payload
 	f.seekSet(6);
 	f.write(&payload_size, 4);
+#endif // USE_SDFAT
 }
 
 bool Save::set(uint16_t i, char* buf) {
@@ -323,6 +350,7 @@ bool Save::set(uint16_t i, const void* buf, uint32_t bufsize) {
 }
 
 bool Save::set(uint16_t i, void* buf, uint32_t bufsize) {
+#if USE_SDFAT
 	openFile();
 	if (readOnly) {
 		return false;
@@ -367,7 +395,7 @@ bool Save::set(uint16_t i, void* buf, uint32_t bufsize) {
 		del(i);
 		return set(i, buf, bufsize);
 	}
-	size = MIN(size, bufsize);
+	size = min(size, bufsize);
 	
 	// we already seeked correctly
 	
@@ -375,11 +403,15 @@ bool Save::set(uint16_t i, void* buf, uint32_t bufsize) {
 	f.write(buf, size);
 	f.flush();
 	return true;
+#else // USE_SDFAT
+	return false;
+#endif // USE_SDFAT
 }
 
 
 
 void Save::del(uint16_t i) {
+#if USE_SDFAT
 	openFile();
 	if (readOnly) {
 		return;
@@ -434,6 +466,7 @@ void Save::del(uint16_t i) {
 	f.write(&payload_size, 4);
 	f.truncate(SAVEFILE_PAYLOAD_START + payload_size);
 	f.flush();
+#endif // USE_SDFAT
 }
 
 } // Gamebuino_Meta

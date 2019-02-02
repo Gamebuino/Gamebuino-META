@@ -40,6 +40,7 @@ void intToStr(int32_t i, char* buf) {
 }
 
 int32_t sdPathNoDuplicate(char* name, uint8_t offset, uint8_t digits, int32_t start) {
+#if USE_SDFAT
 	int32_t power = 1;
 	for (uint8_t j = 0; j < digits; j++) {
 		power *= 10;
@@ -53,6 +54,9 @@ int32_t sdPathNoDuplicate(char* name, uint8_t offset, uint8_t digits, int32_t st
 		}
 	}
 	return -1;
+#else
+	return -1;
+#endif
 }
 
 uint16_t rgb888Torgb565(RGB888 c) {
@@ -73,6 +77,7 @@ RGB888 rgb565Torgb888(uint16_t c) {
 	return out;
 }
 
+#if USE_SDFAT
 uint16_t f_read16(File* f) {
 	uint16_t result;
 	f->read(&result, 2);
@@ -96,6 +101,7 @@ void f_write16(uint16_t b, File* f) {
 	//Luckily our MCU is little endian so byte order like this is fine
 	f->write(&b, 2);
 }
+#endif // USE_SDFAT
 
 
 } // namespace Gamebuino_Meta

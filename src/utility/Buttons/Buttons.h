@@ -24,7 +24,7 @@ Authors:
 #ifndef _GAMEBUINO_META_BUTTONS_H_
 #define	_GAMEBUINO_META_BUTTONS_H_
 
-#include <Arduino.h>
+#include "../../config/config.h"
 
 namespace Gamebuino_Meta {
 const uint8_t NUM_BTN = 8;

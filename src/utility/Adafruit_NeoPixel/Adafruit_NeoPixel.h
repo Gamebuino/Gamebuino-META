@@ -19,12 +19,7 @@
 #ifndef ADAFRUIT_NEOPIXEL_H
 #define ADAFRUIT_NEOPIXEL_H
 
-#if (ARDUINO >= 100)
- #include <Arduino.h>
-#else
- #include <WProgram.h>
- #include <pins_arduino.h>
-#endif
+#include "../../config/config.h"
 
 // The order of primary colors in the NeoPixel data stream can vary
 // among device types, manufacturers and even different revisions of
@@ -150,7 +145,7 @@ class Adafruit_NeoPixel {
 
  private:
 
-  boolean
+  bool
 #ifdef NEO_KHZ400  // If 400 KHz NeoPixel support enabled...
     is800KHz,      // ...true if 800 KHz pixels
 #endif
