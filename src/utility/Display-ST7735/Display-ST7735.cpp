@@ -305,12 +305,14 @@ void Display_ST7735::commandList(const uint8_t *addr) {
 
 // Initialization code common to both 'B' and 'R' type displays
 void Display_ST7735::commonInit() {
-	csport = (volatile uint32_t*)PORT->Group[1].OUT.reg;
-	rsport = (volatile uint32_t*)PORT->Group[1].OUT.reg;
+	csport = &(PORT->Group[1].OUT.reg);
+	rsport = &(PORT->Group[1].OUT.reg);
+	
 	cspinmask = (1 << 22);
 	rspinmask = (1 << 23);
 	PORT->Group[1].DIR.reg |= cspinmask;
 	PORT->Group[1].DIR.reg |= rspinmask;
+	
 
 #ifdef ENABLE_IDLE_TOGGLE_PIN
 	PORT->Group[0].DIR.reg |= (1 << ENABLE_IDLE_TOGGLE_PIN);
