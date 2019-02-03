@@ -252,7 +252,7 @@ void Gamebuino::begin() {
 		titleScreen();
 #endif
 	}
-	gamebuino_meta_pick_random_seed();
+	pickRandomSeed();
 	display.clear();
 	
 	inited = true;
@@ -423,7 +423,7 @@ void Gamebuino::setFrameRate(uint8_t fps) {
 
 void Gamebuino::pickRandomSeed(){
 #if NO_ARDUINO
-	pickRandomSeed();
+	gamebuino_meta_pick_random_seed();
 #else
 	randomSeed(micros() * micros() ^ analogRead(1)*analogRead(2)); // can't use analogRad(0) as we have a speaker attached there
 #endif
