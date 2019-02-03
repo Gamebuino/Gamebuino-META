@@ -40,13 +40,14 @@ extern const uint8_t font3x5[];
 
 // gb is only needed to check for the inited state to get proper width() and height() during initialization
 #include "../../Gamebuino-Meta.h"
-extern Gamebuino gb;
 
 #ifndef min
 #define min(x, y) ((x < y) ? x : y)
 #endif
 
 namespace Gamebuino_Meta {
+
+extern Gamebuino* gbptr;
 
 //default values of static members
 //uint16_t Graphics::transparentColor = 0xF81F; //magenta is the default transparent color
@@ -1371,7 +1372,7 @@ void Graphics::getTextBounds(const char *str,
 
 // Return the size of the display
 int16_t Graphics::width(void) const {
-	if (gb.inited || _width) {
+	if (gbptr->inited || _width) {
 		// we are inited
 		return _width;
 	}
@@ -1384,7 +1385,7 @@ int16_t Graphics::width(void) const {
 }
 
 int16_t Graphics::height(void) const {
-	if (gb.inited || _height) {
+	if (gbptr->inited || _height) {
 		// we are inited
 		return _height;
 	}

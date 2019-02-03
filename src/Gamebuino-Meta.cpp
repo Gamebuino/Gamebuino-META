@@ -146,9 +146,12 @@ const uint8_t volumeUnmuted[] = {8,12,
 
 const uint16_t startSound[] = {0x0005,0x338,0x3FC,0x254,0x1FC,0x25C,0x3FC,0x368,0x0000};
 
+Gamebuino* gbptr = nullptr;
+
 void Gamebuino::begin() {
 	// first we disable the watchdog timer so that we tell the bootloader everything is fine!
 	WDT->CTRL.bit.ENABLE = 0;
+	gbptr = this;
 	
 	// let's to some sanity checks which are done on compile-time
 	
@@ -249,7 +252,7 @@ void Gamebuino::begin() {
 		titleScreen();
 #endif
 	}
-	pickRandomSeed();
+	gamebuino_meta_pick_random_seed();
 	display.clear();
 	
 	inited = true;
@@ -318,23 +321,23 @@ void Gamebuino::titleScreen() {
 		}
 		
 		//blinking border
-		gb.display.setColor((gb.frameCount % 8) >= 4 ? BROWN : BLACK);
-		gb.display.drawRect(0, 0, gb.display.width(), gb.display.height());
+		display.setColor((frameCount % 8) >= 4 ? BROWN : BLACK);
+		display.drawRect(0, 0, display.width(), display.height());
 		
 		//blinking A button icon
-		if((gb.frameCount%8) >= 4){
+		if((frameCount%8) >= 4){
 			buttonsIcons.setFrame(1); //button A pressed
 		} else {
 			buttonsIcons.setFrame(0); //button A released
 		}
-		uint8_t scale = gb.display.width() == 80 ? 1 : 2;
+		uint8_t scale = display.width() == 80 ? 1 : 2;
 		uint8_t w = buttonsIcons.width() * scale;
 		uint8_t h = buttonsIcons.height() * scale;
-		uint8_t x = gb.display.width() - w;
-		uint8_t y = gb.display.height() - h;
-		gb.display.drawImage(x, y, buttonsIcons, w, h);
+		uint8_t x = display.width() - w;
+		uint8_t y = display.height() - h;
+		display.drawImage(x, y, buttonsIcons, w, h);
 		
-		if (gb.buttons.pressed(Button::a)) {
+		if (buttons.pressed(Button::a)) {
 			sound.playOK();
 			break;
 		}
@@ -827,14 +830,14 @@ void Gamebuino::homeMenu(){
 		}
 		
 		//draw light level
-		if ((currentItem == 0) && neoPixelsIntensity) {			
+		if ((currentItem == 0) && neoPixelsIntensity) {
 			tft.setColor(WHITE);
 			int lightHeight = neoPixelsIntensity * 32 / 4;
 			tft.drawRect(currentItem*32 + 30 + xOffset, yOffset + (32 - lightHeight), 2, lightHeight);
 		}
 		
 		//draw volume level
-		if ((currentItem == 1) && (sound.getVolume())) {			
+		if ((currentItem == 1) && (sound.getVolume())) {
 			tft.setColor(WHITE);
 			int volumeHeight = sound.getVolume() * 32 / 8;
 			tft.drawRect(currentItem*32 + 30 + xOffset, yOffset + (32 - volumeHeight), 2, volumeHeight);
@@ -904,9 +907,9 @@ void Gamebuino::setScreenRotation(Rotation r) {
 	Rotation rr = tft.getRotation();
 	if (((uint8_t)r - (uint8_t)rr) % 2) {
 		// we need to swap width/height of gb.display
-		int16_t tmp = gb.display._width;
-		gb.display._width = gb.display._height;
-		gb.display._height = tmp;
+		int16_t tmp = display._width;
+		display._width = display._height;
+		display._height = tmp;
 	}
 	tft.setRotation(r);
 }
@@ -919,24 +922,30 @@ int8_t tone_identifier = -1;
 
 } // namespace Gamebuino_Meta
 
+#if AUTOCREATE_OBJECT
 #ifndef GAMEBUINO_COMPAT_MODE
 Gamebuino gb;
 #endif
+#endif
 
 void tone(uint32_t outputPin, uint32_t frequency, uint32_t duration) {
-	if (Gamebuino_Meta::tone_identifier != -1) {
-		gb.sound.stop(Gamebuino_Meta::tone_identifier);
+	if (Gamebuino_Meta::gbptr) {
+		if (Gamebuino_Meta::tone_identifier != -1) {
+			Gamebuino_Meta::gbptr->sound.stop(Gamebuino_Meta::tone_identifier);
+		}
+		Gamebuino_Meta::tone_identifier = Gamebuino_Meta::gbptr->sound.tone(frequency, duration);
 	}
-	Gamebuino_Meta::tone_identifier = gb.sound.tone(frequency, duration);
 }
 
 void noTone(uint32_t outputPin) {
-	gb.sound.stop(Gamebuino_Meta::tone_identifier);
-	Gamebuino_Meta::tone_identifier = -1;
+	if (Gamebuino_Meta::gbptr) {
+		Gamebuino_Meta::gbptr->sound.stop(Gamebuino_Meta::tone_identifier);
+		Gamebuino_Meta::tone_identifier = -1;
+	}
 }
 
 void yield() {
-	if (gb.inited && (gb.frameEndFlag || gb.frameStartMicros)) {
-		gb.update();
+	if (Gamebuino_Meta::gbptr && Gamebuino_Meta::gbptr->inited && (Gamebuino_Meta::gbptr->frameEndFlag || Gamebuino_Meta::gbptr->frameStartMicros)) {
+		Gamebuino_Meta::gbptr->update();
 	}
 }

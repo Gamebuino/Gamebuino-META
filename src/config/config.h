@@ -63,7 +63,7 @@ extern "C" {
 uint32_t millis(void);
 uint32_t micros(void);
 void delay(uint32_t);
-void pickRandomSeed(void);
+void gamebuino_meta_pick_random_seed(void);
 }
 #else
 #include <Arduino.h>

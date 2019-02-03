@@ -525,10 +525,10 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 		setAddrWindow(0, 0, _width - 1, _height - 1);
 
 		//initiate SPI
-	#if CUSTOM_TFT_FUNCTIONS
-	gamebuino_meta_tft_spi_begin_transaction();
+#if CUSTOM_TFT_FUNCTIONS
+		gamebuino_meta_tft_spi_begin_transaction();
 #else
-	SPI.beginTransaction(tftSPISettings);
+		SPI.beginTransaction(tftSPISettings);
 #endif
 		dataMode();
 
@@ -567,10 +567,10 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 
 		//finish SPI
 		idleMode();
-	#if CUSTOM_TFT_FUNCTIONS
-	gamebuino_meta_tft_spi_end_transaction();
+#if CUSTOM_TFT_FUNCTIONS
+		gamebuino_meta_tft_spi_end_transaction();
 #else
-	SPI.endTransaction();
+		SPI.endTransaction();
 #endif
 
 		return;
@@ -630,10 +630,10 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 		setAddrWindow(0, 0, _width - 1, _height - 1);
 		
 		//initiate SPI
-	#if CUSTOM_TFT_FUNCTIONS
-	gamebuino_meta_tft_spi_begin_transaction();
+#if CUSTOM_TFT_FUNCTIONS
+		gamebuino_meta_tft_spi_begin_transaction();
 #else
-	SPI.beginTransaction(tftSPISettings);
+		SPI.beginTransaction(tftSPISettings);
 #endif
 		dataMode();
 		if (img.colorMode == ColorMode::rgb565) {
@@ -663,10 +663,10 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 
 			//finish SPI
 			idleMode();
-		#if CUSTOM_TFT_FUNCTIONS
-	gamebuino_meta_tft_spi_end_transaction();
+#if CUSTOM_TFT_FUNCTIONS
+			gamebuino_meta_tft_spi_end_transaction();
 #else
-	SPI.endTransaction();
+			SPI.endTransaction();
 #endif
 
 			return;
@@ -695,10 +695,10 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 
 			//finish SPI
 			idleMode();
-		#if CUSTOM_TFT_FUNCTIONS
-	gamebuino_meta_tft_spi_end_transaction();
+#if CUSTOM_TFT_FUNCTIONS
+			gamebuino_meta_tft_spi_end_transaction();
 #else
-	SPI.endTransaction();
+			SPI.endTransaction();
 #endif
 			return;
 		}

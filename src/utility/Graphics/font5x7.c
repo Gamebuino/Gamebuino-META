@@ -20,10 +20,10 @@
 #ifndef FONT5X7_C
 #define FONT5X7_C
 
-#include <Arduino.h>
+#include <stdint.h>
 
 // standard ascii 5x7 font
-const uint8_t font5x7[] PROGMEM = {
+const uint8_t font5x7[] = {
 	5,7, // width and height
     0x7F, 0x41, 0x41, 0x41, 0x7F, // 0
     0x3E, 0x5B, 0x4F, 0x5B, 0x3E, // 1  sad

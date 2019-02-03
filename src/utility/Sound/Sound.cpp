@@ -483,6 +483,8 @@ void dacConfigure(void) {
 	analogWriteResolution(10);
 }
 
+#endif // SOUND_CHANNELS
+
 void Sound::begin() {
 #if SOUND_CHANNELS > 0
 	dacConfigure();
@@ -490,7 +492,5 @@ void Sound::begin() {
 	tcStart();
 #endif
 }
-
-#endif // SOUND_CHANNELS
 
 } // Gamebuino_Meta

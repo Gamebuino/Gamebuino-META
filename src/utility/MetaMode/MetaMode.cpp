@@ -22,9 +22,11 @@ Authors:
 */
 
 #include "MetaMode.h"
-#include <Gamebuino-Meta.h>
+#include "../../Gamebuino-Meta.h"
 
 namespace Gamebuino_Meta {
+
+extern Gamebuino* gbptr;
 
 const uint8_t textMeta_w = 51;
 const uint8_t textMeta_h = 15;
@@ -94,7 +96,7 @@ bool MetaMode::isActive() {
 
 
 void MetaMode::updateButtons() {
-	if (gb.buttons.repeat(Button::home, 0) && gb.buttons.repeat(Button::menu, 0) && !active &&
+	if (gbptr->buttons.repeat(Button::home, 0) && gbptr->buttons.repeat(Button::menu, 0) && !active &&
 		!animRunning && !unhandledAnimRunning && canActivate) {
 		loadingTimer++;
 		
@@ -110,7 +112,7 @@ void MetaMode::updateButtons() {
 			usingMenuButton = true;
 			usingHomeButton = true;
 		}
-	} else if (gb.buttons.repeat(Button::home, 0) && gb.buttons.repeat(Button::menu, 0) &&
+	} else if (gbptr->buttons.repeat(Button::home, 0) && gbptr->buttons.repeat(Button::menu, 0) &&
 			   canDeactivate) {
 		loadingTimer--;           // De-load (like loading, but backwards)
 
@@ -123,10 +125,10 @@ void MetaMode::updateButtons() {
 			usingHomeButton = true;
 		}
 	} else {
-		if (usingMenuButton && !gb.buttons.repeat(Button::menu, 0)) {
+		if (usingMenuButton && !gbptr->buttons.repeat(Button::menu, 0)) {
 			usingMenuButton = false;
 		}
-		if (usingHomeButton && !gb.buttons.repeat(Button::home, 0)) {
+		if (usingHomeButton && !gbptr->buttons.repeat(Button::home, 0)) {
 			usingHomeButton = false;
 		}
 	}
@@ -143,13 +145,13 @@ void MetaMode::updateButtons() {
 	}
 	
 	// Ban the buttons we are using
-	if (usingMenuButton) gb.buttons.states[(uint8_t)Button::menu] = 0;
-	if (usingHomeButton) gb.buttons.states[(uint8_t)Button::home] = 0;
+	if (usingMenuButton) gbptr->buttons.states[(uint8_t)Button::menu] = 0;
+	if (usingHomeButton) gbptr->buttons.states[(uint8_t)Button::home] = 0;
 }
 
 void MetaMode::updateAnimations() {
 	// ================= Logic ======================= // 
-	uint8_t scale = gb.display.width() == 80 ? 1 : 2;  // Also handle full res games
+	uint8_t scale = gbptr->display.width() == 80 ? 1 : 2;  // Also handle full res games
 	static const uint8_t DISP_W = 80;
 	static const uint8_t DISP_H = 64;
 	
@@ -164,7 +166,7 @@ void MetaMode::updateAnimations() {
 		if (unhandledAnimTimer >= unhandledAnimTimeMax) {
 			unhandledAnimRunning = false;
 #if GUI_ENABLE_POPUP
-			gb.gui.popup("Game not META :(", 30);
+			gbptr->gui.popup("Game not META :(", 30);
 #endif  // GUI_ENABLE_POPUP
 		}
 	}
@@ -175,12 +177,12 @@ void MetaMode::updateAnimations() {
 		for (uint8_t i = 0; i < 4; i++) {
 			uint16_t animPercentage = 100 * (animTimer - animInterval * i) / animRectTimeMax;
 			if (animPercentage >= 100 || animPercentage < 0) continue;
-			gb.display.setColor(rectsPattern[i]);
+			gbptr->display.setColor(rectsPattern[i]);
 			int16_t rect_h = animH_start - animPercentage * (animH_start - animH_end) / 100;
-			gb.display.fillRect(
+			gbptr->display.fillRect(
 				0, (DISP_H / 2 + (animPercentage * DISP_H / 200)) * scale,
 				DISP_W * scale, rect_h * scale);
-			gb.display.fillRect(
+			gbptr->display.fillRect(
 				0, (DISP_H / 2 - (animPercentage * DISP_H / 200) - rect_h) * scale,
 				DISP_W * scale, rect_h * scale);
 		}
@@ -234,44 +236,44 @@ void MetaMode::updateAnimations() {
 }
 
 void MetaMode::drawLoadingLines(uint8_t percentage) {
-	uint8_t colorOffset = gb.frameCount % NUMBER_OF_COLORS_LINE_PATTERN;
-	uint8_t lineW = percentage * gb.display.width() / 100;
-	uint8_t xOffset = (gb.display.width() - lineW) / 2;  // Offset to center the lines on the screen
+	uint8_t colorOffset = gbptr->frameCount % NUMBER_OF_COLORS_LINE_PATTERN;
+	uint8_t lineW = percentage * gbptr->display.width() / 100;
+	uint8_t xOffset = (gbptr->display.width() - lineW) / 2;  // Offset to center the lines on the screen
 
 	for (char x = 0; x < lineW; x++) {
-		gb.display.drawPixel(
+		gbptr->display.drawPixel(
 			xOffset + x, 0,
 			linePattern[(x + colorOffset) % NUMBER_OF_COLORS_LINE_PATTERN]);  // Top line
-		gb.display.drawPixel(
-			xOffset + x, gb.display.height() - 1,
+		gbptr->display.drawPixel(
+			xOffset + x, gbptr->display.height() - 1,
 			linePattern[(x + colorOffset) % NUMBER_OF_COLORS_LINE_PATTERN]);  // Bottom line
 	}
 }
 
 void MetaMode::drawTextMeta(int16_t x, int16_t y) {
 	uint8_t scale = 1;
-	if (gb.display.width() != 80) {
+	if (gbptr->display.width() != 80) {
 		x *= 2;
 		y *= 2;
 		scale *= 2;
 	}
-	gb.display.setColor(ColorIndex::brown);
-	gb.display.drawBitmap(x+scale, y+scale, textMeta, scale);
-	gb.display.setColor(ColorIndex::white);
-	gb.display.drawBitmap(x, y, textMeta, scale);
+	gbptr->display.setColor(ColorIndex::brown);
+	gbptr->display.drawBitmap(x+scale, y+scale, textMeta, scale);
+	gbptr->display.setColor(ColorIndex::white);
+	gbptr->display.drawBitmap(x, y, textMeta, scale);
 }
 
 void MetaMode::drawTextMode(int16_t x, int16_t y) {
 	uint8_t scale = 1;
-	if (gb.display.width() != 80) {
+	if (gbptr->display.width() != 80) {
 		x *= 2;
 		y *= 2;
 		scale *= 2;
 	}
-	gb.display.setColor(ColorIndex::darkgray);
-	gb.display.fillRect(x, y, textMode_w*scale, textMode_h*scale);
-	gb.display.setColor(ColorIndex::white);
-	gb.display.drawBitmap(x, y, textMode, scale);
+	gbptr->display.setColor(ColorIndex::darkgray);
+	gbptr->display.fillRect(x, y, textMode_w*scale, textMode_h*scale);
+	gbptr->display.setColor(ColorIndex::white);
+	gbptr->display.drawBitmap(x, y, textMode, scale);
 }
 
 };  // Namespace Gamebuino_Meta

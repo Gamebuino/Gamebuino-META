@@ -25,6 +25,8 @@ Authors:
 
 namespace Gamebuino_Meta {
 
+extern Gamebuino* gbptr;
+
 extern int8_t tone_identifier;
 
 Sound_Handler_Tone::Sound_Handler_Tone(Sound_Channel* chan, uint32_t frequency, int32_t duration, int8_t i) : Sound_Handler(chan) {
@@ -48,7 +50,7 @@ void Sound_Handler_Tone::update() {
 		return;
 	}
 	int32_t duration = (int32_t)channel->buffer;
-	duration -= gb.getTimePerFrame();
+	duration -= gbptr->getTimePerFrame();
 	channel->buffer = (uint8_t*)duration;
 	if (duration <= 0) {
 		channel->use = false;

@@ -28,6 +28,10 @@
 #define CUSTOM_MALLOC 0
 #endif
 
+#ifndef AUTOCREATE_OBJECT
+#define AUTOCREATE_OBJECT 1
+#endif
+
 ///////////////
 // save defines
 ///////////////

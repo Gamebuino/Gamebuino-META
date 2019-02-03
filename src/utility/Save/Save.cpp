@@ -32,6 +32,8 @@ Authors:
 #endif
 
 namespace Gamebuino_Meta {
+	
+extern Gamebuino* gbptr;
 
 #define SAVEHEADER_SIZE 10
 #define SAVEFILE_PAYLOAD_START (SAVEHEADER_SIZE + (blocks * 5))
@@ -56,11 +58,11 @@ void Save::config(uint16_t _blocks, const SaveDefault* _defaults, uint16_t _num_
 }
 
 void Save::error(const char *s) {
-	gb.tft.setCursor(0, 0);
-	gb.tft.setColor(Color::red, Color::black);
-	gb.tft.print("SAVE ERROR ");
-	gb.tft.setColor(Color::white, Color::black);
-	gb.tft.print(s);
+	gbptr->tft.setCursor(0, 0);
+	gbptr->tft.setColor(Color::red, Color::black);
+	gbptr->tft.print("SAVE ERROR ");
+	gbptr->tft.setColor(Color::white, Color::black);
+	gbptr->tft.print(s);
 	while(1);
 }
 

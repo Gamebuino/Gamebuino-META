@@ -35,6 +35,8 @@ Authors:
 
 namespace Gamebuino_Meta {
 
+extern Gamebuino* gbptr;
+
 Frame_Handler::Frame_Handler(Image* _img) {
 	img = _img;
 	buf = img->_buffer;
@@ -170,7 +172,7 @@ void Image::init(uint16_t w, uint16_t h, ColorMode col, uint16_t _frames, uint8_
 	frame_looping = fl;
 	frame_handler = new Frame_Handler_RAM(this);
 	frame_loopcounter = 0;
-	last_frame = (gb.frameCount & 0xFF) - 1;
+	last_frame = (gbptr->frameCount & 0xFF) - 1;
 	setFrame(0);
 }
 
@@ -210,7 +212,7 @@ void Image::init(const uint16_t* buffer) {
 	_buffer = buf;
 	frame_handler = new Frame_Handler_Mem(this);
 	frame_loopcounter = 0;
-	last_frame = (gb.frameCount & 0xFF) - 1;
+	last_frame = (gbptr->frameCount & 0xFF) - 1;
 	setFrame(0);
 }
 
@@ -251,7 +253,7 @@ void Image::init(const uint8_t* buffer) {
 	_buffer = (uint16_t*)buf;
 	frame_handler = new Frame_Handler_Mem(this);
 	frame_loopcounter = 0;
-	last_frame = (gb.frameCount & 0xFF) - 1;
+	last_frame = (gbptr->frameCount & 0xFF) - 1;
 	setFrame(0);
 }
 
@@ -290,7 +292,7 @@ void Image::init(uint16_t w, uint16_t h, char* filename, uint8_t fl) {
 	//setFrame(0);
 	((Frame_Handler_SD*)frame_handler)->init(filename);
 	frame_loopcounter = 0;
-	last_frame = (gb.frameCount & 0xFF) - 1;
+	last_frame = (gbptr->frameCount & 0xFF) - 1;
 }
 
 
@@ -399,11 +401,11 @@ ColorIndex Image::getPixelIndex(int16_t x, int16_t y) {
 
 void Image::nextFrame() {
 	if (frames) {
-		if (frames == 1 || !frame_looping || last_frame == (gb.frameCount & 0xFF)) {
+		if (frames == 1 || !frame_looping || last_frame == (gbptr->frameCount & 0xFF)) {
 			return;
 		}
 	}
-	last_frame = gb.frameCount & 0xFF;
+	last_frame = gbptr->frameCount & 0xFF;
 	if (frames)  {
 		frame_loopcounter++;
 		if (frame_loopcounter < frame_looping) {
@@ -429,7 +431,7 @@ void Image::setFrame(uint16_t _frame) {
 	}
 	frame = _frame;
 	frame_handler->set(frame);
-	last_frame = gb.frameCount & 0xFF; // we already loaded this frame!
+	last_frame = gbptr->frameCount & 0xFF; // we already loaded this frame!
 	frame_loopcounter = 0;
 }
 

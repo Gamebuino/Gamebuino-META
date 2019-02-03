@@ -155,8 +155,10 @@ extern const uint16_t arrowsIconsData[];
 #ifdef GAMEBUINO_COMPAT_MODE
 #include <Gamebuino-Compat.h>
 #else
+#if AUTOCREATE_OBJECT
 using Gamebuino_Meta::Gamebuino;
 extern Gamebuino gb;
+#endif
 #endif
 
 #endif	// _GAMEBUINO_META_H_

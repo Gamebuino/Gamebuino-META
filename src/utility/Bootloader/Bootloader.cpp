@@ -23,11 +23,13 @@ Authors:
 #include "Bootloader.h"
 
 #include "../../Gamebuino-Meta.h"
-extern Gamebuino gb;
+namespace Gamebuino_Meta {
+extern Gamebuino* gbptr;
+}
 
 // create our custom NMI handler
 void NMI_Handler() {
-	gb.bootloader.error(1);
+	Gamebuino_Meta::gbptr->bootloader.error(1);
 }
 
 #if HARDFAULT_DEBUG_HANDLER
@@ -61,25 +63,25 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress ) {
 	psr = pulFaultStackAddress[ 7 ];
 
 	/* When the following line is hit, the variables contain the register values. */
-	gb.tft.setCursor(0, 0);
-	gb.tft.setColor(Color::white, Color::black);
-	gb.tft.println("Hard Fault");
-	gb.tft.print("r0: 0x");
-	gb.tft.println(r0, HEX);
-	gb.tft.print("r1: 0x");
-	gb.tft.println(r1, HEX);
-	gb.tft.print("r2: 0x");
-	gb.tft.println(r2, HEX);
-	gb.tft.print("r3: 0x");
-	gb.tft.println(r3, HEX);
-	gb.tft.print("r12: 0x");
-	gb.tft.println(r12, HEX);
-	gb.tft.print("lr: 0x");
-	gb.tft.println(lr, HEX);
-	gb.tft.print("pc: 0x");
-	gb.tft.println(pc, HEX);
-	gb.tft.print("psr: 0x");
-	gb.tft.println(psr, HEX);
+	Gamebuino_Meta::gbptr->tft.setCursor(0, 0);
+	Gamebuino_Meta::gbptr->tft.setColor(Color::white, Color::black);
+	Gamebuino_Meta::gbptr->tft.println("Hard Fault");
+	Gamebuino_Meta::gbptr->tft.print("r0: 0x");
+	Gamebuino_Meta::gbptr->tft.println(r0, HEX);
+	Gamebuino_Meta::gbptr->tft.print("r1: 0x");
+	Gamebuino_Meta::gbptr->tft.println(r1, HEX);
+	Gamebuino_Meta::gbptr->tft.print("r2: 0x");
+	Gamebuino_Meta::gbptr->tft.println(r2, HEX);
+	Gamebuino_Meta::gbptr->tft.print("r3: 0x");
+	Gamebuino_Meta::gbptr->tft.println(r3, HEX);
+	Gamebuino_Meta::gbptr->tft.print("r12: 0x");
+	Gamebuino_Meta::gbptr->tft.println(r12, HEX);
+	Gamebuino_Meta::gbptr->tft.print("lr: 0x");
+	Gamebuino_Meta::gbptr->tft.println(lr, HEX);
+	Gamebuino_Meta::gbptr->tft.print("pc: 0x");
+	Gamebuino_Meta::gbptr->tft.println(pc, HEX);
+	Gamebuino_Meta::gbptr->tft.print("psr: 0x");
+	Gamebuino_Meta::gbptr->tft.println(psr, HEX);
 	__asm("BKPT #0\n") ; // Break into the debugger
 	while(1);
 }
@@ -108,7 +110,7 @@ void HardFault_Handler(void) {
 
 #else // HARDFAULT_DEBUG_HANDLER
 void HardFault_Handler() {
-	gb.bootloader.error(2);
+	Gamebuino_Meta::gbptr->bootloader.error(2);
 }
 #endif
 
