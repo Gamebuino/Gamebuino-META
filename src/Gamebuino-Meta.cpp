@@ -189,14 +189,15 @@ void Gamebuino::begin() {
 	
 	display.setColor(Color::white);
 	drawLogo(display, 2, 2, display.fontSize);
+#if USE_SDFAT
 	display.setColor(Color::brown, Color::black);
 	display.setCursor(0, display.height() - (display.getFontHeight()*display.fontSize));
 	display.print("SD INIT... ");
+#endif // USE_SDFAT
 	updateDisplay();
 
 #if USE_SDFAT
 	sdInited = SD.begin(SD_CS);
-#endif
 	if (!sdInited) {
 		display.setColor(Color::red, Color::black);
 		display.println("FAILED!");
@@ -207,6 +208,7 @@ void Gamebuino::begin() {
 		display.println("OK!");
 		updateDisplay();
 	}
+#endif // USE_SDFAT
 	buttons.update();
 	muteSound = muteSound || buttons.repeat(Button::b, 0);
 
@@ -247,7 +249,9 @@ void Gamebuino::begin() {
 	Graphics_SD::setTft(&tft);
 	// only do titleScreen after a hard power on
 	if (PM->RCAUSE.bit.POR) {
+#if AUTOSHOW_STARTSCREEN
 		startScreen();
+#endif
 #if AUTOSHOW_TITLESCREEN
 		titleScreen();
 #endif

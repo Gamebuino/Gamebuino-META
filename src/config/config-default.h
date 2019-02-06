@@ -52,6 +52,10 @@
 #define AUTOSHOW_TITLESCREEN 1
 #endif
 
+#ifndef AUTOSHOW_STARTSCREEN
+#define AUTOSHOW_STARTSCREEN 1
+#endif
+
 ///////////////
 // display defines
 ///////////////
