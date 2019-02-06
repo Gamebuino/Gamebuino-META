@@ -417,6 +417,10 @@ bool Gamebuino::update() {
 	return false;
 }
 
+void Gamebuino::waitForUpdate() {
+	while(!update());
+}
+
 void Gamebuino::updateDisplay() {
 	tft.drawImage(0, 0, (Image&)display, tft.width(), tft.height()); //send the buffer to the screen
 }

@@ -100,6 +100,7 @@ public:
 	void startScreen();
 	void titleScreen();
 	bool update();
+	void waitForUpdate();
 	void updateDisplay();
 	uint8_t startMenuTimer;
 	uint32_t frameCount;
