@@ -59,23 +59,20 @@ Adafruit_NeoPixel::Adafruit_NeoPixel() :
 
 Adafruit_NeoPixel::~Adafruit_NeoPixel() {
   if(pixels)   gb_free(pixels);
-#if 0
-  if(pin >= 0) pinMode(pin, INPUT);
-#endif
+  //if(pin >= 0) pinMode(pin, INPUT);
 }
 
 void Adafruit_NeoPixel::begin(void) {
-#if 0
   if(pin >= 0) {
-    pinMode(pin, OUTPUT);
-    digitalWrite(pin, LOW);
+    PORT->Group[0].DIR.reg |= (1ul << 13);
+    PORT->Group[0].OUT.reg &= ~(1ul << 13);
+    //pinMode(pin, OUTPUT);
+    //digitalWrite(pin, LOW);
   }
   begun = true;
-#endif // 0
 }
 
 void Adafruit_NeoPixel::updateLength(uint16_t n) {
-#if 0
   if(pixels) gb_free(pixels); // Free existing data (if any)
 
   // Allocate new data -- note: ALL PIXELS ARE CLEARED
@@ -86,11 +83,9 @@ void Adafruit_NeoPixel::updateLength(uint16_t n) {
   } else {
     numLEDs = numBytes = 0;
   }
-#endif // 0
 }
 
 void Adafruit_NeoPixel::updateType(neoPixelType t) {
-#if 0
   bool oldThreeBytesPerPixel = (wOffset == rOffset); // false if RGBW
 
   wOffset = (t >> 6) & 0b11; // See notes in header file
@@ -107,7 +102,6 @@ void Adafruit_NeoPixel::updateType(neoPixelType t) {
     bool newThreeBytesPerPixel = (wOffset == rOffset);
     if(newThreeBytesPerPixel != oldThreeBytesPerPixel) updateLength(numLEDs);
   }
-#endif // 0
 }
 
 #ifdef ESP8266
@@ -117,7 +111,6 @@ extern "C" void ICACHE_RAM_ATTR espShow(
 #endif // ESP8266
 
 void Adafruit_NeoPixel::show(void) {
-#if 0
   if(!pixels) return;
 
   // Data latch = 50+ microsecond pause in the output stream.  Rather than
@@ -141,7 +134,7 @@ void Adafruit_NeoPixel::show(void) {
   // state, computes 'pin high' and 'pin low' values, and writes these back
   // to the PORT register as needed.
   
-  noInterrupts(); // Need 100% focus on instruction timing
+  __disable_irq(); // Need 100% focus on instruction timing
 
   // Tried this with a timer/counter, couldn't quite get adequate
   // resolution.  So yay, you get a load of goofball NOPs...
@@ -149,8 +142,8 @@ void Adafruit_NeoPixel::show(void) {
   uint8_t  *ptr, *end, p, bitMask, portNum;
   uint32_t  pinMask;
 
-  portNum =  g_APinDescription[pin].ulPort;
-  pinMask =  1ul << g_APinDescription[pin].ulPin;
+  portNum =  0;
+  pinMask =  1ul << 13;
   ptr     =  pixels;
   end     =  ptr + numBytes;
   p       = *ptr++;
@@ -176,39 +169,37 @@ void Adafruit_NeoPixel::show(void) {
     if(bitMask >>= 1) {
         asm("nop; nop; nop; nop; nop; nop; nop; nop; nop;");
     } else {
-      interrupts();
-      noInterrupts();
+      __enable_irq();
+      __disable_irq();
       if(ptr >= end) break;
       p       = *ptr++;
       bitMask = 0x80;
     }
   }
 
-  interrupts();
+  __enable_irq();
   endTime = micros(); // Save EOD time for latch on next call
-#endif // 0
 }
 
 // Set the output pin number
 void Adafruit_NeoPixel::setPin(uint8_t p) {
-#if 0
-  if(begun && (pin >= 0)) pinMode(pin, INPUT);
+//  if(begun && (pin >= 0)) pinMode(pin, INPUT);
     pin = p;
     if(begun) {
-      pinMode(p, OUTPUT);
-      digitalWrite(p, LOW);
+      PORT->Group[0].DIR.reg |= (1ul << 13);
+      PORT->Group[0].OUT.reg &= ~(1ul << 13);
+//      pinMode(p, OUTPUT);
+//      digitalWrite(p, LOW);
     }
 #ifdef __AVR__
     port    = portOutputRegister(digitalPinToPort(p));
     pinMask = digitalPinToBitMask(p);
 #endif
-#endif // 0
 }
 
 // Set pixel color from separate R,G,B components:
 void Adafruit_NeoPixel::setPixelColor(
  uint16_t n, uint8_t r, uint8_t g, uint8_t b) {
-#if 0
   if(n < numLEDs) {
     if(brightness) { // See notes in setBrightness()
       r = (r * brightness) >> 8;
@@ -226,12 +217,10 @@ void Adafruit_NeoPixel::setPixelColor(
     p[gOffset] = g;
     p[bOffset] = b;
   }
-#endif // 0
 }
 
 void Adafruit_NeoPixel::setPixelColor(
  uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
-#if 0
   if(n < numLEDs) {
     if(brightness) { // See notes in setBrightness()
       r = (r * brightness) >> 8;
@@ -250,12 +239,10 @@ void Adafruit_NeoPixel::setPixelColor(
     p[gOffset] = g;
     p[bOffset] = b;
   }
-#endif // 0
 }
 
 // Set pixel color from 'packed' 32-bit RGB color:
 void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c) {
-#if 0
   if(n < numLEDs) {
     uint8_t *p,
       r = (uint8_t)(c >> 16),
@@ -277,7 +264,6 @@ void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c) {
     p[gOffset] = g;
     p[bOffset] = b;
   }
-#endif // 0
 }
 
 // Convert separate R,G,B into packed 32-bit RGB color.
@@ -355,7 +341,6 @@ uint16_t Adafruit_NeoPixel::numPixels(void) const {
 // quite visible in the re-scaled version.  For a non-destructive
 // change, you'll need to re-render the full strip data.  C'est la vie.
 void Adafruit_NeoPixel::setBrightness(uint8_t b) {
-#if 0
   // Stored brightness value is different than what's passed.
   // This simplifies the actual scaling math later, allowing a fast
   // 8x8-bit multiply and taking the MSB.  'brightness' is a uint8_t,
@@ -378,7 +363,6 @@ void Adafruit_NeoPixel::setBrightness(uint8_t b) {
     }
     brightness = newBrightness;
   }
-#endif // 0
 }
 
 //Return the brightness value

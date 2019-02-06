@@ -944,8 +944,10 @@ void noTone(uint32_t outputPin) {
 	}
 }
 
+extern "C" {
 void yield() {
 	if (Gamebuino_Meta::gbptr && Gamebuino_Meta::gbptr->inited && (Gamebuino_Meta::gbptr->frameEndFlag || Gamebuino_Meta::gbptr->frameStartMicros)) {
 		Gamebuino_Meta::gbptr->update();
 	}
 }
+} // extern "C"
