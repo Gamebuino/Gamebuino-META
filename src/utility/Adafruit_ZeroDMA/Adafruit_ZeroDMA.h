@@ -1,7 +1,7 @@
 #ifndef _ADAFRUIT_ZERODMA_H_
 #define _ADAFRUIT_ZERODMA_H_
 
-#include <Arduino.h>
+#include "../../config/config.h"
 #include "utility/dma.h"
 
 namespace Gamebuino_Meta {
@@ -37,7 +37,7 @@ class Adafruit_ZeroDMA {
                   setAction(dma_transfer_trigger_action action),
                   setCallback(void (*callback)(Adafruit_ZeroDMA *) = NULL,
                     dma_callback_type type = DMA_CALLBACK_TRANSFER_DONE),
-                  loop(boolean flag),
+                  loop(bool flag),
                   suspend(void),
                   resume(void),
                   abort(void),

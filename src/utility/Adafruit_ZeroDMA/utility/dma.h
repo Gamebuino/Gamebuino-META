@@ -54,6 +54,19 @@ namespace Gamebuino_Meta {
 extern "C" {
 #endif
 
+#ifndef SAML21
+#define SAML21 0
+#endif
+#ifndef SAML22
+#define SAML22 0
+#endif
+#ifndef SAMC20
+#define SAMC20 0
+#endif
+#ifndef SAMC21
+#define SAMC21 0
+#endif
+
 #if (SAML21) || (SAML22) || (SAMC20) || (SAMC21) || defined(__DOXYGEN__) || defined(__SAMD51__)
 #define FEATURE_DMA_CHANNEL_STANDBY
 #endif

@@ -586,9 +586,9 @@ void Gamebuino::homeMenu(){
 		tft.fillRect(0, yOffset, 160, 32);
 		tft.setColor(WHITE);
 #if HOME_MENU_NO_EXIT
-	tft.drawBitmap(xOffset, yOffset + 4, homeIconsNoExit, 2);
+		tft.drawBitmap(xOffset, yOffset + 4, homeIconsNoExit, 2);
 #else // HOME_MENU_NO_EXIT
-	tft.drawBitmap(xOffset, yOffset + 4, homeIcons, 2);
+		tft.drawBitmap(xOffset, yOffset + 4, homeIcons, 2);
 #endif // HOME_MENU_NO_EXIT
 		//erase soundwaves if muted
 		if (!sound.getVolume() || sound.isMute()) {

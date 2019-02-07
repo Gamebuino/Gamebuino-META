@@ -1,6 +1,5 @@
 #include "Adafruit_ZeroDMA.h"
 #include "utility/dma.h"
-#include <malloc.h> // memalign() function
 
 namespace Gamebuino_Meta {
 
@@ -474,7 +473,7 @@ DmacDescriptor *Adafruit_ZeroDMA::addDescriptor(
 		// (aligned_alloc() or posix_memalign()) are not currently
 		// available in the version of ARM GCC in use, but this is,
 		// so here we are.
-		if(!(desc = (DmacDescriptor *)memalign(16,
+		if(!(desc = (DmacDescriptor *)gb_memalign(16,
 		  sizeof(DmacDescriptor))))
 			return NULL;
 		DmacDescriptor *prev = &_descriptor[channel];
@@ -573,7 +572,7 @@ void Adafruit_ZeroDMA::changeDescriptor(DmacDescriptor *desc,
 
 // Select whether channel's descriptor list should repeat or not.
 // This can be done before or after channel & any descriptors are allocated.
-void Adafruit_ZeroDMA::loop(boolean flag) {
+void Adafruit_ZeroDMA::loop(bool flag) {
 	// The loop selection is 'sticky' -- that is, you can enable or
 	// disable looping before a descriptor list is built, or after
 	// the fact.  This requires some extra steps in the library code
@@ -600,6 +599,7 @@ void Adafruit_ZeroDMA::loop(boolean flag) {
 // MISCELLANY --------------------------------------------------------------
 
 void Adafruit_ZeroDMA::printStatus(ZeroDMAstatus s) {
+#if !NO_ARDUINO
 	if(s == DMA_STATUS_JOBSTATUS) s = jobStatus;
 	Serial.print("Status: ");
 	switch(s) {
@@ -635,6 +635,7 @@ void Adafruit_ZeroDMA::printStatus(ZeroDMAstatus s) {
 		Serial.println((int)s);
 		break;
 	}
+#endif // !NO_ARDUINO
 }
 
 } // namespace Gamebuino_Meta

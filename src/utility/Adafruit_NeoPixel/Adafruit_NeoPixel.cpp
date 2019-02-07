@@ -347,6 +347,9 @@ void Adafruit_NeoPixel::setBrightness(uint8_t b) {
   // adding 1 here may (intentionally) roll over...so 0 = max brightness
   // (color values are interpreted literally; no scaling), 1 = min
   // brightness (off), 255 = just below max brightness.
+  if (!pixels) {
+    return;
+  }
   uint8_t newBrightness = b + 1;
   if(newBrightness != brightness) { // Compare against prior value
     // Brightness has changed -- re-scale existing data in RAM
@@ -371,5 +374,7 @@ uint8_t Adafruit_NeoPixel::getBrightness(void) const {
 }
 
 void Adafruit_NeoPixel::clear() {
-  memset(pixels, 0, numBytes);
+  if (pixels) {
+    memset(pixels, 0, numBytes);
+  }
 }

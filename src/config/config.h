@@ -36,6 +36,7 @@
 extern "C" {
 void* gb_malloc(size_t);
 void gb_free(void*);
+void* gb_memalign(size_t, size_t);
 }
 inline void* operator new(size_t size) {
 	return gb_malloc(size);
@@ -51,8 +52,10 @@ inline void operator delete[](void* ptr) {
 }
 #else
 #include <stdlib.h>
+#include <malloc.h>
 #define gb_malloc(x) malloc(x)
 #define gb_free(x) free(x)
+#define gb_memalign(x, y) memalign(x, y)
 #endif
 
 #if NO_ARDUINO
