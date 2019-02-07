@@ -1372,7 +1372,7 @@ void Graphics::getTextBounds(const char *str,
 
 // Return the size of the display
 int16_t Graphics::width(void) const {
-	if (gbptr->inited || _width) {
+	if ((gbptr && gbptr->inited) || _width) {
 		// we are inited
 		return _width;
 	}
@@ -1385,7 +1385,7 @@ int16_t Graphics::width(void) const {
 }
 
 int16_t Graphics::height(void) const {
-	if (gbptr->inited || _height) {
+	if ((gbptr && gbptr->inited) || _height) {
 		// we are inited
 		return _height;
 	}
