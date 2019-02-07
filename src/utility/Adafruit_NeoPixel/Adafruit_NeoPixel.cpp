@@ -110,6 +110,9 @@ extern "C" void ICACHE_RAM_ATTR espShow(
   uint8_t pin, uint8_t *pixels, uint32_t numBytes, uint8_t type);
 #endif // ESP8266
 
+#pragma GCC push_options
+#pragma GCC optimize ("Os")
+
 void Adafruit_NeoPixel::show(void) {
   if(!pixels) return;
 
@@ -135,7 +138,9 @@ void Adafruit_NeoPixel::show(void) {
   // to the PORT register as needed.
   
   __disable_irq(); // Need 100% focus on instruction timing
-
+#if NEOPIXELS_ALTERNATIVE_METHOD
+  NVMCTRL->CTRLB.bit.READMODE = NVMCTRL_CTRLB_READMODE_DETERMINISTIC_Val;
+#endif
   // Tried this with a timer/counter, couldn't quite get adequate
   // resolution.  So yay, you get a load of goofball NOPs...
 
@@ -154,20 +159,36 @@ void Adafruit_NeoPixel::show(void) {
 
   for(;;) {
     *set = pinMask;
+#if NEOPIXELS_ALTERNATIVE_METHOD
+    asm("nop; nop;");
+#else
     asm("nop; nop; nop; nop; nop; nop; nop; nop;");
+#endif
     if(p & bitMask) {
+#if NEOPIXELS_ALTERNATIVE_METHOD
+      asm("nop; nop; nop; nop; nop; nop; nop;");
+#else
       asm("nop; nop; nop; nop; nop; nop; nop; nop;"
           "nop; nop; nop; nop; nop; nop; nop; nop;"
           "nop; nop; nop; nop;");
+#endif
       *clr = pinMask;
     } else {
       *clr = pinMask;
+#if NEOPIXELS_ALTERNATIVE_METHOD
+      asm("nop; nop;");
+#else
       asm("nop; nop; nop; nop; nop; nop; nop; nop;"
           "nop; nop; nop; nop; nop; nop; nop; nop;"
           "nop; nop; nop; nop;");
+#endif
     }
     if(bitMask >>= 1) {
-        asm("nop; nop; nop; nop; nop; nop; nop; nop; nop;");
+#if NEOPIXELS_ALTERNATIVE_METHOD
+      asm("nop; nop; nop; nop; nop;");
+#else
+      asm("nop; nop; nop; nop; nop; nop; nop; nop; nop;");
+#endif
     } else {
       __enable_irq();
       __disable_irq();
@@ -177,9 +198,13 @@ void Adafruit_NeoPixel::show(void) {
     }
   }
 
+#if NEOPIXELS_ALTERNATIVE_METHOD
+  NVMCTRL->CTRLB.bit.READMODE = NVMCTRL_CTRLB_READMODE_NO_MISS_PENALTY_Val;
+#endif
   __enable_irq();
   endTime = micros(); // Save EOD time for latch on next call
 }
+#pragma GCC pop_options
 
 // Set the output pin number
 void Adafruit_NeoPixel::setPin(uint8_t p) {

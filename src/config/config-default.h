@@ -40,6 +40,10 @@
 #define AUTOCREATE_OBJECT 1
 #endif
 
+#ifndef NEOPIXELS_ALTERNATIVE_METHOD
+#define NEOPIXELS_ALTERNATIVE_METHOD 0
+#endif
+
 ///////////////
 // save defines
 ///////////////
