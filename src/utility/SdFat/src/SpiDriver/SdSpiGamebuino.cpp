@@ -44,11 +44,6 @@ void dma_callback_tx(Gamebuino_Meta::Adafruit_ZeroDMA *dma) {
 	transfer_tx_done = true;
 }
 
-static SPISettings sdFatSPISettings;
-
-uint8_t chipSelectPin;
-
-
 void initRxDMA() {
 	rxDMA.setTrigger(SERCOM4_DMAC_ID_RX);
 	rxDMA.setAction(Gamebuino_Meta::DMA_TRIGGER_ACTON_BEAT);
@@ -79,28 +74,21 @@ void initTxDMA() {
 	txDMA.setCallback(dma_callback_tx);
 }
 
-void SdSpiAltDriver::begin(uint8_t _chipSelectPin) {
-	chipSelectPin = _chipSelectPin;
-	pinMode(chipSelectPin, OUTPUT);
-	digitalWrite(chipSelectPin, HIGH);
+void SdSpiAltDriver::begin(uint8_t csPin) {
+	m_csPin = csPin;
+	pinMode(m_csPin, OUTPUT);
+	digitalWrite(m_csPin, HIGH);
 	
 	SPI.begin();
-//	if (Gamebuino_Meta::gbptr->sdFast) {
-		sdFatSPISettings = SPISettings(12000000, MSBFIRST, SPI_MODE0);
-		initRxDMA();
-		initTxDMA();
-//	} else {
-//		sdFatSPISettings = SPISettings(400000, MSBFIRST, SPI_MODE0);
-//	}
+	initRxDMA();
+	initTxDMA();
 }
 
 void SdSpiAltDriver::activate() {
-	SPI.beginTransaction(sdFatSPISettings);
-	digitalWrite(chipSelectPin, LOW);
+	SPI.beginTransaction(m_spiSettings);
 }
 
 void SdSpiAltDriver::deactivate() {
-	digitalWrite(chipSelectPin, HIGH);
 	SPI.endTransaction();
 }
 
@@ -110,25 +98,18 @@ uint8_t SdSpiAltDriver::receive() {
 }
 
 uint8_t SdSpiAltDriver::receive(uint8_t* buf, size_t n) {
-//	if (Gamebuino_Meta::gbptr->sdFast) {
-		uint8_t b = 0xFF;
-		txDesc->BTCTRL.bit.SRCINC = false;
-		txDMA.changeDescriptor(txDesc, &b, NULL, n);
-		
-		rxDMA.changeDescriptor(rxDesc, NULL, buf, n);
-		
-		transfer_tx_done = transfer_rx_done = false;
-		rxDMA.startJob();
-		txDMA.startJob();
-		while (!(transfer_tx_done && transfer_rx_done)); // chill
-		return 0; // we just assume this worked.... (probably not too good an idea)
-		// TODO: check for stuff
-/*	} else {
-		for (size_t i = 0; i < n; i++) {
-			buf[i] = SPI.transfer(0XFF);
-		}
-		return 0;
-	}*/
+	uint8_t b = 0xFF;
+	txDesc->BTCTRL.bit.SRCINC = false;
+	txDMA.changeDescriptor(txDesc, &b, NULL, n);
+	
+	rxDMA.changeDescriptor(rxDesc, NULL, buf, n);
+	
+	transfer_tx_done = transfer_rx_done = false;
+	rxDMA.startJob();
+	txDMA.startJob();
+	while (!(transfer_tx_done && transfer_rx_done)); // chill
+	return 0; // we just assume this worked.... (probably not too good an idea)
+	// TODO: check for stuff
 }
 
 void SdSpiAltDriver::send(uint8_t b) {
@@ -136,16 +117,10 @@ void SdSpiAltDriver::send(uint8_t b) {
 }
 
 void SdSpiAltDriver::send(const uint8_t* buf, size_t n) {
-//	if (Gamebuino_Meta::gbptr->sdFast) {
-		txDesc->BTCTRL.bit.SRCINC = true;
-		txDMA.changeDescriptor(txDesc, (uint8_t*)buf, NULL, n);
-		
-		transfer_tx_done = false;
-		txDMA.startJob();
-		while (!transfer_tx_done); // chill
-/*	} else {
-		for (size_t i = 0; i < n; i++) {
-			SPI.transfer(buf[i]);
-		}
-	}*/
+	txDesc->BTCTRL.bit.SRCINC = true;
+	txDMA.changeDescriptor(txDesc, (uint8_t*)buf, NULL, n);
+	
+	transfer_tx_done = false;
+	txDMA.startJob();
+	while (!transfer_tx_done); // chill
 }

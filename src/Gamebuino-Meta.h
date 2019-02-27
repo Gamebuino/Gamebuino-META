@@ -136,7 +136,6 @@ public:
 	
 	bool inited = false;
 	bool sdInited = false;
-	bool sdFast = true;
 private:
 	Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(8, NEOPIX_PIN, NEO_GRB + NEO_KHZ800);
 	uint8_t timePerFrame;
