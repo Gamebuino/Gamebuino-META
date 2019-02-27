@@ -1,21 +1,26 @@
-/* FatLib Library
- * Copyright (C) 2012 by William Greiman
+/**
+ * Copyright (c) 2011-2018 Bill Greiman
+ * This file is part of the SdFat library for SD memory cards.
  *
- * This file is part of the FatLib Library
+ * MIT License
  *
- * This Library is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * This Library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with the FatLib Library.  If not, see
- * <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 #include "FatFile.h"
 #include "FatFileSystem.h"
@@ -50,7 +55,7 @@ bool FatFile::addDirCluster() {
     DBG_FAIL_MACRO;
     goto fail;
   }
-  block = m_vol->clusterStartBlock(m_curCluster);
+  block = m_vol->clusterFirstBlock(m_curCluster);
   pc = m_vol->cacheFetchData(block, FatCache::CACHE_RESERVE_FOR_WRITE);
   if (!pc) {
     DBG_FAIL_MACRO;
@@ -113,8 +118,8 @@ bool FatFile::contiguousRange(uint32_t* bgnBlock, uint32_t* endBlock) {
         DBG_FAIL_MACRO;
         goto fail;
       }
-      *bgnBlock = m_vol->clusterStartBlock(m_firstCluster);
-      *endBlock = m_vol->clusterStartBlock(c)
+      *bgnBlock = m_vol->clusterFirstBlock(m_firstCluster);
+      *endBlock = m_vol->clusterFirstBlock(c)
                   + m_vol->blocksPerCluster() - 1;
       return true;
     }
@@ -127,12 +132,13 @@ fail:
 bool FatFile::createContiguous(FatFile* dirFile,
                                const char* path, uint32_t size) {
   uint32_t count;
+
   // don't allow zero length file
   if (size == 0) {
     DBG_FAIL_MACRO;
     goto fail;
   }
-  if (!open(dirFile, path, O_CREAT | O_EXCL | O_RDWR)) {
+  if (!open(dirFile, path, O_RDWR | O_CREAT | O_EXCL)) {
     DBG_FAIL_MACRO;
     goto fail;
   }
@@ -149,7 +155,6 @@ bool FatFile::createContiguous(FatFile* dirFile,
 
   // insure sync() will update dir entry
   m_flags |= F_FILE_DIR_DIRTY;
-
   return sync();
 
 fail:
@@ -279,7 +284,7 @@ bool FatFile::mkdir(FatFile* parent, const char* path, bool pFlag) {
     if (!*path) {
       break;
     }
-    if (!open(parent, &fname, O_READ)) {
+    if (!open(parent, &fname, O_RDONLY)) {
       if (!pFlag || !mkdir(parent, &fname)) {
         DBG_FAIL_MACRO;
         goto fail;
@@ -306,12 +311,12 @@ bool FatFile::mkdir(FatFile* parent, fname_t* fname) {
     goto fail;
   }
   // create a normal file
-  if (!open(parent, fname, O_CREAT | O_EXCL | O_RDWR)) {
+  if (!open(parent, fname, O_RDWR | O_CREAT | O_EXCL)) {
     DBG_FAIL_MACRO;
     goto fail;
   }
   // convert file to directory
-  m_flags = O_READ;
+  m_flags = F_READ;
   m_attr = FILE_ATTR_SUBDIR;
 
   // allocate and zero first cluster
@@ -344,7 +349,7 @@ bool FatFile::mkdir(FatFile* parent, fname_t* fname) {
   }
 
   // cache block for '.'  and '..'
-  block = m_vol->clusterStartBlock(m_firstCluster);
+  block = m_vol->clusterFirstBlock(m_firstCluster);
   pc = m_vol->cacheFetchData(block, FatCache::CACHE_FOR_WRITE);
   if (!pc) {
     DBG_FAIL_MACRO;
@@ -365,11 +370,11 @@ fail:
   return false;
 }
 //------------------------------------------------------------------------------
-bool FatFile::open(FatFileSystem* fs, const char* path, uint8_t oflag) {
+bool FatFile::open(FatFileSystem* fs, const char* path, oflag_t oflag) {
   return open(fs->vwd(), path, oflag);
 }
 //------------------------------------------------------------------------------
-bool FatFile::open(FatFile* dirFile, const char* path, uint8_t oflag) {
+bool FatFile::open(FatFile* dirFile, const char* path, oflag_t oflag) {
   FatFile tmpDir;
   fname_t fname;
 
@@ -399,7 +404,7 @@ bool FatFile::open(FatFile* dirFile, const char* path, uint8_t oflag) {
     if (*path == 0) {
       break;
     }
-    if (!open(dirFile, &fname, O_READ)) {
+    if (!open(dirFile, &fname, O_RDONLY)) {
       DBG_FAIL_MACRO;
       goto fail;
     }
@@ -413,7 +418,7 @@ fail:
   return false;
 }
 //------------------------------------------------------------------------------
-bool FatFile::open(FatFile* dirFile, uint16_t index, uint8_t oflag) {
+bool FatFile::open(FatFile* dirFile, uint16_t index, oflag_t oflag) {
   uint8_t chksum = 0;
   uint8_t lfnOrd = 0;
   dir_t* dir;
@@ -481,7 +486,7 @@ fail:
 // open a cached directory entry.
 
 bool FatFile::openCachedEntry(FatFile* dirFile, uint16_t dirIndex,
-                              uint8_t oflag, uint8_t lfnOrd) {
+                              oflag_t oflag, uint8_t lfnOrd) {
   uint32_t firstCluster;
   memset(this, 0, sizeof(FatFile));
   // location of entry in cache
@@ -500,15 +505,37 @@ bool FatFile::openCachedEntry(FatFile* dirFile, uint16_t dirIndex,
     m_attr |= FILE_ATTR_FILE;
   }
   m_lfnOrd = lfnOrd;
-  // Write, truncate, or at end is an error for a directory or read-only file.
-  if (oflag & (O_WRITE | O_TRUNC | O_AT_END)) {
+
+  switch (oflag & O_ACCMODE) {
+    case O_RDONLY:
+      if (oflag & O_TRUNC) {
+        DBG_FAIL_MACRO;
+        goto fail;
+      }
+      m_flags = F_READ;
+      break;
+
+    case O_RDWR:
+      m_flags = F_READ | F_WRITE;
+      break;
+
+    case O_WRONLY:
+      m_flags = F_WRITE;
+      break;
+
+    default:
+      DBG_FAIL_MACRO;
+      goto fail;
+  }
+
+  if (m_flags & F_WRITE) {
     if (isSubDir() || isReadOnly()) {
       DBG_FAIL_MACRO;
       goto fail;
     }
   }
-  // save open flags for read/write
-  m_flags = oflag & F_OFLAG;
+
+  m_flags |= (oflag & O_APPEND ? F_APPEND : 0) | (oflag & O_SYNC ? F_SYNC : 0);
 
   m_dirBlock = m_vol->cacheBlockNumber();
 
@@ -538,7 +565,17 @@ fail:
   return false;
 }
 //------------------------------------------------------------------------------
-bool FatFile::openNext(FatFile* dirFile, uint8_t oflag) {
+bool FatFile::openCwd() {
+  if (!cwd()) {
+    DBG_FAIL_MACRO;
+    return false;
+  }
+  *this = *cwd();
+  rewind();
+  return true;
+}
+//------------------------------------------------------------------------------
+bool FatFile::openNext(FatFile* dirFile, oflag_t oflag) {
   uint8_t chksum = 0;
   ldir_t* ldir;
   uint8_t lfnOrd = 0;
@@ -612,7 +649,7 @@ bool FatFile::openParent(FatFile* dirFile) {
   if (dirFile->m_dirCluster == 0) {
     return openRoot(dirFile->m_vol);
   }
-  lbn = dirFile->m_vol->clusterStartBlock(dirFile->m_dirCluster);
+  lbn = dirFile->m_vol->clusterFirstBlock(dirFile->m_dirCluster);
   cb = dirFile->m_vol->cacheFetchData(lbn, FatCache::CACHE_FOR_READ);
   if (!cb) {
     DBG_FAIL_MACRO;
@@ -629,7 +666,7 @@ bool FatFile::openParent(FatFile* dirFile) {
   } else {
     memset(&dotdot, 0, sizeof(FatFile));
     dotdot.m_attr = FILE_ATTR_SUBDIR;
-    dotdot.m_flags = O_READ;
+    dotdot.m_flags = F_READ;
     dotdot.m_vol = dirFile->m_vol;
     dotdot.m_firstCluster = ddc;
   }
@@ -643,7 +680,7 @@ bool FatFile::openParent(FatFile* dirFile) {
     }
     ddc = dir->firstClusterLow | ((uint32_t)dir->firstClusterHigh << 16);
   } while (ddc != dirFile->m_dirCluster);
-  return open(&dotdot, di, O_READ);
+  return open(&dotdot, di, O_RDONLY);
 
 fail:
   return false;
@@ -676,7 +713,7 @@ bool FatFile::openRoot(FatVolume* vol) {
     goto fail;
   }
   // read only
-  m_flags = O_READ;
+  m_flags = F_READ;
   return true;
 
 fail:
@@ -703,7 +740,7 @@ int FatFile::read(void* buf, size_t nbyte) {
   cache_t* pc;
 
   // error if not open for read
-  if (!isOpen() || !(m_flags & O_READ)) {
+  if (!isOpen() || !(m_flags & F_READ)) {
     DBG_FAIL_MACRO;
     goto fail;
   }
@@ -748,7 +785,7 @@ int FatFile::read(void* buf, size_t nbyte) {
           }
         }
       }
-      block = m_vol->clusterStartBlock(m_curCluster) + blockOfCluster;
+      block = m_vol->clusterFirstBlock(m_curCluster) + blockOfCluster;
     }
     if (offset != 0 || toRead < 512 || block == m_vol->cacheBlockNumber()) {
       // amount to be read from current block
@@ -766,7 +803,7 @@ int FatFile::read(void* buf, size_t nbyte) {
       memcpy(dst, src, n);
 #if USE_MULTI_BLOCK_IO
     } else if (toRead >= 1024) {
-      uint8_t nb = toRead >> 9;
+      size_t nb = toRead >> 9;
       if (!isRootFixed()) {
         uint8_t mb = m_vol->blocksPerCluster() - blockOfCluster;
         if (mb < nb) {
@@ -777,7 +814,7 @@ int FatFile::read(void* buf, size_t nbyte) {
       if (m_vol->cacheBlockNumber() <= block
           && block < (m_vol->cacheBlockNumber() + nb)) {
         // flush cache if a block is in the cache
-        if (!m_vol->cacheSync()) {
+        if (!m_vol->cacheSyncData()) {
           DBG_FAIL_MACRO;
           goto fail;
         }
@@ -860,7 +897,7 @@ fail:
 //------------------------------------------------------------------------------
 bool FatFile::remove(FatFile* dirFile, const char* path) {
   FatFile file;
-  if (!file.open(dirFile, path, O_WRITE)) {
+  if (!file.open(dirFile, path, O_WRONLY)) {
     DBG_FAIL_MACRO;
     goto fail;
   }
@@ -905,7 +942,7 @@ bool FatFile::rename(FatFile* dirFile, const char* newPath) {
   memcpy(&entry, dir, sizeof(entry));
   // make directory entry for new path
   if (isFile()) {
-    if (!file.open(dirFile, newPath, O_CREAT | O_EXCL | O_WRITE)) {
+    if (!file.open(dirFile, newPath, O_WRONLY | O_CREAT | O_EXCL)) {
       DBG_FAIL_MACRO;
       goto fail;
     }
@@ -941,7 +978,7 @@ bool FatFile::rename(FatFile* dirFile, const char* newPath) {
   // update dot dot if directory
   if (dirCluster) {
     // get new dot dot
-    uint32_t block = m_vol->clusterStartBlock(dirCluster);
+    uint32_t block = m_vol->clusterFirstBlock(dirCluster);
     pc = m_vol->cacheFetchData(block, FatCache::CACHE_FOR_READ);
     if (!pc) {
       DBG_FAIL_MACRO;
@@ -955,7 +992,7 @@ bool FatFile::rename(FatFile* dirFile, const char* newPath) {
       goto fail;
     }
     // store new dot dot
-    block = m_vol->clusterStartBlock(m_firstCluster);
+    block = m_vol->clusterFirstBlock(m_firstCluster);
     pc = m_vol->cacheFetchData(block, FatCache::CACHE_FOR_WRITE);
     if (!pc) {
       DBG_FAIL_MACRO;
@@ -965,7 +1002,7 @@ bool FatFile::rename(FatFile* dirFile, const char* newPath) {
   }
   // Remove old directory entry;
   oldFile.m_firstCluster = 0;
-  oldFile.m_flags = O_WRITE;
+  oldFile.m_flags = F_WRITE;
   oldFile.m_attr = FILE_ATTR_FILE;
   if (!oldFile.remove()) {
     DBG_FAIL_MACRO;
@@ -1012,7 +1049,7 @@ bool FatFile::rmdir() {
   }
   // convert empty directory to normal file for remove
   m_attr = FILE_ATTR_FILE;
-  m_flags |= O_WRITE;
+  m_flags |= F_WRITE;
   return remove();
 
 fail:
@@ -1055,7 +1092,7 @@ bool FatFile::rmRfStar() {
       continue;
     }
 
-    if (!f.open(this, index, O_READ)) {
+    if (!f.open(this, index, O_RDONLY)) {
       DBG_FAIL_MACRO;
       goto fail;
     }
@@ -1067,7 +1104,7 @@ bool FatFile::rmRfStar() {
       }
     } else {
       // ignore read-only
-      f.m_flags |= O_WRITE;
+      f.m_flags |= F_WRITE;
       if (!f.remove()) {
         DBG_FAIL_MACRO;
         goto fail;
@@ -1160,7 +1197,6 @@ bool FatFile::sync() {
   if (!isOpen()) {
     return true;
   }
-
   if (m_flags & F_FILE_DIR_DIRTY) {
     dir_t* dir = cacheDirEntry(FatCache::CACHE_FOR_WRITE);
     // check for deleted by another open file object
@@ -1282,7 +1318,7 @@ fail:
 bool FatFile::truncate(uint32_t length) {
   uint32_t newPos;
   // error if not a normal file or read-only
-  if (!isFile() || !(m_flags & O_WRITE)) {
+  if (!isFile() || !(m_flags & F_WRITE)) {
     DBG_FAIL_MACRO;
     goto fail;
   }
@@ -1356,12 +1392,12 @@ int FatFile::write(const void* buf, size_t nbyte) {
   size_t nToWrite = nbyte;
   size_t n;
   // error if not a normal file or is read-only
-  if (!isFile() || !(m_flags & O_WRITE)) {
+  if (!isFile() || !(m_flags & F_WRITE)) {
     DBG_FAIL_MACRO;
     goto fail;
   }
   // seek to end of file if append flag
-  if ((m_flags & O_APPEND)) {
+  if ((m_flags & F_APPEND)) {
     if (!seekSet(m_fileSize)) {
       DBG_FAIL_MACRO;
       goto fail;
@@ -1404,7 +1440,7 @@ int FatFile::write(const void* buf, size_t nbyte) {
       }
     }
     // block for data write
-    uint32_t block = m_vol->clusterStartBlock(m_curCluster) + blockOfCluster;
+    uint32_t block = m_vol->clusterFirstBlock(m_curCluster) + blockOfCluster;
 
     if (blockOffset != 0 || nToWrite < 512) {
       // partial block - must use cache
@@ -1440,17 +1476,17 @@ int FatFile::write(const void* buf, size_t nbyte) {
     } else if (nToWrite >= 1024) {
       // use multiple block write command
       uint8_t maxBlocks = m_vol->blocksPerCluster() - blockOfCluster;
-      uint8_t nBlock = nToWrite >> 9;
-      if (nBlock > maxBlocks) {
-        nBlock = maxBlocks;
+      size_t nb = nToWrite >> 9;
+      if (nb > maxBlocks) {
+        nb = maxBlocks;
       }
-      n = 512*nBlock;
+      n = 512*nb;
       if (m_vol->cacheBlockNumber() <= block
-          && block < (m_vol->cacheBlockNumber() + nBlock)) {
+          && block < (m_vol->cacheBlockNumber() + nb)) {
         // invalidate cache if block is in cache
         m_vol->cacheInvalidate();
       }
-      if (!m_vol->writeBlocks(block, src, nBlock)) {
+      if (!m_vol->writeBlocks(block, src, nb)) {
         DBG_FAIL_MACRO;
         goto fail;
       }
@@ -1479,7 +1515,7 @@ int FatFile::write(const void* buf, size_t nbyte) {
     m_flags |= F_FILE_DIR_DIRTY;
   }
 
-  if (m_flags & O_SYNC) {
+  if (m_flags & F_SYNC) {
     if (!sync()) {
       DBG_FAIL_MACRO;
       goto fail;

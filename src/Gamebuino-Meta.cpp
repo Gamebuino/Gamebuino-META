@@ -197,7 +197,7 @@ void Gamebuino::begin() {
 	updateDisplay();
 
 #if USE_SDFAT
-	sdInited = SD.begin(SD_CS);
+	sdInited = SD.begin(SD_CS, SPISettings(12000000, MSBFIRST, SPI_MODE0));
 	if (!sdInited) {
 		display.setColor(Color::red, Color::black);
 		display.println("FAILED!");
