@@ -197,7 +197,14 @@ void Gamebuino::begin() {
 	updateDisplay();
 
 #if USE_SDFAT
+	sdFast = false;
 	sdInited = SD.begin(SD_CS);
+	/*
+	if (!sdInited) {
+		sdFast = false;
+		sdInited = SD.begin(SD_CS, 4);
+	}
+	*/
 	if (!sdInited) {
 		display.setColor(Color::red, Color::black);
 		display.println("FAILED!");
@@ -208,6 +215,7 @@ void Gamebuino::begin() {
 		display.println("OK!");
 		updateDisplay();
 	}
+	delay(1000);
 #endif // USE_SDFAT
 	buttons.update();
 	muteSound = muteSound || buttons.repeat(Button::b, 0);

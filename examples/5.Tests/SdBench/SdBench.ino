@@ -31,6 +31,7 @@ void setup() {
 	buf[BUF_SIZE-2] = '\r';
 	buf[BUF_SIZE-1] = '\n';
 	uint32_t n = FILE_SIZE/sizeof(buf);
+	gb.tft.clear();
 	gb.tft.println("Write");
 	for (uint8_t nTest = 0; nTest < WRITE_COUNT; nTest++) {
 		file.truncate(0);
