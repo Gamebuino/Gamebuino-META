@@ -136,8 +136,12 @@ void Adafruit_NeoPixel::show(void) {
   // accessing the PORT.  The code takes an initial 'snapshot' of the PORT
   // state, computes 'pin high' and 'pin low' values, and writes these back
   // to the PORT register as needed.
-  
+
+#if NO_ARDUINO
   __disable_irq(); // Need 100% focus on instruction timing
+#else
+  noInterrupts();
+#endif
 #if NEOPIXELS_ALTERNATIVE_METHOD
   NVMCTRL->CTRLB.bit.READMODE = NVMCTRL_CTRLB_READMODE_DETERMINISTIC_Val;
 #endif
@@ -190,8 +194,13 @@ void Adafruit_NeoPixel::show(void) {
       asm("nop; nop; nop; nop; nop; nop; nop; nop; nop;");
 #endif
     } else {
+#if NO_ARDUINO
       __enable_irq();
       __disable_irq();
+#else
+      interrupts();
+      noInterrupts();
+#endif
       if(ptr >= end) break;
       p       = *ptr++;
       bitMask = 0x80;
@@ -201,7 +210,11 @@ void Adafruit_NeoPixel::show(void) {
 #if NEOPIXELS_ALTERNATIVE_METHOD
   NVMCTRL->CTRLB.bit.READMODE = NVMCTRL_CTRLB_READMODE_NO_MISS_PENALTY_Val;
 #endif
+#if NO_ARDUINO
   __enable_irq();
+#else
+  interrupts();
+#endif
   endTime = micros(); // Save EOD time for latch on next call
 }
 #pragma GCC pop_options
