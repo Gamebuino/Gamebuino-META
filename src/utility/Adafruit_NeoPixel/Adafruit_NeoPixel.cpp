@@ -59,15 +59,20 @@ Adafruit_NeoPixel::Adafruit_NeoPixel() :
 
 Adafruit_NeoPixel::~Adafruit_NeoPixel() {
   if(pixels)   gb_free(pixels);
-  //if(pin >= 0) pinMode(pin, INPUT);
+#if !NO_ARDUINO
+  if(pin >= 0) pinMode(pin, INPUT);
+#endif
 }
 
 void Adafruit_NeoPixel::begin(void) {
   if(pin >= 0) {
+#if NO_ARDUINO
     PORT->Group[0].DIR.reg |= (1ul << 13);
     PORT->Group[0].OUT.reg &= ~(1ul << 13);
-    //pinMode(pin, OUTPUT);
-    //digitalWrite(pin, LOW);
+#else
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, LOW);
+#endif
   }
   begun = true;
 }
@@ -110,8 +115,10 @@ extern "C" void ICACHE_RAM_ATTR espShow(
   uint8_t pin, uint8_t *pixels, uint32_t numBytes, uint8_t type);
 #endif // ESP8266
 
+#if NO_ARDUINO
 #pragma GCC push_options
 #pragma GCC optimize ("Os")
+#endif
 
 void Adafruit_NeoPixel::show(void) {
   if(!pixels) return;
@@ -151,12 +158,17 @@ void Adafruit_NeoPixel::show(void) {
   uint8_t  *ptr, *end, p, bitMask, portNum;
   uint32_t  pinMask;
 
+#if NO_ARDUINO
   portNum =  0;
   pinMask =  1ul << 13;
+#else
+  portNum =  g_APinDescription[pin].ulPort;
+  pinMask =  1ul << g_APinDescription[pin].ulPin;
+#endif
   ptr     =  pixels;
   end     =  ptr + numBytes;
   p       = *ptr++;
-  bitMask =  0x80;
+  bitMask = 0x80;
 
   volatile uint32_t *set = &(PORT->Group[portNum].OUTSET.reg),
                     *clr = &(PORT->Group[portNum].OUTCLR.reg);
@@ -217,17 +229,24 @@ void Adafruit_NeoPixel::show(void) {
 #endif
   endTime = micros(); // Save EOD time for latch on next call
 }
+#if NO_ARDUINO
 #pragma GCC pop_options
+#endif
 
 // Set the output pin number
 void Adafruit_NeoPixel::setPin(uint8_t p) {
-//  if(begun && (pin >= 0)) pinMode(pin, INPUT);
+#if !NO_ARDUINO
+  if(begun && (pin >= 0)) pinMode(pin, INPUT);
+#endif
     pin = p;
     if(begun) {
+#if NO_ARDUINO
       PORT->Group[0].DIR.reg |= (1ul << 13);
       PORT->Group[0].OUT.reg &= ~(1ul << 13);
-//      pinMode(p, OUTPUT);
-//      digitalWrite(p, LOW);
+#else
+      pinMode(p, OUTPUT);
+      digitalWrite(p, LOW);
+#endif
     }
 #ifdef __AVR__
     port    = portOutputRegister(digitalPinToPort(p));
