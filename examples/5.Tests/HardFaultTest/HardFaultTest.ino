@@ -5,7 +5,7 @@ void setup() {
 }
 
 void loop() {
-	while(!gb.update());
+	gb.waitForUpdate();
 	// clear the previous screen
 	gb.display.clear();
 	

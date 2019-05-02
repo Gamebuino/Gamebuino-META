@@ -100,7 +100,7 @@ boolean skip() {
 
 void donothing() {
   while (1) {
-    while(!gb.update());
+    gb.waitForUpdate();
     // clear the previous screen
     gb.display.clear();
     if (skip()) {
@@ -113,7 +113,7 @@ void screenBenchmark() {
   //Screen update benchmark
   unsigned long timeBenchmark = 20;
   while (1) {
-    while(!gb.update());
+    gb.waitForUpdate();
     // clear the previous screen
     gb.display.clear();
     
@@ -146,7 +146,7 @@ void screenBenchmark() {
 void colors() {
   //Colors test 1/2
   while (1) {
-    while(!gb.update());
+    gb.waitForUpdate();
     // clear the previous screen
     gb.display.clear();
     

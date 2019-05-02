@@ -34,7 +34,7 @@ void setup() {
 
 ///////////////////////////////////// LOOP
 void loop() {
-  while (!gb.update());
+  gb.waitForUpdate();
 
   // clear the previous screen
   gb.display.clear();
@@ -63,12 +63,12 @@ void loop() {
     ball_vy = -ball_vy;
   }
   //collision with the player
-  if (gb.collideRectRect(ball_x, ball_y, ball_size, ball_size, player_x, player_y, player_w, player_h)) {
+  if (gb.collide.rectRect(ball_x, ball_y, ball_size, ball_size, player_x, player_y, player_w, player_h)) {
     ball_x = player_x + player_w;
     ball_vx = -ball_vx;
   }
   //collision with the oponent
-  if (gb.collideRectRect(ball_x, ball_y, ball_size, ball_size, oponent_x, oponent_y, oponent_w, oponent_h)) {
+  if (gb.collide.rectRect(ball_x, ball_y, ball_size, ball_size, oponent_x, oponent_y, oponent_w, oponent_h)) {
     ball_x = oponent_x - ball_size;
     ball_vx = -ball_vx;
   }

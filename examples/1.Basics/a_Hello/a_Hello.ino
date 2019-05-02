@@ -11,7 +11,7 @@ void setup(){
 void loop(){
   // wait until the gamebuino is ready to update at stable 25 FPS
   // this also updates sounds, button presses... everything!
-  while(!gb.update());
+  gb.waitForUpdate();
   
   // clear the previous screen
   gb.display.clear();

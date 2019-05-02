@@ -70,7 +70,7 @@ boolean skip() {
 
 void drawMyImage() {
   while (1) {
-    while(!gb.update());
+    gb.waitForUpdate();
     gb.display.clear();
     gb.display.drawImage(0,0,myImage);
     if (skip()) {
@@ -81,7 +81,7 @@ void drawMyImage() {
 
 void drawMyImageIndex() {
   while (1) {
-    while(!gb.update());
+    gb.waitForUpdate();
     gb.display.clear();
     gb.display.drawImage(0,0,myImageIndex);
     if (skip()) {
@@ -92,7 +92,7 @@ void drawMyImageIndex() {
 
 void drawAnimation() {
   while (1) {
-    while(!gb.update());
+    gb.waitForUpdate();
     gb.display.clear();
     gb.display.drawImage(0,0,animation);
     if (skip()) {
@@ -103,7 +103,7 @@ void drawAnimation() {
 
 void donothing() {
   while (1) {
-    while(!gb.update());
+    gb.waitForUpdate();
     // clear the previous screen
     gb.display.clear();
     if (skip()) {
@@ -116,7 +116,7 @@ void screenBenchmark() {
   //Screen update benchmark
   unsigned long timeBenchmark = 20;
   while (1) {
-    while(!gb.update());
+    gb.waitForUpdate();
     // clear the previous screen
     gb.display.clear();
 
@@ -149,7 +149,7 @@ void screenBenchmark() {
 void colors() {
   //Colors test 1/2
   while (1) {
-    while(!gb.update());
+    gb.waitForUpdate();
     // clear the previous screen
     gb.display.clear();
 

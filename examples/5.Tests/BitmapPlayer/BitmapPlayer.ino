@@ -18,7 +18,7 @@ void setup() {
   root = SD.open("SAMPLES");
   if (!loadNextBitmap()) {
     while (1) {
-      while(!gb.update());
+      gb.waitForUpdate();
       gb.display.clear();
       gb.display.println("NO BITMAP FOUND");
     }
@@ -52,7 +52,7 @@ boolean loadNextBitmap() {
 }
 
 void loop() {
-  while(!gb.update());
+  gb.waitForUpdate();
   // clear the previous screen
   gb.display.clear();
   

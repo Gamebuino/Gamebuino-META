@@ -66,7 +66,7 @@ void drawPlayer(){
 
 boolean playerCollision(){
   for(byte i=0; i<NUM_OBSTACLES; i++){
-    if(gb.collideRectRect((int)player.x, (int)player.y, player.w, player.h, obstacles[i].x, obstacles[i].y, obstacles[i].w, obstacles[i].h)){
+    if(gb.collide.rectRect((int)player.x, (int)player.y, player.w, player.h, obstacles[i].x, obstacles[i].y, obstacles[i].w, obstacles[i].h)){
       return true;
     }
   }

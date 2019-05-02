@@ -6,7 +6,7 @@ int ball_x = gb.display.width() / 2; //set the horizontal position to the middle
 int ball_y = gb.display.height() / 2; //vertical position
 int ball_vx = 1; //horizontal velocity
 int ball_vy = 1; //vertical velocity
-int ball_size = 6; //the size of the ball in number of pixels
+const int ball_size = 6; //the size of the ball in number of pixels
 
 // the setup routine runs once when Gamebuino starts up
 void setup() {
@@ -18,7 +18,7 @@ void setup() {
 void loop() {
   // wait until the gamebuino is ready to update at stable 25 FPS
   // this also updates sounds, button presses....everything!
-  while (!gb.update());
+  gb.waitForUpdate();
 
   // clear the previous screen
   gb.display.clear();
@@ -26,28 +26,17 @@ void loop() {
   //add the speed of the ball to its position
   ball_x = ball_x + ball_vx;
   ball_y = ball_y + ball_vy;
-
+  
   //check that the ball is not going out of the screen
-  //if the ball is touching the left side of the screen
-  if (ball_x < 0) {
-    //change the direction of the horizontal speed
-    ball_vx = -ball_vx;
-    //play a preset "tick" sound when the ball hits the border
-    gb.sound.playTick();
+  if (ball_x <= 0   //if the ball is touching the left side of the screen
+  || (ball_x + ball_size) >= gb.display.width()) {  //OR if the ball is touching the right side
+    ball_vx = -ball_vx; //change the direction of the horizontal speed
+    gb.sound.playTick();//play a preset "tick" sound when the ball hits the border
   }
-  //if the ball is touching the right side
-  if ((ball_x + ball_size) > gb.display.width()) {
-    ball_vx = -ball_vx;
-    gb.sound.playTick();
-  }
-  //if the ball is touching the top side
-  if (ball_y < 0) {
-    ball_vy = -ball_vy;
-    gb.sound.playTick();
-  }
-  //if the ball is touching the down side
-  if ((ball_y + ball_size) > gb.display.height()) {
-    ball_vy = -ball_vy;
+
+  if (ball_y <= 0   //if the ball is touching the top side
+  || (ball_y + ball_size) >= gb.display.height()) { //OR if the ball is touching the down side
+    ball_vy = -ball_vy; //change the direction of the vertical speed
     gb.sound.playTick();
   }
 

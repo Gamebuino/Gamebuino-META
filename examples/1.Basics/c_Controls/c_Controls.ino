@@ -6,7 +6,7 @@ int ball_x = gb.display.width() / 2; //set the horizontal position to the middle
 int ball_y = gb.display.height() / 2; //vertical position
 int ball_vx = 1; //horizontal velocity
 int ball_vy = 1; //vertical velocity
-int ball_size = 6; //the size of the ball in number of pixels
+const int ball_size = 6; //the size of the ball in number of pixels
 
 // the setup routine runs once when Gamebuino starts up
 void setup() {
@@ -18,7 +18,7 @@ void setup() {
 void loop() {
   // wait until the gamebuino is ready to update at stable 25 FPS
   // this also updates sounds, button presses....everything!
-  while (!gb.update());
+  gb.waitForUpdate();
 
   // clear the previous screen
   gb.display.clear();
@@ -46,20 +46,20 @@ void loop() {
 
   //check that the ball is not going out of the screen
   //if the ball is touching the left side of the screen
-  if (ball_x < 0) {
+  if (ball_x <= 0) {
     //bring it back in the screen
     ball_x = 0;
   }
   //if the ball is touching the right side
-  if ((ball_x + ball_size) > gb.display.width()) {
+  if ((ball_x + ball_size) >= gb.display.width()) {
     ball_x = gb.display.width() - ball_size;
   }
   //if the ball is touching the top side
-  if (ball_y < 0) {
+  if (ball_y <= 0) {
     ball_y = 0;
   }
   //if the ball is touching the down side
-  if ((ball_y + ball_size) > gb.display.height()) {
+  if ((ball_y + ball_size) >= gb.display.height()) {
     ball_y = gb.display.height() - ball_size;
   }
 

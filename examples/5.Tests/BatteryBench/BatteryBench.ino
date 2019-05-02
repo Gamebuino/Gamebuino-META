@@ -16,7 +16,7 @@ void setup() {
   }
 
   while (1) {
-    while(!gb.update());
+    gb.waitForUpdate();
     gb.display.clear();
     gb.lights.clear();
     gb.display.println("BATTERY BENCHMARK\n");

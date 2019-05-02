@@ -22,17 +22,15 @@ void updateCircles(){
     circles[i].x += circles[i].vx;
     circles[i].y += circles[i].vy;
 
-    //check collision with all the other circlesr
-    //starting with the next one to avoid checking the same collision several times (A with B and B with A)
-    //and to avoid check collision with itself.
+    /*check collision with all the other circles
+    starting with the next one to avoid checking the same collision several times (A with B and B with A)
+    and to avoid check collision with itself.*/
     for(byte j=i+1; j < NUM_CIRCLES; j++){
       float dx = (circles[j].x - circles[i].x);
       float dy = (circles[j].y - circles[i].y);
       float dist = circles[i].r + circles[j].r;
-      if ( (dx*dx + dy*dy) < dist*dist ){
-
-
-        float N = atan(dy/dx); //angle of the normal to te collision plane
+      if ( (dx*dx + dy*dy) < dist*dist ) {
+        float N = atan(dy/dx); //angle of the normal to the collision plane
         if(dx < 0){
           N += PI;
         }
