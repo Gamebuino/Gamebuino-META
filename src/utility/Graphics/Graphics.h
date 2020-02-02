@@ -166,6 +166,7 @@ public:
 	void cp437(bool x=true);
 	void setFont(const GFXfont *f = NULL); //adafruit custom font
 	void setFont(const uint8_t* f); //gamebuino legacy font
+	void getTextBounds(const char *str, uint16_t *w, uint16_t *h);
 	void getTextBounds(char *string, int16_t x, int16_t y, 	int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
 	void getTextBounds(const char *s, int16_t x, int16_t y, int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
 
