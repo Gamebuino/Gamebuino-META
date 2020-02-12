@@ -132,6 +132,7 @@ public:
 	void fillRect(int16_t x, int16_t y, int16_t w, int16_t h);
 	void setRotation(Rotation r);
 	void invertDisplay(bool i);
+	void displayPower(bool i);
 	ColorMode colorMode = ColorMode::rgb565;
 
 	Rotation getRotation();
