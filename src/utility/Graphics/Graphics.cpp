@@ -1341,11 +1341,11 @@ void Graphics::getTextBounds(char *str, int16_t x, int16_t y,
 				if(c != '\r') { // Not a carriage return, is normal char
 					if(textWrap && ((x + fontSize * 6) >= _width)) {
 						x  = 0;            // Reset x to 0
-						y += fontSize * 8; // Advance y by 1 line
+						y += fontSize * fontHeight; // Advance y by 1 line
 						if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
-						lineWidth  = fontSize * 6; // First char on new line
+						lineWidth  = fontSize * fontWidth; // First char on new line
 					} else { // No line textWrap, just keep incrementing X
-						lineWidth += fontSize * 6; // Includes interchar x gap
+						lineWidth += fontSize * fontWidth; // Includes interchar x gap
 					}
 				} // Carriage return = do nothing
 			} else { // Newline
