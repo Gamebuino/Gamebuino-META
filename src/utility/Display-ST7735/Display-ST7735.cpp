@@ -919,5 +919,8 @@ Rotation Display_ST7735::getRotation() {
 void Display_ST7735::invertDisplay(bool i) {
 	writecommand(i ? ST7735_INVON : ST7735_INVOFF);
 }
+displayPower(bool i) {
+	writecommand(i ? ST7735_DISPON : ST7735_DISPOFF);
+}
 
 } // namespace Gamebuino_Meta
