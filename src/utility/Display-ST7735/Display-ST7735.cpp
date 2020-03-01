@@ -537,24 +537,22 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 #endif
 		dataMode();
 
-		//start sending lines and processing them in parallel using DMA
-		for (uint16_t j = 0; j < h; j++) { //vertical coordinate in source image, start from the second line
+		Color *index = Graphics::colorIndex;
+		uint16_t *src = img._buffer;
+		uint16_t *srcEnd = src + w * h / 4; // Four pixels per value
 
-			//length is the number of destination pixels
+		//start sending lines and processing them in parallel using DMA
+		while (src < srcEnd) {
 			uint16_t *dest = preBufferLine;
-			uint16_t *src = img._buffer + ((j * w) / 4);
-			Color *index = Graphics::colorIndex;
-			uint16_t length = w;
-			for (uint16_t i = 0; i < length / 4; i++) {
-				uint16_t index1 = (src[i] >> 4) & 0x000F;
-				uint16_t index2 = (src[i] >> 0) & 0x000F;
-				uint16_t index3 = (src[i] >> 12) & 0x000F;
-				uint16_t index4 = (src[i] >> 8) & 0x000F;
+			uint16_t *destEnd = preBufferLine + w;
+			while (dest < destEnd) {
+				uint16_t val = *src;
 				//change pixel order (because of words endianness) at the same time
-				dest[i * 4] = swap_endians_16((uint16_t)index[index1]);
-				dest[(i * 4) + 1] = swap_endians_16((uint16_t)index[index2]);
-				dest[(i * 4) + 2] = swap_endians_16((uint16_t)index[index3]);
-				dest[(i * 4) + 3] = swap_endians_16((uint16_t)index[index4]);
+				*dest++ = swap_endians_16((uint16_t)index[(val >>  4) & 0x000F]);
+				*dest++ = swap_endians_16((uint16_t)index[(val >>  0) & 0x000F]);
+				*dest++ = swap_endians_16((uint16_t)index[(val >> 12) & 0x000F]);
+				*dest++ = swap_endians_16((uint16_t)index[(val >>  8) & 0x000F]);
+				++src;
 			}
 
 			//swap buffers pointers
