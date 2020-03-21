@@ -67,7 +67,7 @@ private:
 	static const uint8_t VOLUME_SWEEP_SCALE = 8;
 	static const uint8_t PERIOD_START_SCALE = FPP;
 	static const uint8_t PERIOD_SWEEP_SCALE = 7;
-	static const int32_t LENGTH_SCALE = 441 * 2 / SR_DIVIDER;
+	static const int32_t LENGTH_SCALE = 441 * 2;
 public:
 
 
