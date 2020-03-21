@@ -108,7 +108,7 @@ void Sound_Handler_FX::update() {
 				return;
 			} else if (_firstZeroP > _headP) {
 				// Stop once buffer contains only zeroes
-				maxSamples= min(maxSamples, _firstZeroP - _headP);
+				maxSamples = min(maxSamples, _firstZeroP - _headP);
 			}
 
 			generateSilence(_headP + maxSamples);
