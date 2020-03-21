@@ -1273,7 +1273,91 @@ void Graphics::setFont(const uint8_t *f) {
 	font += 2; //offset the pointer to start after the width and height bytes
 	_cp437 = true; // disable the old compatibility mode
 }
+// Pass string, returns W,H.
+void Graphics::getTextBounds(const char *str, uint16_t *w, uint16_t *h) {
+	uint8_t c; // Current character
+	int16_t x = 0;
+	int16_t y = 0;
+	*w  = *h = 0;
 
+	if(gfxFont) {
+
+		GFXglyph *glyph;
+		uint8_t   first = pgm_read_byte(&gfxFont->first),
+				last  = pgm_read_byte(&gfxFont->last),
+				gw, gh, xa;
+		int8_t    xo, yo;
+		int16_t   minx = _width, miny = _height, maxx = -1, maxy = -1,
+				gx1, gy1, gx2, gy2, ts = (int16_t)fontSize,
+				ya = ts * (uint8_t)pgm_read_byte(&gfxFont->yAdvance);
+
+		while((c = *str++)) {
+			if(c != '\n') { // Not a newline
+				if(c != '\r') { // Not a carriage return, is normal char
+					if((c >= first) && (c <= last)) { // Char present in current font
+						c    -= first;
+						glyph = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
+						gw    = pgm_read_byte(&glyph->width);
+						gh    = pgm_read_byte(&glyph->height);
+						xa    = pgm_read_byte(&glyph->xAdvance);
+						xo    = pgm_read_byte(&glyph->xOffset);
+						yo    = pgm_read_byte(&glyph->yOffset);
+						if(textWrap && ((x + (((int16_t)xo + gw) * ts)) >= _width)) {
+							// Line textWrap
+							x  = 0;  // Reset x to 0
+							y += ya; // Advance y by 1 line
+						}
+						gx1 = x   + xo * ts;
+						gy1 = y   + yo * ts;
+						gx2 = gx1 + gw * ts - 1;
+						gy2 = gy1 + gh * ts - 1;
+						if(gx1 < minx) minx = gx1;
+						if(gy1 < miny) miny = gy1;
+						if(gx2 > maxx) maxx = gx2;
+						if(gy2 > maxy) maxy = gy2;
+						x += xa * ts;
+					}
+				} // Carriage return = do nothing
+			} else { // Newline
+				x  = 0;  // Reset x
+				y += ya; // Advance y by 1 line
+			}
+		}
+		// End of string
+		if(maxx >= minx) *w  = maxx - minx + 1;
+		if(maxy >= miny) *h  = maxy - miny + 1;
+
+	} else { // Default font
+
+		uint16_t lineWidth = 0, maxWidth = 0; // Width of current, all lines
+
+		while((c = *str++)) {
+			if(c != '\n') { // Not a newline
+				if(c != '\r') { // Not a carriage return, is normal char
+					if(textWrap && ((x + fontSize * 6) >= _width)) {
+						x  = 0;            // Reset x to 0
+						y += fontSize * fontHeight; // Advance y by 1 line
+						if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
+						lineWidth  = fontSize * fontWidth; // First char on new line
+					} else { // No line textWrap, just keep incrementing X
+						lineWidth += fontSize * fontWidth; // Includes interchar x gap
+					}
+				} // Carriage return = do nothing
+			} else { // Newline
+				x  = 0;            // Reset x to 0
+				y += fontSize * 8; // Advance y by 1 line
+				if(lineWidth > maxWidth) maxWidth = lineWidth; // Save widest line
+				lineWidth = 0;     // Reset lineWidth for new line
+			}
+		}
+		// End of string
+		if(lineWidth) y += fontSize * 8; // Add height of last (or only) line
+		if(lineWidth > maxWidth) maxWidth = lineWidth; // Is the last or only line the widest?
+		*w = maxWidth - 1;               // Don't include last interchar x gap
+		*h = y;
+
+	} // End classic vs custom font
+}
 // Pass string and a cursor position, returns UL corner and W,H.
 void Graphics::getTextBounds(char *str, int16_t x, int16_t y,
  int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h) {
