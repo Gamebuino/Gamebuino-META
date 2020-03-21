@@ -100,6 +100,7 @@ public:
 	uint32_t _current_Sound_FX_length;
 
 	uint32_t* _headP;
+	uint32_t* _firstZeroP;
 	int16_t _pitch_scale;
 
 	int32_t _noise_period;

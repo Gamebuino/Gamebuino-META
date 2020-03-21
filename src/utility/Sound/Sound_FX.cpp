@@ -35,6 +35,7 @@ void Sound_Handler_FX::init() {
 	_pitch_scale = 1 << FPP;
 
 	_headP = (uint32_t *)parent_channel->buffer;
+	_firstZeroP = nullptr;
 
 	resetGenerators();
 }
@@ -98,7 +99,18 @@ void Sound_Handler_FX::update() {
 					// WTF man
 					break;
 			}
-		} else {
+		} else { // Silence
+			if (_firstZeroP == nullptr) {
+				// Remember where first zero is written
+				_firstZeroP = _headP;
+			} else if (_firstZeroP == _headP) {
+				// Buffer contains only zeroes. Nothing needs doing anymore
+				return;
+			} else if (_firstZeroP > _headP) {
+				// Stop once buffer contains only zeroes
+				maxSamples= min(maxSamples, _firstZeroP - _headP);
+			}
+
 			generateSilence(_headP + maxSamples);
 		}
 
@@ -118,6 +130,7 @@ void Sound_Handler_FX::play(const Sound_FX & Sound_FX) {
 	_current_Sound_FX_period_sweep = (Sound_FX.period_sweep << PERIOD_SWEEP_SCALE) * SR_DIVIDER;
 	_current_Sound_FX_length = Sound_FX.length * LENGTH_SCALE;
 	resetGenerators();
+	_firstZeroP = nullptr;
 }
 
 void Sound_Handler_FX::play(const Sound_FX * const pattern, uint8_t length) {
