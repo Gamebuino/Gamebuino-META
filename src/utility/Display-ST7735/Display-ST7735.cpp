@@ -919,7 +919,8 @@ Rotation Display_ST7735::getRotation() {
 void Display_ST7735::invertDisplay(bool i) {
 	writecommand(i ? ST7735_INVON : ST7735_INVOFF);
 }
-displayPower(bool i) {
+
+void Display_ST7735::setPower(bool i) {
 	writecommand(i ? ST7735_DISPON : ST7735_DISPOFF);
 }
 

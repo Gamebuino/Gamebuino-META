@@ -208,6 +208,9 @@ void Gamebuino::begin() {
 		display.println("OK!");
 		updateDisplay();
 	}
+#else // USE_SDFAT
+	PORT->Group[0].DIRSET.reg = (1UL<<27);
+	PORT->Group[0].OUT.reg |= (1UL<<27);
 #endif // USE_SDFAT
 	buttons.update();
 	muteSound = muteSound || buttons.repeat(Button::b, 0);
