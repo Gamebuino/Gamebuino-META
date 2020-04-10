@@ -34,41 +34,90 @@ void Sound_Handler_FX::init() {
 
 	_pitch_scale = 1 << FPP;
 
+	_headP = (uint32_t *)parent_channel->buffer;
+	_firstZeroP = nullptr;
+
 	resetGenerators();
 }
 
 void Sound_Handler_FX::update() {
-	// Check if we should advance in the pattern
-	if (_current_Sound_FX_time != UINT32_MAX && _current_Sound_FX_time >= _current_Sound_FX_length) {
-		// Check if there is still fx to play
-		if ((_current_pattern_length != 0 && _current_pattern_Sound_FX < _current_pattern_length - 1) 
-			|| (_current_pattern_length == 0 && (_current_pattern[_current_pattern_Sound_FX].continue_flag))) {
-			_current_pattern_Sound_FX++;
-			play(_current_pattern[_current_pattern_Sound_FX]);
-		}
-	}
+	// Set target to completely fill buffer (given current index, which is continuously changing)
+	// Note: Casting before adding offset to ensure index is properly rounded down.
+	uint32_t* targetHeadP = ((uint32_t *)parent_channel->buffer) + (parent_channel->index >> 2);
 
+	uint32_t* maxHeadP = ((uint32_t *)parent_channel->buffer) + (parent_channel->size >> 2);
 
-	// Generate sound
-	if (_current_Sound_FX_time < _current_Sound_FX_length) {
-		switch (_current_Sound_FX.type) {
-		case Sound_FX_Wave::NOISE:
-			generateNoise();
-			break;
-		case Sound_FX_Wave::SQUARE:
-			generateSquare();
-			break;
-		default:
-			// WTF man
-			break;
+	// Fill buffer in one or more iterations. Multiple iterations are needed when the end of the
+	// cyclic buffer is reached, or the active sound pattern is finished
+	while (_headP != targetHeadP) {
+		// Check if we should advance in the pattern
+		if (_current_Sound_FX_time != UINT32_MAX && _current_Sound_FX_time >= _current_Sound_FX_length) {
+			// Check if there is still fx to play
+			if ((
+				_current_pattern_length != 0 &&
+				_current_pattern_Sound_FX < _current_pattern_length - 1
+			) || (
+				_current_pattern_length == 0 &&
+				_current_pattern != nullptr &&
+				_current_pattern[_current_pattern_Sound_FX].continue_flag
+			)) {
+				_current_pattern_Sound_FX++;
+				play(_current_pattern[_current_pattern_Sound_FX]);
+			} else {
+				_current_Sound_FX_time = UINT32_MAX;
+			}
 		}
-	}
-	else if (_current_Sound_FX_time != UINT32_MAX) {
-		memset(parent_channel->buffer, 0, parent_channel->size);
-		_current_Sound_FX_time = UINT32_MAX;
-	}
-	else{
-		//do nothing
+
+		// Generate sound
+
+		// The maximum number of samples that can be filled without passing the target mark or the
+		// end of the buffer cyclic buffer. Checking this here is more efficient than doing so in
+		// inner loops that generate the actually sound samples.
+		uint16_t maxSamples;
+		if (_headP < targetHeadP) {
+			maxSamples = targetHeadP - _headP;
+		} else {
+			maxSamples = maxHeadP - _headP;
+		}
+
+		if (_current_Sound_FX_time < _current_Sound_FX_length) {
+			// Ensure at least one sample is added, to ensure termination
+			maxSamples = max(1, min(
+				maxSamples,
+				((_current_Sound_FX_length - _current_Sound_FX_time) >> 2) / SR_DIVIDER
+			));
+			_current_Sound_FX_time += 4 * SR_DIVIDER * maxSamples;
+
+			switch (_current_Sound_FX.type) {
+				case Sound_FX_Wave::NOISE:
+					generateNoise(_headP + maxSamples);
+					break;
+				case Sound_FX_Wave::SQUARE:
+					generateSquare(_headP + maxSamples);
+					break;
+				default:
+					// WTF man
+					break;
+			}
+		} else { // Silence
+			if (_firstZeroP == nullptr) {
+				// Remember where first zero is written
+				_firstZeroP = _headP;
+			} else if (_firstZeroP == _headP) {
+				// Buffer contains only zeroes. Nothing needs doing anymore
+				return;
+			} else if (_firstZeroP > _headP) {
+				// Stop once buffer contains only zeroes
+				maxSamples = min(maxSamples, _firstZeroP - _headP);
+			}
+
+			generateSilence(_headP + maxSamples);
+		}
+
+		if (_headP == maxHeadP) {
+			// Reached end of cyclic buffer. Continue at the beginning.
+			_headP = (uint32_t *)parent_channel->buffer;
+		}
 	}
 }
 
@@ -81,6 +130,7 @@ void Sound_Handler_FX::play(const Sound_FX & Sound_FX) {
 	_current_Sound_FX_period_sweep = (Sound_FX.period_sweep << PERIOD_SWEEP_SCALE) * SR_DIVIDER;
 	_current_Sound_FX_length = Sound_FX.length * LENGTH_SCALE;
 	resetGenerators();
+	_firstZeroP = nullptr;
 }
 
 void Sound_Handler_FX::play(const Sound_FX * const pattern, uint8_t length) {
@@ -104,10 +154,9 @@ void Sound_Handler_FX::resetGenerators() {
 	_square_polarity = 1;
 }
 
-void Sound_Handler_FX::generateNoise() {
-	uint32_t target = parent_channel->index;
+void Sound_Handler_FX::generateNoise(uint32_t* endP) {
 	static uint16_t lfsr = 1;
-	do{
+	do {
 		int8_t volume = getVolume();
 
 		if (--_noise_period <= 0) {
@@ -119,23 +168,16 @@ void Sound_Handler_FX::generateNoise() {
 		uint8_t v = (uint8_t)volume;
 		uint32_t sample = (v << 24) | (v << 16) | (v << 8) | v;
 
-		_head_index = (_head_index + 1) % (parent_channel->size >> 2);
-		_current_Sound_FX_time += 4 * SR_DIVIDER;
-		((uint32_t*)(&parent_channel->buffer[0]))[_head_index] = sample;
-	} while (_head_index != target >> 2);
+		*_headP++ = sample;
+	} while (_headP != endP);
 }
 
-void Sound_Handler_FX::generateSquare() {
-	uint32_t target = parent_channel->index;
-	uint32_t * buffer_ptr = ((uint32_t*)(&parent_channel->buffer[0]));
-
+void Sound_Handler_FX::generateSquare(uint32_t* endP) {
 	do {
 		uint32_t sample = 0;
 		int8_t volume = getVolume();
-		if (_square_period <= (4 << FPP))
-		{
-			for (int i = 0; i < 4; i++)
-			{
+		if (_square_period <= (4 << FPP)) {
+			for (int i = 0; i < 4; i++) {
 				_square_period -= (1 << FPP);
 				if (_square_period <= 0) {
 					_square_period += max(getFrequency() / SR_DIVIDER, 0);
@@ -145,22 +187,21 @@ void Sound_Handler_FX::generateSquare() {
 				uint8_t v = (uint8_t)vol;
 				sample |= (v << (8 * i));
 			}
-		}
-		else
-		{
+		} else {
 			_square_period -= (4 << FPP);
 			volume = _square_polarity ? volume : -volume;
 			uint8_t v = (uint8_t)volume;
 			sample = (v << 24) | (v << 16) | (v << 8) | v;
 		}
 
-		_head_index = (_head_index + 1) % (parent_channel->size >> 2);
-		_current_Sound_FX_time += 4 * SR_DIVIDER;
-		buffer_ptr[_head_index] = sample;
-	} while (_head_index != target >> 2);
-
+		*_headP++ = sample;
+	} while (_headP != endP);
 }
 
-
+void Sound_Handler_FX::generateSilence(uint32_t* endP) {
+	do {
+		*_headP++ = 0;
+	} while (_headP != endP);
+}
 
 } // Namespace Gamebuino_META

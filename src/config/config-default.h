@@ -108,6 +108,16 @@
 #define SOUND_BUFFERSIZE (2048 * SOUND_FREQ / 44100)
 #endif
 
+// Even though it default to same value as SOUND_BUFFER size, give the FX its own size so the
+// buffer sizes can be optimized independently. For sound effects there should never be a need to
+// have a buffer much larger than required to contain the samples played in a single update cycle.
+// This will only introduce an unnecessary delay before a sound effect is played. However, for
+// music streamed from a WAV file, a bigger buffer might help mitigate occassional delays when
+// reading from SD.
+#ifndef SOUND_FX_BUFFERSIZE
+#define SOUND_FX_BUFFERSIZE (2048 * SOUND_FREQ / 44100)
+#endif
+
 #ifndef SOUND_ENABLE_FX
 #define SOUND_ENABLE_FX 1
 #endif
