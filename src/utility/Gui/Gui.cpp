@@ -159,24 +159,24 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 	}
 	uint8_t fontSizeBak = gbptr->display.fontSize;
 	gbptr->display.setFontSize(1);
-	
+
 	gbptr->display.fill(BLACK);
 	gbptr->display.setColor(DARKGRAY);
 	gbptr->display.fillRect(0, 0, gbptr->display.width(), 7);
 	gbptr->display.setCursor(1, 1);
 	gbptr->display.setColor(WHITE);
 	gbptr->display.print(title);
-	
-	
+
+
 	keyboardDrawBackspace();
 	keyboardDrawSwitch();
 	keyboardDrawSpace();
 	keyboardDrawSelect();
-	
+
 	uint8_t curLayout = 0;
-	
+
 	keyboardDrawLayout(keyboardLayout[curLayout]);
-	
+
 	int8_t cursorX = 6;
 	int8_t cursorY = 2;
 	int8_t activeChar = 0;
@@ -218,7 +218,7 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 		if (cursorX != cursorXPrev || cursorY != cursorYPrev) {
 			gbptr->sound.playTick();
 		}
-		
+
 		// check for other button presses
 		bool backspace = gbptr->buttons.released(BUTTON_B);
 		bool switchLayout = gbptr->buttons.released(BUTTON_MENU);
@@ -254,14 +254,14 @@ void Gui::keyboard(const char* title, char* text, uint8_t length) {
 			keyboardDrawLayout(keyboardLayout[curLayout]);
 			gbptr->sound.playOK();
 		}
-		
+
 		// render drawing text
 		gbptr->display.setColor(BLACK);
 		gbptr->display.fillRect(0, 7, gbptr->display.width(), 15);
 		gbptr->display.setColor(activeChar?WHITE:DARKGRAY);
 		gbptr->display.setCursor(1, 13);
 		gbptr->display.print(text);
-		
+
 		gbptr->display.setColor(WHITE);
 		gbptr->display.drawFastHLine(activeChar*4 + 1, 19, 3);
 	}
@@ -316,27 +316,27 @@ uint8_t Gui::menu(const char* title, const char** items, uint8_t length, uint8_t
 		gbptr->display.init(80, 64, ColorMode::rgb565);
 	}
 	uint8_t fontSizeBak = gbptr->display.fontSize;
-	
+
 	uint8_t cursor = 0;
 	int32_t cameraY = 0;
 	int32_t cameraY_actual = 0;
-	
+
 	while(1) {
 		while(!gbptr->update());
 		gbptr->display.clear();
 		gbptr->display.setFontSize(1);
-		
+
 		cameraY_actual = (cameraY_actual + cameraY) / 2;
 		if (cameraY_actual - cameraY == 1) {
 			cameraY_actual = cameraY;
 		}
-		
+
 		for (uint8_t i = 0; i < length; i++) {
 			menuDrawBox(items[i], i, cameraY_actual, numLang);
 		}
-		
+
 		menuDrawCursor(cursor, cameraY_actual);
-		
+
 		// last draw the top entry thing
 		gbptr->display.setColor(DARKGRAY);
 		gbptr->display.fillRect(0, 0, gbptr->display.width(), 7);
@@ -345,12 +345,12 @@ uint8_t Gui::menu(const char* title, const char** items, uint8_t length, uint8_t
 		gbptr->display.print(title);
 		gbptr->display.setColor(BLACK);
 		gbptr->display.drawFastHLine(0, 7, gbptr->display.width());
-		
+
 		if (gbptr->buttons.released(BUTTON_A)) {
 			gbptr->sound.playOK();
 			break;
 		}
-		
+
 		if (gbptr->buttons.repeat(BUTTON_UP, 4)) {
 			if (cursor == 0) {
 				cursor = length - 1;
@@ -365,7 +365,7 @@ uint8_t Gui::menu(const char* title, const char** items, uint8_t length, uint8_t
 			}
 			gbptr->sound.playTick();
 		}
-		
+
 		if (gbptr->buttons.repeat(BUTTON_DOWN, 4)) {
 			cursor++;
 			if ((cursor*8 + cameraY + menuYOffset) > 54) {
@@ -421,7 +421,7 @@ void Gui::updatePopup() {
 	if (popupTimeLeft<8){
 		yOffset = (8-popupTimeLeft)*scale;
 	}
-	
+
 	gbptr->display.setColor(DARKGRAY);
 	gbptr->display.fillRect(0, gbptr->display.height()-(7*scale)+yOffset, gbptr->display.width(), 7*scale);
 	gbptr->display.setColor(BROWN);
@@ -429,8 +429,12 @@ void Gui::updatePopup() {
 	gbptr->display.setColor(WHITE);
 	gbptr->display.setCursor(1, gbptr->display.height()-(6*scale)+yOffset);
 	gbptr->display.print(popupText);
-	
+
 	popupTimeLeft--;
+}
+
+void Gui::hidePopup() {
+	popupTimeLeft = 0;
 }
 
 void Gui::popup(const MultiLang* text, uint8_t duration, uint8_t numLang) {
