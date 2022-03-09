@@ -63,13 +63,13 @@ GMV::GMV(Image* _img, char* filename) {
 		uint16_t name_len = strlen(filename);
 		char _filename[name_len + 1];
 		strcpy(_filename, filename);
-		
+
 		_filename[name_len - 4] = '.';
 		_filename[name_len - 3] = 'G';
 		_filename[name_len - 2] = 'M';
 		_filename[name_len - 1] = 'V';
 		_filename[name_len] = '\0';
-		
+
 		uint32_t creatorBits = bmp.getCreatorBits();
 		if ((creatorBits & CONERT_MASK) != CONVERT_MAGIC || !SD.exists(_filename)) {
 			// we still need to convert...
@@ -123,13 +123,13 @@ GMV::GMV(Image* _img, char* filename) {
 	}
 #endif
 	img->allocateBuffer();
-	
+
 	if (!img->_buffer) {
 		// sorry, nope
 		img->frames = 1;
 		return;
 	}
-	
+
 	valid = true;
 #endif // USE_SDFAT
 }
@@ -148,7 +148,7 @@ bool GMV::initSave(char* filename) {
 	uint16_t name_len = strlen(filename);
 	char _filename[name_len + 1];
 	strcpy(_filename, filename);
-	
+
 	_filename[name_len - 4] = '.';
 	_filename[name_len - 3] = 'G';
 	_filename[name_len - 2] = 'M';
@@ -180,7 +180,7 @@ void GMV::convertFromBMP(BMP& bmp, char* newname) {
 	}
 	writeHeader(&f);
 	uint16_t transparentColor = 0;
-	
+
 	bool success;
 	do {
 		success = true;
@@ -205,7 +205,7 @@ void GMV::convertFromBMP(BMP& bmp, char* newname) {
 			writeFrame(&f);
 		}
 	} while(!success);
-	
+
 	if (img->colorMode == ColorMode::rgb565) {
 		f.seekSet(12);
 		f_write16(img->transparentColor, &f);
@@ -213,6 +213,27 @@ void GMV::convertFromBMP(BMP& bmp, char* newname) {
 	bmp.setCreatorBits(CONVERT_MAGIC, &file);
 	f.close();
 #endif // USE_SDFAT
+}
+
+uint8_t GMV::convertIndexToDefaultPalette(uint8_t index) {
+	Color color = img->getPalette()[index];
+	for (uint8_t i = 0; i < 16; i++) {
+		if (defaultColorPalette[i] == color) {
+			return i;
+		}
+	}
+	return index;
+}
+
+uint8_t GMV::convertIndexPairToDefaultPalette(uint8_t index_pair) {
+	if (img->getPalette() == defaultColorPalette) {
+		return index_pair;
+	}
+
+	return (
+		convertIndexToDefaultPalette(index_pair & 0x0F) |
+		convertIndexToDefaultPalette(index_pair >> 4 & 0x0F) << 4
+	);
 }
 
 void GMV::writeHeader() {
@@ -289,15 +310,15 @@ void GMV::writeFrame(File* f) {
 				continue;
 			}
 			f->write(count);
-			f->write(b);
+			f->write(convertIndexPairToDefaultPalette(b));
 			count = 1;
 			b = buf[i];
 		}
 		f->write(count);
-		f->write(b);
+		f->write(convertIndexPairToDefaultPalette(b));
 	} else {
 		uint16_t* buf = img->_buffer;
-		uint16_t pixels = (img->getBufferSize() + 1) / 2; 
+		uint16_t pixels = (img->getBufferSize() + 1) / 2;
 		uint16_t i = 1;
 		uint16_t color = buf[0];
 		uint16_t count = 1;
@@ -334,11 +355,11 @@ void GMV::readFrame() {
 		} while (bytes_current < bytes);
 	} else {
 		uint16_t* buf = img->_buffer;
-		uint16_t pixels = (img->getBufferSize() + 1) / 2; 
+		uint16_t pixels = (img->getBufferSize() + 1) / 2;
 		uint16_t pixels_current = 0;
-		
+
 		uint16_t* index = (uint16_t*)img->colorIndex;
-		
+
 		uint8_t count;
 		uint8_t i;
 		uint16_t color = 0;
@@ -419,8 +440,8 @@ void GMV::finishSave(char* filename, uint16_t frames, bool output, Display_ST773
 		tft->fontSize = 2;
 		tft->println(" SAVE VIDEO    ");
 	}
-	
-	
+
+
 	file.seekSet(9);
 	f_write16(frames, &file); // fill in the number of frames!
 	if (!filename) {
@@ -461,7 +482,7 @@ void GMV::finishSave(char* filename, uint16_t frames, bool output, Display_ST773
 		tft->fillRect(0, tft->height() - 10, tft->width(), 8);
 		tft->setColor(Color::white, Color::brown);
 	}
-	
+
 	if (output) {
 		tft->cursorX = x;
 		tft->cursorY = y;

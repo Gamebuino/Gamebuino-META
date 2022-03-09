@@ -48,7 +48,7 @@ public:
 	uint16_t readFrame(uint16_t frame, uint16_t* buf, uint16_t transparentColor, File* file);
 #endif
 	uint32_t getRowSize();
-	
+
 #if USE_SDFAT
 	uint32_t writeHeader(File* file);
 	void writeBuffer(uint16_t* buffer, uint16_t transparentColor, File* file);

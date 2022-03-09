@@ -134,7 +134,7 @@ public:
 	void clear();
 	void clear(Color bgcolor);
 	void clear(ColorIndex bgcolor);
-	
+
 	void drawCircle(int16_t x0, int16_t y0, int16_t r);
 	void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername);
 	void fillCircle(int16_t x0, int16_t y0, int16_t r);
@@ -144,7 +144,7 @@ public:
 	void drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius);
 	void fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius);
 
-	
+
 	virtual void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t size);
 	Color setTmpColor(Color c);
 	Color setTmpColor(ColorIndex c);
@@ -175,10 +175,11 @@ public:
 
 
 	static void indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t length, bool skipFirst);
-	static ColorIndex rgb565ToIndex(Color rgb);
-	
+	static ColorIndex rgb565ToIndex(Color rgb, Color *index);
+	ColorIndex rgb565ToIndex(Color rgb) { return rgb565ToIndex(rgb, colorIndex); }
+
 	// additional coordinate prints
-	
+
 	template <uint8_t N>
 	void print(int16_t x, int16_t y, const MultiLang (&l) [N]) {
 		setCursor(x, y);
@@ -189,7 +190,7 @@ public:
 		setCursor(x, y);
 		print(s);
 	};
-	
+
 	template <uint8_t N>
 	void println(int16_t x, int16_t y, const MultiLang (&l) [N]) {
 		setCursor(x, y);
@@ -200,7 +201,7 @@ public:
 		setCursor(x, y);
 		print(s);
 	};
-	
+
 #if USE_PRINTF
 	template <uint8_t N>
 	void printf(int16_t x, int16_t y, const MultiLang (&l) [N], ...) {
@@ -234,7 +235,7 @@ public:
 	static uint8_t alpha;
 	static uint16_t tint;
 	static BlendMode blendMode;
-	static Color *colorIndex;
+	Color *colorIndex;
 	ColorMode colorMode;
 
 #if ARDUINO >= 100
@@ -251,7 +252,7 @@ public:
 	int16_t getCursorY(void) const;
 	uint8_t getFontWidth(void) const;
 	uint8_t getFontHeight(void) const;
-	
+
 	void setPalette(Color* p);
 	void setPalette(const Color* p);
 	Color* getPalette();

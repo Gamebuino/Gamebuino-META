@@ -127,7 +127,7 @@ void dma_tft_error_callback(Adafruit_ZeroDMA *dma) {
 
 #endif // CUSTOM_TFT_FUNCTIONS
 
-inline uint16_t swapcolor(uint16_t x) { 
+inline uint16_t swapcolor(uint16_t x) {
 	return (x << 11) | (x & 0x07E0) | (x >> 11);
 }
 
@@ -183,7 +183,7 @@ void Display_ST7735::writedata(uint8_t c) {
 	SPI.beginTransaction(tftSPISettings);
 #endif
 	dataMode();
-		
+
 	//Serial.print("D ");
 	spiwrite(c);
 
@@ -312,12 +312,12 @@ void Display_ST7735::commandList(const uint8_t *addr) {
 void Display_ST7735::commonInit() {
 	csport = &(PORT->Group[1].OUT.reg);
 	rsport = &(PORT->Group[1].OUT.reg);
-	
+
 	cspinmask = (1 << 22);
 	rspinmask = (1 << 23);
 	PORT->Group[1].DIR.reg |= cspinmask;
 	PORT->Group[1].DIR.reg |= rspinmask;
-	
+
 
 #ifdef ENABLE_IDLE_TOGGLE_PIN
 	PORT->Group[0].DIR.reg |= (1 << ENABLE_IDLE_TOGGLE_PIN);
@@ -353,7 +353,7 @@ void Display_ST7735::init() {
 
 	writecommand(ST7735_MADCTL);
 	writedata(0xC0);
-	
+
 	// initialize DMA
 #if !CUSTOM_TFT_FUNCTIONS
 	tftDMA.setTrigger(SERCOM4_DMAC_ID_TX);
@@ -392,7 +392,7 @@ void Display_ST7735::setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y
 
 	writecommand(ST7735_CASET); // Column addr set
 	writedata(0x00);
-	writedata(x0);		 // XSTART 
+	writedata(x0);		 // XSTART
 	writedata(0x00);
 	writedata(x1);		 // XEND
 
@@ -537,7 +537,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 #endif
 		dataMode();
 
-		Color *index = Graphics::colorIndex;
+		Color *index = img.colorIndex;
 		uint16_t *src = img._buffer;
 		uint16_t *srcEnd = src + w * h / 4; // Four pixels per value
 
@@ -584,14 +584,13 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img){
 
 		return;
 	}
-	
+
 	Graphics::drawImage(x, y, img); //fallback to the usual
 }
 
-void bufferIndexLine(uint16_t* preBufferLine, uint16_t* img_buffer, int16_t w, uint16_t j) {
+void bufferIndexLine(uint16_t* preBufferLine, uint16_t* img_buffer, int16_t w, uint16_t j, Color *index) {
 	uint16_t *dest = preBufferLine;
 	uint16_t *src = img_buffer + ((j * w) / 4);
-	Color *index = Graphics::colorIndex;
 	uint16_t length = w;
 	for (uint16_t i = 0; i < length / 4; i++) {
 		uint16_t index1 = (src[i] >> 4) & 0x000F;
@@ -623,7 +622,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 	}
 
 	//no scaling
-	if ((w == w2) && (h == h2)) { 
+	if ((w == w2) && (h == h2)) {
 		drawImage(x, y, img);
 		return;
 	}
@@ -639,10 +638,10 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 #endif // USE_TFT_DESCRIPTORS
 		uint16_t *preBufferLine = preBufferLineArray;
 		uint16_t *sendBufferLine = sendBufferLineArray;
-		
+
 		//set the window to the whole screen
 		setAddrWindow(0, 0, _width - 1, _height - 1);
-		
+
 		//initiate SPI
 #if CUSTOM_TFT_SPI_FUNCTIONS
 		gamebuino_meta_tft_spi_begin_transaction();
@@ -700,7 +699,7 @@ void Display_ST7735::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int
 			for (uint16_t j = 0; j < h; j++) { //vertical coordinate in source image, start from the second line
 
 				// prepare the next line while we'r at it
-				bufferIndexLine(preBufferLine, img._buffer, w, j);
+				bufferIndexLine(preBufferLine, img._buffer, w, j, img.colorIndex);
 #if !USE_TFT_DESCRIPTORS
 				memcpy(&preBufferLine[w2], preBufferLine, w2 * 2);
 				if (j > 0) {
@@ -751,7 +750,7 @@ void Display_ST7735::pushColor(uint16_t c) {
 	SPI.beginTransaction(tftSPISettings);
 #endif
 	dataMode();
-	
+
 	spiwrite(c >> 8);
 	spiwrite(c);
 
@@ -775,7 +774,7 @@ void Display_ST7735::_drawPixel(int16_t x, int16_t y) {
 	SPI.beginTransaction(tftSPISettings);
 #endif
 	dataMode();
-	
+
 	spiwrite((uint16_t)color.c >> 8);
 	spiwrite((uint16_t)color.c);
 
@@ -795,7 +794,7 @@ void Display_ST7735::drawFastVLine(int16_t x, int16_t y, int16_t h) {
 	setAddrWindow(x, y, x, y+h-1);
 
 	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
-	
+
 #if CUSTOM_TFT_SPI_FUNCTIONS
 	gamebuino_meta_tft_spi_begin_transaction();
 #else
@@ -851,7 +850,7 @@ void Display_ST7735::fillRect(int16_t x, int16_t y, int16_t w, int16_t h) {
 	setAddrWindow(x, y, x+w-1, y+h-1);
 
 	uint8_t hi = (uint16_t)Graphics::color.c >> 8, lo = (uint16_t)Graphics::color.c;
-	
+
 #if CUSTOM_TFT_SPI_FUNCTIONS
 	gamebuino_meta_tft_spi_begin_transaction();
 #else

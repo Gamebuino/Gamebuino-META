@@ -79,7 +79,7 @@ BMP::BMP(File* file, Image* img) {
 		upside_down = true;
 		pixel_height = -pixel_height;
 	}
-	
+
 	if (f_read16(file) != 1) { // # planes, must always be 1
 		return;
 	}
@@ -88,7 +88,7 @@ BMP::BMP(File* file, Image* img) {
 		// we can only load BMPs of depth 4 or 24 or 32
 		return;
 	}
-	
+
 #if STRICT_IMAGES
 	if (img->_height) {
 		height = img->_height;
@@ -116,7 +116,7 @@ BMP::BMP(File* file, Image* img) {
 		img->frames = frames = 1;
 	}
 #endif
-	
+
 	uint32_t compression = f_read32(file);
 	bool createRGBAmasks = false;
 	if (depth == 32) {
@@ -126,10 +126,10 @@ BMP::BMP(File* file, Image* img) {
 		// we can only load uncompressed BMPs
 		return;
 	}
-	
+
 	// we assume our color table so just ignore the one specified in the BMP
-	
-	
+
+
 	if (depth == 4) {
 		file->seekCur(12); // we ignore image size, x pixels and y pixels per meter
 		uint8_t num_colors = f_read32(file);
@@ -142,10 +142,10 @@ BMP::BMP(File* file, Image* img) {
 			uint8_t g = file->read();
 			uint8_t r = file->read();
 			file->read(); // trash transparency
-			indexMap[i] = (uint8_t)Graphics::rgb565ToIndex((Color)rgb888Torgb565({r, g, b}));
+			indexMap[i] = (uint8_t)Graphics::rgb565ToIndex((Color)rgb888Torgb565({r, g, b}), img->colorIndex);
 		}
-		
-		
+
+
 		img->colorMode = ColorMode::index;
 		img->useTransparentIndex = false; // TODO: transparency detection
 	} else {
@@ -169,7 +169,7 @@ BMP::BMP(File* file, Image* img) {
 		img->colorMode = ColorMode::rgb565;
 		img->transparentColor = 0; // transparent color is detected during frame analysis
 	}
-	
+
 	file->seekSet(image_offset);
 	valid = true;
 }
@@ -205,8 +205,8 @@ uint32_t BMP::writeHeader(File* file) {
 	image_offset = 14 + header_size + color_table * 4;
 	uint32_t image_size = getRowSize() * pixel_height;
 	uint32_t file_size = image_offset + image_size;
-	
-	
+
+
 	file->rewind();
 	file->write("BM"); // this actually is a BMP image
 	f_write32(file_size, file);
@@ -229,7 +229,10 @@ uint32_t BMP::writeHeader(File* file) {
 	if (color_table) {
 		f_write32(color_table, file); // important colors
 		for (uint8_t i = 0; i < color_table; i++) {
-			writeAsRGB((uint16_t)Graphics::colorIndex[i], file);
+			// The BMP uses the default palette. If the image was using a non-default color index
+			// then it should be converted first. This happens implicitly when the BMP is created
+			// from a GMV image.
+			writeAsRGB((uint16_t)defaultColorPalette[i], file);
 			file->write((uint8_t)0);
 		}
 	} else {
@@ -261,12 +264,12 @@ uint32_t BMP::getRowSize() {
 
 #if USE_SDFAT
 uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentColor, File* file) {
-	
+
 	uint32_t rowSize = getRowSize();
 	file->seekSet(offset);
 	if (depth == 4) {
 		uint8_t dif = rowSize - ((width + 1) / 2);
-		
+
 		for (uint16_t i = 0; i < height; i++) {
 			uint8_t* rambuffer;
 			if (upside_down) {
@@ -274,8 +277,8 @@ uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentCol
 			} else {
 				rambuffer = (uint8_t*)buf + (height - 1 - i) * ((width + 1) / 2);
 			}
-			
-			
+
+
 			for (uint16_t j = 0; j < (width + 1)/2; j++) {
 				uint8_t b = file->read();
 				uint8_t u = b >> 4;
@@ -295,7 +298,7 @@ uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentCol
 			} else {
 				rambuffer = buf + (height - 1 - i) * width;
 			}
-			
+
 			for (uint16_t j = 0; j < width; j++) {
 				uint8_t c[4];
 				if (depth == 24) {
@@ -308,7 +311,7 @@ uint16_t BMP::readBuffer(uint16_t* buf, uint32_t offset, uint16_t transparentCol
 						c[indexMap[k]] = file->read();
 					}
 				}
-				
+
 				if (c[3] > 0x80) {
 					uint16_t col = rgb888Torgb565({c[0], c[1], c[2]});
 					if (transparentColor && col == transparentColor) {

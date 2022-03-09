@@ -55,6 +55,8 @@ private:
 #endif
 	Image* img;
 	void convertFromBMP(BMP& bmp, char* newname);
+	uint8_t convertIndexToDefaultPalette(uint8_t index);
+	uint8_t convertIndexPairToDefaultPalette(uint8_t index);
 #if USE_SDFAT
 	void writeColor(File* f, uint16_t color, uint8_t count);
 	void writeHeader(File* f);
