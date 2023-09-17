@@ -71,7 +71,6 @@ const Color defaultColorPalette[16] = {
 	Color::pink,
 	Color::beige,
 };
-Color* Graphics::colorIndex = (Color*)defaultColorPalette;
 BlendMode Graphics::blendMode = BlendMode::blend;
 Graphics::ColorUnion Graphics::color = {(Color)0};
 Graphics::BgcolorUnion Graphics::bgcolor = {(Color)0};
@@ -101,9 +100,9 @@ void Graphics::indexTo565(uint16_t *dest, uint8_t *src, Color *index, uint16_t l
 	}
 }
 
-ColorIndex Graphics::rgb565ToIndex(Color rgb) {
+ColorIndex Graphics::rgb565ToIndex(Color rgb, Color *index) {
 	for (uint8_t i = 0; i < 16; i++) {
-		if (rgb == colorIndex[i]) {
+		if (rgb == index[i]) {
 			return (ColorIndex)i;
 		}
 	}
@@ -111,16 +110,16 @@ ColorIndex Graphics::rgb565ToIndex(Color rgb) {
 	uint8_t b = (uint8_t)((uint16_t)rgb << 3);
 	uint8_t g = (uint8_t)(((uint16_t)rgb >> 3) & 0xFC);
 	uint8_t r = (uint8_t)(((uint16_t)rgb >> 8) & 0xF8);
-	
+
 	uint8_t min_index = 0;
 	uint16_t min_diff = 0xFFFF;
 	uint8_t i = 0;
 	for (; i < 16; i++) {
-		uint16_t rgb2 = (uint16_t)colorIndex[i];
+		uint16_t rgb2 = (uint16_t)index[i];
 		uint8_t b2 = (uint8_t)(rgb2 << 3);
 		uint8_t g2 = (uint8_t)((rgb2 >> 3) & 0xFC);
 		uint8_t r2 = (uint8_t)((rgb2 >> 8) & 0xF8);
-		
+
 		uint16_t diff = abs(b - b2) + abs(g - g2) + abs(r - r2);
 		if (diff < min_diff) {
 			min_diff = diff;
@@ -128,7 +127,7 @@ ColorIndex Graphics::rgb565ToIndex(Color rgb) {
 		}
 	}
 	return (ColorIndex)min_index;
-} 
+}
 
 // Many (but maybe not all) non-AVR board installs define macros
 // for compatibility with existing PROGMEM-reading AVR code.
@@ -167,11 +166,12 @@ Graphics::Graphics(int16_t w, int16_t h) {
 	_cp437    = false;
 	gfxFont   = NULL;
 	colorMode = ColorMode::rgb565;
+	colorIndex = (Color*)defaultColorPalette;
 	setFont(font3x5);
 }
 
 Graphics::~Graphics() {
-	
+
 }
 
 // Draw a circle outline
@@ -532,7 +532,7 @@ void Graphics::fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int1
 void Graphics::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap) {
 	uint8_t w = *(bitmap++);
 	uint8_t h = *(bitmap++);
-	
+
 	uint8_t byteWidth = (w + 7) / 8;
 	uint8_t _x = x;
 	uint8_t dw = 8 - (w%8);
@@ -563,7 +563,7 @@ void Graphics::drawBitmap(int8_t x, int8_t y, const uint8_t *bitmap, int8_t scal
 	}
 	uint8_t w = *(bitmap++);
 	uint8_t h = *(bitmap++);
-	
+
 	uint8_t byteWidth = (w + 7) / 8;
 	uint8_t _x = x;
 	uint8_t dw = 8 - (w%8);
@@ -677,7 +677,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img) {
 	} else if ((y + h1) > _height) {
 		h2cropped = _height - y;
 	}
-	
+
 	drawImageCrop(x, y, w1, i2offset, w2cropped, j2offset, h2cropped, img);
 }
 
@@ -719,7 +719,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h
 	} else if ((y + h2) > _height) {
 		h2cropped = _height - y;
 	}
-	
+
 	if (colorMode == ColorMode::rgb565) {
 		uint16_t bufferLine[w2];
 		uint16_t transparent_backup = img.transparentColor;
@@ -729,7 +729,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h
 			} else {
 				img.transparentColor = 1;
 			}
-			
+
 		}
 		for (int16_t j2 = 0; j2 < h2cropped; j2++) { //j2: offseted vertical coordinate in destination
 			uint16_t j = h * (j2 + j2offset) / h2; //j: vertical coordinate in source image
@@ -766,7 +766,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t w2, int16_t h
 			for (int16_t i2 = 0; i2 < w2cropped; i2++) { //i2: offseted horizontal coordinate in desination
 				uint16_t i = w * (i2 + i2offset) / w2; //i: horizontal coordinate in original image
 				i = invertX ? w - 1 - i : i;
-				
+
 				//draw INDEX => INDEX
 				uint8_t b = ((uint8_t*)img._buffer)[((w+1)/2)*j + (i/2)];
 				if (!(i % 2)) {
@@ -799,7 +799,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y
 	}
 	w2 = min(w2, w1 - x2);
 	h2 = min(h2, h1 - y2);
-	
+
 	//horizontal cropping
 	int16_t i2offset = x2;
 	int16_t w2cropped = w2;
@@ -813,7 +813,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y
 		w2cropped = _width - x;
 	}
 	x -= x2;
-	
+
 	//vertical cropping
 	int16_t j2offset = y2;
 	int16_t h2cropped = h2;
@@ -827,7 +827,7 @@ void Graphics::drawImage(int16_t x, int16_t y, Image& img, int16_t x2, int16_t y
 		h2cropped = _height - y;
 	}
 	y -= y2;
-	
+
 	drawImageCrop(x, y, w1, i2offset, w2cropped, j2offset, h2cropped, img);
 }
 
@@ -844,10 +844,10 @@ void Graphics::drawImageCrop(int16_t x, int16_t y, int16_t w1, int16_t i2offset,
 			uint16_t destLineArray[w2cropped];
 			uint16_t *destLine = destLineArray;
 			uint8_t *srcLine;
-			
+
 			// w1+1 for ceiling rather than flooring
 			srcLine = (uint8_t*)img._buffer + ((w1 + 1) / 2) * (j2 + j2offset) + (i2offset/2);
-			
+
 //			srcLine = (uint8_t*)img._buffer + (((j2 + j2offset) * w1) + i2offset) / 2;
 
 			indexTo565(destLine, srcLine, colorIndex, w2cropped, i2offset%2);
@@ -887,7 +887,7 @@ void Graphics::drawImageCrop(int16_t x, int16_t y, int16_t w1, int16_t i2offset,
 	//draw INDEX => INDEX
 	if ((img.colorMode == ColorMode::index) && (colorMode == ColorMode::index)) {
 		for (int j2 = 0; j2 < h2cropped; j2++) {
-			
+
 			if (x % 2) {
 				uint8_t *src = (uint8_t*)img._buffer + ((j2 + j2offset) * ((w1 + 1)/2)) + ((i2offset + 1) / 2);
 				uint8_t destLineArray[((w2cropped+1) / 2) + 1];
