@@ -86,6 +86,7 @@ public:
 		popup(text, duration, N);
 	}
 	void updatePopup();
+	void hidePopup();
 #endif // GUI_ENABLE_POPUP
 };
 
